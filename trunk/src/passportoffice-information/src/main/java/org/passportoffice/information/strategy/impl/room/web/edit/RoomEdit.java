@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.passportoffice.information.strategy.impl.apartment.web.edit;
+package org.passportoffice.information.strategy.impl.room.web.edit;
 
 import java.util.List;
 import javax.ejb.EJB;
@@ -29,10 +29,10 @@ import org.passportoffice.commons.entity.StringCulture;
 import org.passportoffice.commons.util.CloneUtil;
 import org.passportoffice.commons.web.PageParameterNames;
 import org.passportoffice.commons.web.component.StringPanel;
-import org.passportoffice.information.strategy.impl.apartment.Apartment;
-import org.passportoffice.information.strategy.impl.apartment.dao.ApartmentDao;
-import org.passportoffice.information.strategy.impl.apartment.example.ApartmentExample;
-import org.passportoffice.information.strategy.impl.apartment.web.list.ApartmentList;
+import org.passportoffice.information.strategy.impl.room.Room;
+import org.passportoffice.information.strategy.impl.room.dao.RoomDao;
+import org.passportoffice.information.strategy.impl.room.example.RoomExample;
+import org.passportoffice.information.strategy.impl.room.web.list.RoomList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +40,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-public final class ApartmentEdit extends WebPage {
+public final class RoomEdit extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(ApartmentEdit.class);
+    private static final Logger log = LoggerFactory.getLogger(RoomEdit.class);
 
-    @EJB(name = "ApartmentDao")
-    private ApartmentDao dao;
+    @EJB(name = "RoomDao")
+    private RoomDao dao;
 
     @EJB(name = "LocaleDao")
     private LocaleDao localeDao;
@@ -55,28 +55,38 @@ public final class ApartmentEdit extends WebPage {
 
     private boolean isNew;
 
-    public ApartmentEdit() {
-        init(null);
+    public RoomEdit() {
+        init(null, null, null);
     }
 
-    public ApartmentEdit(PageParameters parameters) {
-        init(parameters.getAsLong(PageParameterNames.ID));
+    public RoomEdit(PageParameters parameters) {
+        init(parameters.getAsLong(PageParameterNames.ID), parameters.getAsLong(PageParameterNames.PARENT_ID),
+                getPageClass(parameters.getString(PageParameterNames.PARENT_EDIT_PAGE)));
     }
 
-    private void init(Long id) {
+    private Class<WebPage> getPageClass(String pageClassName) {
+        try {
+            return (Class<WebPage>) getApplication().getApplicationSettings().getClassResolver().resolveClass(pageClassName);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void init(Long id, Long parentId, Class<WebPage> parentEditPageClass) {
         final EntityDescription entityDesc = entityDescriptionDao.getEntityDescription(dao.getTable());
         final List<String> allLocales = localeDao.getAllLocales();
 
-        final Apartment oldEntity;
-        final Apartment currentEntity;
+        final Room oldEntity;
+        final Room currentEntity;
         if (id == null) {
             //create new entity
             isNew = true;
             oldEntity = null;
             currentEntity = dao.newInstance();
+
         } else {
             //edit existing entity
-            currentEntity = dao.findById(new ApartmentExample(getLocale(), id));
+            currentEntity = dao.findById(new RoomExample(getLocale(), id));
             oldEntity = CloneUtil.cloneObject(currentEntity);
         }
 
@@ -127,6 +137,9 @@ public final class ApartmentEdit extends WebPage {
         simpleAttributes.setReuseItems(true);
         form.add(simpleAttributes);
 
+        //parent
+        
+
         Button submit = new Button("submit") {
 
             @Override
@@ -139,7 +152,7 @@ public final class ApartmentEdit extends WebPage {
                     dao.update(oldEntity, currentEntity);
                 }
 
-                setResponsePage(ApartmentList.class);
+                setResponsePage(RoomList.class);
             }
         };
         form.add(submit);

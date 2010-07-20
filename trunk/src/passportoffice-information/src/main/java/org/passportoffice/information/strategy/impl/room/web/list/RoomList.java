@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.passportoffice.information.strategy.impl.apartment.web.list;
+package org.passportoffice.information.strategy.impl.room.web.list;
 
 import java.util.Iterator;
 import javax.ejb.EJB;
@@ -21,20 +21,20 @@ import org.apache.wicket.model.Model;
 import org.passportoffice.commons.entity.Entity;
 import org.passportoffice.commons.web.PageParameterNames;
 import org.passportoffice.commons.web.component.datatable.ArrowOrderByBorder;
-import org.passportoffice.information.strategy.impl.apartment.dao.ApartmentDao;
-import org.passportoffice.information.strategy.impl.apartment.example.ApartmentExample;
-import org.passportoffice.information.strategy.impl.apartment.web.edit.ApartmentEdit;
+import org.passportoffice.information.strategy.impl.room.dao.RoomDao;
+import org.passportoffice.information.strategy.impl.room.example.RoomExample;
+import org.passportoffice.information.strategy.impl.room.web.edit.RoomEdit;
 
 /**
  *
  * @author Artem
  */
-public final class ApartmentList extends WebPage {
+public final class RoomList extends WebPage {
 
-    @EJB(name = "ApartmentDao")
-    private ApartmentDao dao;
+    @EJB(name = "RoomDao")
+    private RoomDao dao;
 
-    public ApartmentList() {
+    public RoomList() {
         init();
     }
 
@@ -62,12 +62,12 @@ public final class ApartmentList extends WebPage {
             @Override
             public Iterator<? extends Entity> iterator(int first, int count) {
                 boolean asc = getSort().isAscending();
-                return dao.find(new ApartmentExample(nameFilterModel.getObject(), first, count, getLocale(), null, asc)).iterator();
+                return dao.find(new RoomExample(nameFilterModel.getObject(), first, count, getLocale(), null, asc)).iterator();
             }
 
             @Override
             public int size() {
-                return dao.count(new ApartmentExample(nameFilterModel.getObject()));
+                return dao.count(new RoomExample(nameFilterModel.getObject()));
             }
 
             @Override
@@ -86,7 +86,7 @@ public final class ApartmentList extends WebPage {
 
                 PageParameters params = new PageParameters();
                 params.put(PageParameterNames.ID, entity.getId());
-                item.add(new BookmarkablePageLink("edit", ApartmentEdit.class, params));
+                item.add(new BookmarkablePageLink("edit", RoomEdit.class, params));
             }
         };
         filterForm.add(list);

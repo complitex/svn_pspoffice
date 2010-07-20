@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="config.properties">
+    </properties>
+
+    <typeAliases>
+        <typeAlias type="org.passportoffice.commons.entity.StringCulture" alias="StringCulture"/>
+        <typeAlias type="org.passportoffice.commons.entity.InsertParameter" alias="InsertParameter"/>
+        <typeAlias type="org.passportoffice.commons.entity.Entity" alias="Entity"/>
+        <typeAlias type="org.passportoffice.commons.entity.EntityAttribute" alias="EntityAttribute"/>
+
+        <typeAlias type="org.passportoffice.information.strategy.impl.apartment.example.ApartmentExample" alias="ApartmentExample"/>
+        <typeAlias type="org.passportoffice.information.strategy.impl.apartment.Apartment" alias="Apartment"/>
+
+        <typeAlias type="org.passportoffice.information.strategy.impl.room.example.RoomExample" alias="RoomExample"/>
+        <typeAlias type="org.passportoffice.information.strategy.impl.room.Room" alias="Room"/>
+    </typeAliases>
+
+    <environments default="test">
+        <environment id="test">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <!--<property name="driver" value="com.mysql.jdbc.Driver"/>-->
+                <property name="driver" value="com.p6spy.engine.spy.P6SpyDriver"/>
+
+                <property name="url" value="jdbc:mysql://localhost:3306/passport_office"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+        <environment id="development">
+            <transactionManager type="MANAGED"/>
+            <dataSource type="JNDI">
+                <property name="data_source" value="jdbc/passport_office"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="org/passportoffice/commons/entity/Locale.xml"/>
+        <mapper resource="org/passportoffice/commons/entity/Sequence.xml"/>
+        <mapper resource="org/passportoffice/commons/entity/StringCulture.xml"/>
+        <mapper resource="org/passportoffice/commons/entity/EntityDescription.xml"/>
+        <mapper resource="org/passportoffice/commons/entity/EntityAttribute.xml"/>
+        <mapper resource="org/passportoffice/commons/entity/Entity.xml"/>
+
+        <mapper resource="org/passportoffice/information/strategy/impl/apartment/Apartment.xml"/>
+        <mapper resource="org/passportoffice/information/strategy/impl/room/Room.xml"/>
+    </mappers>
+
+</configuration>

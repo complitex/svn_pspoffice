@@ -102,18 +102,18 @@ DROP TABLE IF EXISTS `apartment`;
 CREATE TABLE `apartment` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_apartment_type` (`entity_type_id`),
   CONSTRAINT `FK_apartment_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_apartment_parent` (`parent_type_id`),
-  CONSTRAINT `FK_apartment_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_apartment_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_apartment_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `apartment_attribute`;
@@ -121,7 +121,7 @@ DROP TABLE IF EXISTS `apartment_attribute`;
 CREATE TABLE `apartment_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -129,9 +129,9 @@ CREATE TABLE `apartment_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_apartment_entity_id` (`entity_id`),
-  CONSTRAINT `FK_apartment_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `apartment`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_apartment_object_id` (`object_id`),
+  CONSTRAINT `FK_apartment_object_id` FOREIGN KEY (`object_id`) REFERENCES `apartment`(`object_id`),
   KEY `FK_apartment_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_apartment_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_apartment_attribute_value_type` (`value_type_id`),
@@ -155,18 +155,18 @@ DROP TABLE IF EXISTS `room`;
 CREATE TABLE `room` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_room_type` (`entity_type_id`),
   CONSTRAINT `FK_room_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_room_parent` (`parent_type_id`),
-  CONSTRAINT `FK_room_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_room_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_room_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `room_attribute`;
@@ -174,7 +174,7 @@ DROP TABLE IF EXISTS `room_attribute`;
 CREATE TABLE `room_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -182,9 +182,9 @@ CREATE TABLE `room_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_room_entity_id` (`entity_id`),
-  CONSTRAINT `FK_room_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `room`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_room_object_id` (`object_id`),
+  CONSTRAINT `FK_room_object_id` FOREIGN KEY (`object_id`) REFERENCES `room`(`object_id`),
   KEY `FK_room_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_room_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_v_attribute_value_type` (`value_type_id`),
@@ -208,18 +208,18 @@ DROP TABLE IF EXISTS `street`;
 CREATE TABLE `street` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_street_type` (`entity_type_id`),
   CONSTRAINT `FK_street_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_street_parent` (`parent_type_id`),
-  CONSTRAINT `FK_street_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_street_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_street_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `street_attribute`;
@@ -227,7 +227,7 @@ DROP TABLE IF EXISTS `street_attribute`;
 CREATE TABLE `street_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -235,9 +235,9 @@ CREATE TABLE `street_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_street_entity_id` (`entity_id`),
-  CONSTRAINT `FK_street_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `street`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_street_object_id` (`object_id`),
+  CONSTRAINT `FK_street_object_id` FOREIGN KEY (`object_id`) REFERENCES `street`(`object_id`),
   KEY `FK_street_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_street_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_street_attribute_value_type` (`value_type_id`),
@@ -261,18 +261,18 @@ DROP TABLE IF EXISTS `city`;
 CREATE TABLE `city` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_city_type` (`entity_type_id`),
   CONSTRAINT `FK_city_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_city_parent` (`parent_type_id`),
-  CONSTRAINT `FK_city_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_city_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_city_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `city_attribute`;
@@ -280,7 +280,7 @@ DROP TABLE IF EXISTS `city_attribute`;
 CREATE TABLE `city_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -288,9 +288,9 @@ CREATE TABLE `city_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_city_entity_id` (`entity_id`),
-  CONSTRAINT `FK_city_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `city`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_city_object_id` (`object_id`),
+  CONSTRAINT `FK_city_object_id` FOREIGN KEY (`object_id`) REFERENCES `city`(`object_id`),
   KEY `FK_city_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_city_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_city_attribute_value_type` (`value_type_id`),
@@ -314,18 +314,18 @@ DROP TABLE IF EXISTS `building`;
 CREATE TABLE `building` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_building_type` (`entity_type_id`),
   CONSTRAINT `FK_building_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_building_parent` (`parent_type_id`),
-  CONSTRAINT `FK_building_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_building_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_building_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `building_attribute`;
@@ -333,7 +333,7 @@ DROP TABLE IF EXISTS `building_attribute`;
 CREATE TABLE `building_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -341,9 +341,9 @@ CREATE TABLE `building_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_building_entity_id` (`entity_id`),
-  CONSTRAINT `FK_building_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `building`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_building_object_id` (`object_id`),
+  CONSTRAINT `FK_building_object_id` FOREIGN KEY (`object_id`) REFERENCES `building`(`object_id`),
   KEY `FK_building_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_building_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_building_attribute_value_type` (`value_type_id`),
@@ -367,18 +367,18 @@ DROP TABLE IF EXISTS `district`;
 CREATE TABLE `district` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_district_type` (`entity_type_id`),
   CONSTRAINT `FK_district_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_district_parent` (`parent_type_id`),
-  CONSTRAINT `FK_district_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_district_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_district_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `district_attribute`;
@@ -386,7 +386,7 @@ DROP TABLE IF EXISTS `district_attribute`;
 CREATE TABLE `district_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -394,9 +394,9 @@ CREATE TABLE `district_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_district_entity_id` (`entity_id`),
-  CONSTRAINT `FK_district_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `district`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_district_object_id` (`object_id`),
+  CONSTRAINT `FK_district_object_id` FOREIGN KEY (`object_id`) REFERENCES `district`(`object_id`),
   KEY `FK_district_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_district_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_district_attribute_value_type` (`value_type_id`),
@@ -420,18 +420,18 @@ DROP TABLE IF EXISTS `region`;
 CREATE TABLE `region` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_region_type` (`entity_type_id`),
   CONSTRAINT `FK_region_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_region_parent` (`parent_type_id`),
-  CONSTRAINT `FK_region_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_region_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_region_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `region_attribute`;
@@ -439,7 +439,7 @@ DROP TABLE IF EXISTS `region_attribute`;
 CREATE TABLE `region_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -447,9 +447,9 @@ CREATE TABLE `region_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_region_entity_id` (`entity_id`),
-  CONSTRAINT `FK_region_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `region`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_region_object_id` (`object_id`),
+  CONSTRAINT `FK_region_object_id` FOREIGN KEY (`object_id`) REFERENCES `region`(`object_id`),
   KEY `FK_region_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_region_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_region_attribute_value_type` (`value_type_id`),
@@ -473,18 +473,18 @@ DROP TABLE IF EXISTS `country`;
 CREATE TABLE `country` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_country_type` (`entity_type_id`),
   CONSTRAINT `FK_country_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_country_parent` (`parent_type_id`),
-  CONSTRAINT `FK_country_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_country_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_country_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `country_attribute`;
@@ -492,7 +492,7 @@ DROP TABLE IF EXISTS `country_attribute`;
 CREATE TABLE `country_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -500,9 +500,9 @@ CREATE TABLE `country_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_country_entity_id` (`entity_id`),
-  CONSTRAINT `FK_country_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `country`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_country_object_id` (`object_id`),
+  CONSTRAINT `FK_country_object_id` FOREIGN KEY (`object_id`) REFERENCES `country`(`object_id`),
   KEY `FK_country_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_country_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_country_attribute_value_type` (`value_type_id`),
@@ -526,18 +526,18 @@ DROP TABLE IF EXISTS `person`;
 CREATE TABLE `person` (
   `id` bigint(20) NOT NULL auto_increment,
   `status` varchar(20) NOT NULL default 'ACTIVE',
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `end_date` timestamp NULL default NULL,
   `parent_id` bigint(20) default NULL,
-  `parent_type_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
   `entity_type_id` bigint(20) default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
   KEY `FK_person_type` (`entity_type_id`),
   CONSTRAINT `FK_person_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
-  KEY `FK_person_parent` (`parent_type_id`),
-  CONSTRAINT `FK_person_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`)
+  KEY `FK_person_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_person_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `person_attribute`;
@@ -545,7 +545,7 @@ DROP TABLE IF EXISTS `person_attribute`;
 CREATE TABLE `person_attribute` (
   `id` bigint(20) NOT NULL auto_increment,
   `attribute_id` bigint(20) NOT NULL,
-  `entity_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
   `attribute_type_id` bigint(20) NOT NULL,
   `value_id` bigint(20) default NULL,
   `value_type_id` bigint(20) default NULL,
@@ -553,9 +553,9 @@ CREATE TABLE `person_attribute` (
   `end_date` timestamp NULL default NULL,
   `status` varchar(20) NOT NULL default 'ACTIVE',
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`, `start_date`),
-  KEY `FK_person_entity_id` (`entity_id`),
-  CONSTRAINT `FK_person_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `person`(`entity_id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_person_object_id` (`object_id`),
+  CONSTRAINT `FK_person_object_id` FOREIGN KEY (`object_id`) REFERENCES `person`(`object_id`),
   KEY `FK_person_attribute_attribute_type` (`attribute_type_id`),
   CONSTRAINT `FK_person_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
   KEY `FK_person_attribute_value_type` (`value_type_id`),

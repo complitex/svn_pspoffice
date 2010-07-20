@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.passportoffice.commons.entity.Entity">
+
+    <resultMap id="Entity" type="Entity">
+        <id column="entity_id" property="id"/>
+        <id column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="status" property="status"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="parent_type" property="parentType"/>
+        <result column="parent_type_id" property="parentTypeId"/>
+        <result column="entity_type_id" property="entityTypeId"/>
+    </resultMap>
+
+    <resultMap id="Entity_view" type="Entity" extends="org.passportoffice.commons.entity.Entity.Entity">
+        <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = entity_id, locale = locale, startDate = start_date}"
+        select="org.passportoffice.commons.entity.EntityAttribute.find_view"/>
+    </resultMap>
+
+    <resultMap id="Entity_edit" type="Entity" extends="org.passportoffice.commons.entity.Entity.Entity">
+        <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = entity_id, locale = locale, startDate = start_date}"
+        select="org.passportoffice.commons.entity.EntityAttribute.find_edit"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="InsertParameter">
+        INSERT INTO `${table}` (`entity_id`, `status`, `start_date`, `end_date`, `parent_id`, `parent_type_id`, `entity_type_id`) VALUES
+        (#{entity.id}, #{entity.status}, #{entity.startDate}, #{entity.endDate}, #{entity.parentId}, #{entity.parentTypeId}, #{entity.entityTypeId})
+    </insert>
+
+    <!--  customize -->
+    <sql id="findById">
+        SELECT e.`entity_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
+        e.`parent_type_id`, (SELECT m.`entity_table` FROM `entity` m WHERE m.`id` = e.`parent_type_id`) as parent_type,
+        e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
+        FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`entity_id` = #{id}
+    </sql>
+
+    <sql id="find">
+        SELECT e.`entity_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
+        e.`parent_type_id`, null as parent_type,
+        e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
+        FROM `${table}` e WHERE e.`status` = 'ACTIVE'
+    </sql>
+
+    <sql id="count">
+        SELECT COUNT(*) FROM `${table}` e WHERE e.`status` = 'ACTIVE'
+    </sql>
+
+    <sql id="orderBy">
+        <if test="orderByExpression != null">
+            ORDER BY ${orderByExpression}
+            <choose>
+                <when test="asc">
+                    asc
+                </when>
+                <otherwise>
+                    desc
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <sql id="limit">
+        limit ${start},${size}
+    </sql>
+
+    <update id="update" parameterType="InsertParameter">
+        UPDATE `${table}` SET `end_date` = #{entity.endDate}, `status` = #{entity.status} WHERE `entity_id` = #{entity.id} AND `start_date` = #{entity.startDate}
+    </update>
+
+
+
+</mapper>

@@ -7,8 +7,8 @@ package org.passportoffice.information.strategy.impl.room.dao;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
-import org.passportoffice.commons.dao.AbstractEntityDao;
-import org.passportoffice.commons.dao.aop.SqlSessionInterceptor;
+import org.complitex.dictionaryfw.dao.AbstractEntityDao;
+import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.passportoffice.information.strategy.impl.room.Room;
 import org.passportoffice.information.strategy.impl.room.example.RoomExample;
 

@@ -8,8 +8,8 @@
 //import org.apache.wicket.extensions.ajax.markup.html.autocomplete.IAutoCompleteRenderer;
 //import org.apache.wicket.model.IModel;
 //import org.apache.wicket.model.Model;
-//import org.passportoffice.commons.entity.AbstractEntity;
-//import org.passportoffice.commons.web.component.AbstractAutoCompleteTextField;
+//import org.complitex.dictionaryfw.entity.AbstractEntity;
+//import org.complitex.dictionaryfw.web.component.AbstractAutoCompleteTextField;
 //
 ///**
 // *

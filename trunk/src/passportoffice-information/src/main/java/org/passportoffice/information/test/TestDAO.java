@@ -7,8 +7,8 @@ package org.passportoffice.information.test;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
-import org.passportoffice.commons.dao.aop.SqlSessionInterceptor;
-import org.passportoffice.commons.entity.EntityAttribute;
+import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
+import org.complitex.dictionaryfw.entity.EntityAttribute;
 import org.passportoffice.information.strategy.impl.apartment.Apartment;
 import org.passportoffice.information.strategy.impl.apartment.dao.ApartmentDao;
 
@@ -28,7 +28,7 @@ public class TestDAO {
         EntityAttribute name = new EntityAttribute();
         name.setAttributeId(1L);
         name.setAttributeTypeId(1L);
-        name.addLocalizedValue(new org.passportoffice.commons.entity.StringCulture("ru", "Name 1"));
+        name.addLocalizedValue(new org.complitex.dictionaryfw.entity.StringCulture("ru", "Name 1"));
         a.addAttribute(name);
         apartmentDao.insert(a);
     }

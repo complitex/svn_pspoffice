@@ -77,5 +77,11 @@
             <artifactId>passportoffice-commons</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.complitex.framework</groupId>
+            <artifactId>dictionary-framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

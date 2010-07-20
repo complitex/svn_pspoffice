@@ -16,15 +16,15 @@
 //import org.apache.wicket.model.IModel;
 //import org.apache.wicket.model.PropertyModel;
 //import org.apache.wicket.util.string.Strings;
-//import org.passportoffice.commons.dao.EntityDAO;
-//import org.passportoffice.commons.entity.AbstractNamedEntity;
-//import org.passportoffice.commons.entity.Building;
-//import org.passportoffice.commons.entity.BuildingAttribute;
-//import org.passportoffice.commons.entity.City;
-//import org.passportoffice.commons.entity.Country;
-//import org.passportoffice.commons.entity.IDisplayView;
-//import org.passportoffice.commons.entity.Region;
-//import org.passportoffice.commons.entity.Street;
+//import org.complitex.dictionaryfw.dao.EntityDAO;
+//import org.complitex.dictionaryfw.entity.AbstractNamedEntity;
+//import org.complitex.dictionaryfw.entity.Building;
+//import org.complitex.dictionaryfw.entity.BuildingAttribute;
+//import org.complitex.dictionaryfw.entity.City;
+//import org.complitex.dictionaryfw.entity.Country;
+//import org.complitex.dictionaryfw.entity.IDisplayView;
+//import org.complitex.dictionaryfw.entity.Region;
+//import org.complitex.dictionaryfw.entity.Street;
 //
 ///**
 // *

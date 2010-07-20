@@ -5,7 +5,7 @@
 package org.passportoffice.information.strategy.impl.room.example;
 
 import java.util.Locale;
-import org.passportoffice.commons.entity.example.EntityExample;
+import org.complitex.dictionaryfw.entity.example.EntityExample;
 import org.passportoffice.information.strategy.impl.room.dao.RoomDao;
 
 /**

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.passportoffice.information.strategy.impl.apartment.Apartment">
+<mapper namespace="org.complitex.pspoffice.information.strategy.impl.apartment.Apartment">
 
-    <resultMap id="Apartment_edit" type="Apartment" extends="org.passportoffice.commons.entity.Entity.Entity_edit">
+    <resultMap id="Apartment_edit" type="Apartment" extends="org.complitex.dictionaryfw.entity.Entity.Entity_edit">
     </resultMap>
 
-    <resultMap id="Apartment_view" type="Apartment" extends="org.passportoffice.commons.entity.Entity.Entity_view">
+    <resultMap id="Apartment_view" type="Apartment" extends="org.complitex.dictionaryfw.entity.Entity.Entity_view">
     </resultMap>
     
-    <select id="findById" resultMap="org.passportoffice.commons.entity.Apartment.Apartment_edit" parameterType="ApartmentExample">
-        <include refid="org.passportoffice.commons.entity.Entity.findById"/>        
+    <select id="findById" resultMap="Apartment_edit" parameterType="ApartmentExample">
+        <include refid="org.complitex.dictionaryfw.entity.Entity.findById"/>        
     </select>
 
     <sql id="filter">
@@ -20,9 +20,9 @@
         </if>
     </sql>
 
-    <select id="find" resultMap="org.passportoffice.commons.entity.Apartment.Apartment_view" parameterType="ApartmentExample">
-        <include refid="org.passportoffice.commons.entity.Entity.find"/>
-        <include refid="org.passportoffice.information.strategy.impl.apartment.Apartment.filter"/>
+    <select id="find" resultMap="Apartment_view" parameterType="ApartmentExample">
+        <include refid="org.complitex.dictionaryfw.entity.Entity.find"/>
+        <include refid="org.complitex.pspoffice.information.strategy.impl.apartment.Apartment.filter"/>
         ORDER BY (SELECT sc.`value` FROM `apartment_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
                    (SELECT aa.`value_id` FROM `apartment_attribute` aa WHERE aa.`attribute_type_id` = 1 AND aa.`object_id` = e.`object_id`
                    AND aa.`status` = 'ACTIVE' AND aa.`start_date` >= e.`start_date`))
@@ -37,8 +37,8 @@
     </select>
 
     <select id="count" resultType="int" parameterType="ApartmentExample">
-        <include refid="org.passportoffice.commons.entity.Entity.count"/>
-        <include refid="org.passportoffice.information.strategy.impl.apartment.Apartment.filter"/>
+        <include refid="org.complitex.dictionaryfw.entity.Entity.count"/>
+        <include refid="org.complitex.pspoffice.information.strategy.impl.apartment.Apartment.filter"/>
     </select>    
 
 </mapper>

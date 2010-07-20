@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.passportoffice.commons.entity.EntityAttribute">
+<mapper namespace="org.complitex.dictionaryfw.entity.EntityAttribute">
 
    <resultMap id="EntityAttribute" type="EntityAttribute">
        <id column="attribute_id" property="attributeId"/>
@@ -23,17 +23,17 @@
         `attribute_id` = #{entity.attributeId} AND `object_id` = #{entity.entityId} AND `attribute_type_id` = #{entity.attributeTypeId} AND `start_date` = #{entity.startDate}
     </update>
 
-    <resultMap id="EntityAttribute_view" type="EntityAttribute" extends="org.passportoffice.commons.entity.EntityAttribute">
+    <resultMap id="EntityAttribute_view" type="EntityAttribute" extends="org.complitex.dictionaryfw.entity.EntityAttribute">
         <result column="localized_value" property="localizedValue"/>
     </resultMap>
 
-    <resultMap id="EntityAttribute_edit" type="EntityAttribute" extends="org.passportoffice.commons.entity.EntityAttribute">
+    <resultMap id="EntityAttribute_edit" type="EntityAttribute" extends="org.complitex.dictionaryfw.entity.EntityAttribute">
         <result column="localized_value" property="localizedValue"/>
         <collection ofType="StringCulture" property="localizedValues" column="{table = table_name, string = value_id}"
-        select="org.passportoffice.commons.entity.StringCulture.find"/>
+        select="org.complitex.dictionaryfw.entity.StringCulture.find"/>
     </resultMap>
 
-    <select id="find_view" parameterType="hashmap" resultMap="org.passportoffice.commons.entity.EntityAttribute.EntityAttribute_view">
+    <select id="find_view" parameterType="hashmap" resultMap="org.complitex.dictionaryfw.entity.EntityAttribute.EntityAttribute_view">
         SELECT aa.`attribute_id`, aa.`object_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
         IFNULL(
             (SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`id` = aa.`value_id` AND sc.`locale` = #{locale}),
@@ -43,7 +43,7 @@
         ORDER BY aa.`status`
     </select>
 
-     <select id="find_edit" parameterType="hashmap" resultMap="org.passportoffice.commons.entity.EntityAttribute.EntityAttribute_edit">
+     <select id="find_edit" parameterType="hashmap" resultMap="org.complitex.dictionaryfw.entity.EntityAttribute.EntityAttribute_edit">
         SELECT aa.`attribute_id`, aa.`object_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
         IFNULL(
             (SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`id` = aa.`value_id` AND sc.`locale` = #{locale}),

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.passportoffice.commons.entity.EntityDescription">
+<mapper namespace="org.complitex.dictionaryfw.entity.EntityDescription">
 
-    <resultMap type="org.passportoffice.commons.entity.EntityDescription" id="EntityDescription">
+    <resultMap type="org.complitex.dictionaryfw.entity.EntityDescription" id="EntityDescription">
         <id column="entity_id" property="id"/>
         <result column="entity_table" property="entityTable"/>
-        <collection property="attributeDescriptions" ofType="org.passportoffice.commons.entity.AttributeDescription">
+        <collection property="attributeDescriptions" ofType="org.complitex.dictionaryfw.entity.AttributeDescription">
             <id column="entity_attribute_type_id" property="id"/>
             <result column="mandatory" property="mandatory" javaType="_boolean" jdbcType="TINYINT"/>
             <collection property="attributeNames" ofType="StringCulture" column="attribute_type_name_id"
-                        select="org.passportoffice.commons.entity.EntityDescription.findAttributeNames"/>
-            <collection property="attributeValueDescriptions" ofType="org.passportoffice.commons.entity.AttributeValueDescription">
+                        select="org.complitex.dictionaryfw.entity.EntityDescription.findAttributeNames"/>
+            <collection property="attributeValueDescriptions" ofType="org.complitex.dictionaryfw.entity.AttributeValueDescription">
                 <id column="entity_attribute_value_type_id" property="id"/>
                 <result column="attribute_value_type" property="valueType"/>
             </collection>
         </collection>
     </resultMap>
 
-    <select id="load" parameterType="string" resultMap="org.passportoffice.commons.entity.EntityDescription.EntityDescription">
+    <select id="load" parameterType="string" resultMap="org.complitex.dictionaryfw.entity.EntityDescription.EntityDescription">
         SELECT
         e.`id` as entity_id,
         e.`entity_table`,
@@ -32,7 +32,7 @@
         WHERE e.`entity_table` = #{value}
     </select>
 
-    <select id="findAttributeNames" parameterType="long" resultMap="org.passportoffice.commons.entity.StringCulture.StringCulture">
+    <select id="findAttributeNames" parameterType="long" resultMap="org.complitex.dictionaryfw.entity.StringCulture.StringCulture">
         SELECT sc.`id`, sc.`value`, sc.`locale` FROM `string_culture` sc WHERE sc.`id` = #{value}
     </select>
 

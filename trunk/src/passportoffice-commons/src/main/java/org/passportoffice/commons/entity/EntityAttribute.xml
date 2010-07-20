@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.passportoffice.commons.entity.EntityAttribute">
+
+   <resultMap id="EntityAttribute" type="EntityAttribute">
+       <id column="attribute_id" property="attributeId"/>
+       <id column="entity_id" property="entityId"/>
+       <id column="attribute_type_id" property="attributeTypeId"/>
+       <id column="start_date" property="startDate"/>
+       <result column="status" property="status"/>
+       <result column="end_date" property="endDate"/>
+       <result column="value_id" property="valueId"/>
+       <result column="value_type_id" property="valueTypeId"/>
+   </resultMap>
+
+    <insert id="insert" parameterType="InsertParameter">
+        INSERT INTO `${table}_attribute` (`attribute_id`, `entity_id`, `attribute_type_id`, `status`, `start_date`, `end_date`, `value_id`, `value_type_id`) VALUES
+        (#{entity.attributeId}, #{entity.entityId}, #{entity.attributeTypeId}, #{entity.status}, #{entity.startDate}, #{entity.endDate}, #{entity.valueId}, #{entity.valueTypeId})
+    </insert>
+
+    <update id="update" parameterType="InsertParameter">
+        UPDATE `${table}_attribute` SET `end_date` = #{entity.endDate}, `status` = #{entity.status} WHERE 
+        `attribute_id` = #{entity.attributeId} AND `entity_id` = #{entity.entityId} AND `attribute_type_id` = #{entity.attributeTypeId} AND `start_date` = #{entity.startDate}
+    </update>
+
+    <resultMap id="EntityAttribute_view" type="EntityAttribute" extends="org.passportoffice.commons.entity.EntityAttribute">
+        <result column="localized_value" property="localizedValue"/>
+    </resultMap>
+
+    <resultMap id="EntityAttribute_edit" type="EntityAttribute" extends="org.passportoffice.commons.entity.EntityAttribute">
+        <result column="localized_value" property="localizedValue"/>
+        <collection ofType="StringCulture" property="localizedValues" column="{table = table_name, string = value_id}"
+        select="org.passportoffice.commons.entity.StringCulture.find"/>
+    </resultMap>
+
+    <select id="find_view" parameterType="hashmap" resultMap="org.passportoffice.commons.entity.EntityAttribute.EntityAttribute_view">
+        SELECT aa.`attribute_id`, aa.`entity_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
+        IFNULL(
+            (SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`id` = aa.`value_id` AND sc.`locale` = #{locale}),
+            (SELECT sc_sys.`value` FROM `${table}_string_culture` sc_sys WHERE sc_sys.`id` = aa.`value_id` AND sc_sys.`locale` = (SELECT l.`locale` FROM `locales` l WHERE l.`system` = 1))
+	) as localized_value
+        FROM `${table}_attribute` aa WHERE  aa.`entity_id` = #{id} AND aa.`status` = 'ACTIVE' AND aa.`start_date` >= #{startDate}
+        ORDER BY aa.`status`
+    </select>
+
+     <select id="find_edit" parameterType="hashmap" resultMap="org.passportoffice.commons.entity.EntityAttribute.EntityAttribute_edit">
+        SELECT aa.`attribute_id`, aa.`entity_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
+        IFNULL(
+            (SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`id` = aa.`value_id` AND sc.`locale` = #{locale}),
+            (SELECT sc_sys.`value` FROM `${table}_string_culture` sc_sys WHERE sc_sys.`id` = aa.`value_id` AND sc_sys.`locale` = (SELECT l.`locale` FROM `locales` l WHERE l.`system` = 1))
+	) as localized_value,
+        '${table}' as table_name
+        FROM `${table}_attribute` aa WHERE  aa.`entity_id` = #{id} AND aa.`status` = 'ACTIVE' AND aa.`start_date` >= #{startDate}
+        ORDER BY aa.`status`
+    </select>
+
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.passportoffice.commons.entity.EntityDescription">
+
+    <resultMap type="org.passportoffice.commons.entity.EntityDescription" id="EntityDescription">
+        <id column="entity_id" property="id"/>
+        <result column="entity_table" property="entityTable"/>
+        <collection property="attributeDescriptions" ofType="org.passportoffice.commons.entity.AttributeDescription">
+            <id column="entity_attribute_type_id" property="id"/>
+            <result column="mandatory" property="mandatory" javaType="_boolean" jdbcType="TINYINT"/>
+            <collection property="attributeNames" ofType="StringCulture" column="attribute_type_name_id"
+                        select="org.passportoffice.commons.entity.EntityDescription.findAttributeNames"/>
+            <collection property="attributeValueDescriptions" ofType="org.passportoffice.commons.entity.AttributeValueDescription">
+                <id column="entity_attribute_value_type_id" property="id"/>
+                <result column="attribute_value_type" property="valueType"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="load" parameterType="string" resultMap="org.passportoffice.commons.entity.EntityDescription.EntityDescription">
+        SELECT
+        e.`id` as entity_id,
+        e.`entity_table`,
+        eat.`id` as entity_attribute_type_id,
+        eat.`mandatory`,
+        eat.`attribute_type_name_id`,
+        eavt.`id` as entity_attribute_value_type_id,
+        eavt.`attribute_value_type`
+        FROM `entity` e
+        JOIN `entity_attribute_type` eat ON eat.`entity_id` = e.`id`
+        JOIN `entity_attribute_value_type` eavt ON eavt.`attribute_type_id` = eat.`id`
+        WHERE e.`entity_table` = #{value}
+    </select>
+
+    <select id="findAttributeNames" parameterType="long" resultMap="org.passportoffice.commons.entity.StringCulture.StringCulture">
+        SELECT sc.`id`, sc.`value`, sc.`locale` FROM `string_culture` sc WHERE sc.`id` = #{value}
+    </select>
+
+</mapper>

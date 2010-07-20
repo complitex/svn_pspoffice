@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemadesigner version="6.5">
+<source>
+<database charset="utf8" collation="utf8_general_ci">passport_office</database>
+</source>
+<canvas zoom="100">
+<tables>
+<table name="apartment" view="colnames">
+<left>1963</left>
+<top>1858</top>
+<width>245</width>
+<height>200</height>
+<sql_create_table>CREATE TABLE `apartment` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_apartment_type` (`entity_type_id`),
+  KEY `FK_apartment_parent` (`parent_type_id`),
+  CONSTRAINT `FK_apartment_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_apartment_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="apartment_attribute" view="colnames">
+<left>1183</left>
+<top>1749</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `apartment_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_apartment_entity_id` (`entity_id`),
+  KEY `FK_apartment_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_apartment_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_apartment_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_apartment_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_apartment_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `apartment` (`entity_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="apartment_string_culture" view="colnames">
+<left>1710</left>
+<top>1849</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `apartment_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_apartment_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_apartment_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="building" view="colnames">
+<left>3099</left>
+<top>863</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `building` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_building_type` (`entity_type_id`),
+  KEY `FK_building_parent` (`parent_type_id`),
+  CONSTRAINT `FK_building_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_building_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="building_attribute" view="colnames">
+<left>3250</left>
+<top>1630</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `building_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_building_entity_id` (`entity_id`),
+  KEY `FK_building_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_building_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_building_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_building_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_building_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `building` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="building_string_culture" view="colnames">
+<left>1609</left>
+<top>670</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `building_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_building_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_building_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="city" view="colnames">
+<left>2839</left>
+<top>309</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `city` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_city_type` (`entity_type_id`),
+  KEY `FK_city_parent` (`parent_type_id`),
+  CONSTRAINT `FK_city_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_city_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="city_attribute" view="colnames">
+<left>2550</left>
+<top>1333</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `city_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_city_entity_id` (`entity_id`),
+  KEY `FK_city_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_city_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_city_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_city_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_city_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `city` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="city_string_culture" view="colnames">
+<left>1013</left>
+<top>1090</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `city_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_city_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_city_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="country" view="colnames">
+<left>2050</left>
+<top>89</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `country` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_country_type` (`entity_type_id`),
+  KEY `FK_country_parent` (`parent_type_id`),
+  CONSTRAINT `FK_country_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_country_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="country_attribute" view="colnames">
+<left>2310</left>
+<top>1639</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `country_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_country_entity_id` (`entity_id`),
+  KEY `FK_country_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_country_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_country_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_country_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_country_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `country` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="country_string_culture" view="colnames">
+<left>460</left>
+<top>640</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `country_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_country_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_country_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="district" view="colnames">
+<left>3099</left>
+<top>449</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `district` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_district_type` (`entity_type_id`),
+  KEY `FK_district_parent` (`parent_type_id`),
+  CONSTRAINT `FK_district_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_district_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="district_attribute" view="colnames">
+<left>2673</left>
+<top>999</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `district_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_district_entity_id` (`entity_id`),
+  KEY `FK_district_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_district_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_district_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_district_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_district_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `district` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="district_string_culture" view="colnames">
+<left>423</left>
+<top>789</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `district_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_district_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_district_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="entity_attribute_type" view="colnames">
+<left>159</left>
+<top>1310</top>
+<width>182</width>
+<height>141</height>
+<sql_create_table>CREATE TABLE `entity_attribute_type` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `entity_id` bigint(20) NOT NULL,
+  `mandatory` tinyint(1) NOT NULL default '0',
+  `attribute_type_name_id` bigint(20) NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `FK_entity_attribute_type_entity` (`entity_id`),
+  KEY `FK_entity_attribute_type_attribute_type_name` (`attribute_type_name_id`),
+  CONSTRAINT `FK_entity_attribute_type_attribute_type_name` FOREIGN KEY (`attribute_type_name_id`) REFERENCES `string_culture` (`id`),
+  CONSTRAINT `FK_entity_attribute_type_entity` FOREIGN KEY (`entity_id`) REFERENCES `entity` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="entity_attribute_value_type" view="colnames">
+<left>1100</left>
+<top>610</top>
+<width>164</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `entity_attribute_value_type` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `attribute_value_type` varchar(100) NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `FK_entity_attribute_value_type_attribute_type` (`attribute_type_id`),
+  CONSTRAINT `FK_entity_attribute_value_type_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="entity_type" view="colnames">
+<left>70</left>
+<top>580</top>
+<width>166</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `entity_type` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `entity_id` bigint(20) NOT NULL,
+  `entity_type_name_id` bigint(20) NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `FK_entity_type_entity` (`entity_id`),
+  KEY `FK_entity_type_name` (`entity_type_name_id`),
+  CONSTRAINT `FK_entity_type_entity` FOREIGN KEY (`entity_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_entity_type_name` FOREIGN KEY (`entity_type_name_id`) REFERENCES `string_culture` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="locales" view="colnames">
+<left>860</left>
+<top>763</top>
+<width>87</width>
+<height>107</height>
+<sql_create_table>CREATE TABLE `locales` (
+  `locale` varchar(2) NOT NULL,
+  `system` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="person" view="colnames">
+<left>2653</left>
+<top>549</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `person` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_person_type` (`entity_type_id`),
+  KEY `FK_person_parent` (`parent_type_id`),
+  CONSTRAINT `FK_person_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_person_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="person_attribute" view="colnames">
+<left>3033</left>
+<top>1170</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `person_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_person_entity_id` (`entity_id`),
+  KEY `FK_person_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_person_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_person_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_person_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_person_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `person` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="person_string_culture" view="colnames">
+<left>1449</left>
+<top>800</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `person_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_person_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_person_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="region" view="colnames">
+<left>2469</left>
+<top>199</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `region` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_region_type` (`entity_type_id`),
+  KEY `FK_region_parent` (`parent_type_id`),
+  CONSTRAINT `FK_region_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_region_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="region_attribute" view="colnames">
+<left>2399</left>
+<top>910</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `region_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_region_entity_id` (`entity_id`),
+  KEY `FK_region_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_region_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_region_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_region_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_region_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `region` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="region_string_culture" view="colnames">
+<left>1859</left>
+<top>790</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `region_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_region_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_region_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="room" view="colnames">
+<left>2820</left>
+<top>1613</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `room` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_room_type` (`entity_type_id`),
+  KEY `FK_room_parent` (`parent_type_id`),
+  CONSTRAINT `FK_room_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_room_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="room_attribute" view="colnames">
+<left>2950</left>
+<top>663</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `room_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_room_entity_id` (`entity_id`),
+  KEY `FK_room_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_v_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_room_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_room_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_room_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `room` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="room_string_culture" view="colnames">
+<left>2083</left>
+<top>699</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `room_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_room_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_room_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="sequence" view="colnames">
+<left>139</left>
+<top>840</top>
+<width>139</width>
+<height>107</height>
+<sql_create_table>CREATE TABLE `sequence` (
+  `sequence_name` varchar(100) NOT NULL COMMENT 'Наименование генератора',
+  `sequence_value` bigint(20) unsigned NOT NULL default '0' COMMENT 'Значение генератора',
+  PRIMARY KEY  (`sequence_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Вспомогательная таблица для хранения значений, генерируемых '</sql_create_table>
+</table>
+<table name="street" view="colnames">
+<left>3410</left>
+<top>609</top>
+<width>132</width>
+<height>209</height>
+<sql_create_table>CREATE TABLE `street` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `entity_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_type_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`entity_id`,`start_date`),
+  KEY `FK_street_type` (`entity_type_id`),
+  KEY `FK_street_parent` (`parent_type_id`),
+  CONSTRAINT `FK_street_parent` FOREIGN KEY (`parent_type_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `FK_street_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="street_attribute" view="colnames">
+<left>2949</left>
+<top>1419</top>
+<width>143</width>
+<height>226</height>
+<sql_create_table>CREATE TABLE `street_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`entity_id`,`attribute_type_id`,`start_date`),
+  KEY `FK_street_entity_id` (`entity_id`),
+  KEY `FK_street_attribute_attribute_type` (`attribute_type_id`),
+  KEY `FK_street_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_street_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `FK_street_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`),
+  CONSTRAINT `FK_street_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `street` (`entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="street_string_culture" view="colnames">
+<left>1029</left>
+<top>809</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `street_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_street_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_street_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="string_culture" view="colnames">
+<left>569</left>
+<top>949</top>
+<width>79</width>
+<height>124</height>
+<sql_create_table>CREATE TABLE `string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+<table name="entity" view="colnames">
+<left>539</left>
+<top>159</top>
+<width>140</width>
+<height>141</height>
+<sql_create_table>CREATE TABLE `entity` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `entity_table` varchar(100) NOT NULL,
+  `entity_name_id` bigint(20) NOT NULL,
+  `strategy_factory` varchar(100) NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `entity_table` (`entity_table`),
+  KEY `FK_entity_name` (`entity_name_id`),
+  CONSTRAINT `FK_entity_name` FOREIGN KEY (`entity_name_id`) REFERENCES `string_culture` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8</sql_create_table>
+</table>
+</tables>
+</canvas>
+</schemadesigner>

@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.passportoffice</groupId>
-    <artifactId>passportoffice</artifactId>
+    <groupId>org.complitex.pspoffice</groupId>
+    <artifactId>pspoffice</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -27,28 +27,28 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.passportoffice</groupId>
-                <artifactId>passportoffice-commons</artifactId>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-commons</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.passportoffice</groupId>
-                <artifactId>passportoffice-user</artifactId>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-user</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.passportoffice</groupId>
-                <artifactId>passportoffice-information</artifactId>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-information</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.passportoffice</groupId>
-                <artifactId>passportoffice-logging</artifactId>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.passportoffice</groupId>
-                <artifactId>passportoffice-web</artifactId>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

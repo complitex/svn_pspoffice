@@ -14,7 +14,7 @@
 
     <sql id="filter">
         <if test="name != null">
-            AND EXISTS(SELECT 1 FROM `apartment_attribute` aa WHERE aa.`attribute_type_id` = 1 AND aa.`entity_id` = e.`entity_id` AND
+            AND EXISTS(SELECT 1 FROM `apartment_attribute` aa WHERE aa.`attribute_type_id` = 1 AND aa.`object_id` = e.`object_id` AND
             aa.`status` = 'ACTIVE' AND aa.`start_date` >= e.`start_date` AND
             aa.`value_id` IN (SELECT a_sc.id FROM `apartment_string_culture` a_sc WHERE a_sc.value LIKE '%${name}%'))
         </if>
@@ -24,7 +24,7 @@
         <include refid="org.passportoffice.commons.entity.Entity.find"/>
         <include refid="org.passportoffice.information.strategy.impl.apartment.Apartment.filter"/>
         ORDER BY (SELECT sc.`value` FROM `apartment_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
-                   (SELECT aa.`value_id` FROM `apartment_attribute` aa WHERE aa.`attribute_type_id` = 1 AND aa.`entity_id` = e.`entity_id`
+                   (SELECT aa.`value_id` FROM `apartment_attribute` aa WHERE aa.`attribute_type_id` = 1 AND aa.`object_id` = e.`object_id`
                    AND aa.`status` = 'ACTIVE' AND aa.`start_date` >= e.`start_date`))
                     <choose>
                         <when test="asc">

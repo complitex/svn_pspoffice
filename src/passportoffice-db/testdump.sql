@@ -36,3 +36,25 @@
 --(4, '2010-02-15 17:59:09', 4, null, 6, 1, 'STREET');
 --update sequence set sequence_value = 7 where sequence_name = 'building_string_culture';
 --update sequence set sequence_value = 5 where sequence_name = 'building';
+
+-- Apartments
+insert into apartment(object_id) values (1), (2);
+insert into apartment_string_culture(id, locale, value) values (1, 'ru', '10'), (1, 'en', '10'), (2, 'ru', '20'), (2, 'en', '20');
+insert into apartment_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,1,1,1), (1,2,1,2,1);
+update sequence set sequence_value = 3 where sequence_name = 'apartment';
+update sequence set sequence_value = 3 where sequence_name = 'apartment_string_culture';
+
+-- Rooms
+insert into room(object_id, parent_id, parent_entity_id) values (1,1,1), (2,1,1), (3,2,1), (4,2,1);
+insert into room_string_culture(id, locale, value) values (1, 'ru', '1а'), (1, 'en', '1a'), (2, 'ru', '1б'), (2, 'en', '1b'),
+(3, 'ru', '2а'), (3, 'en', '2a'), (4, 'ru', '2б'), (4, 'en', '2b');
+insert into room_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,2,1,2), (1,2,2,2,2), (1,3,2,3,2), (1,4,2,4,2);
+update sequence set sequence_value = 5 where sequence_name = 'room';
+update sequence set sequence_value = 5 where sequence_name = 'room_string_culture';
+
+
+
+
+

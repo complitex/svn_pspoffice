@@ -2,15 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.passportoffice.information.strategy.impl.apartment.dao;
+package org.passportoffice.information.strategy.impl.room.dao;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 import org.passportoffice.commons.dao.AbstractEntityDao;
 import org.passportoffice.commons.dao.aop.SqlSessionInterceptor;
-import org.passportoffice.information.strategy.impl.apartment.Apartment;
-import org.passportoffice.information.strategy.impl.apartment.example.ApartmentExample;
+import org.passportoffice.information.strategy.impl.room.Room;
+import org.passportoffice.information.strategy.impl.room.example.RoomExample;
 
 /**
  *
@@ -19,9 +19,9 @@ import org.passportoffice.information.strategy.impl.apartment.example.ApartmentE
 @Stateless
 @LocalBean
 @Interceptors({SqlSessionInterceptor.class})
-public class ApartmentDao extends AbstractEntityDao<Apartment, ApartmentExample> {
+public class RoomDao extends AbstractEntityDao<Room, RoomExample> {
 
-    public static final String TABLE_NAME = "apartment";
+    public static final String TABLE_NAME = "room";
 
     public static enum OrderBy {
 
@@ -30,14 +30,14 @@ public class ApartmentDao extends AbstractEntityDao<Apartment, ApartmentExample>
 
     @Override
     protected String getNamespace() {
-        return "org.passportoffice.information.strategy.impl.apartment.Apartment";
+        return "org.passportoffice.information.strategy.impl.room.Room";
     }
 
     @Override
-    public Apartment newInstance() {
-        Apartment apartment = new Apartment();
-        configureNewEntity(apartment);
-        return apartment;
+    public Room newInstance() {
+        Room room = new Room();
+        configureNewEntity(room);
+        return room;
     }
 
     @Override

@@ -6,9 +6,9 @@ package org.passportoffice.information.strategy.impl.apartment;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import org.passportoffice.commons.entity.Entity;
-import org.passportoffice.commons.entity.EntityAttribute;
-import org.passportoffice.commons.entity.StatusType;
+import org.complitex.dictionaryfw.entity.Entity;
+import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.StatusType;
 
 /**
  *

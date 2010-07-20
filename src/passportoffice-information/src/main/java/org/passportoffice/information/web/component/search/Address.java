@@ -5,13 +5,13 @@
 //package org.passportoffice.information.web.component.search;
 //
 //import java.io.Serializable;
-//import org.passportoffice.commons.entity.Apartment;
-//import org.passportoffice.commons.entity.Building;
-//import org.passportoffice.commons.entity.City;
-//import org.passportoffice.commons.entity.Country;
-//import org.passportoffice.commons.entity.Region;
-//import org.passportoffice.commons.entity.Room;
-//import org.passportoffice.commons.entity.Street;
+//import org.complitex.dictionaryfw.entity.Apartment;
+//import org.complitex.dictionaryfw.entity.Building;
+//import org.complitex.dictionaryfw.entity.City;
+//import org.complitex.dictionaryfw.entity.Country;
+//import org.complitex.dictionaryfw.entity.Region;
+//import org.complitex.dictionaryfw.entity.Room;
+//import org.complitex.dictionaryfw.entity.Street;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //

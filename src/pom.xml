@@ -15,11 +15,17 @@
         <module>passportoffice-information</module>
         <module>passportoffice-web</module>
         <module>passportoffice-logging</module>
+        <module>dictionary-framework</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <!-- Modules -->
+            <dependency>
+                <groupId>org.complitex.framework</groupId>
+                <artifactId>dictionary-framework</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.passportoffice</groupId>
                 <artifactId>passportoffice-commons</artifactId>

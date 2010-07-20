@@ -53,11 +53,6 @@
             <systemPath>${project.basedir}/../../lib/wicket-contrib-javaee-1.1.jar</systemPath>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>

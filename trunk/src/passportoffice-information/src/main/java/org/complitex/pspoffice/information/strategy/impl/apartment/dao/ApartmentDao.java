@@ -30,7 +30,7 @@ public class ApartmentDao extends AbstractEntityDao<Apartment, ApartmentExample>
 
     @Override
     protected String getNamespace() {
-        return "org.passportoffice.information.strategy.impl.apartment.Apartment";
+        return "org.complitex.pspoffice.information.strategy.impl.apartment.Apartment";
     }
 
     @Override

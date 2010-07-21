@@ -28,7 +28,7 @@ public abstract class Entity implements Serializable {
 
     private Long parentId;
 
-    private Long parentTypeId;
+    private Long parentEntityId;
 
     private String parentType;
 
@@ -104,12 +104,12 @@ public abstract class Entity implements Serializable {
         attributes.add(attribute);
     }
 
-    public Long getParentTypeId() {
-        return parentTypeId;
+    public Long getParentEntityId() {
+        return parentEntityId;
     }
 
-    public void setParentTypeId(Long parentTypeId) {
-        this.parentTypeId = parentTypeId;
+    public void setParentEntityId(Long parentEntityId) {
+        this.parentEntityId = parentEntityId;
     }
 
     public List<EntityAttribute> getSimpleAttributes(final EntityDescription entityDescription) {

@@ -19,6 +19,7 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.EntityDescriptionDao;
 import org.complitex.dictionaryfw.dao.LocaleDao;
 import org.complitex.dictionaryfw.entity.AttributeDescription;
@@ -65,11 +66,14 @@ public final class RoomEdit extends WebPage {
     }
 
     private Class<WebPage> getPageClass(String pageClassName) {
-        try {
-            return (Class<WebPage>) getApplication().getApplicationSettings().getClassResolver().resolveClass(pageClassName);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        if (!Strings.isEmpty(pageClassName)) {
+            try {
+                return (Class<WebPage>) getApplication().getApplicationSettings().getClassResolver().resolveClass(pageClassName);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
+        return null;
     }
 
     private void init(Long id, Long parentId, Class<WebPage> parentEditPageClass) {
@@ -138,7 +142,7 @@ public final class RoomEdit extends WebPage {
         form.add(simpleAttributes);
 
         //parent
-        
+
 
         Button submit = new Button("submit") {
 

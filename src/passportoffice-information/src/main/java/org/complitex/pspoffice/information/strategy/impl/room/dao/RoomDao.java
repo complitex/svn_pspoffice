@@ -30,7 +30,7 @@ public class RoomDao extends AbstractEntityDao<Room, RoomExample> {
 
     @Override
     protected String getNamespace() {
-        return "org.passportoffice.information.strategy.impl.room.Room";
+        return "org.complitex.pspoffice.information.strategy.impl.room.Room";
     }
 
     @Override

@@ -4,6 +4,7 @@
  */
 package org.complitex.dictionaryfw.entity.example;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author Artem
  */
-public class DomainObjectExample {
+public class DomainObjectExample implements Serializable {
 
     private String table;
 

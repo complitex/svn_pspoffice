@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.complitex.dictionaryfw.entity.EntityDescription">
+<mapper namespace="org.complitex.dictionaryfw.entity.description.EntityDescription">
 
-    <resultMap type="org.complitex.dictionaryfw.entity.EntityDescription" id="EntityDescription">
+    <resultMap type="org.complitex.dictionaryfw.entity.description.EntityDescription" id="EntityDescription">
         <id column="entity_id" property="id"/>
         <result column="entity_table" property="entityTable"/>
-        <collection property="attributeDescriptions" ofType="org.complitex.dictionaryfw.entity.AttributeDescription">
+        <collection property="attributeDescriptions" ofType="org.complitex.dictionaryfw.entity.description.AttributeDescription">
             <id column="entity_attribute_type_id" property="id"/>
             <result column="mandatory" property="mandatory" javaType="_boolean" jdbcType="TINYINT"/>
             <collection property="attributeNames" ofType="StringCulture" column="attribute_type_name_id"
-                        select="org.complitex.dictionaryfw.entity.EntityDescription.findAttributeNames"/>
-            <collection property="attributeValueDescriptions" ofType="org.complitex.dictionaryfw.entity.AttributeValueDescription">
+                        select="org.complitex.dictionaryfw.entity.description.EntityDescription.findAttributeNames"/>
+            <collection property="attributeValueDescriptions" ofType="org.complitex.dictionaryfw.entity.description.AttributeValueDescription">
                 <id column="entity_attribute_value_type_id" property="id"/>
                 <result column="attribute_value_type" property="valueType"/>
             </collection>
         </collection>
     </resultMap>
 
-    <select id="load" parameterType="string" resultMap="org.complitex.dictionaryfw.entity.EntityDescription.EntityDescription">
+    <select id="load" parameterType="string" resultMap="org.complitex.dictionaryfw.entity.description.EntityDescription.EntityDescription">
         SELECT
         e.`id` as entity_id,
         e.`entity_table`,

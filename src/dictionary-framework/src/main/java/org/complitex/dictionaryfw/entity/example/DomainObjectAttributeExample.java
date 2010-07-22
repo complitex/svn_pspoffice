@@ -4,11 +4,13 @@
  */
 package org.complitex.dictionaryfw.entity.example;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Artem
  */
-public class DomainObjectAttributeExample {
+public class DomainObjectAttributeExample implements Serializable {
 
     private Long attributeTypeId;
 

@@ -2,11 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.dictionaryfw.entity;
+package org.complitex.dictionaryfw.entity.description;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
+import org.complitex.dictionaryfw.entity.SimpleTypes;
+import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
  *

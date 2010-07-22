@@ -1,10 +1,11 @@
 package org.complitex.pspoffice.commons.web.pages.welcome;
 
-import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.ResourceModel;
+import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 
 /**
  * User: Anatoly A. Ivanov java@inheaven.ru
@@ -17,15 +18,6 @@ public class WelcomePage extends WebPage {
 
         add(new Label("title", new ResourceModel("title")));
 
-        add(new BookmarkablePageLink("link", getLinkPage()));
-    }
-
-    private Class<? extends Page> getLinkPage() {
-        try {
-            return (Class<? extends Page>) getApplication().getApplicationSettings().getClassResolver().
-                    resolveClass("org.complitex.pspoffice.information.strategy.impl.apartment.web.list.ApartmentList");
-        } catch (ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
+        add(new BookmarkablePageLink("link", DomainObjectList.class, new PageParameters("entity=apartment")));
     }
 }

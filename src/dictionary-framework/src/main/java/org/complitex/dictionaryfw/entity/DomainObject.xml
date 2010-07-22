@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.complitex.dictionaryfw.entity.Entity">
+<mapper namespace="org.complitex.dictionaryfw.entity.DomainObject">
 
-    <resultMap id="Entity" type="Entity">
+    <resultMap id="DomainObject" type="DomainObject">
         <id column="object_id" property="id"/>
         <id column="start_date" property="startDate"/>
         <result column="end_date" property="endDate"/>
@@ -11,60 +11,77 @@
         <result column="parent_table" property="parentTable"/>
         <result column="parent_entity_id" property="parentEntityId"/>
         <result column="entity_type_id" property="entityTypeId"/>
+        <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, startDate = start_date}"
+        select="org.complitex.dictionaryfw.entity.EntityAttribute.find"/>
     </resultMap>
 
-    <resultMap id="Entity_view" type="Entity" extends="org.complitex.dictionaryfw.entity.Entity.Entity">
+    <!--<resultMap id="DomainObject_view" type="DomainObject" extends="org.complitex.dictionaryfw.entity.DomainObject.DomainObject">
         <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, locale = locale, startDate = start_date}"
         select="org.complitex.dictionaryfw.entity.EntityAttribute.find_view"/>
     </resultMap>
 
-    <resultMap id="Entity_edit" type="Entity" extends="org.complitex.dictionaryfw.entity.Entity.Entity">
-        <!--<association property="parent" column="{id = parent_id, locale = locale, table = parent_table}"
-        select="org.complitex.dictionaryfw.entity.Entity.findParentById"/>-->
+    <resultMap id="DomainObject_edit" type="DomainObject" extends="org.complitex.dictionaryfw.entity.DomainObject.DomainObject">
+        <association property="parent" column="{id = parent_id, locale = locale, table = parent_table}"
+        select="org.complitex.dictionaryfw.entity.Entity.findParentById"/>
         
         <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, locale = locale, startDate = start_date}"
         select="org.complitex.dictionaryfw.entity.EntityAttribute.find_edit"/>
-    </resultMap>
+    </resultMap>-->
 
     <insert id="insert" parameterType="InsertParameter">
         INSERT INTO `${table}` (`object_id`, `status`, `start_date`, `end_date`, `parent_id`, `parent_entity_id`, `entity_type_id`) VALUES
         (#{entity.id}, #{entity.status}, #{entity.startDate}, #{entity.endDate}, #{entity.parentId}, #{entity.parentEntityId}, #{entity.entityTypeId})
     </insert>
 
-    <!--  customize -->
-    <sql id="findById">
+    <select id="findById" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         e.`parent_entity_id`, (SELECT m.`entity_table` FROM `entity` m WHERE m.`id` = e.`parent_entity_id`) as parent_table,
-        e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
+        e.`entity_type_id`, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
-    </sql>
+    </select>
 
-   <!-- <select id="findParentById" resultMap="Entity_view" parameterType="hashmap">
-        <choose>
-            <when test="table != null and id != null">
-                <include refid="org.complitex.dictionaryfw.entity.Entity.findById"/>
-            </when>
-            <otherwise>
-                SELECT NULL AS `object_id`, NULL AS `start_date`, NULL AS `end_date`, NULL AS `status`, NULL AS `parent_id`,
-                NULL AS `parent_entity_id`, NULL AS parent_table,
-                NULL AS `entity_type_id`, NULL AS locale, NULL AS table_name
-                FROM DUAL WHERE 1=2
-            </otherwise>
-        </choose>
-    </select>-->
-
-    <sql id="find">
+    <select id="find" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         e.`parent_entity_id`, null as parent_table,
         e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE'
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
+        <if test="orderByAttribureTypeId != null">
+            ORDER BY (
+                SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
+                (SELECT orderByAttr.`value_id` FROM `${table}_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
+                    AND orderByAttr.`status` = 'ACTIVE' AND orderByAttr.`start_date` >= e.`start_date`
+                    AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId})
+            )
+            <choose>
+                <when test="asc">
+                    ASC
+                </when>
+                <otherwise>
+                    DESC
+                </otherwise>
+            </choose>
+        </if>
+        limit ${start},${size}
+    </select>
+
+    <sql id="filter">
+        <foreach item="attrExample" collection="attributeExamples">
+            <if test="attrExample.value != null">
+                AND EXISTS(SELECT 1 FROM `${table}_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                AND attr.`status` = 'ACTIVE' AND attr.`start_date` >= e.`start_date`
+                AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
+                AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+            </if>
+        </foreach>
     </sql>
 
-    <sql id="count">
+    <select id="count" resultType="integer" parameterType="DomainObjectExample">
         SELECT COUNT(*) FROM `${table}` e WHERE e.`status` = 'ACTIVE'
-    </sql>
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
+    </select>
 
-    <sql id="orderBy">
+    <!--<sql id="orderBy">
         <if test="orderByExpression != null">
             ORDER BY ${orderByExpression}
             <choose>
@@ -76,7 +93,7 @@
                 </otherwise>
             </choose>
         </if>
-    </sql>
+    </sql>-->
 
     <sql id="limit">
         limit ${start},${size}

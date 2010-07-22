@@ -4,14 +4,14 @@
  */
 package org.complitex.dictionaryfw.entity.description;
 
+import java.io.Serializable;
 import java.util.List;
-import org.complitex.dictionaryfw.entity.AttributeDescription;
 
 /**
  *
  * @author Artem
  */
-public class DomainObjectDescription {
+public class DomainObjectDescription implements Serializable {
 
     private String entityTable;
 

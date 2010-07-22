@@ -23,4 +23,8 @@ public class LocaleDao {
     public List<String> getAllLocales() {
         return session.selectList("org.complitex.dictionaryfw.entity.Locale.getAll");
     }
+
+    public String getSystemLocale(){
+        return (String)session.selectOne("org.complitex.dictionaryfw.entity.Locale.getSystem");
+    }
 }

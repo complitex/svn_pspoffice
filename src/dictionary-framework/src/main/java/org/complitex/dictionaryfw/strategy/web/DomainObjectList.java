@@ -9,8 +9,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
+import javax.ejb.EJB;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -23,28 +24,43 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.complitex.dictionaryfw.entity.AttributeDescription;
+import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.EntityAttribute;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
-import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
+import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 
 /**
  *
  * @author Artem
  */
-public abstract class DomainObjectList extends WebPage {
+public class DomainObjectList extends WebPage {
 
-    public DomainObjectList() {
+    @EJB(name = "StrategyFactory")
+    private StrategyFactory strategyFactory;
+
+    @EJB(name = "DisplayLocalizedValueUtil")
+    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+
+    private String entityTable;
+
+    public static final String ENTITY = "entity";
+
+    public DomainObjectList(PageParameters params) {
+        this.entityTable = params.getString(ENTITY);
         init();
     }
 
-    protected abstract Strategy getStrategy();
+    private Strategy getStrategy() {
+        return strategyFactory.getStrategy(entityTable);
+    }
 
     private void init() {
 
@@ -61,16 +77,26 @@ public abstract class DomainObjectList extends WebPage {
             @Override
             public Iterator<? extends DomainObject> iterator(int first, int count) {
                 boolean asc = getSort().isAscending();
-                Long sortProperty = Long.valueOf(getSort().getProperty());
-                example.setOrderByAttribureTypeId(sortProperty);
+
+                if (!Strings.isEmpty(getSort().getProperty())) {
+                    Long sortProperty = Long.valueOf(getSort().getProperty());
+                    example.setOrderByAttribureTypeId(sortProperty);
+                }
+
+                example.setLocale(getLocale().getLanguage());
                 example.setAsc(asc);
+                example.setStart(first);
+                example.setSize(count);
                 return getStrategy().find(example).iterator();
             }
 
             @Override
             public int size() {
-                Long sortProperty = Long.valueOf(getSort().getProperty());
-                example.setOrderByAttribureTypeId(sortProperty);
+                if (!Strings.isEmpty(getSort().getProperty())) {
+                    Long sortProperty = Long.valueOf(getSort().getProperty());
+                    example.setOrderByAttribureTypeId(sortProperty);
+                }
+                example.setLocale(getLocale().getLanguage());
                 return getStrategy().count(example);
             }
 
@@ -139,7 +165,7 @@ public abstract class DomainObjectList extends WebPage {
                         }).setValue(object);
                     }
                 };
-                TextField filter = new TextField("filter", filterModel);
+                TextField<String> filter = new TextField<String>("filter", filterModel);
                 item.add(filter);
             }
         };
@@ -187,13 +213,7 @@ public abstract class DomainObjectList extends WebPage {
                             SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
                             switch (type) {
                                 case STRING:
-                                    attributeValue = Iterables.find(attr.getLocalizedValues(), new Predicate<StringCulture>() {
-
-                                        @Override
-                                        public boolean apply(StringCulture string) {
-                                            return new Locale(string.getLocale()).equals(getLocale());
-                                        }
-                                    }).getValue();
+                                    attributeValue = displayLocalizedValueUtil.displayValue(attr.getLocalizedValues(), getLocale());
                                     break;
                                 case DOUBLE:
                                 case INTEGER:

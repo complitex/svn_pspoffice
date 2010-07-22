@@ -5,14 +5,14 @@
 
 package org.complitex.dictionaryfw.entity.description;
 
+import java.io.Serializable;
 import java.util.List;
-import org.complitex.dictionaryfw.entity.AttributeDescription;
 
 /**
  *
  * @author Artem
  */
-public class AttributeGroupDescription {
+public class AttributeGroupDescription implements Serializable {
 
     private String groupLabel;
     private List<AttributeDescription> attributeDescs;

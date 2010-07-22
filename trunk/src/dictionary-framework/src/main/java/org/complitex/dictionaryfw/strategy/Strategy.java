@@ -4,24 +4,29 @@
  */
 package org.complitex.dictionaryfw.strategy;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
+import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionaryfw.dao.EntityDescriptionDao;
 import org.complitex.dictionaryfw.dao.LocaleDao;
 import org.complitex.dictionaryfw.dao.SequenceDao;
 import org.complitex.dictionaryfw.dao.StringCultureDao;
-import org.complitex.dictionaryfw.entity.AttributeDescription;
-import org.complitex.dictionaryfw.entity.AttributeValueDescription;
+import org.complitex.dictionaryfw.entity.description.AttributeDescription;
+import org.complitex.dictionaryfw.entity.description.AttributeValueDescription;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.EntityAttribute;
-import org.complitex.dictionaryfw.entity.EntityDescription;
 import org.complitex.dictionaryfw.entity.InsertParameter;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
+import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 
 /**
  *
@@ -29,7 +34,7 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
  */
 public abstract class Strategy {
 
-    public static final String ENTITY_NAMESPACE = "org.complitex.dictionaryfw.entity.Entity";
+    public static final String ENTITY_NAMESPACE = "org.complitex.dictionaryfw.entity.DomainObject";
 
     public static final String ENTITY_ATTRIBUTE_NAMESPACE = "org.complitex.dictionaryfw.entity.EntityAttribute";
 
@@ -117,18 +122,31 @@ public abstract class Strategy {
         session.insert(ENTITY_ATTRIBUTE_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), attribute));
     }
 
-    public void insert(DomainObject entity, String entityTable, DomainObjectDescription description) {
+    public void insert(DomainObject entity) {
         Date startDate = new Date();
-        entity.setId(sequence.nextId(entityTable));
+        entity.setId(sequence.nextId(getEntityTable()));
         entity.setStartDate(startDate);
-        session.insert(ENTITY_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(entityTable, entity));
+        session.insert(ENTITY_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), entity));
         //store simple attributes
-        for (EntityAttribute attribute : entity.getSimpleAttributes(description)) {
+        for (EntityAttribute attribute : entity.getSimpleAttributes(getDescription())) {
             attribute.setEntityId(entity.getId());
             attribute.setStartDate(startDate);
             insertAttribute(attribute);
         }
     }
+
+    public Class<? extends WebPage> getListPage() {
+        return DomainObjectList.class;
+    }
+
+    public PageParameters getListPageParams(){
+        PageParameters params = new PageParameters();
+        params.add(DomainObjectList.ENTITY, getEntityTable());
+        return params;
+    }
+
+    public abstract String dysplayDomainObject(DomainObject object, Locale locale);
+
 //    public void update(T oldEntity, T newEntity) {
 //        //for name-based entities like Apartment there are only simple attributes can change.
 //

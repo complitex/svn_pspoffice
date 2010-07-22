@@ -8,7 +8,7 @@ import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 import org.apache.ibatis.session.SqlSession;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
-import org.complitex.dictionaryfw.entity.EntityDescription;
+import org.complitex.dictionaryfw.entity.description.EntityDescription;
 
 /**
  *
@@ -21,6 +21,6 @@ public class EntityDescriptionDao {
     private SqlSession session;
 
     public EntityDescription getEntityDescription(String entityTable) {
-        return (EntityDescription) session.selectOne("org.complitex.dictionaryfw.entity.EntityDescription.load", entityTable);
+        return (EntityDescription) session.selectOne("org.complitex.dictionaryfw.entity.description.EntityDescription.load", entityTable);
     }
 }

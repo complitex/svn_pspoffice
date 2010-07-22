@@ -4,13 +4,19 @@
     <parent>
         <groupId>org.complitex.pspoffice</groupId>
         <artifactId>pspoffice</artifactId>
-        <version>1.0-SNAPSHOT</version> 
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>org.complitex.pspoffice</groupId>
     <artifactId>pspoffice-commons</artifactId>
     <packaging>jar</packaging>
     <name>passportoffice commons</name>
     <dependencies>
+        <dependency>
+            <groupId>org.complitex.framework</groupId>
+            <artifactId>dictionary-framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket</artifactId>
@@ -63,32 +69,12 @@
             <artifactId>google-collections</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

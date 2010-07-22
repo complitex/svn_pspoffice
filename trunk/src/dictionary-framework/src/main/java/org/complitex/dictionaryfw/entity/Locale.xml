@@ -5,4 +5,8 @@
     <select id="getAll" resultType="string">
         SELECT l.`locale` FROM `locales` l ORDER BY l.`system` DESC
     </select>
+
+    <select id="getSystem" resultType="string">
+        SELECT l.`locale` FROM `locales` l WHERE l.`system` = 1
+    </select>
 </mapper>

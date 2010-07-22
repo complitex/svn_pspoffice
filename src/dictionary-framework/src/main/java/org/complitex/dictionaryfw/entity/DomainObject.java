@@ -11,12 +11,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 
 /**
  *
  * @author Artem
  */
-public abstract class Entity implements Serializable {
+public class DomainObject implements Serializable {
 
     private Long id;
 
@@ -30,9 +31,11 @@ public abstract class Entity implements Serializable {
 
     private Long parentEntityId;
 
-    private String parentType;
+    private String parentTable;
 
     private Long entityTypeId;
+
+    private DomainObject parent;
 
     private List<EntityAttribute> attributes = new ArrayList<EntityAttribute>();
 
@@ -68,12 +71,12 @@ public abstract class Entity implements Serializable {
         this.parentId = parentId;
     }
 
-    public String getParentType() {
-        return parentType;
+    public String getParentTable() {
+        return parentTable;
     }
 
-    public void setParentType(String parentType) {
-        this.parentType = parentType;
+    public void setParentTable(String parentTable) {
+        this.parentTable = parentTable;
     }
 
     public Date getStartDate() {
@@ -112,18 +115,22 @@ public abstract class Entity implements Serializable {
         this.parentEntityId = parentEntityId;
     }
 
-    public List<EntityAttribute> getSimpleAttributes(final EntityDescription entityDescription) {
+    public DomainObject getParent() {
+        return parent;
+    }
+
+    public void setParent(DomainObject parent) {
+        this.parent = parent;
+    }
+
+    public List<EntityAttribute> getSimpleAttributes(final DomainObjectDescription description) {
         return Lists.newArrayList(Iterables.filter(getAttributes(), new Predicate<EntityAttribute>() {
 
             @Override
             public boolean apply(EntityAttribute attr) {
-                AttributeDescription attrDesc = entityDescription.getAttributeDesc(attr.getAttributeTypeId());
-                return (attrDesc.getAttributeValueDescriptions().size() == 1
-                        && SimpleTypes.isSimpleType(attrDesc.getAttributeValueDescriptions().get(0).getValueType()))
-                        ? true : false;
+                AttributeDescription attrDesc = description.getAttributeDesc(attr.getAttributeTypeId());
+                return attrDesc.isSimple();
             }
         }));
     }
-
-    public abstract String getDisplayName();
 }

@@ -25,9 +25,7 @@ public class EntityAttribute implements Serializable {
 
     private Long valueTypeId;
 
-    private Entity value;
-
-    private String localizedValue;
+    private DomainObject value;
 
     private List<StringCulture> localizedValues = new ArrayList<StringCulture>();
 
@@ -93,14 +91,6 @@ public class EntityAttribute implements Serializable {
         this.valueId = valueId;
     }
 
-    public String getLocalizedValue() {
-        return localizedValue;
-    }
-
-    public void setLocalizedValue(String localizedValue) {
-        this.localizedValue = localizedValue;
-    }
-
     public List<StringCulture> getLocalizedValues() {
         return localizedValues;
     }
@@ -113,11 +103,11 @@ public class EntityAttribute implements Serializable {
         localizedValues.add(localizedValue);
     }
 
-    public Entity getValue() {
+    public DomainObject getValue() {
         return value;
     }
 
-    public void setValue(Entity value) {
+    public void setValue(DomainObject value) {
         this.value = value;
     }
 

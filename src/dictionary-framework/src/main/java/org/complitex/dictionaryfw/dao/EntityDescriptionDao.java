@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.complitex.dictionaryfw.dao;
 
 import javax.ejb.Stateless;
@@ -21,8 +20,7 @@ public class EntityDescriptionDao {
 
     private SqlSession session;
 
-     public EntityDescription getEntityDescription(String entityTable) {
+    public EntityDescription getEntityDescription(String entityTable) {
         return (EntityDescription) session.selectOne("org.complitex.dictionaryfw.entity.EntityDescription.load", entityTable);
     }
-
 }

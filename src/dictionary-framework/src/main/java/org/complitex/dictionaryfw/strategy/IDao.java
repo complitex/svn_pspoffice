@@ -5,7 +5,7 @@
 package org.complitex.dictionaryfw.strategy;
 
 import java.util.List;
-import org.complitex.dictionaryfw.entity.Entity;
+import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.example.IEntityExample;
 
 /**
@@ -13,7 +13,7 @@ import org.complitex.dictionaryfw.entity.example.IEntityExample;
  *
  * @author Artem
  */
-public interface IDao<T extends Entity, E extends IEntityExample> {
+public interface IDao<T extends DomainObject, E extends IEntityExample> {
 
     String getTable();
 

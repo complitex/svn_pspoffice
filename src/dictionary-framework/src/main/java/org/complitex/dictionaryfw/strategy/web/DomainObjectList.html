@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:wicket="http://wicket.apache.org">
+    <head>
+        <title>ApartmentList</title>
+    </head>
+    <body>
+        <div>
+            List of apartments : 
+        </div>
+        <form wicket:id="filterForm">
+            <table>
+                <thead>
+                    <tr>
+                        <th wicket:id="columns">
+                            <span wicket:id="column">
+                                <span wicket:id="columnName"></span>
+                            </span>
+                        </th>
+                        <th>
+                            <input wicket:id="reset" type="button" value="Reset"/>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td wicket:id="filters">
+                            <input type="text" wicket:id="filter"/>
+                        </td>
+                        <td>
+                            <input type="submit" value="Find"/>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr wicket:id="data">
+                        <td wicket:id="dataColumns">
+                            <span wicket:id="dataColumn"></span>
+                        </td>
+                        <td>
+                            <a>
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </body>
+</html>

@@ -9,92 +9,103 @@ insert into `sequence` (`sequence_name`, `sequence_value`) values
 ('room',1), ('room_string_culture',1), ('street',1), ('street_string_culture',1),
 ('person',1), ('person_string_culture',1);
 
-insert into `string_culture`(`id`, `locale`, `value`) values (1, 'ru', 'Квартира'), (1, 'en', 'Apartment');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (1, 'apartment', 1, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (2, 'ru', 'Наименование квартиры'), (2, 'en', 'Apartment name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1, 1, 1, 2, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (1, 1, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values (3, 'ru', 'Комната'), (3, 'en', 'Room');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (2, 'room', 3, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (4, 'ru', 'Наименование комнаты'), (4, 'en', 'Room name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2, 2, 1, 4, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2, 2, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values (5, 'ru', 'Улица'), (5, 'en', 'Street');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (3, 'street', 5, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (6, 'ru', 'Наименование улицы'), (6, 'en', 'Street name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (3, 3, 1, 6, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (3, 3, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values
-(7, 'ru', 'улица'), (7, 'en', 'street'),
-(8, 'ru', 'проспект'), (8, 'en', 'avenue'),
-(9, 'ru', 'переулок'), (9, 'en', 'alley');
-insert into `entity_type` (`id`, `entity_id`, `entity_type_name_id`) values
-(1, 3, 7), (2, 3, 8), (3, 3, 9);
-insert into `string_culture`(`id`, `locale`, `value`) values (10, 'ru', 'Населенный пункт'), (10, 'en', 'City');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (4, 'city', 10, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (11, 'ru', 'Наименование населенного пункта'), (11, 'en', 'City name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (4, 4, 1, 11, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (4, 4, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values
-(12, 'ru', 'город'), (12, 'en', 'city'),
-(13, 'ru', 'деревня'), (13, 'en', 'village');
-insert into `entity_type`(`id`, `entity_id`, `entity_type_name_id`) values (4, 4, 12), (5, 4, 13);
-insert into `string_culture`(`id`, `locale`, `value`) values (14, 'ru', 'Дом'), (14, 'en', 'Building');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (5, 'building', 14, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (15, 'ru', 'Номер дома'), (15, 'en', 'Building number');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (5, 5, 1, 15, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (16, 'ru', 'Корпус'), (16, 'en', 'Building corps.');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (6, 5, 0, 16, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (17, 'ru', 'Строение'), (17, 'en', 'Building structure');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (7, 5, 0, 17, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (18, 'ru', 'Улица'), (18, 'en', 'Street');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (8, 5, 0, 18, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (5, 5, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (6, 6, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (7, 7, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (8, 8, 'street');
-insert into `string_culture`(`id`, `locale`, `value`) values (19, 'ru', 'Район'), (19, 'en', 'District');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (6, 'district', 19, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (20, 'ru', 'Наименование района'), (120, 'en', 'District name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (9, 6, 1, 20, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (9, 9, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values (21, 'ru', 'Регион'), (21, 'en', 'Region');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (7, 'region', 21, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (22, 'ru', 'Наименование региона'), (22, 'en', 'Region name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (10, 7, 1, 22, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (10, 10, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values (23, 'ru', 'Страна'), (23, 'en', 'Country');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (8, 'country', 23, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (24, 'ru', 'Наименование страны'), (24, 'en', 'Country name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (11, 8, 1, 24, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (11, 11, 'string');
-insert into `string_culture`(`id`, `locale`, `value`) values (25, 'ru', 'Персона'), (25, 'en', 'Person');
-insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (9, 'person', 25, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (26, 'ru', 'Имя'), (26, 'en', 'Name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (12, 9, 1, 26, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (27, 'ru', 'Отчество'), (27, 'en', 'Middle name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (13, 9, 1, 27, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (28, 'ru', 'Фамилия'), (28, 'en', 'Last name');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (14, 9, 1, 28, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (29, 'ru', 'Дата рождения'), (29, 'en', 'Birth date');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (15, 9, 1, 29, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (30, 'ru', 'Пол'), (30, 'en', 'Sex');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (16, 9, 1, 30, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (31, 'ru', 'Номер паспорта'), (31, 'en', 'Passport number');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (17, 9, 1, 31, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (32, 'ru', 'Серия паспорта'), (32, 'en', 'Passport serial number');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (18, 9, 1, 32, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (33, 'ru', 'Адрес'), (33, 'en', 'Address');
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (19, 9, 1, 33, 1);
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (12, 12, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (13, 13, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (14, 14, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (15, 15, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (16, 16, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (17, 17, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (18, 18, 'string');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (19, 19, 'room');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (20, 19, 'apartment');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (21, 19, 'building');
+insert into `string_culture`(`id`, `locale`, `value`) values (100, 'ru', 'Квартира'), (100, 'en', 'Apartment');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (100, 'apartment', 100, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (101, 'ru', 'Наименование квартиры'), (101, 'en', 'Apartment name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (100, 100, 1, 101, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (100, 100, 'string');
 
-update `sequence` set `sequence_value` = 34 where `sequence_name` = 'string_culture';
+insert into `string_culture`(`id`, `locale`, `value`) values (200, 'ru', 'Комната'), (200, 'en', 'Room');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (200, 'room', 200, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (201, 'ru', 'Наименование комнаты'), (201, 'en', 'Room name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (200, 200, 1, 201, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (200, 200, 'string');
+
+insert into `string_culture`(`id`, `locale`, `value`) values (300, 'ru', 'Улица'), (300, 'en', 'Street');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (300, 'street', 300, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (301, 'ru', 'Наименование улицы'), (301, 'en', 'Street name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (300, 300, 1, 301, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (300, 300, 'string');
+insert into `string_culture`(`id`, `locale`, `value`) values
+(302, 'ru', 'улица'), (302, 'en', 'street'),
+(303, 'ru', 'проспект'), (303, 'en', 'avenue'),
+(304, 'ru', 'переулок'), (304, 'en', 'alley');
+insert into `entity_type` (`id`, `entity_id`, `entity_type_name_id`) values
+(300, 300, 302), (301, 300, 303), (302, 300, 304);
+
+insert into `string_culture`(`id`, `locale`, `value`) values (400, 'ru', 'Населенный пункт'), (400, 'en', 'City');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (400, 'city', 400, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (401, 'ru', 'Наименование населенного пункта'), (401, 'en', 'City name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (400, 400, 1, 401, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (400, 400, 'string');
+insert into `string_culture`(`id`, `locale`, `value`) values
+(402, 'ru', 'город'), (402, 'en', 'city'),
+(403, 'ru', 'деревня'), (403, 'en', 'village');
+insert into `entity_type`(`id`, `entity_id`, `entity_type_name_id`) values (400, 400, 402), (401, 400, 403);
+
+insert into `string_culture`(`id`, `locale`, `value`) values (500, 'ru', 'Дом'), (500, 'en', 'Building');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (500, 'building', 500, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (501, 'ru', 'Номер дома'), (501, 'en', 'Building number');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (500, 500, 1, 501, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (502, 'ru', 'Корпус'), (502, 'en', 'Building corps.');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (501, 500, 0, 502, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (503, 'ru', 'Строение'), (503, 'en', 'Building structure');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (502, 500, 0, 503, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (504, 'ru', 'Улица'), (504, 'en', 'Street');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (503, 500, 0, 504, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (505, 'ru', 'Район'), (505, 'en', 'District');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (504, 500, 0, 505, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (500, 500, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (501, 501, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (502, 502, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (503, 503, 'street');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (504, 504, 'district');
+
+insert into `string_culture`(`id`, `locale`, `value`) values (600, 'ru', 'Район'), (600, 'en', 'District');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (600, 'district', 600, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (601, 'ru', 'Наименование района'), (601, 'en', 'District name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (600, 600, 1, 601, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (600, 600, 'string');
+
+insert into `string_culture`(`id`, `locale`, `value`) values (700, 'ru', 'Регион'), (700, 'en', 'Region');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (700, 'region', 700, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (701, 'ru', 'Наименование региона'), (701, 'en', 'Region name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (700, 700, 1, 701, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (700, 700, 'string');
+
+insert into `string_culture`(`id`, `locale`, `value`) values (800, 'ru', 'Страна'), (800, 'en', 'Country');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (800, 'country', 800, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (801, 'ru', 'Наименование страны'), (801, 'en', 'Country name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (800, 800, 1, 801, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (800, 800, 'string');
+
+insert into `string_culture`(`id`, `locale`, `value`) values (900, 'ru', 'Персона'), (900, 'en', 'Person');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (900, 'person', 900, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (901, 'ru', 'Имя'), (901, 'en', 'Name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (900, 900, 1, 901, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (902, 'ru', 'Отчество'), (902, 'en', 'Middle name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (901, 900, 1, 902, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (903, 'ru', 'Фамилия'), (903, 'en', 'Last name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (902, 900, 1, 903, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (904, 'ru', 'Дата рождения'), (904, 'en', 'Birth date');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (903, 900, 1, 904, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (905, 'ru', 'Пол'), (905, 'en', 'Sex');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (904, 900, 1, 905, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (906, 'ru', 'Номер паспорта'), (906, 'en', 'Passport number');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (905, 900, 1, 906, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (907, 'ru', 'Серия паспорта'), (907, 'en', 'Passport serial number');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (906, 900, 1, 907, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (908, 'ru', 'Адрес'), (908, 'en', 'Address');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (907, 900, 1, 908, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (900, 900, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (901, 901, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (902, 902, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (903, 903, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (904, 904, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (905, 905, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (906, 906, 'string');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (907, 907, 'room');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (908, 907, 'apartment');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (909, 907, 'building');
+
+update `sequence` set `sequence_value` = 1000 where `sequence_name` = 'string_culture';

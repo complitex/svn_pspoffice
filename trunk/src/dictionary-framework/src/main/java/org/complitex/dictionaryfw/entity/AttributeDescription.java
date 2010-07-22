@@ -18,9 +18,9 @@ public class AttributeDescription implements Serializable {
 
     private boolean mandatory;
 
-    List<StringCulture> attributeNames;
+    private List<StringCulture> attributeNames;
 
-    List<AttributeValueDescription> attributeValueDescriptions;
+    private List<AttributeValueDescription> attributeValueDescriptions;
 
     public List<StringCulture> getAttributeNames() {
         return attributeNames;
@@ -52,6 +52,14 @@ public class AttributeDescription implements Serializable {
 
     public void setMandatory(boolean mandatory) {
         this.mandatory = mandatory;
+    }
+
+    public boolean isSimple() {
+        if (getAttributeValueDescriptions().size() == 1) {
+            AttributeValueDescription attributeValueDesc = getAttributeValueDescriptions().get(0);
+            return SimpleTypes.isSimpleType(attributeValueDesc.getValueType());
+        }
+        return false;
     }
 
     public String getLocalizedAttributeName(final Locale locale) {

@@ -76,6 +76,7 @@ CREATE TABLE `entity_attribute_type` (
   `entity_id` bigint(20) NOT NULL,
   `mandatory` tinyint(1) default 0 NOT NULL,
   `attribute_type_name_id` bigint(20) NOT NULL,
+  `system` tinyint(1) default 0 NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `FK_entity_attribute_type_entity` (`entity_id`),
   CONSTRAINT `FK_entity_attribute_type_entity` FOREIGN KEY (`entity_id`) REFERENCES `entity` (`id`),

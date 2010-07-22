@@ -8,7 +8,7 @@
         <result column="end_date" property="endDate"/>
         <result column="status" property="status"/>
         <result column="parent_id" property="parentId"/>
-        <result column="parent_type" property="parentType"/>
+        <result column="parent_table" property="parentTable"/>
         <result column="parent_entity_id" property="parentEntityId"/>
         <result column="entity_type_id" property="entityTypeId"/>
     </resultMap>
@@ -19,6 +19,9 @@
     </resultMap>
 
     <resultMap id="Entity_edit" type="Entity" extends="org.complitex.dictionaryfw.entity.Entity.Entity">
+        <!--<association property="parent" column="{id = parent_id, locale = locale, table = parent_table}"
+        select="org.complitex.dictionaryfw.entity.Entity.findParentById"/>-->
+        
         <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, locale = locale, startDate = start_date}"
         select="org.complitex.dictionaryfw.entity.EntityAttribute.find_edit"/>
     </resultMap>
@@ -31,14 +34,28 @@
     <!--  customize -->
     <sql id="findById">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
-        e.`parent_entity_id`, (SELECT m.`entity_table` FROM `entity` m WHERE m.`id` = e.`parent_entity_id`) as parent_type,
+        e.`parent_entity_id`, (SELECT m.`entity_table` FROM `entity` m WHERE m.`id` = e.`parent_entity_id`) as parent_table,
         e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
     </sql>
 
+   <!-- <select id="findParentById" resultMap="Entity_view" parameterType="hashmap">
+        <choose>
+            <when test="table != null and id != null">
+                <include refid="org.complitex.dictionaryfw.entity.Entity.findById"/>
+            </when>
+            <otherwise>
+                SELECT NULL AS `object_id`, NULL AS `start_date`, NULL AS `end_date`, NULL AS `status`, NULL AS `parent_id`,
+                NULL AS `parent_entity_id`, NULL AS parent_table,
+                NULL AS `entity_type_id`, NULL AS locale, NULL AS table_name
+                FROM DUAL WHERE 1=2
+            </otherwise>
+        </choose>
+    </select>-->
+
     <sql id="find">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
-        e.`parent_entity_id`, null as parent_type,
+        e.`parent_entity_id`, null as parent_table,
         e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE'
     </sql>

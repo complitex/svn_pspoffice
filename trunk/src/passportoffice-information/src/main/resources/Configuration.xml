@@ -8,14 +8,8 @@
     <typeAliases>
         <typeAlias type="org.complitex.dictionaryfw.entity.StringCulture" alias="StringCulture"/>
         <typeAlias type="org.complitex.dictionaryfw.entity.InsertParameter" alias="InsertParameter"/>
-        <typeAlias type="org.complitex.dictionaryfw.entity.Entity" alias="Entity"/>
+        <typeAlias type="org.complitex.dictionaryfw.entity.DomainObject" alias="DomainObject"/>
         <typeAlias type="org.complitex.dictionaryfw.entity.EntityAttribute" alias="EntityAttribute"/>
-
-        <typeAlias type="org.complitex.pspoffice.information.strategy.impl.apartment.example.ApartmentExample" alias="ApartmentExample"/>
-        <typeAlias type="org.complitex.pspoffice.information.strategy.impl.apartment.Apartment" alias="Apartment"/>
-
-        <typeAlias type="org.complitex.pspoffice.information.strategy.impl.room.example.RoomExample" alias="RoomExample"/>
-        <typeAlias type="org.complitex.pspoffice.information.strategy.impl.room.Room" alias="Room"/>
     </typeAliases>
 
     <environments default="test">
@@ -43,10 +37,7 @@
         <mapper resource="org/complitex/dictionaryfw/entity/StringCulture.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/EntityDescription.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/EntityAttribute.xml"/>
-        <mapper resource="org/complitex/dictionaryfw/entity/Entity.xml"/>
-
-        <mapper resource="org/complitex/pspoffice/information/strategy/impl/apartment/Apartment.xml"/>
-        <mapper resource="org/complitex/pspoffice/information/strategy/impl/room/Room.xml"/>
+        <mapper resource="org/complitex/dictionaryfw/entity/DomainObject.xml"/>
     </mappers>
 
 </configuration>

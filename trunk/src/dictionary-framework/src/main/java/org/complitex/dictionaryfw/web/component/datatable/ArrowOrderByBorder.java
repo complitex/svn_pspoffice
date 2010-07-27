@@ -4,13 +4,15 @@
  */
 package org.complitex.dictionaryfw.web.component.datatable;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.complitex.dictionaryfw.web.component.datatable.wicket.EnhancedOrderByBorder;
+import org.complitex.dictionaryfw.web.component.datatable.wicket.EnhancedOrderByLink;
 
 /**
  *
@@ -22,8 +24,8 @@ public class ArrowOrderByBorder extends EnhancedOrderByBorder {
 
     private static final String DOWN = "&#8595";
 
-    public ArrowOrderByBorder(String id, final String property, final ISortStateLocator stateLocator) {
-        super(id, property, stateLocator);
+    public ArrowOrderByBorder(String id, final String property, final ISortStateLocator stateLocator, DataView<?> dataView, Component refreshComponent) {
+        super(id, property, stateLocator, dataView, refreshComponent);
 
         IModel<String> arrowModel = new AbstractReadOnlyModel<String>() {
 
@@ -37,7 +39,7 @@ public class ArrowOrderByBorder extends EnhancedOrderByBorder {
                 return null;
             }
         };
-        Link link = (Link) get("orderByLink");
+        EnhancedOrderByLink link = getLink();
         Label arrow = new Label("arrow", arrowModel);
         arrow.setEscapeModelStrings(false);
         link.add(arrow);

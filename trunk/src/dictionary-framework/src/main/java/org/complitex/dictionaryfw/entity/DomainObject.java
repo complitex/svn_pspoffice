@@ -22,6 +22,8 @@ public class DomainObject implements Serializable {
 
     private Long id;
 
+    private Long entityId;
+
     private StatusType status = StatusType.ACTIVE;
 
     private Date startDate;
@@ -31,8 +33,6 @@ public class DomainObject implements Serializable {
     private Long parentId;
 
     private Long parentEntityId;
-
-    private String parentTable;
 
     private Long entityTypeId;
 
@@ -70,14 +70,6 @@ public class DomainObject implements Serializable {
 
     public void setParentId(Long parentId) {
         this.parentId = parentId;
-    }
-
-    public String getParentTable() {
-        return parentTable;
-    }
-
-    public void setParentTable(String parentTable) {
-        this.parentTable = parentTable;
     }
 
     public Date getStartDate() {
@@ -122,6 +114,14 @@ public class DomainObject implements Serializable {
 
     public void setParent(DomainObject parent) {
         this.parent = parent;
+    }
+
+    public Long getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
     }
 
     public List<EntityAttribute> getSimpleAttributes(final DomainObjectDescription description) {

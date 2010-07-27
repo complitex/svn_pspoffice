@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.List;
+import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
  *
@@ -19,6 +20,8 @@ public class EntityDescription implements Serializable {
     private Long id;
 
     private String entityTable;
+
+    private List<StringCulture> entityNames;
 
     private List<AttributeDescription> attributeDescriptions;
 
@@ -44,6 +47,14 @@ public class EntityDescription implements Serializable {
 
     public void setAttributeDescriptions(List<AttributeDescription> attributeDescriptions) {
         this.attributeDescriptions = attributeDescriptions;
+    }
+
+    public List<StringCulture> getEntityNames() {
+        return entityNames;
+    }
+
+    public void setEntityNames(List<StringCulture> entityNames) {
+        this.entityNames = entityNames;
     }
 
     public List<AttributeDescription> getSimpleAttributeDescs() {

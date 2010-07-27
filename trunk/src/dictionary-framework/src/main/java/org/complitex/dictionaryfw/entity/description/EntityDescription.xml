@@ -5,11 +5,13 @@
     <resultMap type="org.complitex.dictionaryfw.entity.description.EntityDescription" id="EntityDescription">
         <id column="entity_id" property="id"/>
         <result column="entity_table" property="entityTable"/>
+        <collection property="entityNames" ofType="StringCulture" column="entity_name_id"
+            select="org.complitex.dictionaryfw.entity.description.EntityDescription.findNames"/>
         <collection property="attributeDescriptions" ofType="org.complitex.dictionaryfw.entity.description.AttributeDescription">
             <id column="entity_attribute_type_id" property="id"/>
             <result column="mandatory" property="mandatory" javaType="_boolean" jdbcType="TINYINT"/>
             <collection property="attributeNames" ofType="StringCulture" column="attribute_type_name_id"
-                        select="org.complitex.dictionaryfw.entity.description.EntityDescription.findAttributeNames"/>
+                        select="org.complitex.dictionaryfw.entity.description.EntityDescription.findNames"/>
             <collection property="attributeValueDescriptions" ofType="org.complitex.dictionaryfw.entity.description.AttributeValueDescription">
                 <id column="entity_attribute_value_type_id" property="id"/>
                 <result column="attribute_value_type" property="valueType"/>
@@ -21,6 +23,7 @@
         SELECT
         e.`id` as entity_id,
         e.`entity_table`,
+        e.`entity_name_id`,
         eat.`id` as entity_attribute_type_id,
         eat.`mandatory`,
         eat.`attribute_type_name_id`,
@@ -32,7 +35,7 @@
         WHERE e.`entity_table` = #{value}
     </select>
 
-    <select id="findAttributeNames" parameterType="long" resultMap="org.complitex.dictionaryfw.entity.StringCulture.StringCulture">
+    <select id="findNames" parameterType="long" resultMap="org.complitex.dictionaryfw.entity.StringCulture.StringCulture">
         SELECT sc.`id`, sc.`value`, sc.`locale` FROM `string_culture` sc WHERE sc.`id` = #{value}
     </select>
 

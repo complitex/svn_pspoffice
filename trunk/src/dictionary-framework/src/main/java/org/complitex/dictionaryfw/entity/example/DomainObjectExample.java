@@ -4,9 +4,11 @@
  */
 package org.complitex.dictionaryfw.entity.example;
 
+import com.google.common.collect.Maps;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -27,6 +29,12 @@ public class DomainObjectExample implements Serializable {
     private boolean asc;
 
     private Long id;
+
+    private String parentEntity;
+
+    private Long parentId;
+
+    private Map<String, Object> additionalParams = Maps.newHashMap();
 
     private List<DomainObjectAttributeExample> attributeExamples = new ArrayList<DomainObjectAttributeExample>();
 
@@ -96,5 +104,33 @@ public class DomainObjectExample implements Serializable {
 
     public void addAttributeExample(DomainObjectAttributeExample attributeExample) {
         attributeExamples.add(attributeExample);
+    }
+
+    public String getParentEntity() {
+        return parentEntity;
+    }
+
+    public void setParentEntity(String parentEntity) {
+        this.parentEntity = parentEntity;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+    }
+
+    public Map<String, Object> getAdditionalParams() {
+        return additionalParams;
+    }
+
+    public void setAdditionalParams(Map<String, Object> additionalParams) {
+        this.additionalParams = additionalParams;
+    }
+
+    public void addAdditionalParam(String key, Object value) {
+        additionalParams.put(key, value);
     }
 }

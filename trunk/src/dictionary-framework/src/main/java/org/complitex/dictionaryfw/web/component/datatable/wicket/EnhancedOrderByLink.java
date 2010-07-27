@@ -11,10 +11,12 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.IClusterable;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByLink;
-import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.util.lang.Objects;
 import org.apache.wicket.util.string.Strings;
@@ -24,13 +26,17 @@ import org.apache.wicket.version.undo.Change;
  *
  * @author Artem
  */
-public class EnhancedOrderByLink extends Link {
+public class EnhancedOrderByLink extends AjaxLink {
 
     /** sortable property */
     private final String property;
 
     /** locator for sort state object */
     private final ISortStateLocator stateLocator;
+
+    private DataView<?> dataView;
+
+    private Component refreshComponent;
 
     /**
      * Constructor.
@@ -45,8 +51,8 @@ public class EnhancedOrderByLink extends Link {
      *            locator used to locate sort state object that this will use to read/write state of
      *            sorted properties
      */
-    public EnhancedOrderByLink(String id, String property, ISortStateLocator stateLocator) {
-        this(id, property, stateLocator, DefaultCssProvider.getInstance());
+    public EnhancedOrderByLink(String id, String property, ISortStateLocator stateLocator, DataView<?> dataView, Component refreshComponent) {
+        this(id, property, stateLocator, DefaultCssProvider.getInstance(), dataView, refreshComponent);
     }
 
     /**
@@ -68,7 +74,7 @@ public class EnhancedOrderByLink extends Link {
      *
      */
     public EnhancedOrderByLink(String id, String property, ISortStateLocator stateLocator,
-            ICssProvider cssProvider) {
+            ICssProvider cssProvider, DataView<?> dataView, Component refreshComponent) {
         super(id);
 
         if (cssProvider == null) {
@@ -81,22 +87,16 @@ public class EnhancedOrderByLink extends Link {
 
         this.property = property;
         this.stateLocator = stateLocator;
+        this.dataView = dataView;
+        this.refreshComponent = refreshComponent;
         add(new CssModifier(this, cssProvider));
-    }
-
-    /**
-     * @see org.apache.wicket.markup.html.link.Link
-     */
-    @Override
-    public final void onClick() {
-        sort();
-        onSortChanged();
     }
 
     /**
      * This method is a hook for subclasses to perform an action after sort has changed
      */
     protected void onSortChanged() {
+        dataView.setCurrentPage(0);
         // noop
     }
 
@@ -125,6 +125,13 @@ public class EnhancedOrderByLink extends Link {
         state.setPropertySortOrder(property, newDir);
 
         return this;
+    }
+
+    @Override
+    public void onClick(AjaxRequestTarget target) {
+        sort();
+        onSortChanged();
+        target.addComponent(refreshComponent);
     }
 
     private final class SortStateChange extends Change {

@@ -5,44 +5,48 @@
         <title></title>
     </head>
     <body>
-        <div>
-            List :
+        <div wicket:id="searchComponent">
         </div>
-        <form wicket:id="filterForm">
-            <table>
-                <thead>
-                    <tr>
-                        <th wicket:id="columns">
-                            <span wicket:id="column">
-                                <span wicket:id="columnName"></span>
-                            </span>
-                        </th>
-                        <th>
-                            <input wicket:id="reset" type="button" value="Reset"/>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td wicket:id="filters">
-                            <input type="text" wicket:id="filter"/>
-                        </td>
-                        <td>
-                            <input type="submit" value="Find"/>
-                        </td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr wicket:id="data">
-                        <td wicket:id="dataColumns">
-                            <span wicket:id="dataColumn"></span>
-                        </td>
-                        <td>
-                            <a>
-                                Edit
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
+        <div wicket:id="content">
+            <div>
+                List :
+            </div>
+            <form wicket:id="filterForm">
+                <table>
+                    <thead>
+                        <tr>
+                            <th wicket:id="columns">
+                                <span wicket:id="column">
+                                    <span wicket:id="columnName"></span>
+                                </span>
+                            </th>
+                            <th>
+                                <input wicket:id="reset" type="button" value="Reset"/>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td wicket:id="filters">
+                                <input type="text" wicket:id="filter"/>
+                            </td>
+                            <td>
+                                <input wicket:id="submit" type="submit" value="Find"/>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr wicket:id="data">
+                            <td wicket:id="dataColumns">
+                                <span wicket:id="dataColumn"></span>
+                            </td>
+                            <td>
+                                <a>
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
     </body>
 </html>

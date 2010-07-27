@@ -12,6 +12,8 @@ import java.io.Serializable;
  */
 public class DomainObjectAttributeExample implements Serializable {
 
+    private Long attributeId;
+
     private Long attributeTypeId;
 
     private String value;
@@ -34,5 +36,13 @@ public class DomainObjectAttributeExample implements Serializable {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Long getAttributeId() {
+        return attributeId;
+    }
+
+    public void setAttributeId(Long attributeId) {
+        this.attributeId = attributeId;
     }
 }

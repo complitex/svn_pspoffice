@@ -4,13 +4,12 @@
  */
 package org.complitex.dictionaryfw.strategy;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionaryfw.dao.EntityDescriptionDao;
@@ -25,8 +24,11 @@ import org.complitex.dictionaryfw.entity.InsertParameter;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.description.EntityDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
+import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
+import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 
 /**
  *
@@ -82,8 +84,10 @@ public abstract class Strategy {
 
     public DomainObjectDescription getDescription() {
         DomainObjectDescription description = new DomainObjectDescription();
+        EntityDescription descriptionFromDb = entityDescriptionDao.getEntityDescription(getEntityTable());
         description.setEntityTable(getEntityTable());
-        description.setSimpleAttributeDescs(entityDescriptionDao.getEntityDescription(getEntityTable()).getSimpleAttributeDescs());
+        description.setEntityNames(descriptionFromDb.getEntityNames());
+        description.setSimpleAttributeDescs(descriptionFromDb.getSimpleAttributeDescs());
         return description;
     }
 
@@ -139,14 +143,23 @@ public abstract class Strategy {
         return DomainObjectList.class;
     }
 
-    public PageParameters getListPageParams(){
+    public PageParameters getListPageParams() {
         PageParameters params = new PageParameters();
         params.add(DomainObjectList.ENTITY, getEntityTable());
         return params;
     }
 
-    public abstract String dysplayDomainObject(DomainObject object, Locale locale);
+    public abstract List<ISearchBehaviour> getSearchBehaviours();
 
+//    public abstract void configureExample(DomainObjectExample example, Map<String, Long> ids);
+
+    public abstract ISearchCallback getSearchCallback();
+
+    public abstract String displayDomainObject(DomainObject object, Locale locale);
+
+    public abstract void configureSearchAttribute(DomainObjectExample example, String searchTextInput);
+
+    
 //    public void update(T oldEntity, T newEntity) {
 //        //for name-based entities like Apartment there are only simple attributes can change.
 //

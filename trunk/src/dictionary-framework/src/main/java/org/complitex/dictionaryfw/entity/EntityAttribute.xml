@@ -49,7 +49,6 @@
         SELECT aa.`attribute_id`, aa.`object_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
         '${table}' as table_name
         FROM `${table}_attribute` aa WHERE  aa.`object_id` = #{id} AND aa.`status` = 'ACTIVE' AND aa.`start_date` >= #{startDate}
-        ORDER BY aa.`status`
     </select>
 
 </mapper>

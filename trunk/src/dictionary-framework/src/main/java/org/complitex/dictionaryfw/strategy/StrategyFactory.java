@@ -26,4 +26,13 @@ public class StrategyFactory {
             throw new RuntimeException(e);
         }
     }
+
+    public static StrategyFactory get() {
+        try {
+            InitialContext context = new InitialContext();
+            return (StrategyFactory) context.lookup("java:module/StrategyFactory");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

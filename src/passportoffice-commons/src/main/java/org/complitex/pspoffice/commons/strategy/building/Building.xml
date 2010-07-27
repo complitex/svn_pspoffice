@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.commons.strategy.building.Building">
+
+    <resultMap id="Building" type="DomainObject">
+        <id column="object_id" property="id"/>
+        <id column="start_date" property="startDate"/>
+        <result column="entity_id" property="entityId"/>
+        <result column="end_date" property="endDate"/>
+        <result column="status" property="status"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="parent_entity_id" property="parentEntityId"/>
+        <result column="entity_type_id" property="entityTypeId"/>
+    </resultMap>
+
+    <select id="loadAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.EntityAttribute.EntityAttribute">
+        SELECT attr.`attribute_id`, attr.`object_id`, attr.`attribute_type_id`, attr.`value_id`, attr.`value_type_id`, attr.`start_date`, attr.`end_date`,
+        attr.`status`, '${table}' as table_name
+        FROM `building_attribute` attr WHERE attr.`object_id` = #{id} AND attr.`status` = 'ACTIVE' AND attr.`start_date` >= #{additionalParams.startDate}
+        AND attr.`attribute_type_id` IN (500, 501, 502)
+        <foreach item="attrExample" collection="attributeExamples">
+            <if test="attrExample.value != null">
+                <if test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
+                    AND EXISTS(SELECT 1 FROM `building_attribute` ba WHERE ba.`object_id` = attr.`object_id`
+                    AND ba.`status` = 'ACTIVE' AND ba.`start_date` = attr.`start_date` AND ba.`value_id` = #{attrExample.value}
+                    AND ba.`attribute_type_id` = #{attrExample.attributeTypeId} AND ba.`attribute_id` = attr.`attribute_id`)
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <select id="find" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.Building" parameterType="DomainObjectExample">
+        SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
+        (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
+        e.`parent_entity_id`, e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
+        FROM `building` e WHERE e.`status` = 'ACTIVE'
+        <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
+        <if test="orderByAttribureTypeId != null">
+            ORDER BY (
+                SELECT sc.`value` FROM `building_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
+                (SELECT orderByAttr.`value_id` FROM `building_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
+                    AND orderByAttr.`status` = 'ACTIVE' AND orderByAttr.`start_date` >= e.`start_date`
+                    AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId}
+                    AND orderByAttr.`attribute_id` = (SELECT ba.`attribute_id` FROM `building_attribute` ba WHERE ba.`object_id` = e.`object_id`
+                    AND ba.`status` = 'ACTIVE' AND ba.`start_date` >= e.`start_date`
+                    AND ba.`value_id` =
+                    <foreach collection="attributeExamples" item="attrExample">
+                        <if test="attrExample.attributeTypeId == 503">
+                            #{attrExample.value}
+                        </if>
+                    </foreach>
+                    AND ba.`attribute_type_id` = 503)
+                )
+            )
+            <choose>
+                <when test="asc">
+                    ASC
+                </when>
+                <otherwise>
+                    DESC
+                </otherwise>
+            </choose>
+        </if>
+        limit ${start},${size}
+    </select>
+
+    <sql id="filter">
+        <foreach item="attrExample" collection="attributeExamples">
+            <if test="attrExample.value != null">
+                <choose>
+                    <when test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
+                        AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                        AND attr.`status` = 'ACTIVE' AND attr.`start_date` >= e.`start_date` AND attr.`value_id` = #{attrExample.value}
+                        AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+                    </when>
+                    <otherwise>
+                        AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                        AND attr.`status` = 'ACTIVE' AND attr.`start_date` >= e.`start_date`
+                        AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
+                        AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <if test="parentId != null and parentEntity != null">
+            AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}
+        </if>
+    </sql>
+
+    <select id="count" resultType="integer" parameterType="DomainObjectExample">
+        SELECT COUNT(*) FROM `building` e WHERE e.`status` = 'ACTIVE'
+        <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
+    </select>
+
+
+</mapper>

@@ -5,10 +5,10 @@
     <resultMap id="DomainObject" type="DomainObject">
         <id column="object_id" property="id"/>
         <id column="start_date" property="startDate"/>
+        <result column="entity_id" property="entityId"/>
         <result column="end_date" property="endDate"/>
         <result column="status" property="status"/>
         <result column="parent_id" property="parentId"/>
-        <result column="parent_table" property="parentTable"/>
         <result column="parent_entity_id" property="parentEntityId"/>
         <result column="entity_type_id" property="entityTypeId"/>
         <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, startDate = start_date}"
@@ -35,15 +35,15 @@
 
     <select id="findById" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
-        e.`parent_entity_id`, (SELECT m.`entity_table` FROM `entity` m WHERE m.`id` = e.`parent_entity_id`) as parent_table,
-        e.`entity_type_id`, '${table}' as table_name
+        (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
+        e.`parent_entity_id`, e.`entity_type_id`, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
     </select>
 
     <select id="find" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
-        e.`parent_entity_id`, null as parent_table,
-        e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
+        (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
+        e.`parent_entity_id`, e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE'
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
         <if test="orderByAttribureTypeId != null">
@@ -74,26 +74,15 @@
                 AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
             </if>
         </foreach>
+        <if test="parentId != null and parentEntity != null">
+            AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}
+        </if>
     </sql>
 
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
         SELECT COUNT(*) FROM `${table}` e WHERE e.`status` = 'ACTIVE'
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
     </select>
-
-    <!--<sql id="orderBy">
-        <if test="orderByExpression != null">
-            ORDER BY ${orderByExpression}
-            <choose>
-                <when test="asc">
-                    asc
-                </when>
-                <otherwise>
-                    desc
-                </otherwise>
-            </choose>
-        </if>
-    </sql>-->
 
     <sql id="limit">
         limit ${start},${size}
@@ -102,7 +91,5 @@
     <update id="update" parameterType="InsertParameter">
         UPDATE `${table}` SET `end_date` = #{entity.endDate}, `status` = #{entity.status} WHERE `object_id` = #{entity.id} AND `start_date` = #{entity.startDate}
     </update>
-
-
 
 </mapper>

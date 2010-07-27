@@ -1,237 +1,186 @@
 package org.complitex.dictionaryfw.web.component.search;
 
-///*
-// * To change this template, choose Tools | Templates
-// * and open the template in the editor.
-// */
-//package org.passportoffice.information.web.component.search;
-//
-//import java.util.Collections;
-//import java.util.List;
-//import javax.ejb.EJB;
-//import org.apache.wicket.ajax.AjaxRequestTarget;
-//import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-//import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AbstractAutoCompleteTextRenderer;
-//import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
-//import org.apache.wicket.markup.html.WebMarkupContainer;
-//import org.apache.wicket.markup.html.panel.Panel;
-//import org.apache.wicket.model.IModel;
-//import org.apache.wicket.model.PropertyModel;
-//import org.apache.wicket.util.string.Strings;
-//import org.complitex.dictionaryfw.dao.EntityDAO;
-//import org.complitex.dictionaryfw.entity.AbstractNamedEntity;
-//import org.complitex.dictionaryfw.entity.Building;
-//import org.complitex.dictionaryfw.entity.BuildingAttribute;
-//import org.complitex.dictionaryfw.entity.City;
-//import org.complitex.dictionaryfw.entity.Country;
-//import org.complitex.dictionaryfw.entity.IDisplayView;
-//import org.complitex.dictionaryfw.entity.Region;
-//import org.complitex.dictionaryfw.entity.Street;
-//
-///**
-// *
-// * @author Artem
-// */
-//public final class SearchComponent extends Panel {
-//
-//    private static final int AUTO_COMPLETE_SIZE = 10;
-//
-//    @EJB(name = "EntityDAO")
-//    private EntityDAO entityDAO;
-//
-//    public SearchComponent(String id) {
-//        super(id);
-//        init();
-//    }
-//
-//    private class TextFieldModelForNamedEntity<T extends AbstractNamedEntity> extends AutoCompleteTextField.AutoCompleteTextFieldModel<T> {
-//
-//        public TextFieldModelForNamedEntity(IModel<T> model) {
-//            super(model);
-//        }
-//
-//        @Override
-//        public String getTextValue(AbstractNamedEntity entity) {
-//            return entity.getLocalizedName();
-//        }
-//    }
-//
-//    private class SearchPanelUpdater extends AjaxFormComponentUpdatingBehavior {
-//
-//        public SearchPanelUpdater() {
-//            super("onblur");
-//        }
-//
-//        @Override
-//        protected void onUpdate(AjaxRequestTarget target) {
-//            //update model
-//        }
-//    }
-//
-//    private void init() {
-//        final Address address = new Address();
-//
-//        AbstractAutoCompleteTextRenderer<IDisplayView> rendererForEntitiesWithLocalizedName = new AbstractAutoCompleteTextRenderer<IDisplayView>() {
-//
-//            @Override
-//            protected String getTextValue(IDisplayView entity) {
-//                return entity.getLocalizedName();
-//            }
-//        };
-//
-//        final WebMarkupContainer searchPanel = new WebMarkupContainer("searchPanel");
-//        searchPanel.setOutputMarkupId(true);
-//
-//        AutoCompleteSettings settings = new AutoCompleteSettings();
-//        settings.setAdjustInputWidth(false);
-//
-//        //country
-//        AutoCompleteTextField<Country> country = new AutoCompleteTextField<Country>("country",
-//                new TextFieldModelForNamedEntity<Country>(new PropertyModel<Country>(address, "country")),
-//                rendererForEntitiesWithLocalizedName, settings) {
-//
-//            @Override
-//            protected List<Country> getChoiceList(String searchTextInput) {
-//                Country example = new Country();
-//                example.setLocalizedName(searchTextInput);
-//                List<Country> choiceList = entityDAO.find(example, 0, AUTO_COMPLETE_SIZE, getLocale(), "localizedName", true);
-//                return choiceList;
-//            }
-////            @Override
-////            protected String getChoiceValue(Country choice) throws Throwable {
-////                return choice.getLocalizedName();
-////            }
-//        };
-//        country.add(new SearchPanelUpdater());
-//        searchPanel.add(country);
-//
-//        //region
-//        AutoCompleteTextField<Region> region = new AutoCompleteTextField<Region>("region",
-//                new TextFieldModelForNamedEntity<Region>(new PropertyModel<Region>(address, "region")),
-//                rendererForEntitiesWithLocalizedName, settings) {
-//
-//            @Override
-//            protected List<Region> getChoiceList(String searchTextInput) {
-//                Region example = new Region();
-//                if (address.getCountry() != null) {
-//                    example.setParent(address.getCountry());
-//                }
-//                if (example.getParent() != null) {
-//                    example.setLocalizedName(searchTextInput);
-//                    List<Region> choiceList = entityDAO.find(example, 0, AUTO_COMPLETE_SIZE, getLocale(), "localizedName", true);
-//                    choiceList.add(0, Address.NO_REGION);
-//                    return choiceList;
-//                }
-//                return Collections.emptyList();
-//            }
-////            @Override
-////            protected String getChoiceValue(Region choice) throws Throwable {
-////                return choice.getLocalizedName();
-////            }
-//        };
-//        region.add(new SearchPanelUpdater());
-//        searchPanel.add(region);
-//
-//        //city
-//        AutoCompleteTextField<City> city = new AutoCompleteTextField<City>("city",
-//                new TextFieldModelForNamedEntity<City>(new PropertyModel<City>(address, "city")),
-//                rendererForEntitiesWithLocalizedName, settings) {
-//
-//            @Override
-//            protected List<City> getChoiceList(String searchTextInput) {
-//                City example = new City();
-//                if (address.getRegion() != null && !address.getRegion().getId().equals(Address.NO_REGION.getId())) {
-//                    example.setParent(address.getRegion());
-//                } else if (address.getCountry() != null) {
-//                    example.setParent(address.getCountry());
-//                }
-//                if (example.getParent() != null) {
-//                    example.setLocalizedName(searchTextInput);
-//                    List<City> choiceList = entityDAO.find(example, 0, AUTO_COMPLETE_SIZE, getLocale(), "localizedName", true);
-//                    choiceList.add(0, Address.NO_CITY);
-//                    return choiceList;
-//                }
-//                return Collections.emptyList();
-//            }
-////            @Override
-////            protected String getChoiceValue(City choice) throws Throwable {
-////                return choice.getLocalizedName();
-////            }
-//        };
-//        city.add(new SearchPanelUpdater());
-//        searchPanel.add(city);
-//
-//        //street
-//        AutoCompleteTextField<Street> street = new AutoCompleteTextField<Street>("street",
-//                new TextFieldModelForNamedEntity<Street>(new PropertyModel<Street>(address, "street")),
-//                rendererForEntitiesWithLocalizedName, settings) {
-//
-//            @Override
-//            protected List<Street> getChoiceList(String searchTextInput) {
-//                Street example = new Street();
-//                if (address.getCity() != null && !address.getCity().getId().equals(Address.NO_CITY.getId())) {
-//                    example.setParent(address.getCity());
-//                }
-//                if (example.getParent() != null) {
-//                    example.setLocalizedName(searchTextInput);
-//                    List<Street> choiceList = entityDAO.find(example, 0, AUTO_COMPLETE_SIZE, getLocale(), "localizedName", true);
-//                    choiceList.add(0, Address.NO_STREET);
-//                    return choiceList;
-//                }
-//                return Collections.emptyList();
-//            }
-////            @Override
-////            protected String getChoiceValue(Street choice) throws Throwable {
-////                return choice.getLocalizedName();
-////            }
-//        };
-//        street.add(new SearchPanelUpdater());
-//        searchPanel.add(street);
-//
-//        //building
-//        AutoCompleteTextField.AutoCompleteTextFieldModel<Building> buildingModel =
-//                new AutoCompleteTextField.AutoCompleteTextFieldModel<Building>(new PropertyModel<Building>(address, "building")) {
-//
-//                    @Override
-//                    public String getTextValue(Building building) {
-//                        StringBuilder textValue = new StringBuilder();
-//
-//                        BuildingAttribute first = building.getBuildingAttributes().iterator().next();
-//                        textValue.append("дом ").append(first.getLocalizedBuildingNumber());
-//                        if (!Strings.isEmpty(first.getLocalizedBuildingCorp())) {
-//                            textValue.append(", корп. ").append(first.getLocalizedBuildingCorp());
-//                        }
-//                        if (!Strings.isEmpty(first.getLocalizedBuildingStructure())) {
-//                            textValue.append(", строение ").append(first.getLocalizedBuildingStructure());
-//                        }
-//
-//                        return textValue.toString();
-//                    }
-//                };
-//
-//        AutoCompleteTextField<Building> building = new AutoCompleteTextField<Building>("building", buildingModel,
-//                rendererForEntitiesWithLocalizedName, settings) {
-//
-//            @Override
-//            protected List<Building> getChoiceList(String searchTextInput) {
-//                Building example = new Building();
-//                BuildingAttribute attribute = new BuildingAttribute();
-//                example.addBuildingAttribute(attribute);
-//
-//                if (address.getStreet() != null && !address.getStreet().getId().equals(Address.NO_STREET.getId())) {
-//                    attribute.setParent(address.getStreet());
-//                }
-//                attribute.setLocalizedBuildingCorp(searchTextInput);
-//                attribute.setLocalizedBuildingNumber(searchTextInput);
-//                attribute.setLocalizedBuildingStructure(searchTextInput);
-//
-//                List<Building> choiceList = entityDAO.find(example, 0, AUTO_COMPLETE_SIZE, getLocale(), "id", true);
-//                return choiceList;
-//            }
-//        };
-//        building.add(new SearchPanelUpdater());
-//        searchPanel.add(building);
-//
-//        add(searchPanel);
-//    }
-//}
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AbstractAutoCompleteTextRenderer;
+import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
+import org.complitex.dictionaryfw.entity.DomainObject;
+import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
+import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author Artem
+ */
+public final class SearchComponent extends Panel {
+
+    private static final Logger log = LoggerFactory.getLogger(SearchComponent.class);
+
+    @EJB(name = "DisplayLocalizedValueUtil")
+    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+
+    @EJB(name = "StrategyFactory")
+    private StrategyFactory strategyFactory;
+
+    private static final int AUTO_COMPLETE_SIZE = 10;
+
+    private List<ISearchBehaviour> behaviours;
+
+    private ISearchCallback callback;
+
+    public SearchComponent(String id, List<ISearchBehaviour> behaviours, ISearchCallback callback) {
+        super(id);
+        this.behaviours = behaviours;
+        this.callback = callback;
+        init();
+    }
+
+    private class FilterModel extends AutoCompleteTextField.AutoCompleteTextFieldModel {
+
+        public FilterModel(IModel<DomainObject> model, String entityTable) {
+            super(model, entityTable);
+        }
+
+        @Override
+        public String getTextValue(DomainObject object) {
+            return strategyFactory.getStrategy(getEntityTable()).displayDomainObject(object, getLocale());
+        }
+    }
+
+    private class SearchPanelUpdater extends AjaxFormComponentUpdatingBehavior {
+
+        public SearchPanelUpdater() {
+            super("onblur");
+        }
+
+        @Override
+        protected void onUpdate(AjaxRequestTarget target) {
+            //update model
+        }
+    }
+
+    private class Renderer extends AbstractAutoCompleteTextRenderer<DomainObject> {
+
+        private String entityTable;
+
+        public Renderer(String entityTable) {
+            this.entityTable = entityTable;
+        }
+
+        @Override
+        protected String getTextValue(DomainObject object) {
+            return strategyFactory.getStrategy(entityTable).displayDomainObject(object, getLocale());
+        }
+    }
+
+    private void init() {
+
+        final WebMarkupContainer searchPanel = new WebMarkupContainer("searchPanel");
+        searchPanel.setOutputMarkupId(true);
+        final AutoCompleteSettings settings = new AutoCompleteSettings();
+        settings.setAdjustInputWidth(false);
+
+        List<String> entityTitles = Lists.newArrayList(Iterables.transform(behaviours, new Function<ISearchBehaviour, String>() {
+
+            @Override
+            public String apply(ISearchBehaviour behaviour) {
+                return displayLocalizedValueUtil.displayValue(strategyFactory.getStrategy(behaviour.getEntityTable()).getDescription().getEntityNames(),
+                        getLocale());
+            }
+        }));
+
+
+        ListView<String> columns = new ListView<String>("columns", entityTitles) {
+
+            @Override
+            protected void populateItem(ListItem<String> item) {
+                String entityTitle = item.getModelObject();
+                item.add(new Label("column", entityTitle));
+            }
+        };
+        searchPanel.add(columns);
+
+        final List<IModel<DomainObject>> filterModels = Lists.newArrayList(Iterables.transform(behaviours, new Function<ISearchBehaviour, IModel<DomainObject>>() {
+
+            @Override
+            public IModel<DomainObject> apply(final ISearchBehaviour behaviour) {
+                return new Model<DomainObject>();
+            }
+        }));
+
+        ListView<ISearchBehaviour> filters = new ListView<ISearchBehaviour>("filters", behaviours) {
+
+            @Override
+            protected void populateItem(final ListItem<ISearchBehaviour> item) {
+                final ISearchBehaviour behaviour = item.getModelObject();
+
+                Renderer renderer = new Renderer(behaviour.getEntityTable());
+                AutoCompleteTextField filter = new AutoCompleteTextField("filter", new FilterModel(filterModels.get(item.getIndex()),
+                        behaviour.getEntityTable()), renderer, settings) {
+
+                    @Override
+                    protected List<DomainObject> getChoiceList(String searchTextInput) {
+                        Map<String, DomainObject> previousInfo = Maps.newHashMap();
+                        int index = item.getIndex() - 1;
+                        while (index > -1) {
+                            previousInfo.put(behaviours.get(index).getEntityTable(), filterModels.get(index).getObject());
+                            index--;
+                        }
+
+                        DomainObjectExample example = behaviour.getExample(searchTextInput, previousInfo);
+                        example.setStart(0);
+                        example.setSize(AUTO_COMPLETE_SIZE);
+                        example.setLocale(getLocale().getLanguage());
+                        return strategyFactory.getStrategy(behaviour.getEntityTable()).find(example);
+                    }
+                };
+                if (item.getIndex() == behaviours.size() - 1) {
+                    filter.add(new AjaxFormComponentUpdatingBehavior("onblur") {
+
+                        @Override
+                        protected void onUpdate(AjaxRequestTarget target) {
+                            //update model
+                            if (filterModels.get(item.getIndex()).getObject() != null) {
+                                Map<String, Long> ids = Maps.newHashMap();
+                                int index = item.getIndex();
+                                while (index > -1) {
+                                    ids.put(behaviours.get(index).getEntityTable(), filterModels.get(index).getObject().getId());
+                                    index--;
+                                }
+                                callback.found(getWebPage(), ids, target);
+                            }
+                        }
+                    });
+                } else {
+                    filter.add(new AjaxFormComponentUpdatingBehavior("onblur") {
+
+                        @Override
+                        protected void onUpdate(AjaxRequestTarget target) {
+                            //update model
+                        }
+                    });
+                }
+                item.add(filter);
+            }
+        };
+        searchPanel.add(filters);
+        add(searchPanel);
+    }
+}

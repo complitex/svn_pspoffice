@@ -54,7 +54,30 @@ insert into room_attribute(attribute_id, object_id, attribute_type_id, value_id,
 update sequence set sequence_value = 5 where sequence_name = 'room';
 update sequence set sequence_value = 5 where sequence_name = 'room_string_culture';
 
+-- Buildings
+insert into building(object_id) values (1), (2), (3), (4), (5);
+insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3,'ru','11'), (4,'ru','12'), (5,'ru','21'),
+(1, 'en', '10'), (2, 'en', '20'), (3,'en','11'), (4,'en','12'), (5,'en','21');
+insert into building_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,500,1,500),
+(1,1,503,1,503),
+(1,2,500,2,500),
+(1,2,503,2,503),
+(1,3,500,3,500),
+(1,3,503,1,503),
+(1,4,500,4,500),
+(1,4,503,1,503),
+(1,5,500,5,500),
+(1,5,503,2,503);
+update sequence set sequence_value = 6 where sequence_name = 'building_string_culture';
+update sequence set sequence_value = 6 where sequence_name = 'building';
 
-
-
-
+-- Streets
+insert into street_string_culture(id, locale, value) values (1, 'ru', 'Терешковой');
+insert into street_string_culture(id, locale, value) values (2, 'ru', 'Ленина');
+insert into street(object_id) values (1), (2);
+insert into street_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,300,1,300),
+(1,2,300,2,300);
+update sequence set sequence_value = 3 where sequence_name = 'street_string_culture';
+update sequence set sequence_value = 3 where sequence_name = 'street';

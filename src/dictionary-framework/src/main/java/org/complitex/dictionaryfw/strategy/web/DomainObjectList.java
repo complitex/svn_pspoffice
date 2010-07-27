@@ -9,10 +9,16 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import javax.ejb.EJB;
+import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -20,6 +26,7 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IModel;
@@ -36,12 +43,18 @@ import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
+import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
+import org.complitex.dictionaryfw.web.component.search.SearchComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Artem
  */
 public class DomainObjectList extends WebPage {
+
+    private static final Logger log = LoggerFactory.getLogger(DomainObjectList.class);
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -50,6 +63,12 @@ public class DomainObjectList extends WebPage {
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
     private String entityTable;
+
+    private final DomainObjectExample example = new DomainObjectExample();
+
+    private WebMarkupContainer content;
+
+    private DataView<DomainObject> data;
 
     public static final String ENTITY = "entity";
 
@@ -62,12 +81,35 @@ public class DomainObjectList extends WebPage {
         return strategyFactory.getStrategy(entityTable);
     }
 
+    public DomainObjectExample getExample(){
+        return example;
+    }
+
+    public void refreshContent(AjaxRequestTarget target) {
+        content.setVisible(true);
+        data.setCurrentPage(0);
+        target.addComponent(content);
+    }
+
     private void init() {
+        List<ISearchBehaviour> behaviours = getStrategy().getSearchBehaviours();
+
+        content = new WebMarkupContainer("content");
+        content.setOutputMarkupPlaceholderTag(true);
+        Component searchComponent = null;
+        if (behaviours == null || behaviours.isEmpty()) {
+            searchComponent = new EmptyPanel("searchComponent");
+            content.setVisible(true);
+        } else {
+            searchComponent = new SearchComponent("searchComponent", behaviours, getStrategy().getSearchCallback());
+            content.setVisible(false);
+        }
+        add(searchComponent);
+        add(content);
 
         final DomainObjectDescription description = getStrategy().getDescription();
         final List<AttributeDescription> filterAttrDescs = description.getFilterAttributes();
 
-        final DomainObjectExample example = new DomainObjectExample();
         for (AttributeDescription filterAttrDesc : filterAttrDescs) {
             example.addAttributeExample(new DomainObjectAttributeExample(filterAttrDesc.getId()));
         }
@@ -108,32 +150,42 @@ public class DomainObjectList extends WebPage {
         dataProvider.setSort("", true);
 
         final Form filterForm = new Form("filterForm");
+        content.add(filterForm);
 
         ListView<AttributeDescription> columns = new ListView<AttributeDescription>("columns", filterAttrDescs) {
 
             @Override
             protected void populateItem(ListItem<AttributeDescription> item) {
                 AttributeDescription attrDesc = item.getModelObject();
-                ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attrDesc.getId()), dataProvider);
+                ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attrDesc.getId()), dataProvider, data, content);
                 column.add(new Label("columnName", attrDesc.getLocalizedAttributeName(getLocale())));
                 item.add(column);
             }
         };
+        columns.setReuseItems(true);
         filterForm.add(columns);
 
-
-        Link reset = new Link("reset") {
+        AjaxLink reset = new AjaxLink("reset") {
 
             @Override
-            public void onClick() {
+            public void onClick(AjaxRequestTarget target) {
                 filterForm.clearInput();
-                for (DomainObjectAttributeExample attributeExample : example.getAttributeExamples()) {
-                    attributeExample.setValue(null);
+
+                for (final AttributeDescription attrDesc : filterAttrDescs) {
+                    DomainObjectAttributeExample attrExample = Iterables.find(example.getAttributeExamples(),
+                            new Predicate<DomainObjectAttributeExample>() {
+
+                                @Override
+                                public boolean apply(DomainObjectAttributeExample attrExample) {
+                                    return attrExample.getAttributeTypeId().equals(attrDesc.getId());
+                                }
+                            });
+                    attrExample.setValue(null);
                 }
+                target.addComponent(content);
             }
         };
         filterForm.add(reset);
-
 
         ListView<AttributeDescription> filters = new ListView<AttributeDescription>("filters", filterAttrDescs) {
 
@@ -169,9 +221,19 @@ public class DomainObjectList extends WebPage {
                 item.add(filter);
             }
         };
+        filters.setReuseItems(true);
         filterForm.add(filters);
 
-        final DataView<DomainObject> data = new DataView<DomainObject>("data", dataProvider, 5) {
+        AjaxButton submit = new AjaxButton("submit", filterForm) {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(content);
+            }
+        };
+        filterForm.add(submit);
+
+        data = new DataView<DomainObject>("data", dataProvider, 5) {
 
             @Override
             protected void populateItem(Item<DomainObject> item) {
@@ -231,8 +293,6 @@ public class DomainObjectList extends WebPage {
             }
         };
         filterForm.add(data);
-        add(filterForm);
-
     }
 }
 

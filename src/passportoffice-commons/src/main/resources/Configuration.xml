@@ -39,6 +39,8 @@
         <mapper resource="org/complitex/dictionaryfw/entity/description/EntityDescription.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/EntityAttribute.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/DomainObject.xml"/>
+
+        <mapper resource="org/complitex/pspoffice/commons/strategy/building/Building.xml"/>
     </mappers>
 
 </configuration>

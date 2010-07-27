@@ -4,8 +4,10 @@
  */
 package org.complitex.dictionaryfw.entity.description;
 
+import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.List;
+import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
  *
@@ -15,13 +17,15 @@ public class DomainObjectDescription implements Serializable {
 
     private String entityTable;
 
+    private List<StringCulture> entityNames;
+
     private List<AttributeDescription> simpleAttributeDescs;
 
     private List<AttributeGroupDescription> groupDescs;
 
     private List<String> parentTypes;
 
-    private List<AttributeDescription> filterAttributes;
+    private List<AttributeDescription> filterAttributes = Lists.newArrayList();
 
     public String getEntityTable() {
         return entityTable;
@@ -37,6 +41,10 @@ public class DomainObjectDescription implements Serializable {
 
     public void setFilterAttributes(List<AttributeDescription> filterAttributes) {
         this.filterAttributes = filterAttributes;
+    }
+
+    public void addFilterAttribute(AttributeDescription filterAttribute){
+        filterAttributes.add(filterAttribute);
     }
 
     public List<AttributeGroupDescription> getGroupDescs() {
@@ -61,6 +69,14 @@ public class DomainObjectDescription implements Serializable {
 
     public void setSimpleAttributeDescs(List<AttributeDescription> simpleAttributeDescs) {
         this.simpleAttributeDescs = simpleAttributeDescs;
+    }
+
+    public List<StringCulture> getEntityNames() {
+        return entityNames;
+    }
+
+    public void setEntityNames(List<StringCulture> entityNames) {
+        this.entityNames = entityNames;
     }
 
     public AttributeDescription getAttributeDesc(Long attributeTypeId) {

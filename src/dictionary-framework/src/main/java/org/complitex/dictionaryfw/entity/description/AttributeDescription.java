@@ -6,8 +6,6 @@ package org.complitex.dictionaryfw.entity.description;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Locale;
-import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
@@ -56,20 +54,20 @@ public class AttributeDescription implements Serializable {
         this.mandatory = mandatory;
     }
 
-    public boolean isSimple() {
-        if (getAttributeValueDescriptions().size() == 1) {
-            AttributeValueDescription attributeValueDesc = getAttributeValueDescriptions().get(0);
-            return SimpleTypes.isSimpleType(attributeValueDesc.getValueType());
-        }
-        return false;
-    }
+//    public boolean isSimple() {
+//        if (getAttributeValueDescriptions().size() == 1) {
+//            AttributeValueDescription attributeValueDesc = getAttributeValueDescriptions().get(0);
+//            return SimpleTypes.isSimpleType(attributeValueDesc.getValueType());
+//        }
+//        return false;
+//    }
 
-    public String getLocalizedAttributeName(final Locale locale) {
-        for (StringCulture culture : getAttributeNames()) {
-            if (new Locale(culture.getLocale()).equals(locale)) {
-                return culture.getValue();
-            }
-        }
-        return getAttributeNames().get(0).getValue();
-    }
+//    public String getLocalizedAttributeName(final Locale locale) {
+//        for (StringCulture culture : getAttributeNames()) {
+//            if (new Locale(culture.getLocale()).equals(locale)) {
+//                return culture.getValue();
+//            }
+//        }
+//        return getAttributeNames().get(0).getValue();
+//    }
 }

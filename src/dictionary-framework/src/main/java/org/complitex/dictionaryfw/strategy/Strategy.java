@@ -12,6 +12,7 @@ import javax.ejb.EJB;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.EntityDescriptionDao;
 import org.complitex.dictionaryfw.dao.LocaleDao;
 import org.complitex.dictionaryfw.dao.SequenceDao;
@@ -22,11 +23,14 @@ import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.EntityAttribute;
 import org.complitex.dictionaryfw.entity.InsertParameter;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
+import org.complitex.dictionaryfw.entity.StatusType;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.description.EntityDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
+import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
+import org.complitex.dictionaryfw.util.Numbers;
 import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 
@@ -48,6 +52,8 @@ public abstract class Strategy {
 
     public static final String INSERT_OPERATION = "insert";
 
+    public static final String UPDATE_OPERATION = "update";
+
     @EJB
     private SequenceDao sequence;
 
@@ -60,9 +66,15 @@ public abstract class Strategy {
     @EJB
     private LocaleDao localeDao;
 
-    private SqlSession session;
+    protected SqlSession session;
 
     public abstract String getEntityTable();
+
+    protected EntityDescriptionDao getEntityDescriptionDao() {
+        return entityDescriptionDao;
+    }
+
+    public abstract boolean isSimpleAttributeDesc(AttributeDescription attributeDescription);
 
     public DomainObject findById(Long id) {
         DomainObjectExample example = new DomainObjectExample();
@@ -85,28 +97,29 @@ public abstract class Strategy {
     public DomainObjectDescription getDescription() {
         DomainObjectDescription description = new DomainObjectDescription();
         EntityDescription descriptionFromDb = entityDescriptionDao.getEntityDescription(getEntityTable());
-        description.setEntityTable(getEntityTable());
         description.setEntityNames(descriptionFromDb.getEntityNames());
-        description.setSimpleAttributeDescs(descriptionFromDb.getSimpleAttributeDescs());
+        description.setAttributeDescriptions(descriptionFromDb.getAttributeDescriptions());
         return description;
     }
 
     public DomainObject newInstance() {
         DomainObject entity = new DomainObject();
 
-        //simple attributes
-        for (AttributeDescription attributeDesc : getDescription().getSimpleAttributeDescs()) {
-            EntityAttribute attribute = new EntityAttribute();
-            AttributeValueDescription attributeValueDesc = attributeDesc.getAttributeValueDescriptions().get(0);
-            if (attributeValueDesc.getValueType().equalsIgnoreCase(SimpleTypes.STRING.name())) {
-                attribute.setAttributeTypeId(attributeDesc.getId());
-                attribute.setValueTypeId(attributeValueDesc.getId());
-                attribute.setAttributeId(1L);
-                for (String locale : localeDao.getAllLocales()) {
-                    attribute.addLocalizedValue(new StringCulture(locale, null));
+        for (AttributeDescription attributeDesc : getDescription().getAttributeDescriptions()) {
+            if (isSimpleAttributeDesc(attributeDesc)) {
+                //simple attributes
+                EntityAttribute attribute = new EntityAttribute();
+                AttributeValueDescription attributeValueDesc = attributeDesc.getAttributeValueDescriptions().get(0);
+                if (attributeValueDesc.getValueType().equalsIgnoreCase(SimpleTypes.STRING.name())) {
+                    attribute.setAttributeTypeId(attributeDesc.getId());
+                    attribute.setValueTypeId(attributeValueDesc.getId());
+                    attribute.setAttributeId(1L);
+                    for (String locale : localeDao.getAllLocales()) {
+                        attribute.addLocalizedValue(new StringCulture(locale, null));
+                    }
                 }
+                entity.addAttribute(attribute);
             }
-            entity.addAttribute(attribute);
         }
         return entity;
     }
@@ -126,79 +139,154 @@ public abstract class Strategy {
         session.insert(ENTITY_ATTRIBUTE_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), attribute));
     }
 
-    public void insert(DomainObject entity) {
+    public void insert(DomainObject object) {
         Date startDate = new Date();
-        entity.setId(sequence.nextId(getEntityTable()));
-        entity.setStartDate(startDate);
-        session.insert(ENTITY_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), entity));
-        //store simple attributes
-        for (EntityAttribute attribute : entity.getSimpleAttributes(getDescription())) {
-            attribute.setEntityId(entity.getId());
+        object.setId(sequence.nextId(getEntityTable()));
+        insertDomainObject(object, startDate);
+        for (EntityAttribute attribute : object.getAttributes()) {
+            attribute.setObjectId(object.getId());
             attribute.setStartDate(startDate);
             insertAttribute(attribute);
         }
     }
 
+    protected void insertDomainObject(DomainObject object, Date startDate) {
+        object.setStartDate(startDate);
+        session.insert(ENTITY_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), object));
+    }
+
+    public void update(DomainObject oldEntity, DomainObject newEntity) {
+        //for name-based entities there are only simple attributes and parent can change.
+
+        Date updateDate = new Date();
+
+        for (EntityAttribute oldAttr : oldEntity.getAttributes()) {
+            boolean removed = true;
+            for (EntityAttribute newAttr : newEntity.getAttributes()) {
+                if (oldAttr.getAttributeTypeId().equals(newAttr.getAttributeTypeId()) && oldAttr.getAttributeId().equals(newAttr.getAttributeId())) {
+                    //the same attribute_type and the same attribute_id
+                    removed = false;
+                    if (!oldAttr.getStatus().equals(newAttr.getStatus())) {
+                        newAttr.setStatus(oldAttr.getStatus());
+                        session.update(ENTITY_ATTRIBUTE_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), newAttr));
+                    } else {
+                        List<AttributeValueDescription> valueDescs = getDescription().
+                                getAttributeDesc(oldAttr.getAttributeTypeId()).
+                                getAttributeValueDescriptions();
+
+                        if (valueDescs.size() == 1) {
+                            String attrValueType = valueDescs.get(0).getValueType();
+
+                            if (attrValueType.equalsIgnoreCase(SimpleTypes.STRING.name())) {
+                                boolean valueChanged = false;
+                                for (StringCulture oldString : oldAttr.getLocalizedValues()) {
+                                    for (StringCulture newString : newAttr.getLocalizedValues()) {
+                                        //compare strings
+                                        if (oldString.getLocale().equals(newString.getLocale())) {
+                                            if (!Strings.isEqual(oldString.getValue(), newString.getValue())) {
+                                                valueChanged = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (valueChanged) {
+                                    oldAttr.setEndDate(updateDate);
+                                    oldAttr.setStatus(StatusType.ARCHIVE);
+                                    session.update(ENTITY_ATTRIBUTE_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), oldAttr));
+                                    newAttr.setStartDate(updateDate);
+                                    insertAttribute(newAttr);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (removed) {
+                oldAttr.setEndDate(updateDate);
+                oldAttr.setStatus(StatusType.ARCHIVE);
+                session.update(ENTITY_ATTRIBUTE_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), oldAttr));
+            }
+        }
+
+        for (EntityAttribute newAttr : newEntity.getAttributes()) {
+            boolean added = true;
+            for (EntityAttribute oldAttr : oldEntity.getAttributes()) {
+                if (oldAttr.getAttributeTypeId().equals(newAttr.getAttributeTypeId()) && oldAttr.getAttributeId().equals(newAttr.getAttributeId())) {
+                    //the same attribute_type and the same attribute_id
+                    added = false;
+                    break;
+                }
+            }
+
+            if (added) {
+                newAttr.setStartDate(updateDate);
+                insertAttribute(newAttr);
+            }
+        }
+
+        //parent comparison
+        Long oldParentId = oldEntity.getParentId();
+        Long oldParentEntityId = oldEntity.getParentEntityId();
+        Long newParentId = newEntity.getParentId();
+        Long newParentEntityId = newEntity.getParentEntityId();
+
+        if (!Numbers.isEqual(oldParentId, newParentId) || !Numbers.isEqual(oldParentEntityId, newParentEntityId)) {
+            oldEntity.setStatus(StatusType.ARCHIVE);
+            oldEntity.setEndDate(updateDate);
+            session.update(ENTITY_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), oldEntity));
+            insertDomainObject(newEntity, updateDate);
+        }
+    }
+
+    /*
+     * List page related functionality.
+     */
     public Class<? extends WebPage> getListPage() {
         return DomainObjectList.class;
     }
 
     public PageParameters getListPageParams() {
         PageParameters params = new PageParameters();
-        params.add(DomainObjectList.ENTITY, getEntityTable());
+        params.put(DomainObjectList.ENTITY, getEntityTable());
         return params;
     }
 
-    public abstract List<ISearchBehaviour> getSearchBehaviours();
+//    public abstract List<ISearchBehaviour> getSearchBehaviours();
 
-//    public abstract void configureExample(DomainObjectExample example, Map<String, Long> ids);
+    public abstract List<String> getSearchFilters();
 
     public abstract ISearchCallback getSearchCallback();
 
     public abstract String displayDomainObject(DomainObject object, Locale locale);
 
-    public abstract void configureSearchAttribute(DomainObjectExample example, String searchTextInput);
+    public abstract void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput);
 
-    
-//    public void update(T oldEntity, T newEntity) {
-//        //for name-based entities like Apartment there are only simple attributes can change.
-//
-//        Date updateDate = new Date();
-//
-//        for (EntityAttribute oldAttr : oldEntity.getAttributes()) {
-//            for (EntityAttribute newAttr : newEntity.getAttributes()) {
-//                if (oldAttr.getAttributeTypeId().equals(newAttr.getAttributeTypeId())) {
-//                    //the same attribute type.
-//
-//                    String attrValueType =
-//                            entityDescriptionDao.getEntityDescription(getTable()).
-//                            getAttributeDesc(oldAttr.getAttributeTypeId()).
-//                            getAttributeValueDescriptions().get(0).getValueType();
-//
-//                    if (attrValueType.equalsIgnoreCase(SimpleTypes.STRING.name())) {
-//                        boolean changed = false;
-//
-//                        for (StringCulture oldString : oldAttr.getLocalizedValues()) {
-//                            for (StringCulture newString : newAttr.getLocalizedValues()) {
-//                                //compare strings
-//                                if (oldString.getLocale().equals(newString.getLocale())) {
-//                                    if (!Strings.isEqual(oldString.getValue(), newString.getValue())) {
-//                                        changed = true;
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                        if (changed) {
-//                            oldAttr.setEndDate(updateDate);
-//                            oldAttr.setStatus(StatusType.ARCHIVE);
-//                            session.update("org.complitex.dictionaryfw.entity.EntityAttribute.update", new InsertParameter(getTable(), oldAttr));
-//                            newAttr.setStartDate(updateDate);
-//                            insertAttribute(newAttr);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+//    public abstract void configureSearchAttribute(DomainObjectExample example, String searchTextInput);
+
+    /*
+     * Edit page related functionality.
+     */
+    public Class<? extends WebPage> getEditPage() {
+        return DomainObjectEdit.class;
+    }
+
+    public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
+        PageParameters params = new PageParameters();
+        params.put(DomainObjectEdit.ENTITY, getEntityTable());
+        params.put(DomainObjectEdit.OBJECT_ID, objectId);
+        params.put(DomainObjectEdit.PARENT_ID, parentId);
+        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
+        return params;
+    }
+
+//    public abstract List<ISearchBehaviour> getParentSearchBehaviours();
+    public List<String> getParentSearchFilters(){
+        return getSearchFilters();
+    }
+
+    public abstract ISearchCallback getParentSearchCallback();
+
+    public abstract Map<String, String> getChildrenInfo(Locale locale);
 }

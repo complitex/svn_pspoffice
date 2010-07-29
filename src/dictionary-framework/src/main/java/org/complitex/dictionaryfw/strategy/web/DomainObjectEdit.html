@@ -2,14 +2,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:wicket="http://wicket.apache.org">
     <head>
-        <title>RoomEdit</title>
+        <title></title>
     </head>
     <body>
         <div>
-            Editing of Room
+            Editing
         </div>
 
         <div wicket:id="messages"></div>
+
         <form wicket:id="form">
             <table>
                 <tr wicket:id="simpleAttributes">
@@ -28,11 +29,15 @@
                     </td>
                 </tr>
             </table>
-            <!--<div wicket:id="parent">
-                <span wicket:id="parent"></span>
-            </div>-->
+
+            <div>
+                Parent : 
+                <span wicket:id="parentSearch"></span>
+            </div>
+
             <input type="submit" value="save" wicket:id="submit"/>
+            <input type="button" value="cancel" wicket:id="cancel"/>
         </form>
-        
+
     </body>
 </html>

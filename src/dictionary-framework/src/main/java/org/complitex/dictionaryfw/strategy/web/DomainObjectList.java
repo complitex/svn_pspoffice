@@ -9,7 +9,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
@@ -23,7 +22,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
@@ -42,9 +41,12 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
+import org.complitex.dictionaryfw.web.DictionaryFwSession;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
+import org.complitex.dictionaryfw.web.component.search.SearchComponentSessionState;
+import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +76,7 @@ public class DomainObjectList extends WebPage {
 
     public DomainObjectList(PageParameters params) {
         this.entityTable = params.getString(ENTITY);
+        example.setTable(entityTable);
         init();
     }
 
@@ -81,27 +84,30 @@ public class DomainObjectList extends WebPage {
         return strategyFactory.getStrategy(entityTable);
     }
 
-    public DomainObjectExample getExample(){
+    public DomainObjectExample getExample() {
         return example;
     }
 
     public void refreshContent(AjaxRequestTarget target) {
         content.setVisible(true);
         data.setCurrentPage(0);
-        target.addComponent(content);
+        if (target != null) {
+            target.addComponent(content);
+        }
     }
 
     private void init() {
-        List<ISearchBehaviour> behaviours = getStrategy().getSearchBehaviours();
+        List<String> searchFilters = getStrategy().getSearchFilters();
 
         content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
         Component searchComponent = null;
-        if (behaviours == null || behaviours.isEmpty()) {
+        if (searchFilters == null || searchFilters.isEmpty()) {
             searchComponent = new EmptyPanel("searchComponent");
             content.setVisible(true);
         } else {
-            searchComponent = new SearchComponent("searchComponent", behaviours, getStrategy().getSearchCallback());
+            SearchComponentState componentState = getSearchComponentState();
+            searchComponent = new SearchComponent("searchComponent", componentState, searchFilters, getStrategy().getSearchCallback());
             content.setVisible(false);
         }
         add(searchComponent);
@@ -158,7 +164,7 @@ public class DomainObjectList extends WebPage {
             protected void populateItem(ListItem<AttributeDescription> item) {
                 AttributeDescription attrDesc = item.getModelObject();
                 ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attrDesc.getId()), dataProvider, data, content);
-                column.add(new Label("columnName", attrDesc.getLocalizedAttributeName(getLocale())));
+                column.add(new Label("columnName", displayLocalizedValueUtil.displayValue(attrDesc.getAttributeNames(), getLocale())));
                 item.add(column);
             }
         };
@@ -237,13 +243,13 @@ public class DomainObjectList extends WebPage {
 
             @Override
             protected void populateItem(Item<DomainObject> item) {
-                DomainObject entity = item.getModelObject();
+                DomainObject object = item.getModelObject();
 
                 List<EntityAttribute> attrs = Lists.newArrayList();
                 for (final AttributeDescription attrDesc : filterAttrDescs) {
                     EntityAttribute attr = null;
                     try {
-                        attr = Iterables.find(entity.getSimpleAttributes(description), new Predicate<EntityAttribute>() {
+                        attr = Iterables.find(object.getAttributes(), new Predicate<EntityAttribute>() {
 
                             @Override
                             public boolean apply(EntityAttribute attr) {
@@ -290,9 +296,27 @@ public class DomainObjectList extends WebPage {
                     }
                 };
                 item.add(dataColumns);
+                item.add(new BookmarkablePageLink("detailsLink", getStrategy().getEditPage(),
+                        getStrategy().getEditPageParams(object.getId(), null, null)));
             }
         };
         filterForm.add(data);
+
+        add(new BookmarkablePageLink("add", getStrategy().getEditPage(), getStrategy().getEditPageParams(null, null, null)));
+    }
+
+    protected DictionaryFwSession getDictionaryFwSession() {
+        return (DictionaryFwSession) getSession();
+    }
+
+    protected SearchComponentState getSearchComponentState() {
+        SearchComponentSessionState searchComponentSessionState = getDictionaryFwSession().getSearchComponentSessionState();
+        SearchComponentState componentState = searchComponentSessionState.get(entityTable);
+        if (componentState == null) {
+            componentState = new SearchComponentState();
+            searchComponentSessionState.put(entityTable, componentState);
+        }
+        return componentState;
     }
 }
 

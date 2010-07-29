@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class SearchComponent extends Panel {
 
+    private static final String NOT_SPECIFIED = "Not specified";
+
     private static final Logger log = LoggerFactory.getLogger(SearchComponent.class);
 
     @EJB(name = "DisplayLocalizedValueUtil")
@@ -41,13 +44,17 @@ public final class SearchComponent extends Panel {
 
     private static final int AUTO_COMPLETE_SIZE = 10;
 
-    private List<ISearchBehaviour> behaviours;
+//    private List<ISearchBehaviour> behaviours;
+    private List<String> searchFilters;
 
     private ISearchCallback callback;
 
-    public SearchComponent(String id, List<ISearchBehaviour> behaviours, ISearchCallback callback) {
+    private SearchComponentState componentState;
+
+    public SearchComponent(String id, SearchComponentState componentState, List<String> searchFilters, ISearchCallback callback) {
         super(id);
-        this.behaviours = behaviours;
+        this.componentState = componentState;
+        this.searchFilters = searchFilters;
         this.callback = callback;
         init();
     }
@@ -60,19 +67,11 @@ public final class SearchComponent extends Panel {
 
         @Override
         public String getTextValue(DomainObject object) {
-            return strategyFactory.getStrategy(getEntityTable()).displayDomainObject(object, getLocale());
-        }
-    }
-
-    private class SearchPanelUpdater extends AjaxFormComponentUpdatingBehavior {
-
-        public SearchPanelUpdater() {
-            super("onblur");
-        }
-
-        @Override
-        protected void onUpdate(AjaxRequestTarget target) {
-            //update model
+            if (object.getId().equals(-1L)) {
+                return NOT_SPECIFIED;
+            } else {
+                return strategyFactory.getStrategy(getEntityTable()).displayDomainObject(object, getLocale());
+            }
         }
     }
 
@@ -86,26 +85,28 @@ public final class SearchComponent extends Panel {
 
         @Override
         protected String getTextValue(DomainObject object) {
-            return strategyFactory.getStrategy(entityTable).displayDomainObject(object, getLocale());
+            if (object.getId().equals(-1L)) {
+                return NOT_SPECIFIED;
+            } else {
+                return strategyFactory.getStrategy(entityTable).displayDomainObject(object, getLocale());
+            }
         }
     }
 
     private void init() {
-
         final WebMarkupContainer searchPanel = new WebMarkupContainer("searchPanel");
         searchPanel.setOutputMarkupId(true);
         final AutoCompleteSettings settings = new AutoCompleteSettings();
         settings.setAdjustInputWidth(false);
 
-        List<String> entityTitles = Lists.newArrayList(Iterables.transform(behaviours, new Function<ISearchBehaviour, String>() {
+        List<String> entityTitles = Lists.newArrayList(Iterables.transform(searchFilters, new Function<String, String>() {
 
             @Override
-            public String apply(ISearchBehaviour behaviour) {
-                return displayLocalizedValueUtil.displayValue(strategyFactory.getStrategy(behaviour.getEntityTable()).getDescription().getEntityNames(),
+            public String apply(String entity) {
+                return displayLocalizedValueUtil.displayValue(strategyFactory.getStrategy(entity).getDescription().getEntityNames(),
                         getLocale());
             }
         }));
-
 
         ListView<String> columns = new ListView<String>("columns", entityTitles) {
 
@@ -117,55 +118,61 @@ public final class SearchComponent extends Panel {
         };
         searchPanel.add(columns);
 
-        final List<IModel<DomainObject>> filterModels = Lists.newArrayList(Iterables.transform(behaviours, new Function<ISearchBehaviour, IModel<DomainObject>>() {
+        final List<IModel<DomainObject>> filterModels = Lists.newArrayList(Iterables.transform(searchFilters,
+                new Function<String, IModel<DomainObject>>() {
+
+                    @Override
+                    public IModel<DomainObject> apply(final String entity) {
+                        return new Model<DomainObject>();
+                    }
+                }));
+
+        ListView<String> filters = new ListView<String>("filters", searchFilters) {
 
             @Override
-            public IModel<DomainObject> apply(final ISearchBehaviour behaviour) {
-                return new Model<DomainObject>();
-            }
-        }));
-
-        ListView<ISearchBehaviour> filters = new ListView<ISearchBehaviour>("filters", behaviours) {
-
-            @Override
-            protected void populateItem(final ListItem<ISearchBehaviour> item) {
-                final ISearchBehaviour behaviour = item.getModelObject();
-
-                Renderer renderer = new Renderer(behaviour.getEntityTable());
-                AutoCompleteTextField filter = new AutoCompleteTextField("filter", new FilterModel(filterModels.get(item.getIndex()),
-                        behaviour.getEntityTable()), renderer, settings) {
+            protected void populateItem(final ListItem<String> item) {
+                final String entity = item.getModelObject();
+                Renderer renderer = new Renderer(entity);
+                IModel<DomainObject> model = filterModels.get(item.getIndex());
+                DomainObject fromComponentState = componentState.get(entity);
+                if (fromComponentState != null) {
+                    model.setObject(fromComponentState);
+                }
+                AutoCompleteTextField filter = new AutoCompleteTextField("filter", new FilterModel(model, entity),
+                        renderer, settings) {
 
                     @Override
                     protected List<DomainObject> getChoiceList(String searchTextInput) {
-                        Map<String, DomainObject> previousInfo = Maps.newHashMap();
-                        int index = item.getIndex() - 1;
-                        while (index > -1) {
-                            previousInfo.put(behaviours.get(index).getEntityTable(), filterModels.get(index).getObject());
-                            index--;
+                        Map<String, DomainObject> previousInfo = getState(item.getIndex() - 1, filterModels);
+                        if (!isComplete(previousInfo)) {
+                            return Collections.emptyList();
                         }
 
-                        DomainObjectExample example = behaviour.getExample(searchTextInput, previousInfo);
+                        DomainObjectExample example = new DomainObjectExample();
+                        example.setTable(entity);
+                        strategyFactory.getStrategy(entity).configureExample(example, transformObjects(previousInfo), searchTextInput);
                         example.setStart(0);
                         example.setSize(AUTO_COMPLETE_SIZE);
                         example.setLocale(getLocale().getLanguage());
-                        return strategyFactory.getStrategy(behaviour.getEntityTable()).find(example);
+                        List<DomainObject> list = strategyFactory.getStrategy(entity).find(example);
+
+                        DomainObject notSpecified = new DomainObject();
+                        notSpecified.setId(-1L);
+                        list.add(notSpecified);
+
+                        return list;
                     }
                 };
-                if (item.getIndex() == behaviours.size() - 1) {
+                if (item.getIndex() == searchFilters.size() - 1) {
+                    invokeCallbackIfNecessary(item.getIndex(), filterModels, null);
+
                     filter.add(new AjaxFormComponentUpdatingBehavior("onblur") {
 
                         @Override
                         protected void onUpdate(AjaxRequestTarget target) {
                             //update model
-                            if (filterModels.get(item.getIndex()).getObject() != null) {
-                                Map<String, Long> ids = Maps.newHashMap();
-                                int index = item.getIndex();
-                                while (index > -1) {
-                                    ids.put(behaviours.get(index).getEntityTable(), filterModels.get(index).getObject().getId());
-                                    index--;
-                                }
-                                callback.found(getWebPage(), ids, target);
-                            }
+
+                            invokeCallbackIfNecessary(item.getIndex(), filterModels, target);
                         }
                     });
                 } else {
@@ -182,5 +189,50 @@ public final class SearchComponent extends Panel {
         };
         searchPanel.add(filters);
         add(searchPanel);
+    }
+
+    private Map<String, DomainObject> getState(int idx, List<IModel<DomainObject>> filterModels) {
+        Map<String, DomainObject> objects = Maps.newHashMap();
+        int index = idx;
+        while (index > -1) {
+            DomainObject object = filterModels.get(index).getObject();
+            objects.put(searchFilters.get(index), object);
+            index--;
+        }
+        return objects;
+    }
+
+    private boolean isComplete(Map<String, DomainObject> state) {
+        for (String entity : state.keySet()) {
+            if (state.get(entity) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void completeComponentState(Map<String, DomainObject> state) {
+        for (Map.Entry<String, DomainObject> entry : state.entrySet()) {
+            componentState.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private void invokeCallbackIfNecessary(int index, List<IModel<DomainObject>> filterModels, AjaxRequestTarget target) {
+        Map<String, DomainObject> finalState = getState(index, filterModels);
+        if (isComplete(finalState)) {
+            Map<String, Long> ids = transformObjects(finalState);
+            callback.found(getWebPage(), ids, target);
+            completeComponentState(finalState);
+        }
+    }
+
+    private Map<String, Long> transformObjects(Map<String, DomainObject> objects) {
+        return Maps.transformValues(objects, new Function<DomainObject, Long>() {
+
+            @Override
+            public Long apply(DomainObject from) {
+                return from != null ? from.getId() : null;
+            }
+        });
     }
 }

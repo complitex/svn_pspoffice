@@ -4,9 +4,6 @@
  */
 package org.complitex.dictionaryfw.entity.description;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.List;
 import org.complitex.dictionaryfw.entity.StringCulture;
@@ -55,15 +52,5 @@ public class EntityDescription implements Serializable {
 
     public void setEntityNames(List<StringCulture> entityNames) {
         this.entityNames = entityNames;
-    }
-
-    public List<AttributeDescription> getSimpleAttributeDescs() {
-        return Lists.newArrayList(Iterables.filter(attributeDescriptions, new Predicate<AttributeDescription>() {
-
-            @Override
-            public boolean apply(AttributeDescription attrDesc) {
-                return attrDesc.isSimple();
-            }
-        }));
     }
 }

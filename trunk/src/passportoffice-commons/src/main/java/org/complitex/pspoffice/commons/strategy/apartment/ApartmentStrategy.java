@@ -5,8 +5,11 @@
 package org.complitex.pspoffice.commons.strategy.apartment;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -40,12 +43,16 @@ public class ApartmentStrategy extends Strategy {
     private AttributeDescription nameAttrDesc;
 
     @Override
+    public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
+        return attributeDescription.getId() >= 100L;
+    }
+
+    @Override
     public DomainObjectDescription getDescription() {
         DomainObjectDescription description = super.getDescription();
 
-        int minAttributeTypeId = Integer.MAX_VALUE;
-        for (AttributeDescription attrDesc : description.getSimpleAttributeDescs()) {
-            if (attrDesc.getId() < minAttributeTypeId) {
+        for (AttributeDescription attrDesc : description.getAttributeDescriptions()) {
+            if (attrDesc.getId().equals(100L)) {
                 nameAttrDesc = attrDesc;
             }
         }
@@ -70,26 +77,55 @@ public class ApartmentStrategy extends Strategy {
         }).getLocalizedValues(), locale);
     }
 
-    @Override
-    public List<ISearchBehaviour> getSearchBehaviours() {
-        return Collections.emptyList();
-    }
-
 //    @Override
-//    public void configureExample(DomainObjectExample example, Map<String, Long> ids) {
+//    public List<ISearchBehaviour> getSearchBehaviours() {
+//        return Collections.emptyList();
 //    }
 
-    @Override
-    public void configureSearchAttribute(DomainObjectExample example, String searchTextInput) {
-        DomainObjectAttributeExample attrExample = new DomainObjectAttributeExample(nameAttrDesc.getId());
-        attrExample.setValue(searchTextInput);
-        example.addAttributeExample(attrExample);
-    }
+//    @Override
+//    public void configureSearchAttribute(DomainObjectExample example, String searchTextInput) {
+//        DomainObjectAttributeExample attrExample = new DomainObjectAttributeExample(nameAttrDesc.getId());
+//        attrExample.setValue(searchTextInput);
+//        example.addAttributeExample(attrExample);
+//    }
 
     @Override
     public ISearchCallback getSearchCallback() {
         return null;
     }
+
+//    @Override
+//    public List<ISearchBehaviour> getParentSearchBehaviours() {
+//        return getSearchBehaviours();
+//    }
+
+    @Override
+    public ISearchCallback getParentSearchCallback() {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getChildrenInfo(Locale locale) {
+        return ImmutableMap.of("room", "Rooms");
+    }
+
+    private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
+        DomainObjectAttributeExample attrExample = new DomainObjectAttributeExample(100L);
+        attrExample.setValue(searchTextInput);
+        example.addAttributeExample(attrExample);
+    }
+
+    @Override
+    public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
+        configureExampleImpl(example, ids, searchTextInput);
+    }
+
+    @Override
+    public List<String> getSearchFilters() {
+        return null;
+    }
+
+    
 
 
 }

@@ -4,15 +4,10 @@
  */
 package org.complitex.dictionaryfw.entity;
 
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 
 /**
  *
@@ -122,16 +117,5 @@ public class DomainObject implements Serializable {
 
     public void setEntityId(Long entityId) {
         this.entityId = entityId;
-    }
-
-    public List<EntityAttribute> getSimpleAttributes(final DomainObjectDescription description) {
-        return Lists.newArrayList(Iterables.filter(getAttributes(), new Predicate<EntityAttribute>() {
-
-            @Override
-            public boolean apply(EntityAttribute attr) {
-                AttributeDescription attrDesc = description.getAttributeDesc(attr.getAttributeTypeId());
-                return attrDesc.isSimple();
-            }
-        }));
     }
 }

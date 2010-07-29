@@ -17,15 +17,13 @@ public class EntityAttribute implements Serializable {
 
     private Long attributeId;
 
-    private Long entityId;
+    private Long objectId;
 
     private Long attributeTypeId;
 
     private Long valueId;
 
     private Long valueTypeId;
-
-    private DomainObject value;
 
     private List<StringCulture> localizedValues = new ArrayList<StringCulture>();
 
@@ -59,12 +57,12 @@ public class EntityAttribute implements Serializable {
         this.endDate = endDate;
     }
 
-    public Long getEntityId() {
-        return entityId;
+    public Long getObjectId() {
+        return objectId;
     }
 
-    public void setEntityId(Long entityId) {
-        this.entityId = entityId;
+    public void setObjectId(Long entityId) {
+        this.objectId = entityId;
     }
 
     public Date getStartDate() {
@@ -101,14 +99,6 @@ public class EntityAttribute implements Serializable {
 
     public void addLocalizedValue(StringCulture localizedValue) {
         localizedValues.add(localizedValue);
-    }
-
-    public DomainObject getValue() {
-        return value;
-    }
-
-    public void setValue(DomainObject value) {
-        this.value = value;
     }
 
     public Long getValueTypeId() {

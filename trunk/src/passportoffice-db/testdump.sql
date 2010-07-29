@@ -56,11 +56,13 @@ update sequence set sequence_value = 5 where sequence_name = 'room_string_cultur
 
 -- Buildings
 insert into building(object_id) values (1), (2), (3), (4), (5);
-insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3,'ru','11'), (4,'ru','12'), (5,'ru','21'),
-(1, 'en', '10'), (2, 'en', '20'), (3,'en','11'), (4,'en','12'), (5,'en','21');
+insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3,'ru','11'), (4,'ru','12'), (5,'ru','21'), (6,'ru','100'),
+(1, 'en', '10'), (2, 'en', '20'), (3,'en','11'), (4,'en','12'), (5,'en','21'), (6,'en','100');
 insert into building_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
 (1,1,500,1,500),
 (1,1,503,1,503),
+(2,1,500,6,500),
+(2,1,503,2,503),
 (1,2,500,2,500),
 (1,2,503,2,503),
 (1,3,500,3,500),

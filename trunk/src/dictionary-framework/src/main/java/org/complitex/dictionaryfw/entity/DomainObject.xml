@@ -69,7 +69,7 @@
         <foreach item="attrExample" collection="attributeExamples">
             <if test="attrExample.value != null">
                 AND EXISTS(SELECT 1 FROM `${table}_attribute` attr WHERE attr.`object_id` = e.`object_id`
-                AND attr.`status` = 'ACTIVE' AND attr.`start_date` >= e.`start_date`
+                AND attr.`status` = 'ACTIVE'
                 AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
                 AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
             </if>

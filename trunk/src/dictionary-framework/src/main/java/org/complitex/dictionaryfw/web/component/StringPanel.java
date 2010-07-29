@@ -6,6 +6,7 @@ package org.complitex.dictionaryfw.web.component;
 
 import java.util.List;
 import java.util.Locale;
+import javax.ejb.EJB;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -13,6 +14,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.complitex.dictionaryfw.dao.LocaleDao;
 import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
@@ -21,7 +23,10 @@ import org.complitex.dictionaryfw.entity.StringCulture;
  */
 public final class StringPanel extends Panel {
 
-    public StringPanel(String id, IModel<List<StringCulture>> model, final String systemLocale, final String label, final boolean enabled) {
+    @EJB(name="LocaleDao")
+    private LocaleDao localeDao;
+
+    public StringPanel(String id, IModel<List<StringCulture>> model, final String label, final boolean enabled) {
         super(id);
 
         add(new ListView<StringCulture>("strings", model) {
@@ -34,7 +39,7 @@ public final class StringPanel extends Panel {
                 item.add(lang);
 
                 boolean required = false;
-                if (new Locale(culture.getLocale()).getLanguage().equalsIgnoreCase(new Locale(systemLocale).getLanguage())) {
+                if (new Locale(culture.getLocale()).getLanguage().equalsIgnoreCase(new Locale(localeDao.getSystemLocale()).getLanguage())) {
                     required = true;
                 }
 

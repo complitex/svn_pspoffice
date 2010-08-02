@@ -1,49 +1,3 @@
---insert into country_string_culture(id, locale, value) values (1, 'ru', 'Россия');
---insert into country_string_culture(id, locale, value) values (2, 'ru', 'Украина');
---insert into country(country_id, name_id, start_date) values (1, 1, '2010-01-15 17:59:09');
---insert into country(country_id, name_id, start_date) values (2, 2, '2010-02-15 17:59:09');
---update sequence set sequence_value = 3 where sequence_name = 'country_string_culture';
---update sequence set sequence_value = 3 where sequence_name = 'country';
---
---insert into region_string_culture(id, locale, value) values (1, 'ru', 'Новосибирская обл.');
---insert into region_string_culture(id, locale, value) values (2, 'ru', 'Московская обл.');
---insert into region(region_id, name_id, start_date, parent_id, parent_type) values (1, 1, '2010-01-15 17:59:09', 1, 'COUNTRY');
---insert into region(region_id, name_id, start_date, parent_id, parent_type) values (2, 2, '2010-02-15 17:59:09', 1, 'COUNTRY');
---update sequence set sequence_value = 3 where sequence_name = 'region_string_culture';
---update sequence set sequence_value = 3 where sequence_name = 'region';
---
---insert into city_string_culture(id, locale, value) values (1, 'ru', 'Новосибирск');
---insert into city_string_culture(id, locale, value) values (2, 'ru', 'Москва');
---insert into city(city_id, name_id, start_date, city_type_id, parent_id, parent_type) values (1, 1, '2010-01-15 17:59:09', 1, 1, 'REGION');
---insert into city(city_id, name_id, start_date, city_type_id, parent_id, parent_type) values (2, 2, '2010-02-15 17:59:09', 1, 1, 'COUNTRY');
---update sequence set sequence_value = 3 where sequence_name = 'city_string_culture';
---update sequence set sequence_value = 3 where sequence_name = 'city';
---
---insert into street_string_culture(id, locale, value) values (1, 'ru', 'Терешковой');
---insert into street_string_culture(id, locale, value) values (2, 'ru', 'Ленина');
---insert into street(street_id, name_id, start_date, street_type_id, parent_id, parent_type) values (1, 1, '2010-01-15 17:59:09', 1, 1, 'CITY');
---insert into street(street_id, name_id, start_date, street_type_id, parent_id, parent_type) values (2, 2, '2010-02-15 17:59:09', 1, 2, 'CITY');
---update sequence set sequence_value = 3 where sequence_name = 'street_string_culture';
---update sequence set sequence_value = 3 where sequence_name = 'street';
---
---insert into building(building_id, start_date) values (1, '2010-02-15 17:59:09'), (2, '2010-02-15 17:59:09'), (3, '2010-02-15 17:59:09'), (4, '2010-02-15 17:59:09');
---insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3, 'ru', '30'), (4, 'ru', '40'),
---(5, 'ru', '2'), (6, 'ru', '8а');
---insert into building_attribute(building_id, start_date, building_number_id, building_structure_id, building_corp_id, parent_id, parent_type) values
---(1, '2010-02-15 17:59:09', 1, 5, null, 1, 'STREET'),
---(2, '2010-02-15 17:59:09', 2, null, null, 1, 'STREET'),
---(3, '2010-02-15 17:59:09', 3, null, null, 2, 'STREET'),
---(4, '2010-02-15 17:59:09', 4, null, 6, 1, 'STREET');
---update sequence set sequence_value = 7 where sequence_name = 'building_string_culture';
---update sequence set sequence_value = 5 where sequence_name = 'building';
-
--- Apartments
-insert into apartment(object_id) values (1), (2);
-insert into apartment_string_culture(id, locale, value) values (1, 'ru', '10'), (1, 'en', '10'), (2, 'ru', '20'), (2, 'en', '20');
-insert into apartment_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
-(1,1,100,1,100), (1,2,100,2,100);
-update sequence set sequence_value = 3 where sequence_name = 'apartment';
-update sequence set sequence_value = 3 where sequence_name = 'apartment_string_culture';
 
 -- Rooms
 insert into room(object_id, parent_id, parent_entity_id) values (1,1,100), (2,1,100), (3,2,100), (4,2,100);
@@ -54,8 +8,16 @@ insert into room_attribute(attribute_id, object_id, attribute_type_id, value_id,
 update sequence set sequence_value = 5 where sequence_name = 'room';
 update sequence set sequence_value = 5 where sequence_name = 'room_string_culture';
 
+-- Apartments
+insert into apartment(object_id, parent_id, parent_entity_id) values (1,1,500), (2,1,500);
+insert into apartment_string_culture(id, locale, value) values (1, 'ru', '10'), (1, 'en', '10'), (2, 'ru', '20'), (2, 'en', '20');
+insert into apartment_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,100,1,100), (1,2,100,2,100);
+update sequence set sequence_value = 3 where sequence_name = 'apartment';
+update sequence set sequence_value = 3 where sequence_name = 'apartment_string_culture';
+
 -- Buildings
-insert into building(object_id) values (1), (2), (3), (4), (5);
+insert into building(object_id, parent_id, parent_entity_id) values (1,1,400), (2,1,400), (3,1,400), (4,2,400), (5,2,400);
 insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3,'ru','11'), (4,'ru','12'), (5,'ru','21'), (6,'ru','100'), (7,'ru', null), (8,'ru', null), (9,'ru', null), (10,'ru', null), (11,'ru', null), (12,'ru', null), (13,'ru', null), (14,'ru', null), (15,'ru', null), (16,'ru', null), (17,'ru', null), (18,'ru', null),
                                                               (1, 'en', '10'), (2, 'en', '20'), (3,'en','11'), (4,'en','12'), (5,'en','21'), (6,'en','100'), (7,'en', null), (8,'en', null), (9,'en', null), (10,'en', null), (11,'en', null), (12,'en', null), (13,'en', null), (14,'en', null), (15,'en', null), (16,'en', null), (17,'en', null), (18,'en', null);
 insert into building_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
@@ -66,7 +28,7 @@ insert into building_attribute(attribute_id, object_id, attribute_type_id, value
 (2,1,500,6,500),
 (2,1,501,9,501),
 (2,1,502,10,502),
-(2,1,503,2,503),
+(2,1,503,3,503),
 (1,2,500,2,500),
 (1,2,501,11,501),
 (1,2,502,12,502),
@@ -87,11 +49,53 @@ update sequence set sequence_value = 19 where sequence_name = 'building_string_c
 update sequence set sequence_value = 6 where sequence_name = 'building';
 
 -- Streets
-insert into street_string_culture(id, locale, value) values (1, 'ru', 'Терешковой');
-insert into street_string_culture(id, locale, value) values (2, 'ru', 'Ленина');
-insert into street(object_id) values (1), (2);
+insert into street_string_culture(id, locale, value) values (1, 'ru', 'Терешковой'), (1,'en','Tereshkovoy'),
+                                                            (2, 'ru', 'Ленина'), (2,'en','Lenina'),
+                                                            (3, 'ru', 'Морской'), (3,'en', 'Morskoy');
+insert into street(object_id, parent_id, parent_entity_id) values (1,1,400), (2,2,400), (3,1,400);
 insert into street_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
 (1,1,300,1,300),
-(1,2,300,2,300);
-update sequence set sequence_value = 3 where sequence_name = 'street_string_culture';
-update sequence set sequence_value = 3 where sequence_name = 'street';
+(1,2,300,2,300),
+(1,3,300,3,300);
+update sequence set sequence_value = 4 where sequence_name = 'street_string_culture';
+update sequence set sequence_value = 4 where sequence_name = 'street';
+
+-- Districts
+insert into district_string_culture(id, locale, value) values (1, 'ru', 'Ленинский'), (1, 'en','Leninsky'),
+                                                              (2, 'ru', 'Советский'), (2, 'en', 'Sovetsky');
+insert into district(object_id, parent_id, parent_entity_id) values (1,1,400), (2,1,400);
+insert into district_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,600,1,600),
+(1,2,600,2,600);
+update sequence set sequence_value = 3 where sequence_name = 'district_string_culture';
+update sequence set sequence_value = 3 where sequence_name = 'district';
+
+-- Cities
+insert into city_string_culture(id, locale, value) values (1, 'ru', 'Новосибирск'), (1,'en','Novosibirsk'),
+                                                          (2, 'ru', 'Москва'), (2,'en','Moscow');
+insert into city(object_id, parent_id, parent_entity_id) values (1,1,700), (2,2,700);
+insert into city_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,400,1,400),
+(1,2,400,2,400);
+update sequence set sequence_value = 3 where sequence_name = 'city_string_culture';
+update sequence set sequence_value = 3 where sequence_name = 'city';
+
+-- Regions
+insert into region_string_culture(id, locale, value) values (1, 'ru', 'Новосибирская обл.'), (1,'en','Novosibirsk''s region'),
+                                                            (2, 'ru', 'Московская обл.'), (2,'en','Moscow''s region');
+insert into region(object_id, parent_id, parent_entity_id) values (1,1,800), (2,1,800);
+insert into region_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,700,1,700),
+(1,2,700,2,700);
+update sequence set sequence_value = 3 where sequence_name = 'region_string_culture';
+update sequence set sequence_value = 3 where sequence_name = 'region';
+
+-- Countries
+insert into country_string_culture(id, locale, value) values (1, 'ru', 'Россия'), (1,'en','Russia'),
+                                                            (2, 'ru', 'Украина'), (2,'en','Ukraine');
+insert into country(object_id) values (1), (2);
+insert into country_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
+(1,1,800,1,800),
+(1,2,800,2,800);
+update sequence set sequence_value = 3 where sequence_name = 'country_string_culture';
+update sequence set sequence_value = 3 where sequence_name = 'country';

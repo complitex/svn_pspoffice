@@ -12,16 +12,19 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.EntityAttribute;
 import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
@@ -45,6 +48,11 @@ public class RoomStrategy extends Strategy {
     @Override
     public String getEntityTable() {
         return "room";
+    }
+
+    @Override
+    public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
+        return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
     @Override
@@ -74,34 +82,36 @@ public class RoomStrategy extends Strategy {
 
     @Override
     public List<String> getSearchFilters() {
-        return ImmutableList.of("apartment");
+        return ImmutableList.of("country", "region", "city", "street", "building", "apartment");
     }
 
-//    @Override
-//    public List<ISearchBehaviour> getSearchBehaviours() {
-//        List<ISearchBehaviour> behaviours = Lists.newArrayList();
-//        behaviours.add(new ApartmentSearchBehaviour());
-//        return behaviours;
-//    }
-//    @Override
-//    public void configureSearchAttribute(DomainObjectExample example, String searchTextInput) {
-//    }
     @Override
     public ISearchCallback getSearchCallback() {
         return new SearchCallback();
     }
 
     @Override
-    public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
-        return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
-    }
-
-    @Override
     public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-        configureExampleImpl(example, ids);
+        configureExampleImpl(example, ids, searchTextInput);
     }
 
-    private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids) {
+    private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
+        if (!Strings.isEmpty(searchTextInput)) {
+            DomainObjectAttributeExample attrExample = null;
+            try {
+                attrExample = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+
+                    @Override
+                    public boolean apply(DomainObjectAttributeExample attrExample) {
+                        return attrExample.getAttributeTypeId().equals(NAME_ATTRIBUTE_TYPE_ID);
+                    }
+                });
+            } catch (NoSuchElementException e) {
+                attrExample = new DomainObjectAttributeExample(NAME_ATTRIBUTE_TYPE_ID);
+                example.addAttributeExample(attrExample);
+            }
+            attrExample.setValue(searchTextInput);
+        }
         Long apartmentId = ids.get("apartment");
         if (apartmentId != null && apartmentId > 0) {
             example.setParentId(apartmentId);
@@ -118,15 +128,11 @@ public class RoomStrategy extends Strategy {
         @Override
         public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
             DomainObjectList list = (DomainObjectList) page;
-            configureExampleImpl(list.getExample(), ids);
+            configureExampleImpl(list.getExample(), ids, null);
             list.refreshContent(target);
         }
     }
 
-//    @Override
-//    public List<ISearchBehaviour> getParentSearchBehaviours() {
-//        return getSearchBehaviours();
-//    }
     @Override
     public ISearchCallback getParentSearchCallback() {
         return new ParentSearchCallback();
@@ -137,9 +143,16 @@ public class RoomStrategy extends Strategy {
         @Override
         public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
             DomainObjectEdit edit = (DomainObjectEdit) page;
+            DomainObject object = edit.getObject();
             Long apartmentId = ids.get("apartment");
-            edit.getObject().setParentId(apartmentId);
-            edit.getObject().setParentEntityId(100L);
+            if (apartmentId != null && apartmentId > 0) {
+                object.setParentId(apartmentId);
+                object.setParentEntityId(100L);
+            } else {
+                Long buildingId = ids.get("building");
+                object.setParentId(buildingId);
+                object.setParentEntityId(500L);
+            }
         }
     }
 

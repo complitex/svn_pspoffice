@@ -2,11 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.commons.strategy.street;
+package org.complitex.pspoffice.commons.strategy.district;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
@@ -39,17 +38,12 @@ import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
  */
 @Stateless
 @Interceptors({SqlSessionInterceptor.class})
-public class StreetStrategy extends Strategy {
+public class DistrictStrategy extends Strategy {
 
     @EJB
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
-    private static final long NAME_ATTRIBUTE_TYPE_ID = 300L;
-
-    @Override
-    public String getEntityTable() {
-        return "street";
-    }
+    private static final long NAME_ATTRIBUTE_TYPE_ID = 600L;
 
     @Override
     public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
@@ -72,6 +66,11 @@ public class StreetStrategy extends Strategy {
     }
 
     @Override
+    public String getEntityTable() {
+        return "district";
+    }
+
+    @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
         return displayLocalizedValueUtil.displayValue(Iterables.find(object.getAttributes(), new Predicate<EntityAttribute>() {
 
@@ -83,8 +82,13 @@ public class StreetStrategy extends Strategy {
     }
 
     @Override
-    public List<String> getSearchFilters() {
-        return ImmutableList.of("country", "region", "city");
+    public ISearchCallback getSearchCallback() {
+        return new SearchCallback();
+    }
+
+    @Override
+    public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
+        configureExampleImpl(example, ids, searchTextInput);
     }
 
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
@@ -110,13 +114,8 @@ public class StreetStrategy extends Strategy {
     }
 
     @Override
-    public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-        configureExampleImpl(example, ids, searchTextInput);
-    }
-
-    @Override
-    public ISearchCallback getSearchCallback() {
-        return new SearchCallback();
+    public List<String> getSearchFilters() {
+        return ImmutableList.of("country", "region", "city");
     }
 
     private static class SearchCallback implements ISearchCallback, Serializable {
@@ -147,6 +146,6 @@ public class StreetStrategy extends Strategy {
 
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
-        return ImmutableMap.of("building", "Buildings");
+        return null;
     }
 }

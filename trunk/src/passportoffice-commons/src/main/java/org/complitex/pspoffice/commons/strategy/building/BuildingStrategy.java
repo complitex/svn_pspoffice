@@ -17,6 +17,7 @@ import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+import org.apache.wicket.Component.IVisitor;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
@@ -34,6 +35,7 @@ import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 import org.complitex.dictionaryfw.util.CloneUtil;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
+import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.commons.strategy.building.web.edit.BuildingEditComponent;
 
 /**
@@ -86,12 +88,18 @@ public class BuildingStrategy extends Strategy {
         return description;
     }
 
-//    @Override
-//    public List<ISearchBehaviour> getSearchBehaviours() {
-//        List<ISearchBehaviour> behaviours = Lists.newArrayList();
-//        behaviours.add(new StreetSearchBehaviour());
-//        return behaviours;
-//    }
+    @Override
+    public String displayDomainObject(DomainObject object, Locale locale) {
+        List<EntityAttribute> numbers = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
+
+            @Override
+            public boolean apply(EntityAttribute attr) {
+                return attr.getAttributeTypeId().equals(500L);
+            }
+        }));
+        return displayLocalizedValueUtil.displayValue(numbers.get(0).getLocalizedValues(), locale);
+    }
+
     @Override
     public ISearchCallback getSearchCallback() {
         return new SearchCallback();
@@ -104,32 +112,47 @@ public class BuildingStrategy extends Strategy {
 
     @Override
     public List<String> getSearchFilters() {
-        return ImmutableList.of("street");
+        return ImmutableList.of("country", "region", "city", "street");
     }
 
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
         if (!Strings.isEmpty(searchTextInput)) {
-        }
-        DomainObjectAttributeExample streetExample = null;
-        try {
-            streetExample = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+            DomainObjectAttributeExample number = null;
+            try {
+                number = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
 
-                @Override
-                public boolean apply(DomainObjectAttributeExample example) {
-                    return example.getAttributeTypeId().equals(503L);
-                }
-            });
-        } catch (NoSuchElementException e) {
-            streetExample = new DomainObjectAttributeExample(503L);
-            example.addAttributeExample(streetExample);
+                    @Override
+                    public boolean apply(DomainObjectAttributeExample attrExample) {
+                        return attrExample.getAttributeTypeId().equals(500L);
+                    }
+                });
+            } catch (NoSuchElementException e) {
+                number = new DomainObjectAttributeExample(500L);
+                example.addAttributeExample(number);
+            }
+            number.setValue(searchTextInput);
         }
-        streetExample.setValue(String.valueOf(ids.get("street")));
+        Long streetId = ids.get("street");
+        if (streetId != null) {
+            DomainObjectAttributeExample streetExample = null;
+            try {
+                streetExample = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
 
+                    @Override
+                    public boolean apply(DomainObjectAttributeExample example) {
+                        return example.getAttributeTypeId().equals(503L);
+                    }
+                });
+            } catch (NoSuchElementException e) {
+                streetExample = new DomainObjectAttributeExample(503L);
+                example.addAttributeExample(streetExample);
+            }
+            String streetIdAsString = streetId.equals(-1L) ? null : String.valueOf(streetId);
+            streetExample.setValue(streetIdAsString);
+        }
         Long cityId = ids.get("city");
-        if (cityId != null && cityId > 0) {
-            example.setParentId(cityId);
-            example.setParentEntity("city");
-        }
+        example.setParentId(cityId);
+        example.setParentEntity("city");
     }
 
     private static class SearchCallback implements ISearchCallback, Serializable {
@@ -144,40 +167,35 @@ public class BuildingStrategy extends Strategy {
     }
 
     @Override
-    public String displayDomainObject(DomainObject object, Locale locale) {
-        List<EntityAttribute> numbers = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
-
-            @Override
-            public boolean apply(EntityAttribute attr) {
-                return attr.getAttributeTypeId().equals(500L);
-            }
-        }));
-        return displayLocalizedValueUtil.displayValue(numbers.get(0).getLocalizedValues(), locale);
+    public ISearchCallback getParentSearchCallback() {
+        return new ParentSearchCallback();
     }
 
-//    @Override
-//    public void configureSearchAttribute(DomainObjectExample example, String searchTextInput) {
-//    }
-//    @Override
-//    public List<ISearchBehaviour> getParentSearchBehaviours() {
-//        return null;
-//    }
     @Override
-    public ISearchCallback getParentSearchCallback() {
-        return null;
+    public List<String> getParentSearchFilters() {
+        return ImmutableList.of("country", "region", "city");
     }
 
     private static class ParentSearchCallback implements ISearchCallback, Serializable {
 
         @Override
-        public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
+        public void found(WebPage page, final Map<String, Long> ids, final AjaxRequestTarget target) {
             DomainObjectEdit edit = (DomainObjectEdit) page;
             DomainObject object = edit.getObject();
             Long cityId = ids.get("city");
-            if (cityId != null && cityId > 0) {
-                object.setParentId(cityId);
-                object.setParentEntityId(400L);
-            }
+            object.setParentId(cityId);
+            object.setParentEntityId(400L);
+
+            page.visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
+
+                @Override
+                public Object component(SearchComponent searchComponent) {
+                    if (target != null) {
+                        target.addComponent(searchComponent);
+                    }
+                    return CONTINUE_TRAVERSAL;
+                }
+            });
         }
     }
 

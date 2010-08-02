@@ -30,4 +30,8 @@ public class SearchComponentState implements Serializable {
             this.state.put(entry.getKey(), entry.getValue());
         }
     }
+
+    public void clear() {
+        state.clear();
+    }
 }

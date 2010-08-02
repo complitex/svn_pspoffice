@@ -4,6 +4,9 @@
  */
 package org.complitex.pspoffice.commons.strategy.building.web.edit;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +20,17 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionaryfw.dao.LocaleDao;
+import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.EntityAttribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
+import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.web.component.StringPanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.commons.strategy.building.BuildingStrategy;
+import org.complitex.pspoffice.commons.strategy.street.StreetStrategy;
 import org.complitex.pspoffice.commons.strategy.web.component.list.AjaxRemovableListView;
 
 /**
@@ -39,6 +45,9 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
     @EJB(name = "BuildingStrategy")
     private BuildingStrategy buildingStrategy;
 
+    @EJB(name = "StreetStrategy")
+    private StreetStrategy streetStrategy;
+
     private boolean firstRendering = true;
 
     public BuildingEditComponent(String id) {
@@ -51,6 +60,45 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         if (firstRendering) {
             firstRendering = false;
             init();
+        }
+    }
+
+    private class SynchronizedSearchComponentState extends SearchComponentState {
+
+        private SearchComponentState parentComponentState;
+
+        private DomainObject street;
+
+        public SynchronizedSearchComponentState(SearchComponentState parentComponentState, DomainObject street) {
+            this.parentComponentState = parentComponentState;
+            this.street = street;
+        }
+
+        @Override
+        public void updateState(Map<String, DomainObject> state) {
+            Map<String, DomainObject> filterState = Maps.filterKeys(state, new Predicate<String>() {
+
+                @Override
+                public boolean apply(String entity) {
+                    return buildingStrategy.getParentSearchFilters().contains(entity);
+                }
+            });
+            parentComponentState.updateState(filterState);
+            this.street = state.get("street");
+        }
+
+        @Override
+        public DomainObject get(String entity) {
+            if (!entity.equals("street")) {
+                return parentComponentState.get(entity);
+            } else {
+                return street;
+            }
+        }
+
+        @Override
+        public void put(String entity, DomainObject object) {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -69,10 +117,12 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 @Override
                 public Object component(SearchComponent searchComponent) {
                     Long streetId = ids.get("street");
-                    if (streetId != null && streetId > 0) {
+//                    if (streetId != null && streetId > 0) {
                         buildingAttribute.getStreet().setValueId(streetId);
+//                    }
+                    if (target != null) {
+                        target.addComponent(searchComponent);
                     }
-                    target.addComponent(searchComponent);
                     return CONTINUE_TRAVERSAL;
                 }
             });
@@ -94,6 +144,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
             }
         };
         add(add);
+
+        final SearchComponentState parentSearchComponentState = getEditPage().getParentSearchComponentState();
         ListView<BuildingAttribute> buildingAttributes = new AjaxRemovableListView<BuildingAttribute>("buildingAttributes", list) {
 
             @Override
@@ -103,11 +155,20 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 item.add(newStringPanel("number", buildingAttribute.getNumber(), "Number", true));
                 item.add(newStringPanel("corp", buildingAttribute.getCorp(), "Corp", false));
                 item.add(newStringPanel("structure", buildingAttribute.getCorp(), "Structure", false));
-                SearchComponentState parentSearchComponentState = getEditPage().getParentSearchComponentState();
-                if (parentSearchComponentState == null) {
-                    parentSearchComponentState = new SearchComponentState();
+
+                DomainObject street = null;
+                Long streetId = buildingAttribute.getStreet().getValueId();
+                Long cityId = parentSearchComponentState.get("city").getId();
+                if (streetId != null) {
+                    DomainObjectExample example = new DomainObjectExample();
+                    example.setId(streetId);
+                    example.setStart(0);
+                    example.setSize(1);
+                    streetStrategy.configureExample(example, ImmutableMap.of("city", cityId), null);
+                    street = streetStrategy.find(example).get(0);
                 }
-                item.add(new SearchComponent("street", parentSearchComponentState,
+
+                item.add(new SearchComponent("street", new SynchronizedSearchComponentState(parentSearchComponentState, street),
                         buildingStrategy.getSearchFilters(), new StreetSearchCallback(buildingAttribute)));
 
                 addRemoveLink("remove", item, null, attributesContainer);

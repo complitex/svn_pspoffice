@@ -4,6 +4,7 @@
  */
 package org.complitex.dictionaryfw.strategy;
 
+import com.google.common.collect.Maps;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -30,9 +31,10 @@ import org.complitex.dictionaryfw.entity.description.EntityDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
+import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.util.Numbers;
-import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
+import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 
 /**
  *
@@ -53,6 +55,11 @@ public abstract class Strategy {
     public static final String INSERT_OPERATION = "insert";
 
     public static final String UPDATE_OPERATION = "update";
+
+    public static final String FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION = "findParentInSearchComponent";
+
+    @EJB
+    private StrategyFactory strategyFactory;
 
     @EJB
     private SequenceDao sequence;
@@ -222,6 +229,7 @@ public abstract class Strategy {
 
             if (added) {
                 newAttr.setStartDate(updateDate);
+                newAttr.setObjectId(newEntity.getId());
                 insertAttribute(newAttr);
             }
         }
@@ -254,7 +262,6 @@ public abstract class Strategy {
     }
 
 //    public abstract List<ISearchBehaviour> getSearchBehaviours();
-
     public abstract List<String> getSearchFilters();
 
     public abstract ISearchCallback getSearchCallback();
@@ -282,11 +289,104 @@ public abstract class Strategy {
     }
 
 //    public abstract List<ISearchBehaviour> getParentSearchBehaviours();
-    public List<String> getParentSearchFilters(){
+    public List<String> getParentSearchFilters() {
         return getSearchFilters();
     }
 
     public abstract ISearchCallback getParentSearchCallback();
 
     public abstract Map<String, String> getChildrenInfo(Locale locale);
+
+    public static class RestrictedObjectInfo {
+
+        private String entityTable;
+
+        private Long id;
+
+        public RestrictedObjectInfo(String entityTable, Long id) {
+            this.entityTable = entityTable;
+            this.id = id;
+        }
+
+        public String getEntityTable() {
+            return entityTable;
+        }
+
+        public void setEntityTable(String entityTable) {
+            this.entityTable = entityTable;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+
+    public RestrictedObjectInfo findParentInSearchComponent(long id) {
+        DomainObjectExample example = new DomainObjectExample();
+        example.setTable(getEntityTable());
+        example.setId(id);
+        Map<String, Object> result = (Map<String, Object>) session.selectOne(ENTITY_NAMESPACE + "." + FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION, example);
+        if (result != null) {
+            Long parentId = (Long) result.get("parentId");
+            String parentEntity = (String) result.get("parentEntity");
+            if (parentId != null && !Strings.isEmpty(parentEntity)) {
+                return new RestrictedObjectInfo(parentEntity, parentId);
+            }
+        }
+        return null;
+    }
+
+    public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelClass() {
+        return null;
+    }
+
+    /*
+     * Helper util method.
+     */
+    public SearchComponentState getSearchComponentStateForParent(Long parentId, String parentEntity) {
+        if (parentId != null && parentEntity != null) {
+            SearchComponentState componentState = new SearchComponentState();
+            Map<String, Long> ids = Maps.newHashMap();
+
+            RestrictedObjectInfo parentData = new RestrictedObjectInfo(parentEntity, parentId);
+            while (parentData != null) {
+                String currentParentEntity = parentData.entityTable;
+                Long currentParentId = parentData.id;
+                ids.put(currentParentEntity, currentParentId);
+                parentData = strategyFactory.getStrategy(currentParentEntity).findParentInSearchComponent(currentParentId);
+            }
+            List<String> searchFilters = getSearchFilters();
+            if (searchFilters != null && !searchFilters.isEmpty()) {
+                for (String searchFilter : getSearchFilters()) {
+                    Long idForFilter = ids.get(searchFilter);
+                    if (idForFilter == null) {
+                        ids.put(searchFilter, -1L);
+                    }
+                }
+
+                for (String searchFilter : getSearchFilters()) {
+                    DomainObjectExample example = new DomainObjectExample();
+                    example.setTable(searchFilter);
+                    example.setId(ids.get(searchFilter));
+                    example.setStart(0);
+                    example.setSize(1);
+
+                    strategyFactory.getStrategy(searchFilter).configureExample(example, ids, null);
+                    DomainObject object = new DomainObject();
+                    object.setId(-1L);
+                    List<DomainObject> objects = strategyFactory.getStrategy(searchFilter).find(example);
+                    if (objects != null && !objects.isEmpty()) {
+                        object = objects.get(0);
+                    }
+                    componentState.put(searchFilter, object);
+                }
+                return componentState;
+            }
+        }
+        return null;
+    }
 }

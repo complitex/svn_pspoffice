@@ -56,22 +56,34 @@ update sequence set sequence_value = 5 where sequence_name = 'room_string_cultur
 
 -- Buildings
 insert into building(object_id) values (1), (2), (3), (4), (5);
-insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3,'ru','11'), (4,'ru','12'), (5,'ru','21'), (6,'ru','100'),
-(1, 'en', '10'), (2, 'en', '20'), (3,'en','11'), (4,'en','12'), (5,'en','21'), (6,'en','100');
+insert into building_string_culture(id, locale, value) values (1, 'ru', '10'), (2, 'ru', '20'), (3,'ru','11'), (4,'ru','12'), (5,'ru','21'), (6,'ru','100'), (7,'ru', null), (8,'ru', null), (9,'ru', null), (10,'ru', null), (11,'ru', null), (12,'ru', null), (13,'ru', null), (14,'ru', null), (15,'ru', null), (16,'ru', null), (17,'ru', null), (18,'ru', null),
+                                                              (1, 'en', '10'), (2, 'en', '20'), (3,'en','11'), (4,'en','12'), (5,'en','21'), (6,'en','100'), (7,'en', null), (8,'en', null), (9,'en', null), (10,'en', null), (11,'en', null), (12,'en', null), (13,'en', null), (14,'en', null), (15,'en', null), (16,'en', null), (17,'en', null), (18,'en', null);
 insert into building_attribute(attribute_id, object_id, attribute_type_id, value_id, value_type_id) values
 (1,1,500,1,500),
+(1,1,501,7,501),
+(1,1,502,8,502),
 (1,1,503,1,503),
 (2,1,500,6,500),
+(2,1,501,9,501),
+(2,1,502,10,502),
 (2,1,503,2,503),
 (1,2,500,2,500),
+(1,2,501,11,501),
+(1,2,502,12,502),
 (1,2,503,2,503),
 (1,3,500,3,500),
+(1,3,501,13,501),
+(1,3,502,14,502),
 (1,3,503,1,503),
 (1,4,500,4,500),
+(1,4,501,15,501),
+(1,4,502,16,502),
 (1,4,503,1,503),
 (1,5,500,5,500),
+(1,5,501,17,501),
+(1,5,502,18,502),
 (1,5,503,2,503);
-update sequence set sequence_value = 6 where sequence_name = 'building_string_culture';
+update sequence set sequence_value = 19 where sequence_name = 'building_string_culture';
 update sequence set sequence_value = 6 where sequence_name = 'building';
 
 -- Streets

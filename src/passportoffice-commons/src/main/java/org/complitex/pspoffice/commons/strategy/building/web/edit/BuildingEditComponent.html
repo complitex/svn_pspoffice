@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:wicket>
+    <head>
+    </head>
+    <body>
+        <wicket:panel>
+            <table>
+                <tbody wicket:id="attributesContainer">
+                    <tr wicket:id="buildingAttributes">
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        Number <b class="blue">*</b> :
+                                    </td>
+                                    <td>
+                                        <span wicket:id="number"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Corp :
+                                    </td>
+                                    <td>
+                                        <span wicket:id="corp"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Structure :
+                                    </td>
+                                    <td>
+                                        <span wicket:id="structure"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="2">
+                                        Street :
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <span wicket:id="street"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a wicket:id="remove">
+                                            Remove
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>
+                            <a wicket:id="add">
+                                Add
+                            </a>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+        </wicket:panel>
+    </body>
+</html>

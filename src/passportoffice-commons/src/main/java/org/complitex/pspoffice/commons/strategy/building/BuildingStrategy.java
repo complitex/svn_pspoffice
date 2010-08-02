@@ -28,11 +28,13 @@ import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
+import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 import org.complitex.dictionaryfw.util.CloneUtil;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
+import org.complitex.pspoffice.commons.strategy.building.web.edit.BuildingEditComponent;
 
 /**
  *
@@ -90,7 +92,6 @@ public class BuildingStrategy extends Strategy {
 //        behaviours.add(new StreetSearchBehaviour());
 //        return behaviours;
 //    }
-
     @Override
     public ISearchCallback getSearchCallback() {
         return new SearchCallback();
@@ -107,8 +108,7 @@ public class BuildingStrategy extends Strategy {
     }
 
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-        if(!Strings.isEmpty(searchTextInput)){
-            
+        if (!Strings.isEmpty(searchTextInput)) {
         }
         DomainObjectAttributeExample streetExample = null;
         try {
@@ -158,12 +158,10 @@ public class BuildingStrategy extends Strategy {
 //    @Override
 //    public void configureSearchAttribute(DomainObjectExample example, String searchTextInput) {
 //    }
-
 //    @Override
 //    public List<ISearchBehaviour> getParentSearchBehaviours() {
 //        return null;
 //    }
-
     @Override
     public ISearchCallback getParentSearchCallback() {
         return null;
@@ -176,7 +174,7 @@ public class BuildingStrategy extends Strategy {
             DomainObjectEdit edit = (DomainObjectEdit) page;
             DomainObject object = edit.getObject();
             Long cityId = ids.get("city");
-            if (cityId > 0) {
+            if (cityId != null && cityId > 0) {
                 object.setParentId(cityId);
                 object.setParentEntityId(400L);
             }
@@ -186,5 +184,24 @@ public class BuildingStrategy extends Strategy {
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
         return ImmutableMap.of("apartment", "Apartments", "room", "Rooms");
+    }
+
+    @Override
+    public RestrictedObjectInfo findParentInSearchComponent(long id) {
+        DomainObjectExample example = new DomainObjectExample();
+        example.setTable(getEntityTable());
+        example.setId(id);
+        Map<String, Object> result = (Map<String, Object>) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building.findStreetInSearchComponent", example);
+        Long streetId = (Long) result.get("streetId");
+        if (streetId != null) {
+            return new RestrictedObjectInfo("street", streetId);
+        } else {
+            return super.findParentInSearchComponent(id);
+        }
+    }
+
+    @Override
+    public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelClass() {
+        return BuildingEditComponent.class;
     }
 }

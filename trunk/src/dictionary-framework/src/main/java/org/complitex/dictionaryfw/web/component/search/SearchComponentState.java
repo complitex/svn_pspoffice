@@ -24,4 +24,10 @@ public class SearchComponentState implements Serializable {
     public DomainObject get(String entity) {
         return state.get(entity);
     }
+
+    public void updateState(Map<String, DomainObject> state) {
+        for (Map.Entry<String, DomainObject> entry : state.entrySet()) {
+            this.state.put(entry.getKey(), entry.getValue());
+        }
+    }
 }

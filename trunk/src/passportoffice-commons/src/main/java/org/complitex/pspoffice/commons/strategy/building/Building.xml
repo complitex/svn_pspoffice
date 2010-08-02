@@ -38,20 +38,20 @@
         <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
         <if test="orderByAttribureTypeId != null">
             ORDER BY (
-                SELECT sc.`value` FROM `building_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
-                (SELECT orderByAttr.`value_id` FROM `building_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
-                    AND orderByAttr.`status` = 'ACTIVE'
-                    AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId}
-                    AND orderByAttr.`attribute_id` = (SELECT ba.`attribute_id` FROM `building_attribute` ba WHERE ba.`object_id` = e.`object_id`
-                    AND ba.`status` = 'ACTIVE'
-                    AND ba.`value_id` =
-                    <foreach collection="attributeExamples" item="attrExample">
-                        <if test="attrExample.attributeTypeId == 503">
-                            #{attrExample.value}
-                        </if>
-                    </foreach>
-                    AND ba.`attribute_type_id` = 503)
-                )
+            SELECT sc.`value` FROM `building_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
+            (SELECT orderByAttr.`value_id` FROM `building_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
+            AND orderByAttr.`status` = 'ACTIVE'
+            AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId}
+            AND orderByAttr.`attribute_id` = (SELECT ba.`attribute_id` FROM `building_attribute` ba WHERE ba.`object_id` = e.`object_id`
+            AND ba.`status` = 'ACTIVE'
+            AND ba.`value_id` =
+            <foreach collection="attributeExamples" item="attrExample">
+                <if test="attrExample.attributeTypeId == 503">
+                    #{attrExample.value}
+                </if>
+            </foreach>
+            AND ba.`attribute_type_id` = 503)
+            )
             )
             <choose>
                 <when test="asc">
@@ -62,30 +62,37 @@
                 </otherwise>
             </choose>
         </if>
-        limit ${start},${size}
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.limit"/>
     </select>
 
     <sql id="filter">
-        <foreach item="attrExample" collection="attributeExamples">
-            <if test="attrExample.value != null">
-                <choose>
-                    <when test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
-                        AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
-                        AND attr.`status` = 'ACTIVE' AND attr.`value_id` = #{attrExample.value}
-                        AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
-                    </when>
-                    <otherwise>
-                        AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
-                        AND attr.`status` = 'ACTIVE'
-                        AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
-                        AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
-                    </otherwise>
-                </choose>
-            </if>
-        </foreach>
-        <if test="parentId != null and parentEntity != null">
-            AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}
-        </if>
+        <choose>
+            <when test="id != null">
+                AND e.`object_id` = #{id}
+            </when>
+            <otherwise>
+                <foreach item="attrExample" collection="attributeExamples">
+                    <if test="attrExample.value != null">
+                        <choose>
+                            <when test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
+                                AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                                AND attr.`status` = 'ACTIVE' AND attr.`value_id` = #{attrExample.value}
+                                AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+                            </when>
+                            <otherwise>
+                                AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                                AND attr.`status` = 'ACTIVE'
+                                AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
+                                AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+                            </otherwise>
+                        </choose>
+                    </if>
+                </foreach>
+                <if test="parentId != null and parentEntity != null">
+                    AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}
+                </if>
+            </otherwise>
+        </choose>
     </sql>
 
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
@@ -93,5 +100,8 @@
         <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
     </select>
 
+    <select id="findStreetInSearchComponent" parameterType="DomainObjectExample" resultType="hashmap">
+        SELECT attr.`value_id` streetId FROM `building_attribute` attr WHERE attr.`status` = 'ACTIVE' AND attr.`object_id` = #{id} AND attr.`attribute_type_id` = 503 limit 0,1
+    </select>
 
 </mapper>

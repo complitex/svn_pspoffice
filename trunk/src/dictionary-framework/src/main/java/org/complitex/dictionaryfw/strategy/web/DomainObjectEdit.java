@@ -38,9 +38,8 @@ import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
-import org.complitex.dictionaryfw.web.DictionaryFwSession;
+import org.complitex.dictionaryfw.web.component.ChildrenContainer;
 import org.complitex.dictionaryfw.web.component.StringPanel;
-import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
@@ -68,6 +67,8 @@ public final class DomainObjectEdit extends WebPage {
 
     @EJB(name = "DisplayLocalizedValueUtil")
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+
+    private SearchComponentState searchComponentState;
 
     private boolean isNew;
 
@@ -122,6 +123,7 @@ public final class DomainObjectEdit extends WebPage {
 
         Form form = new Form("form");
 
+        //simple attributes
         final Map<EntityAttribute, AttributeDescription> attrAndDesc = Maps.newHashMap();
 
         for (final EntityAttribute attr : newObject.getAttributes()) {
@@ -170,7 +172,7 @@ public final class DomainObjectEdit extends WebPage {
 
                 if (isString) {
                     IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-                    stringPanel = new StringPanel("stringPanel", model, label, true);
+                    stringPanel = new StringPanel("stringPanel", model, label, true, desc.isMandatory());
                 }
 
                 item.add(stringPanel);
@@ -179,29 +181,53 @@ public final class DomainObjectEdit extends WebPage {
         simpleAttributes.setReuseItems(true);
         form.add(simpleAttributes);
 
-        //parent search
-        SearchComponentState componentState = null;
-        if (isNew) {
-            if (!fromParent) {
-                componentState = new SearchComponentState();
-            } else {
-//                DomainObjectExample example = new DomainObjectExample();
-//                DomainObject parent = strategyFactory.getStrategy(parentEntity).fi
-                componentState = new SearchComponentState();
+        //complex attributes
+        AbstractComplexAttributesPanel complexAttributes = null;
+        Class<? extends AbstractComplexAttributesPanel> clazz = getStrategy().getComplexAttributesPanelClass();
+        if (clazz != null) {
+            try {
+                complexAttributes = clazz.getConstructor(String.class).newInstance("complexAttributes");
+
+            } catch (Exception e) {
+                log.warn("Couldn't instantiate complex attributes panel object.", e);
             }
+        }
+        if (complexAttributes == null) {
+            form.add(new EmptyPanel("complexAttributes"));
         } else {
-            componentState = CloneUtil.cloneObject(getSearchComponentState());
+            form.add(complexAttributes);
         }
 
-        List<String> parentBehaviours = getStrategy().getParentSearchFilters();
+        //parent search
+        if (isNew) {
+            if (!fromParent) {
+                searchComponentState = new SearchComponentState();
+            } else {
+                searchComponentState = getStrategy().getSearchComponentStateForParent(parentId, parentEntity);
+            }
+        } else {
+            Strategy.RestrictedObjectInfo info = getStrategy().findParentInSearchComponent(newObject.getId());
+            if (info != null) {
+                searchComponentState = getStrategy().getSearchComponentStateForParent(info.getId(), info.getEntityTable());
+            }
+        }
+
+        List<String> parentFilters = getStrategy().getParentSearchFilters();
         ISearchCallback parentSearchCallback = getStrategy().getParentSearchCallback();
         Component parentSearch = null;
-        if (parentBehaviours == null || parentBehaviours.isEmpty() || parentSearchCallback == null) {
+        if (parentFilters == null || parentFilters.isEmpty() || parentSearchCallback == null) {
             parentSearch = new EmptyPanel("parentSearch");
         } else {
-            parentSearch = new SearchComponent("parentSearch", componentState, parentBehaviours, parentSearchCallback);
+            parentSearch = new SearchComponent("parentSearch", searchComponentState, parentFilters, parentSearchCallback);
         }
         form.add(parentSearch);
+
+        //children
+        Component childrenContainer = new EmptyPanel("childrenContainer");
+        if (!isNew) {
+            childrenContainer = new ChildrenContainer("childrenContainer", entityTable, newObject.getId());
+        }
+        form.add(childrenContainer);
 
 
         Button submit = new Button("submit") {
@@ -234,15 +260,13 @@ public final class DomainObjectEdit extends WebPage {
             setResponsePage(getStrategy().getListPage(), getStrategy().getListPageParams());
         } else {
             //return to edit page for parent entity.
+            Strategy parentStrategy = strategyFactory.getStrategy(parentEntity);
+            setResponsePage(parentStrategy.getEditPage(), parentStrategy.getEditPageParams(parentId, null, null));
         }
     }
 
-    protected DictionaryFwSession getDictionaryFwSession() {
-        return (DictionaryFwSession) getSession();
-    }
-
-    protected SearchComponentState getSearchComponentState() {
-        return getDictionaryFwSession().getSearchComponentSessionState().get(entityTable);
+    public SearchComponentState getParentSearchComponentState() {
+        return searchComponentState;
     }
 }
 

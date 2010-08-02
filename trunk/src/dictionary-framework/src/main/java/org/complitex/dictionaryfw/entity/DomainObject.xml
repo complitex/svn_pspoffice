@@ -10,9 +10,10 @@
         <result column="status" property="status"/>
         <result column="parent_id" property="parentId"/>
         <result column="parent_entity_id" property="parentEntityId"/>
+        <result column="parent_entity" property="parentEntity"/>
         <result column="entity_type_id" property="entityTypeId"/>
         <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, startDate = start_date}"
-        select="org.complitex.dictionaryfw.entity.EntityAttribute.find"/>
+                    select="org.complitex.dictionaryfw.entity.EntityAttribute.find"/>
     </resultMap>
 
     <!--<resultMap id="DomainObject_view" type="DomainObject" extends="org.complitex.dictionaryfw.entity.DomainObject.DomainObject">
@@ -23,7 +24,7 @@
     <resultMap id="DomainObject_edit" type="DomainObject" extends="org.complitex.dictionaryfw.entity.DomainObject.DomainObject">
         <association property="parent" column="{id = parent_id, locale = locale, table = parent_table}"
         select="org.complitex.dictionaryfw.entity.Entity.findParentById"/>
-        
+
         <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, locale = locale, startDate = start_date}"
         select="org.complitex.dictionaryfw.entity.EntityAttribute.find_edit"/>
     </resultMap>-->
@@ -36,6 +37,7 @@
     <select id="findById" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
+        (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
         e.`parent_entity_id`, e.`entity_type_id`, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
     </select>
@@ -43,15 +45,16 @@
     <select id="find" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
+        (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
         e.`parent_entity_id`, e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
         FROM `${table}` e WHERE e.`status` = 'ACTIVE'
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
         <if test="orderByAttribureTypeId != null">
             ORDER BY (
-                SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
-                (SELECT orderByAttr.`value_id` FROM `${table}_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
-                    AND orderByAttr.`status` = 'ACTIVE' AND orderByAttr.`start_date` >= e.`start_date`
-                    AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId})
+            SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
+            (SELECT orderByAttr.`value_id` FROM `${table}_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
+            AND orderByAttr.`status` = 'ACTIVE' AND orderByAttr.`start_date` >= e.`start_date`
+            AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId})
             )
             <choose>
                 <when test="asc">
@@ -62,21 +65,28 @@
                 </otherwise>
             </choose>
         </if>
-        limit ${start},${size}
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.limit"/>
     </select>
 
     <sql id="filter">
-        <foreach item="attrExample" collection="attributeExamples">
-            <if test="attrExample.value != null">
-                AND EXISTS(SELECT 1 FROM `${table}_attribute` attr WHERE attr.`object_id` = e.`object_id`
-                AND attr.`status` = 'ACTIVE'
-                AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
-                AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
-            </if>
-        </foreach>
-        <if test="parentId != null and parentEntity != null">
-            AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}
-        </if>
+        <choose>
+            <when test="id != null">
+                AND e.`object_id` = #{id}
+            </when>
+            <otherwise>
+                <foreach item="attrExample" collection="attributeExamples">
+                    <if test="attrExample.value != null">
+                        AND EXISTS(SELECT 1 FROM `${table}_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                        AND attr.`status` = 'ACTIVE'
+                        AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
+                        AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+                    </if>
+                </foreach>
+                <if test="parentId != null and parentEntity != null">
+                    AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}
+                </if>
+            </otherwise>
+        </choose>
     </sql>
 
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
@@ -85,11 +95,18 @@
     </select>
 
     <sql id="limit">
-        limit ${start},${size}
+        <if test="size > 0">
+            limit ${start},${size}
+        </if>
     </sql>
 
     <update id="update" parameterType="InsertParameter">
         UPDATE `${table}` SET `end_date` = #{entity.endDate}, `status` = #{entity.status} WHERE `object_id` = #{entity.id} AND `start_date` = #{entity.startDate}
     </update>
+
+    <select id="findParentInSearchComponent" parameterType="DomainObjectExample" resultType="hashmap">
+        SELECT (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) parentEntity,
+        e.`parent_id` parentId FROM `${table}` e WHERE e.`object_id` = #{id} AND e.`status` = 'ACTIVE'
+    </select>
 
 </mapper>

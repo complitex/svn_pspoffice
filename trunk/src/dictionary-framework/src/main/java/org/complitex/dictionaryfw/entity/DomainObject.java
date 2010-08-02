@@ -31,7 +31,7 @@ public class DomainObject implements Serializable {
 
     private Long entityTypeId;
 
-    private DomainObject parent;
+    private String parentEntity;
 
     private List<EntityAttribute> attributes = new ArrayList<EntityAttribute>();
 
@@ -103,19 +103,19 @@ public class DomainObject implements Serializable {
         this.parentEntityId = parentEntityId;
     }
 
-    public DomainObject getParent() {
-        return parent;
-    }
-
-    public void setParent(DomainObject parent) {
-        this.parent = parent;
-    }
-
     public Long getEntityId() {
         return entityId;
     }
 
     public void setEntityId(Long entityId) {
         this.entityId = entityId;
+    }
+
+    public String getParentEntity() {
+        return parentEntity;
+    }
+
+    public void setParentEntity(String parentEntity) {
+        this.parentEntity = parentEntity;
     }
 }

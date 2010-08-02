@@ -211,18 +211,12 @@ public final class SearchComponent extends Panel {
         return true;
     }
 
-    private void completeComponentState(Map<String, DomainObject> state) {
-        for (Map.Entry<String, DomainObject> entry : state.entrySet()) {
-            componentState.put(entry.getKey(), entry.getValue());
-        }
-    }
-
     private void invokeCallbackIfNecessary(int index, List<IModel<DomainObject>> filterModels, AjaxRequestTarget target) {
         Map<String, DomainObject> finalState = getState(index, filterModels);
         if (isComplete(finalState)) {
             Map<String, Long> ids = transformObjects(finalState);
+            componentState.updateState(finalState);
             callback.found(getWebPage(), ids, target);
-            completeComponentState(finalState);
         }
     }
 

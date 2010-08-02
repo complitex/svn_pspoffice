@@ -27,7 +27,6 @@ import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
-import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 
 /**
@@ -41,7 +40,7 @@ public class RoomStrategy extends Strategy {
     @EJB
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
-    private AttributeDescription nameAttrDesc;
+    private static final Long NAME_ATTRIBUTE_TYPE_ID = 200L;
 
     @Override
     public String getEntityTable() {
@@ -52,13 +51,13 @@ public class RoomStrategy extends Strategy {
     public DomainObjectDescription getDescription() {
         DomainObjectDescription description = super.getDescription();
 
-        for (AttributeDescription attrDesc : description.getAttributeDescriptions()) {
-            if (attrDesc.getId().equals(200L)) {
-                nameAttrDesc = attrDesc;
-            }
-        }
-        description.setFilterAttributes(Lists.newArrayList(nameAttrDesc));
+        description.setFilterAttributes(Lists.newArrayList(Iterables.filter(description.getAttributeDescriptions(), new Predicate<AttributeDescription>() {
 
+            @Override
+            public boolean apply(AttributeDescription attrDesc) {
+                return attrDesc.getId().equals(NAME_ATTRIBUTE_TYPE_ID);
+            }
+        })));
         return description;
     }
 
@@ -68,7 +67,7 @@ public class RoomStrategy extends Strategy {
 
             @Override
             public boolean apply(EntityAttribute attr) {
-                return attr.getAttributeTypeId().equals(nameAttrDesc.getId());
+                return attr.getAttributeTypeId().equals(NAME_ATTRIBUTE_TYPE_ID);
             }
         }).getLocalizedValues(), locale);
     }
@@ -84,13 +83,9 @@ public class RoomStrategy extends Strategy {
 //        behaviours.add(new ApartmentSearchBehaviour());
 //        return behaviours;
 //    }
-
-    
-
 //    @Override
 //    public void configureSearchAttribute(DomainObjectExample example, String searchTextInput) {
 //    }
-
     @Override
     public ISearchCallback getSearchCallback() {
         return new SearchCallback();
@@ -98,10 +93,8 @@ public class RoomStrategy extends Strategy {
 
     @Override
     public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
-        return attributeDescription.getId() >= 200L;
+        return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
-
-
 
     @Override
     public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
@@ -110,8 +103,14 @@ public class RoomStrategy extends Strategy {
 
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids) {
         Long apartmentId = ids.get("apartment");
-        example.setParentId(apartmentId);
-        example.setParentEntity("apartment");
+        if (apartmentId != null && apartmentId > 0) {
+            example.setParentId(apartmentId);
+            example.setParentEntity("apartment");
+        } else {
+            Long buildingId = ids.get("building");
+            example.setParentId(buildingId);
+            example.setParentEntity("building");
+        }
     }
 
     private static class SearchCallback implements ISearchCallback, Serializable {
@@ -128,7 +127,6 @@ public class RoomStrategy extends Strategy {
 //    public List<ISearchBehaviour> getParentSearchBehaviours() {
 //        return getSearchBehaviours();
 //    }
-
     @Override
     public ISearchCallback getParentSearchCallback() {
         return new ParentSearchCallback();

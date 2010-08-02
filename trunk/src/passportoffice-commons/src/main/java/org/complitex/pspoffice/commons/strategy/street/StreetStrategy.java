@@ -37,7 +37,7 @@ public class StreetStrategy extends Strategy {
     @EJB
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
-    private AttributeDescription nameAttrDesc;
+    private static final long NAME_ATTRIBUTE_TYPE_ID = 300L;
 
     @Override
     public String getEntityTable() {
@@ -46,19 +46,20 @@ public class StreetStrategy extends Strategy {
 
     @Override
     public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
-        return attributeDescription.getId() >= 300L;
+        return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
     @Override
     public DomainObjectDescription getDescription() {
         DomainObjectDescription description = super.getDescription();
 
-        for (AttributeDescription attrDesc : description.getAttributeDescriptions()) {
-            if (attrDesc.getId().equals(300L)) {
-                nameAttrDesc = attrDesc;
+        description.setFilterAttributes(Lists.newArrayList(Iterables.filter(description.getAttributeDescriptions(), new Predicate<AttributeDescription>() {
+
+            @Override
+            public boolean apply(AttributeDescription attrDesc) {
+                return attrDesc.getId().equals(NAME_ATTRIBUTE_TYPE_ID);
             }
-        }
-        description.setFilterAttributes(Lists.newArrayList(nameAttrDesc));
+        })));
 
         return description;
     }
@@ -69,7 +70,7 @@ public class StreetStrategy extends Strategy {
 
             @Override
             public boolean apply(EntityAttribute attr) {
-                return attr.getAttributeTypeId().equals(nameAttrDesc.getId());
+                return attr.getAttributeTypeId().equals(NAME_ATTRIBUTE_TYPE_ID);
             }
         }).getLocalizedValues(), locale);
     }
@@ -91,7 +92,7 @@ public class StreetStrategy extends Strategy {
 //    }
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
         if (!Strings.isEmpty(searchTextInput)) {
-            DomainObjectAttributeExample attrExample = new DomainObjectAttributeExample(300L);
+            DomainObjectAttributeExample attrExample = new DomainObjectAttributeExample(NAME_ATTRIBUTE_TYPE_ID);
             attrExample.setValue(searchTextInput);
             example.addAttributeExample(attrExample);
         }

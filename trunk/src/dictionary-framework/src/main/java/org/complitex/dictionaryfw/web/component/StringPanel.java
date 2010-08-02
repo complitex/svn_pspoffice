@@ -26,7 +26,7 @@ public final class StringPanel extends Panel {
     @EJB(name="LocaleDao")
     private LocaleDao localeDao;
 
-    public StringPanel(String id, IModel<List<StringCulture>> model, final String label, final boolean enabled) {
+    public StringPanel(String id, IModel<List<StringCulture>> model, final String label, final boolean enabled, final boolean required) {
         super(id);
 
         add(new ListView<StringCulture>("strings", model) {
@@ -38,17 +38,17 @@ public final class StringPanel extends Panel {
                 Label lang = new Label("lang", new Locale(culture.getLocale()).getDisplayLanguage(getLocale()));
                 item.add(lang);
 
-                boolean required = false;
+                boolean isSystemLocale = false;
                 if (new Locale(culture.getLocale()).getLanguage().equalsIgnoreCase(new Locale(localeDao.getSystemLocale()).getLanguage())) {
-                    required = true;
+                   isSystemLocale = true;
                 }
 
                 InputPanel<String> inputPanel = new InputPanel("inputPanel", new PropertyModel<String>(culture, "value"),
-                        String.class, required, label, enabled);
+                        String.class, required && isSystemLocale, label, enabled);
                 item.add(inputPanel);
 
                 WebMarkupContainer requiredContainer = new WebMarkupContainer("bookFieldRequired");
-                requiredContainer.setVisible(required);
+                requiredContainer.setVisible(isSystemLocale);
                 item.add(requiredContainer);
             }
         });

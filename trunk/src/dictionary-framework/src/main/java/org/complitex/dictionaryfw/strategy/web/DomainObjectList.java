@@ -43,7 +43,6 @@ import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.DictionaryFwSession;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
-import org.complitex.dictionaryfw.web.component.search.ISearchBehaviour;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentSessionState;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;

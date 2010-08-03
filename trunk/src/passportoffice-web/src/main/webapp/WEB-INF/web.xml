@@ -22,6 +22,19 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <security-role>
+        <role-name>AUTHORIZED</role-name>
+    </security-role>
+
+     <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>pspofficeRealm</realm-name>
+        <form-login-config>
+            <form-login-page>/?wicket:bookmarkablePage=:org.complitex.pspoffice.commons.web.pages.login.Login</form-login-page>
+            <form-error-page>/?wicket:bookmarkablePage=:org.complitex.pspoffice.commons.web.pages.login.Login&amp;error</form-error-page>
+        </form-login-config>
+    </login-config>
+
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>

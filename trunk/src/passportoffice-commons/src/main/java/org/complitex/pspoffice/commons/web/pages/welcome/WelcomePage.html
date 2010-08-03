@@ -4,16 +4,15 @@
     <wicket:head>
         <title wicket:id="title"></title>
     </wicket:head>
-</head>
-<body>
-    <div style="height:200px; text-align:center">
-        <span style="padding-top:50px">
-            <h2><wicket:message key="welcome"/></h2>
-        </span>
-    </div>
+    </head>
 
-    <a href="#" wicket:id="link">Link</a>
-    
-</body>
+    <wicket:extend>
+        <div style="height:200px; text-align:center">
+            <span style="padding-top:50px">
+                <h2><wicket:message key="welcome"/></h2>
+            </span>
+        </div>
 
+        <a href="#" wicket:id="link">Link</a>
+    </wicket:extend>
 </html>

@@ -17,11 +17,23 @@
         </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-resources-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-resources-images</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-information</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-user</artifactId>
         </dependency>
 
         <dependency>

@@ -8,6 +8,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -18,7 +19,9 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -26,6 +29,7 @@ import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.entity.DomainObject;
@@ -34,6 +38,7 @@ import org.complitex.dictionaryfw.entity.EntityAttribute;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
@@ -122,6 +127,51 @@ public final class DomainObjectEdit extends WebPage {
         add(messages);
 
         Form form = new Form("form");
+
+        //entity type
+        WebMarkupContainer typeContainer = new WebMarkupContainer("typeContainer");
+        form.add(typeContainer);
+        final List<EntityType> entityTypes = description.getEntityTypes() != null ? description.getEntityTypes() : new ArrayList<EntityType>();
+        if (entityTypes.isEmpty()) {
+            typeContainer.setVisible(false);
+        }
+        IModel<EntityType> typeModel = new Model<EntityType>() {
+
+            @Override
+            public void setObject(EntityType object) {
+                newObject.setEntityTypeId(object.getId());
+            }
+
+            @Override
+            public EntityType getObject() {
+                if (newObject.getEntityTypeId() != null) {
+                    return Iterables.find(entityTypes, new Predicate<EntityType>() {
+
+                        @Override
+                        public boolean apply(EntityType type) {
+                            return type.getId().equals(newObject.getEntityTypeId());
+                        }
+                    });
+                } else {
+                    return null;
+                }
+            }
+        };
+        DropDownChoice<EntityType> types = new DropDownChoice<EntityType>("types", typeModel, entityTypes, new IChoiceRenderer<EntityType>() {
+
+            @Override
+            public Object getDisplayValue(EntityType object) {
+                return displayLocalizedValueUtil.displayValue(object.getEntityTypeNames(), getLocale());
+            }
+
+            @Override
+            public String getIdValue(EntityType object, int index) {
+                return String.valueOf(object.getId());
+            }
+        });
+        types.setRequired(true);
+        typeContainer.add(types);
+
 
         //simple attributes
         final Map<EntityAttribute, AttributeDescription> attrAndDesc = Maps.newHashMap();
@@ -234,12 +284,21 @@ public final class DomainObjectEdit extends WebPage {
 
             @Override
             public void onSubmit() {
-                if (isNew) {
-                    getStrategy().insert(newObject);
-                } else {
-                    getStrategy().update(oldObject, newObject);
+                boolean valid = validateParent();
+                IValidator validator = getStrategy().getValidator();
+                if (validator != null) {
+                    valid = validator.validate(newObject, DomainObjectEdit.this);
                 }
-                back();
+
+                if (valid) {
+                    if (isNew) {
+                        getStrategy().insert(newObject);
+                    } else {
+                        getStrategy().update(oldObject, newObject);
+                    }
+                    back();
+                }
+
             }
         };
         form.add(submit);
@@ -267,6 +326,17 @@ public final class DomainObjectEdit extends WebPage {
 
     public SearchComponentState getParentSearchComponentState() {
         return searchComponentState;
+    }
+
+    private boolean validateParent() {
+        if (!(getStrategy().getParentSearchFilters() == null || getStrategy().getParentSearchFilters().isEmpty()
+                || getStrategy().getParentSearchCallback() == null)) {
+            if ((newObject.getParentId() == null) || (newObject.getParentEntityId() == null)) {
+                error("Parent must be specified.");
+                return false;
+            }
+        }
+        return true;
     }
 }
 

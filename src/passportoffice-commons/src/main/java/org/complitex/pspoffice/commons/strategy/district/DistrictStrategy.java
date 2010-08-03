@@ -139,8 +139,13 @@ public class DistrictStrategy extends Strategy {
         public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
             DomainObjectEdit edit = (DomainObjectEdit) page;
             Long cityId = ids.get("city");
-            edit.getObject().setParentId(cityId);
-            edit.getObject().setParentEntityId(400L);
+            if (cityId != null && cityId > 0) {
+                edit.getObject().setParentId(cityId);
+                edit.getObject().setParentEntityId(400L);
+            } else {
+                edit.getObject().setParentId(null);
+                edit.getObject().setParentEntityId(null);
+            }
         }
     }
 

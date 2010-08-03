@@ -150,8 +150,13 @@ public class RoomStrategy extends Strategy {
                 object.setParentEntityId(100L);
             } else {
                 Long buildingId = ids.get("building");
-                object.setParentId(buildingId);
-                object.setParentEntityId(500L);
+                if (buildingId != null && buildingId > 0) {
+                    object.setParentId(buildingId);
+                    object.setParentEntityId(500L);
+                } else {
+                    object.setParentId(null);
+                    object.setParentEntityId(null);
+                }
             }
         }
     }

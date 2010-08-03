@@ -25,6 +25,7 @@ insert into building_attribute(attribute_id, object_id, attribute_type_id, value
 (1,1,501,7,501),
 (1,1,502,8,502),
 (1,1,503,1,503),
+(1,1,504,2,504),
 (2,1,500,6,500),
 (2,1,501,9,501),
 (2,1,502,10,502),
@@ -33,18 +34,22 @@ insert into building_attribute(attribute_id, object_id, attribute_type_id, value
 (1,2,501,11,501),
 (1,2,502,12,502),
 (1,2,503,2,503),
+(1,2,504,1,504),
 (1,3,500,3,500),
 (1,3,501,13,501),
 (1,3,502,14,502),
 (1,3,503,1,503),
+(1,3,504,2,504),
 (1,4,500,4,500),
 (1,4,501,15,501),
 (1,4,502,16,502),
 (1,4,503,1,503),
+(1,4,504,2,504),
 (1,5,500,5,500),
 (1,5,501,17,501),
 (1,5,502,18,502),
-(1,5,503,2,503);
+(1,5,503,2,503),
+(1,5,504,1,504);
 update sequence set sequence_value = 19 where sequence_name = 'building_string_culture';
 update sequence set sequence_value = 6 where sequence_name = 'building';
 

@@ -1,6 +1,10 @@
 package org.complitex.pspoffice.commons.web;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.Request;
+import org.apache.wicket.Response;
+import org.apache.wicket.Session;
+import org.complitex.dictionaryfw.web.DictionaryFwSession;
 import org.complitex.pspoffice.commons.web.pages.welcome.WelcomePage;
 import org.complitex.pspoffice.commons.web.template.TemplateWebApplication;
 
@@ -20,8 +24,8 @@ public class PassportOfficeWebApplication extends TemplateWebApplication {
         return WelcomePage.class;
     }
 
-//    @Override
-//    protected WebRequest newWebRequest(HttpServletRequest servletRequest) {
-//        return new UploadWebRequest(servletRequest);
-//    }
+    @Override
+    public Session newSession(Request request, Response response) {
+        return new DictionaryFwSession(request);
+    }
 }

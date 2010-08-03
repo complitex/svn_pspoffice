@@ -4,6 +4,7 @@
  */
 package org.complitex.dictionaryfw.strategy;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
+import org.complitex.dictionaryfw.strategy.web.IValidator;
 import org.complitex.dictionaryfw.util.Numbers;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
@@ -105,6 +107,7 @@ public abstract class Strategy {
         DomainObjectDescription description = new DomainObjectDescription();
         EntityDescription descriptionFromDb = entityDescriptionDao.getEntityDescription(getEntityTable());
         description.setEntityNames(descriptionFromDb.getEntityNames());
+        description.setEntityTypes(descriptionFromDb.getEntityTypes());
         description.setAttributeDescriptions(descriptionFromDb.getAttributeDescriptions());
         return description;
     }
@@ -121,9 +124,11 @@ public abstract class Strategy {
                     attribute.setAttributeTypeId(attributeDesc.getId());
                     attribute.setValueTypeId(attributeValueDesc.getId());
                     attribute.setAttributeId(1L);
+                    List<StringCulture> strings = Lists.newArrayList();
                     for (String locale : localeDao.getAllLocales()) {
-                        attribute.addLocalizedValue(new StringCulture(locale, null));
+                        strings.add(new StringCulture(locale, null));
                     }
+                    attribute.setLocalizedValues(strings);
                 }
                 entity.addAttribute(attribute);
             }
@@ -137,12 +142,16 @@ public abstract class Strategy {
 
     protected void insertAttribute(EntityAttribute attribute) {
         List<StringCulture> strings = attribute.getLocalizedValues();
-        long stringId = sequence.nextStringId(getEntityTable());
-        for (StringCulture string : strings) {
-            string.setId(stringId);
-            insertStringCulture(string);
+        if (strings == null) {
+            //reference attribute
+        } else {
+            long stringId = sequence.nextStringId(getEntityTable());
+            for (StringCulture string : strings) {
+                string.setId(stringId);
+                insertStringCulture(string);
+            }
+            attribute.setValueId(stringId);
         }
-        attribute.setValueId(stringId);
         session.insert(ENTITY_ATTRIBUTE_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), attribute));
     }
 
@@ -163,10 +172,9 @@ public abstract class Strategy {
     }
 
     public void update(DomainObject oldEntity, DomainObject newEntity) {
-        //for name-based entities there are only simple attributes and parent can change.
-
         Date updateDate = new Date();
 
+        //attributes comparison
         for (EntityAttribute oldAttr : oldEntity.getAttributes()) {
             boolean removed = true;
             for (EntityAttribute newAttr : newEntity.getAttributes()) {
@@ -177,14 +185,18 @@ public abstract class Strategy {
                         newAttr.setStatus(oldAttr.getStatus());
                         session.update(ENTITY_ATTRIBUTE_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), newAttr));
                     } else {
+                        boolean needToUpdateAttribute = false;
+
                         List<AttributeValueDescription> valueDescs = getDescription().
                                 getAttributeDesc(oldAttr.getAttributeTypeId()).
                                 getAttributeValueDescriptions();
 
+                        boolean isSimpleAttribute = false;
                         if (valueDescs.size() == 1) {
                             String attrValueType = valueDescs.get(0).getValueType();
 
                             if (attrValueType.equalsIgnoreCase(SimpleTypes.STRING.name())) {
+                                isSimpleAttribute = true;
                                 boolean valueChanged = false;
                                 for (StringCulture oldString : oldAttr.getLocalizedValues()) {
                                     for (StringCulture newString : newAttr.getLocalizedValues()) {
@@ -199,13 +211,27 @@ public abstract class Strategy {
                                 }
 
                                 if (valueChanged) {
-                                    oldAttr.setEndDate(updateDate);
-                                    oldAttr.setStatus(StatusType.ARCHIVE);
-                                    session.update(ENTITY_ATTRIBUTE_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), oldAttr));
-                                    newAttr.setStartDate(updateDate);
-                                    insertAttribute(newAttr);
+                                    needToUpdateAttribute = true;
                                 }
                             }
+                        }
+
+                        if (!isSimpleAttribute) {
+                            Long oldValueId = oldAttr.getValueId();
+                            Long oldValueTypeId = oldAttr.getValueTypeId();
+                            Long newValueId = newAttr.getValueId();
+                            Long newValueTypeId = newAttr.getValueTypeId();
+                            if (!Numbers.isEqual(oldValueId, newValueId) || !Numbers.isEqual(oldValueTypeId, newValueTypeId)) {
+                                needToUpdateAttribute = true;
+                            }
+                        }
+
+                        if (needToUpdateAttribute) {
+                            oldAttr.setEndDate(updateDate);
+                            oldAttr.setStatus(StatusType.ARCHIVE);
+                            session.update(ENTITY_ATTRIBUTE_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), oldAttr));
+                            newAttr.setStartDate(updateDate);
+                            insertAttribute(newAttr);
                         }
                     }
                 }
@@ -234,6 +260,15 @@ public abstract class Strategy {
             }
         }
 
+        boolean needToUpdateObject = false;
+
+        //entity type comparison
+        Long oldEntityTypeId = oldEntity.getEntityTypeId();
+        Long newEntityTypeId = newEntity.getEntityTypeId();
+        if (!Numbers.isEqual(oldEntityTypeId, newEntityTypeId)) {
+            needToUpdateObject = true;
+        }
+
         //parent comparison
         Long oldParentId = oldEntity.getParentId();
         Long oldParentEntityId = oldEntity.getParentEntityId();
@@ -241,6 +276,10 @@ public abstract class Strategy {
         Long newParentEntityId = newEntity.getParentEntityId();
 
         if (!Numbers.isEqual(oldParentId, newParentId) || !Numbers.isEqual(oldParentEntityId, newParentEntityId)) {
+            needToUpdateObject = true;
+        }
+
+        if (needToUpdateObject) {
             oldEntity.setStatus(StatusType.ARCHIVE);
             oldEntity.setEndDate(updateDate);
             session.update(ENTITY_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), oldEntity));
@@ -341,6 +380,10 @@ public abstract class Strategy {
     }
 
     public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelClass() {
+        return null;
+    }
+
+    public IValidator getValidator() {
         return null;
     }
 

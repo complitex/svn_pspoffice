@@ -5,7 +5,9 @@
 package org.complitex.pspoffice.commons.strategy.building.web.edit;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.io.Serializable;
 import java.util.List;
@@ -30,14 +32,19 @@ import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.commons.strategy.building.BuildingStrategy;
+import org.complitex.pspoffice.commons.strategy.district.DistrictStrategy;
 import org.complitex.pspoffice.commons.strategy.street.StreetStrategy;
 import org.complitex.pspoffice.commons.strategy.web.component.list.AjaxRemovableListView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Artem
  */
 public class BuildingEditComponent extends AbstractComplexAttributesPanel {
+
+    private static final Logger log = LoggerFactory.getLogger(BuildingEditComponent.class);
 
     @EJB(name = "LocaleDao")
     private LocaleDao localeDao;
@@ -47,6 +54,9 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
     @EJB(name = "StreetStrategy")
     private StreetStrategy streetStrategy;
+
+    @EJB(name = "DistrictStrategy")
+    private DistrictStrategy districtStrategy;
 
     private boolean firstRendering = true;
 
@@ -67,11 +77,14 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
         private SearchComponentState parentComponentState;
 
-        private DomainObject street;
+        private DomainObject object;
 
-        public SynchronizedSearchComponentState(SearchComponentState parentComponentState, DomainObject street) {
+        private String entity;
+
+        public SynchronizedSearchComponentState(SearchComponentState parentComponentState, String entity, DomainObject object) {
             this.parentComponentState = parentComponentState;
-            this.street = street;
+            this.object = object;
+            this.entity = entity;
         }
 
         @Override
@@ -84,15 +97,15 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 }
             });
             parentComponentState.updateState(filterState);
-            this.street = state.get("street");
+            this.object = state.get(entity);
         }
 
         @Override
         public DomainObject get(String entity) {
-            if (!entity.equals("street")) {
+            if (!entity.equals(this.entity)) {
                 return parentComponentState.get(entity);
             } else {
-                return street;
+                return object;
             }
         }
 
@@ -112,14 +125,17 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
         @Override
         public void found(WebPage page, final Map<String, Long> ids, final AjaxRequestTarget target) {
+            Long streetId = ids.get("street");
+            if (streetId != null && streetId > 0) {
+                buildingAttribute.getStreet().setValueId(streetId);
+            } else {
+                buildingAttribute.getStreet().setValueId(null);
+            }
+
             page.visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
 
                 @Override
                 public Object component(SearchComponent searchComponent) {
-                    Long streetId = ids.get("street");
-//                    if (streetId != null && streetId > 0) {
-                        buildingAttribute.getStreet().setValueId(streetId);
-//                    }
                     if (target != null) {
                         target.addComponent(searchComponent);
                     }
@@ -128,6 +144,33 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
             });
         }
     }
+
+    private class DistrictSearchCallback implements ISearchCallback, Serializable {
+
+        @Override
+        public void found(WebPage page, final Map<String, Long> ids, final AjaxRequestTarget target) {
+            Long districtId = ids.get("district");
+            log.info("District found : {}", districtId);
+            if (districtId != null && districtId > 0) {
+                districtAttribute.setValueId(districtId);
+            } else {
+                districtAttribute.setValueId(null);
+            }
+
+            page.visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
+
+                @Override
+                public Object component(SearchComponent searchComponent) {
+                    if (target != null) {
+                        target.addComponent(searchComponent);
+                    }
+                    return CONTINUE_TRAVERSAL;
+                }
+            });
+        }
+    }
+
+    private EntityAttribute districtAttribute;
 
     public void init() {
         final WebMarkupContainer attributesContainer = new WebMarkupContainer("attributesContainer");
@@ -146,6 +189,28 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         add(add);
 
         final SearchComponentState parentSearchComponentState = getEditPage().getParentSearchComponentState();
+        final Long cityId = parentSearchComponentState.get("city") != null ? parentSearchComponentState.get("city").getId() : null;
+
+        //district
+        Long districtId = null;
+        districtAttribute = Iterables.find(getEditPage().getObject().getAttributes(), new Predicate<EntityAttribute>() {
+
+            @Override
+            public boolean apply(EntityAttribute attr) {
+                return attr.getAttributeTypeId().equals(504L);
+            }
+        });
+        districtId = districtAttribute.getValueId();
+        DomainObject district = null;
+        if (districtId != null) {
+            DomainObjectExample example = new DomainObjectExample();
+            example.setId(districtId);
+            districtStrategy.configureExample(example, ImmutableMap.of("city", cityId), null);
+            district = districtStrategy.find(example).get(0);
+        }
+        attributesContainer.add(new SearchComponent("district", new SynchronizedSearchComponentState(parentSearchComponentState, "district", district),
+                ImmutableList.of("country", "region", "city", "district"), new DistrictSearchCallback()));
+
         ListView<BuildingAttribute> buildingAttributes = new AjaxRemovableListView<BuildingAttribute>("buildingAttributes", list) {
 
             @Override
@@ -158,7 +223,6 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
                 DomainObject street = null;
                 Long streetId = buildingAttribute.getStreet().getValueId();
-                Long cityId = parentSearchComponentState.get("city").getId();
                 if (streetId != null) {
                     DomainObjectExample example = new DomainObjectExample();
                     example.setId(streetId);
@@ -168,7 +232,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                     street = streetStrategy.find(example).get(0);
                 }
 
-                item.add(new SearchComponent("street", new SynchronizedSearchComponentState(parentSearchComponentState, street),
+                item.add(new SearchComponent("street", new SynchronizedSearchComponentState(parentSearchComponentState, "street", street),
                         buildingStrategy.getSearchFilters(), new StreetSearchCallback(buildingAttribute)));
 
                 addRemoveLink("remove", item, null, attributesContainer);

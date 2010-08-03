@@ -17,6 +17,8 @@ public class DomainObjectDescription implements Serializable {
 
     private List<StringCulture> entityNames;
 
+    private List<EntityType> entityTypes;
+
     private List<AttributeDescription> attributeDescriptions;
 
     private List<AttributeDescription> filterAttributes = Lists.newArrayList();
@@ -29,7 +31,7 @@ public class DomainObjectDescription implements Serializable {
         this.filterAttributes = filterAttributes;
     }
 
-    public void addFilterAttribute(AttributeDescription filterAttribute){
+    public void addFilterAttribute(AttributeDescription filterAttribute) {
         filterAttributes.add(filterAttribute);
     }
 
@@ -47,6 +49,14 @@ public class DomainObjectDescription implements Serializable {
 
     public void setEntityNames(List<StringCulture> entityNames) {
         this.entityNames = entityNames;
+    }
+
+    public List<EntityType> getEntityTypes() {
+        return entityTypes;
+    }
+
+    public void setEntityTypes(List<EntityType> entityTypes) {
+        this.entityTypes = entityTypes;
     }
 
     public AttributeDescription getAttributeDesc(Long attributeTypeId) {

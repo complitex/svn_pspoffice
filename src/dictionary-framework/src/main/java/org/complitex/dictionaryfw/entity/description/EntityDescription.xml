@@ -17,6 +17,11 @@
                 <result column="attribute_value_type" property="valueType"/>
             </collection>
         </collection>
+        <collection property="entityTypes" ofType="org.complitex.dictionaryfw.entity.description.EntityType">
+            <id column="entity_type_id" property="id"/>
+            <collection property="entityTypeNames" ofType="StringCulture" column="entity_type_name_id"
+                select="org.complitex.dictionaryfw.entity.description.EntityDescription.findNames"/>
+        </collection>
     </resultMap>
 
     <select id="load" parameterType="string" resultMap="org.complitex.dictionaryfw.entity.description.EntityDescription.EntityDescription">
@@ -28,10 +33,13 @@
         eat.`mandatory`,
         eat.`attribute_type_name_id`,
         eavt.`id` as entity_attribute_value_type_id,
-        eavt.`attribute_value_type`
+        eavt.`attribute_value_type`,
+        et.`id` as entity_type_id,
+        et.`entity_type_name_id`
         FROM `entity` e
         JOIN `entity_attribute_type` eat ON eat.`entity_id` = e.`id`
         JOIN `entity_attribute_value_type` eavt ON eavt.`attribute_type_id` = eat.`id`
+        LEFT OUTER JOIN `entity_type` et ON et.`entity_id` = e.`id`
         WHERE e.`entity_table` = #{value}
     </select>
 

@@ -34,7 +34,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
@@ -174,9 +174,9 @@ public final class DomainObjectEdit extends WebPage {
 
 
         //simple attributes
-        final Map<EntityAttribute, AttributeDescription> attrAndDesc = Maps.newHashMap();
+        final Map<Attribute, AttributeDescription> attrAndDesc = Maps.newHashMap();
 
-        for (final EntityAttribute attr : newObject.getAttributes()) {
+        for (final Attribute attr : newObject.getAttributes()) {
             try {
                 AttributeDescription attrDesc = Iterables.find(description.getAttributeDescriptions(), new Predicate<AttributeDescription>() {
 
@@ -190,11 +190,11 @@ public final class DomainObjectEdit extends WebPage {
             }
         }
 
-        ListView<EntityAttribute> simpleAttributes = new ListView<EntityAttribute>("simpleAttributes", Lists.newArrayList(attrAndDesc.keySet())) {
+        ListView<Attribute> simpleAttributes = new ListView<Attribute>("simpleAttributes", Lists.newArrayList(attrAndDesc.keySet())) {
 
             @Override
-            protected void populateItem(ListItem<EntityAttribute> item) {
-                EntityAttribute attr = item.getModelObject();
+            protected void populateItem(ListItem<Attribute> item) {
+                Attribute attr = item.getModelObject();
                 AttributeDescription desc = attrAndDesc.get(attr);
 
                 boolean isSimpleInput = false;

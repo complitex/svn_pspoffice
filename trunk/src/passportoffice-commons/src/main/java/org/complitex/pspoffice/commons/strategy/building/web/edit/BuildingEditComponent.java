@@ -23,7 +23,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionaryfw.dao.LocaleDao;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
@@ -170,7 +170,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         }
     }
 
-    private EntityAttribute districtAttribute;
+    private Attribute districtAttribute;
 
     public void init() {
         final WebMarkupContainer attributesContainer = new WebMarkupContainer("attributesContainer");
@@ -193,10 +193,10 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
         //district
         Long districtId = null;
-        districtAttribute = Iterables.find(getEditPage().getObject().getAttributes(), new Predicate<EntityAttribute>() {
+        districtAttribute = Iterables.find(getEditPage().getObject().getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 return attr.getAttributeTypeId().equals(504L);
             }
         });
@@ -241,7 +241,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.add(buildingAttributes);
     }
 
-    private static StringPanel newStringPanel(String id, EntityAttribute attr, String label, boolean required) {
+    private static StringPanel newStringPanel(String id, Attribute attr, String label, boolean required) {
         IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
         return new StringPanel(id, model, label, true, required);
     }

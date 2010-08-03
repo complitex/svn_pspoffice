@@ -23,7 +23,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
@@ -80,7 +80,7 @@ public class BuildingStrategy extends Strategy {
         example.setTable(getEntityTable());
         DomainObject entity = (DomainObject) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building." + FIND_BY_ID_OPERATION, example);
         entity.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", example));
-        for (EntityAttribute complexAttr : (List<EntityAttribute>) session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadComplexAttributes", example)) {
+        for (Attribute complexAttr : (List<Attribute>) session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadComplexAttributes", example)) {
             entity.addAttribute(complexAttr);
         }
         return entity;
@@ -106,7 +106,7 @@ public class BuildingStrategy extends Strategy {
     @Override
     public DomainObject newInstance() {
         DomainObject object = super.newInstance();
-        EntityAttribute districtAttr = new EntityAttribute();
+        Attribute districtAttr = new Attribute();
         districtAttr.setAttributeId(1L);
         districtAttr.setAttributeTypeId(504L);
         districtAttr.setValueTypeId(504L);
@@ -116,10 +116,10 @@ public class BuildingStrategy extends Strategy {
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
-        List<EntityAttribute> numbers = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
+        List<Attribute> numbers = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 return attr.getAttributeTypeId().equals(500L);
             }
         }));

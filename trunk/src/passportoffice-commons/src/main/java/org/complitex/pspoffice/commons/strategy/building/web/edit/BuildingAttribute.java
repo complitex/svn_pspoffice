@@ -5,7 +5,7 @@
 package org.complitex.pspoffice.commons.strategy.building.web.edit;
 
 import java.io.Serializable;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 
 /**
  *
@@ -15,15 +15,15 @@ public class BuildingAttribute implements Serializable {
 
     private Long attributeId;
 
-    private EntityAttribute number;
+    private Attribute number;
 
-    private EntityAttribute corp;
+    private Attribute corp;
 
-    private EntityAttribute structure;
+    private Attribute structure;
 
-    private EntityAttribute street;
+    private Attribute street;
 
-    public BuildingAttribute(Long attributeId, EntityAttribute number, EntityAttribute corp, EntityAttribute structure, EntityAttribute street) {
+    public BuildingAttribute(Long attributeId, Attribute number, Attribute corp, Attribute structure, Attribute street) {
         this.attributeId = attributeId;
         this.number = number;
         this.corp = corp;
@@ -31,27 +31,27 @@ public class BuildingAttribute implements Serializable {
         this.street = street;
     }
 
-    public EntityAttribute getCorp() {
+    public Attribute getCorp() {
         return corp;
     }
 
-    public void setCorp(EntityAttribute corp) {
+    public void setCorp(Attribute corp) {
         this.corp = corp;
     }
 
-    public EntityAttribute getNumber() {
+    public Attribute getNumber() {
         return number;
     }
 
-    public void setNumber(EntityAttribute number) {
+    public void setNumber(Attribute number) {
         this.number = number;
     }
 
-    public EntityAttribute getStructure() {
+    public Attribute getStructure() {
         return structure;
     }
 
-    public void setStructure(EntityAttribute structure) {
+    public void setStructure(Attribute structure) {
         this.structure = structure;
     }
 
@@ -63,11 +63,11 @@ public class BuildingAttribute implements Serializable {
         this.attributeId = attributeId;
     }
 
-    public EntityAttribute getStreet() {
+    public Attribute getStreet() {
         return street;
     }
 
-    public void setStreet(EntityAttribute street) {
+    public void setStreet(Attribute street) {
         this.street = street;
     }
 }

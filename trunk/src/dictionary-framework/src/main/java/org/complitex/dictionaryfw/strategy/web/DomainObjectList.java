@@ -33,7 +33,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
@@ -244,29 +244,29 @@ public class DomainObjectList extends WebPage {
             protected void populateItem(Item<DomainObject> item) {
                 DomainObject object = item.getModelObject();
 
-                List<EntityAttribute> attrs = Lists.newArrayList();
+                List<Attribute> attrs = Lists.newArrayList();
                 for (final AttributeDescription attrDesc : filterAttrDescs) {
-                    EntityAttribute attr = null;
+                    Attribute attr = null;
                     try {
-                        attr = Iterables.find(object.getAttributes(), new Predicate<EntityAttribute>() {
+                        attr = Iterables.find(object.getAttributes(), new Predicate<Attribute>() {
 
                             @Override
-                            public boolean apply(EntityAttribute attr) {
+                            public boolean apply(Attribute attr) {
                                 return attr.getAttributeTypeId().equals(attrDesc.getId());
                             }
                         });
                     } catch (NoSuchElementException e) {
-                        attr = new EntityAttribute();
+                        attr = new Attribute();
                         attr.setAttributeTypeId(-1L);
                     }
                     attrs.add(attr);
                 }
 
-                ListView<EntityAttribute> dataColumns = new ListView<EntityAttribute>("dataColumns", attrs) {
+                ListView<Attribute> dataColumns = new ListView<Attribute>("dataColumns", attrs) {
 
                     @Override
-                    protected void populateItem(ListItem<EntityAttribute> item) {
-                        final EntityAttribute attr = item.getModelObject();
+                    protected void populateItem(ListItem<Attribute> item) {
+                        final Attribute attr = item.getModelObject();
                         String attributeValue = "";
                         if (!attr.getAttributeTypeId().equals(-1L)) {
                             AttributeDescription desc = Iterables.find(filterAttrDescs, new Predicate<AttributeDescription>() {

@@ -13,6 +13,18 @@
 
         <form wicket:id="form">
             <table>
+                <wicket:container wicket:id="typeContainer">
+                    <tr>
+                        <td>
+                            Entity type <b class="blue">*</b>
+                            :
+                        </td>
+                        <td>
+                            <select wicket:id="types">
+                            </select>
+                        </td>
+                    </tr>
+                </wicket:container>
                 <tr wicket:id="simpleAttributes">
                     <td>
                         <span wicket:id="label"></span>
@@ -40,7 +52,7 @@
             </div>
 
             <div wicket:id="childrenContainer"></div>
-            
+
             <input type="submit" value="save" wicket:id="submit"/>
             <input type="button" value="cancel" wicket:id="cancel"/>
         </form>

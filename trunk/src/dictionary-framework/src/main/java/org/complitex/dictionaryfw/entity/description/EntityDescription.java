@@ -22,6 +22,8 @@ public class EntityDescription implements Serializable {
 
     private List<AttributeDescription> attributeDescriptions;
 
+    private List<EntityType> entityTypes;
+
     public String getEntityTable() {
         return entityTable;
     }
@@ -52,5 +54,13 @@ public class EntityDescription implements Serializable {
 
     public void setEntityNames(List<StringCulture> entityNames) {
         this.entityNames = entityNames;
+    }
+
+    public List<EntityType> getEntityTypes() {
+        return entityTypes;
+    }
+
+    public void setEntityTypes(List<EntityType> entityTypes) {
+        this.entityTypes = entityTypes;
     }
 }

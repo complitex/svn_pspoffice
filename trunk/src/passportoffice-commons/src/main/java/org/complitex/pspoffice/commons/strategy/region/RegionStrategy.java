@@ -140,8 +140,13 @@ public class RegionStrategy extends Strategy {
         public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
             DomainObjectEdit edit = (DomainObjectEdit) page;
             Long countryId = ids.get("country");
-            edit.getObject().setParentId(countryId);
-            edit.getObject().setParentEntityId(800L);
+            if (countryId != null && countryId > 0) {
+                edit.getObject().setParentId(countryId);
+                edit.getObject().setParentEntityId(800L);
+            } else {
+                edit.getObject().setParentId(null);
+                edit.getObject().setParentEntityId(null);
+            }
         }
     }
 

@@ -32,11 +32,13 @@ import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
+import org.complitex.dictionaryfw.strategy.web.IValidator;
 import org.complitex.dictionaryfw.util.CloneUtil;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.commons.strategy.building.web.edit.BuildingEditComponent;
+import org.complitex.pspoffice.commons.strategy.building.web.edit.BuildingValidator;
 
 /**
  *
@@ -66,9 +68,22 @@ public class BuildingStrategy extends Strategy {
         for (DomainObject building : buildings) {
             DomainObjectExample loadAttrsExample = CloneUtil.cloneObject(example);
             loadAttrsExample.setId(building.getId());
-            building.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadAttributes", loadAttrsExample));
+            building.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", loadAttrsExample));
         }
         return buildings;
+    }
+
+    @Override
+    public DomainObject findById(Long id) {
+        DomainObjectExample example = new DomainObjectExample();
+        example.setId(id);
+        example.setTable(getEntityTable());
+        DomainObject entity = (DomainObject) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building." + FIND_BY_ID_OPERATION, example);
+        entity.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", example));
+        for (EntityAttribute complexAttr : (List<EntityAttribute>) session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadComplexAttributes", example)) {
+            entity.addAttribute(complexAttr);
+        }
+        return entity;
     }
 
     @Override
@@ -86,6 +101,17 @@ public class BuildingStrategy extends Strategy {
             }
         }
         return description;
+    }
+
+    @Override
+    public DomainObject newInstance() {
+        DomainObject object = super.newInstance();
+        EntityAttribute districtAttr = new EntityAttribute();
+        districtAttr.setAttributeId(1L);
+        districtAttr.setAttributeTypeId(504L);
+        districtAttr.setValueTypeId(504L);
+        object.addAttribute(districtAttr);
+        return object;
     }
 
     @Override
@@ -181,10 +207,14 @@ public class BuildingStrategy extends Strategy {
         @Override
         public void found(WebPage page, final Map<String, Long> ids, final AjaxRequestTarget target) {
             DomainObjectEdit edit = (DomainObjectEdit) page;
-            DomainObject object = edit.getObject();
             Long cityId = ids.get("city");
-            object.setParentId(cityId);
-            object.setParentEntityId(400L);
+            if (cityId != null && cityId > 0) {
+                edit.getObject().setParentId(cityId);
+                edit.getObject().setParentEntityId(400L);
+            } else {
+                edit.getObject().setParentId(null);
+                edit.getObject().setParentEntityId(null);
+            }
 
             page.visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
 
@@ -221,5 +251,10 @@ public class BuildingStrategy extends Strategy {
     @Override
     public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelClass() {
         return BuildingEditComponent.class;
+    }
+
+    @Override
+    public IValidator getValidator() {
+        return new BuildingValidator();
     }
 }

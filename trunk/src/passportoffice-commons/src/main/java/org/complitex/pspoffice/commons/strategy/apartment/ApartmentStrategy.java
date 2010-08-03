@@ -141,8 +141,13 @@ public class ApartmentStrategy extends Strategy {
             DomainObjectEdit edit = (DomainObjectEdit) page;
             DomainObject object = edit.getObject();
             Long buildingId = ids.get("building");
-            object.setParentId(buildingId);
-            object.setParentEntityId(500L);
+            if (buildingId != null && buildingId > 0) {
+                object.setParentId(buildingId);
+                object.setParentEntityId(500L);
+            } else {
+                object.setParentId(null);
+                object.setParentEntityId(null);
+            }
         }
     }
 

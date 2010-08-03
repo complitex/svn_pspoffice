@@ -14,7 +14,18 @@
         <result column="entity_type_id" property="entityTypeId"/>
     </resultMap>
 
-    <select id="loadAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.EntityAttribute.EntityAttribute">
+    <resultMap id="StreetOrDistrict" type="EntityAttribute">
+       <id column="attribute_id" property="attributeId"/>
+       <id column="object_id" property="objectId"/>
+       <id column="attribute_type_id" property="attributeTypeId"/>
+       <id column="start_date" property="startDate"/>
+       <result column="status" property="status"/>
+       <result column="end_date" property="endDate"/>
+       <result column="value_id" property="valueId"/>
+       <result column="value_type_id" property="valueTypeId"/>
+   </resultMap>
+
+    <select id="loadSimpleAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.EntityAttribute.EntityAttribute">
         SELECT attr.`attribute_id`, attr.`object_id`, attr.`attribute_type_id`, attr.`value_id`, attr.`value_type_id`, attr.`start_date`, attr.`end_date`,
         attr.`status`, '${table}' as table_name
         FROM `building_attribute` attr WHERE attr.`object_id` = #{id} AND attr.`status` = 'ACTIVE'
@@ -102,6 +113,20 @@
 
     <select id="findStreetInSearchComponent" parameterType="DomainObjectExample" resultType="hashmap">
         SELECT attr.`value_id` streetId FROM `building_attribute` attr WHERE attr.`status` = 'ACTIVE' AND attr.`object_id` = #{id} AND attr.`attribute_type_id` = 503 limit 0,1
+    </select>
+
+    <select id="findById" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.Building" parameterType="DomainObjectExample">
+        SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
+        (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
+        (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
+        e.`parent_entity_id`, e.`entity_type_id`, '${table}' as table_name
+        FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
+    </select>
+
+    <select id="loadComplexAttributes" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.StreetOrDistrict" parameterType="DomainObjectExample">
+        SELECT attr.`attribute_id`, attr.`object_id`, attr.`attribute_type_id`, attr.`value_id`, attr.`value_type_id`, attr.`start_date`, attr.`end_date`,
+        attr.`status`
+        FROM `building_attribute` attr WHERE attr.`object_id` = #{id} AND attr.`status` = 'ACTIVE' AND attr.`attribute_type_id` IN (503, 504)
     </select>
 
 </mapper>

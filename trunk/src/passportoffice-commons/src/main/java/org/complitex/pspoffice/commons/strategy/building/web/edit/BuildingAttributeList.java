@@ -91,9 +91,11 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
         attribute.setAttributeTypeId(attributeTypeId);
         attribute.setValueTypeId(attributeValueId);
         attribute.setAttributeId(attributeId);
+        List<StringCulture> strings = Lists.newArrayList();
         for (String locale : locales) {
-            attribute.addLocalizedValue(new StringCulture(locale, null));
+            strings.add(new StringCulture(locale, null));
         }
+        attribute.setLocalizedValues(strings);
         object.addAttribute(attribute);
         return attribute;
     }
@@ -104,9 +106,6 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
         attribute.setAttributeTypeId(503L);
         attribute.setValueTypeId(503L);
         attribute.setAttributeId(attributeId);
-        for (String locale : locales) {
-            attribute.addLocalizedValue(new StringCulture(locale, null));
-        }
         object.addAttribute(attribute);
         return attribute;
     }

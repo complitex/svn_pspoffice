@@ -5,7 +5,6 @@
 package org.complitex.dictionaryfw.entity;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +24,7 @@ public class EntityAttribute implements Serializable {
 
     private Long valueTypeId;
 
-    private List<StringCulture> localizedValues = new ArrayList<StringCulture>();
+    private List<StringCulture> localizedValues;
 
     private Date startDate;
 

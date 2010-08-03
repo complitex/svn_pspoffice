@@ -22,7 +22,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
@@ -73,10 +73,10 @@ public class RegionStrategy extends Strategy {
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
-        return displayLocalizedValueUtil.displayValue(Iterables.find(object.getAttributes(), new Predicate<EntityAttribute>() {
+        return displayLocalizedValueUtil.displayValue(Iterables.find(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 return attr.getAttributeTypeId().equals(NAME_ATTRIBUTE_TYPE_ID);
             }
         }).getLocalizedValues(), locale);

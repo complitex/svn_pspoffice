@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import org.apache.wicket.Component;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
 
 /**
@@ -27,15 +27,15 @@ public class BuildingValidator implements IValidator {
     }
 
     private boolean checkStreets(DomainObject object, Component component) {
-        List<EntityAttribute> streets = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
+        List<Attribute> streets = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 return attr.getAttributeTypeId().equals(503L);
             }
         }));
-        for (EntityAttribute street1 : streets) {
-            for (EntityAttribute street2 : streets) {
+        for (Attribute street1 : streets) {
+            for (Attribute street2 : streets) {
                 if (!street1.getAttributeId().equals(street2.getAttributeId()) && street1.getValueId().equals(street2.getValueId())) {
                     component.error("Building standing on the one street can have only one number.");
                     return false;
@@ -46,10 +46,10 @@ public class BuildingValidator implements IValidator {
     }
 
     private boolean checkNumber(DomainObject object, Component component) {
-        List<EntityAttribute> numbers = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
+        List<Attribute> numbers = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 return attr.getAttributeTypeId().equals(500L);
             }
         }));

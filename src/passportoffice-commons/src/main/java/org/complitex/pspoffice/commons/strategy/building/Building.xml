@@ -14,7 +14,7 @@
         <result column="entity_type_id" property="entityTypeId"/>
     </resultMap>
 
-    <resultMap id="StreetOrDistrict" type="EntityAttribute">
+    <resultMap id="StreetOrDistrict" type="Attribute">
        <id column="attribute_id" property="attributeId"/>
        <id column="object_id" property="objectId"/>
        <id column="attribute_type_id" property="attributeTypeId"/>
@@ -25,7 +25,7 @@
        <result column="value_type_id" property="valueTypeId"/>
    </resultMap>
 
-    <select id="loadSimpleAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.EntityAttribute.EntityAttribute">
+    <select id="loadSimpleAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.Attribute.Attribute">
         SELECT attr.`attribute_id`, attr.`object_id`, attr.`attribute_type_id`, attr.`value_id`, attr.`value_type_id`, attr.`start_date`, attr.`end_date`,
         attr.`status`, '${table}' as table_name
         FROM `building_attribute` attr WHERE attr.`object_id` = #{id} AND attr.`status` = 'ACTIVE'

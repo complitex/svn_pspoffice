@@ -33,7 +33,7 @@ public class DomainObject implements Serializable {
 
     private String parentEntity;
 
-    private List<EntityAttribute> attributes = new ArrayList<EntityAttribute>();
+    private List<Attribute> attributes = new ArrayList<Attribute>();
 
     public Date getEndDate() {
         return endDate;
@@ -83,15 +83,15 @@ public class DomainObject implements Serializable {
         this.status = status;
     }
 
-    public List<EntityAttribute> getAttributes() {
+    public List<Attribute> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(List<EntityAttribute> attributes) {
+    public void setAttributes(List<Attribute> attributes) {
         this.attributes = attributes;
     }
 
-    public void addAttribute(EntityAttribute attribute) {
+    public void addAttribute(Attribute attribute) {
         attributes.add(attribute);
     }
 

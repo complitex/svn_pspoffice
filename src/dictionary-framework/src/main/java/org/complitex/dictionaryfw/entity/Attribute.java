@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Artem
  */
-public class EntityAttribute implements Serializable {
+public class Attribute implements Serializable {
 
     private Long attributeId;
 

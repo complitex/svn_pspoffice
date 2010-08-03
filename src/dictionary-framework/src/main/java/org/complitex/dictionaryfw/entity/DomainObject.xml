@@ -12,22 +12,9 @@
         <result column="parent_entity_id" property="parentEntityId"/>
         <result column="parent_entity" property="parentEntity"/>
         <result column="entity_type_id" property="entityTypeId"/>
-        <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, startDate = start_date}"
-                    select="org.complitex.dictionaryfw.entity.EntityAttribute.find"/>
+        <collection ofType="Attribute" property="attributes" column="{table = table_name, id = object_id, startDate = start_date}"
+                    select="org.complitex.dictionaryfw.entity.Attribute.find"/>
     </resultMap>
-
-    <!--<resultMap id="DomainObject_view" type="DomainObject" extends="org.complitex.dictionaryfw.entity.DomainObject.DomainObject">
-        <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, locale = locale, startDate = start_date}"
-        select="org.complitex.dictionaryfw.entity.EntityAttribute.find_view"/>
-    </resultMap>
-
-    <resultMap id="DomainObject_edit" type="DomainObject" extends="org.complitex.dictionaryfw.entity.DomainObject.DomainObject">
-        <association property="parent" column="{id = parent_id, locale = locale, table = parent_table}"
-        select="org.complitex.dictionaryfw.entity.Entity.findParentById"/>
-
-        <collection ofType="EntityAttribute" property="attributes" column="{table = table_name, id = object_id, locale = locale, startDate = start_date}"
-        select="org.complitex.dictionaryfw.entity.EntityAttribute.find_edit"/>
-    </resultMap>-->
 
     <insert id="insert" parameterType="InsertParameter">
         INSERT INTO `${table}` (`object_id`, `status`, `start_date`, `end_date`, `parent_id`, `parent_entity_id`, `entity_type_id`) VALUES

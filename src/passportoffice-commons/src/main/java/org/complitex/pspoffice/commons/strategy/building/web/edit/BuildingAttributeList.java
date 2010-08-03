@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.EntityAttribute;
+import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
@@ -35,18 +35,18 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
     public BuildingAttributeList(DomainObject object, List<String> locales) {
         this.object = object;
         this.locales = locales;
-        Iterable<EntityAttribute> suitedAttributes = Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
+        Iterable<Attribute> suitedAttributes = Iterables.filter(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 Long attributeTypeId = attr.getAttributeTypeId();
                 return attributeTypeId.equals(500L) || attributeTypeId.equals(501L) || attributeTypeId.equals(502L) || attributeTypeId.equals(503L);
             }
         });
-        Set<Long> attributeIds = Sets.newTreeSet(Iterables.transform(suitedAttributes, new Function<EntityAttribute, Long>() {
+        Set<Long> attributeIds = Sets.newTreeSet(Iterables.transform(suitedAttributes, new Function<Attribute, Long>() {
 
             @Override
-            public Long apply(EntityAttribute attr) {
+            public Long apply(Attribute attr) {
                 return attr.getAttributeId();
             }
         }));
@@ -61,11 +61,11 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
 
     }
 
-    private static EntityAttribute findEntityAttribute(Iterable<EntityAttribute> suitedAttributes, final long attributeId, final long attributeTypeId) {
-        return Iterables.find(suitedAttributes, new Predicate<EntityAttribute>() {
+    private static Attribute findEntityAttribute(Iterable<Attribute> suitedAttributes, final long attributeId, final long attributeTypeId) {
+        return Iterables.find(suitedAttributes, new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 return attr.getAttributeId().equals(attributeId) && attr.getAttributeTypeId().equals(attributeTypeId);
             }
         });
@@ -85,8 +85,8 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
         return buildingAttribute;
     }
 
-    private EntityAttribute newEntityAttribute(long attributeId, long attributeTypeId, long attributeValueId) {
-        EntityAttribute attribute = new EntityAttribute();
+    private Attribute newEntityAttribute(long attributeId, long attributeTypeId, long attributeValueId) {
+        Attribute attribute = new Attribute();
         attribute.setObjectId(object.getId());
         attribute.setAttributeTypeId(attributeTypeId);
         attribute.setValueTypeId(attributeValueId);
@@ -100,8 +100,8 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
         return attribute;
     }
 
-    private EntityAttribute newStreetAttribute(long attributeId){
-        EntityAttribute attribute = new EntityAttribute();
+    private Attribute newStreetAttribute(long attributeId){
+        Attribute attribute = new Attribute();
         attribute.setObjectId(object.getId());
         attribute.setAttributeTypeId(503L);
         attribute.setValueTypeId(503L);
@@ -143,10 +143,10 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
     @Override
     public BuildingAttribute remove(int index) {
         final BuildingAttribute toRemove = buildingAttributes.get(index);
-        List<EntityAttribute> attrs = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<EntityAttribute>() {
+        List<Attribute> attrs = Lists.newArrayList(Iterables.filter(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
-            public boolean apply(EntityAttribute attr) {
+            public boolean apply(Attribute attr) {
                 Long attributeTypeId = attr.getAttributeTypeId();
                 return attr.getAttributeId().equals(toRemove.getAttributeId())
                         && (attributeTypeId.equals(500L) || attributeTypeId.equals(501L) 

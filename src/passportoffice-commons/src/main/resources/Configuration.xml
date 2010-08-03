@@ -9,7 +9,7 @@
         <typeAlias type="org.complitex.dictionaryfw.entity.StringCulture" alias="StringCulture"/>
         <typeAlias type="org.complitex.dictionaryfw.entity.InsertParameter" alias="InsertParameter"/>
         <typeAlias type="org.complitex.dictionaryfw.entity.DomainObject" alias="DomainObject"/>
-        <typeAlias type="org.complitex.dictionaryfw.entity.EntityAttribute" alias="EntityAttribute"/>
+        <typeAlias type="org.complitex.dictionaryfw.entity.Attribute" alias="Attribute"/>
         <typeAlias type="org.complitex.dictionaryfw.entity.example.DomainObjectExample" alias="DomainObjectExample"/>
     </typeAliases>
 
@@ -37,7 +37,7 @@
         <mapper resource="org/complitex/dictionaryfw/entity/Sequence.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/StringCulture.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/description/EntityDescription.xml"/>
-        <mapper resource="org/complitex/dictionaryfw/entity/EntityAttribute.xml"/>
+        <mapper resource="org/complitex/dictionaryfw/entity/Attribute.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/DomainObject.xml"/>
 
         <mapper resource="org/complitex/pspoffice/commons/strategy/building/Building.xml"/>

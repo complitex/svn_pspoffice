@@ -15,20 +15,19 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionaryfw.dao.EntityDescriptionDao;
-import org.complitex.dictionaryfw.dao.LocaleDao;
-import org.complitex.dictionaryfw.dao.SequenceDao;
-import org.complitex.dictionaryfw.dao.StringCultureDao;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.description.AttributeValueDescription;
+import org.complitex.dictionaryfw.dao.EntityBean;
+import org.complitex.dictionaryfw.dao.LocaleBean;
+import org.complitex.dictionaryfw.dao.SequenceBean;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.InsertParameter;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StatusType;
 import org.complitex.dictionaryfw.entity.StringCulture;
-import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
-import org.complitex.dictionaryfw.entity.description.EntityDescription;
+import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
@@ -62,26 +61,25 @@ public abstract class Strategy {
     private StrategyFactory strategyFactory;
 
     @EJB
-    private SequenceDao sequence;
+    private SequenceBean sequenceBean;
 
     @EJB
-    private StringCultureDao stringDao;
+    private StringCultureBean stringBean;
 
     @EJB
-    private EntityDescriptionDao entityDescriptionDao;
+    private EntityBean entityBean;
 
     @EJB
-    private LocaleDao localeDao;
+    private LocaleBean localeBean;
 
     protected SqlSession session;
 
     public abstract String getEntityTable();
 
-    protected EntityDescriptionDao getEntityDescriptionDao() {
-        return entityDescriptionDao;
-    }
-
-    public abstract boolean isSimpleAttributeDesc(AttributeDescription attributeDescription);
+//    protected EntityBean getEntityDescriptionDao() {
+//        return entityDescriptionDao;
+//    }
+    public abstract boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription);
 
     public DomainObject findById(Long id) {
         DomainObjectExample example = new DomainObjectExample();
@@ -101,29 +99,34 @@ public abstract class Strategy {
         return (Integer) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + COUNT_OPERATION, example);
     }
 
-    public DomainObjectDescription getDescription() {
-        DomainObjectDescription description = new DomainObjectDescription();
-        EntityDescription descriptionFromDb = entityDescriptionDao.getEntityDescription(getEntityTable());
-        description.setEntityNames(descriptionFromDb.getEntityNames());
-        description.setEntityTypes(descriptionFromDb.getEntityTypes());
-        description.setAttributeDescriptions(descriptionFromDb.getAttributeDescriptions());
-        return description;
+//    public DomainObjectDescription getDescription() {
+//        DomainObjectDescription description = new DomainObjectDescription();
+//        Entity descriptionFromDb = entityDescriptionDao.getEntity(getEntityTable());
+//        description.setEntityNames(descriptionFromDb.getEntityNames());
+//        description.setEntityTypes(descriptionFromDb.getEntityTypes());
+//        description.setAttributeDescriptions(descriptionFromDb.getAttributeDescriptions());
+//        return description;
+//    }
+    public Entity getEntity() {
+        return entityBean.getEntity(getEntityTable());
     }
+
+    public abstract List<EntityAttributeType> getListColumns();
 
     public DomainObject newInstance() {
         DomainObject entity = new DomainObject();
 
-        for (AttributeDescription attributeDesc : getDescription().getAttributeDescriptions()) {
+        for (EntityAttributeType attributeDesc : getEntity().getEntityAttributeTypes()) {
             if (isSimpleAttributeDesc(attributeDesc)) {
                 //simple attributes
                 Attribute attribute = new Attribute();
-                AttributeValueDescription attributeValueDesc = attributeDesc.getAttributeValueDescriptions().get(0);
+                EntityAttributeValueType attributeValueDesc = attributeDesc.getEntityAttributeValueTypes().get(0);
                 if (attributeValueDesc.getValueType().equalsIgnoreCase(SimpleTypes.STRING.name())) {
                     attribute.setAttributeTypeId(attributeDesc.getId());
                     attribute.setValueTypeId(attributeValueDesc.getId());
                     attribute.setAttributeId(1L);
                     List<StringCulture> strings = Lists.newArrayList();
-                    for (String locale : localeDao.getAllLocales()) {
+                    for (String locale : localeBean.getAllLocales()) {
                         strings.add(new StringCulture(locale, null));
                     }
                     attribute.setLocalizedValues(strings);
@@ -135,7 +138,7 @@ public abstract class Strategy {
     }
 
     protected void insertStringCulture(StringCulture stringCulture) {
-        stringDao.insert(stringCulture, getEntityTable());
+        stringBean.insert(stringCulture, getEntityTable());
     }
 
     protected void insertAttribute(Attribute attribute) {
@@ -143,7 +146,7 @@ public abstract class Strategy {
         if (strings == null) {
             //reference attribute
         } else {
-            long stringId = sequence.nextStringId(getEntityTable());
+            long stringId = sequenceBean.nextStringId(getEntityTable());
             for (StringCulture string : strings) {
                 string.setId(stringId);
                 insertStringCulture(string);
@@ -155,7 +158,7 @@ public abstract class Strategy {
 
     public void insert(DomainObject object) {
         Date startDate = new Date();
-        object.setId(sequence.nextId(getEntityTable()));
+        object.setId(sequenceBean.nextId(getEntityTable()));
         insertDomainObject(object, startDate);
         for (Attribute attribute : object.getAttributes()) {
             attribute.setObjectId(object.getId());
@@ -185,9 +188,9 @@ public abstract class Strategy {
                     } else {
                         boolean needToUpdateAttribute = false;
 
-                        List<AttributeValueDescription> valueDescs = getDescription().
-                                getAttributeDesc(oldAttr.getAttributeTypeId()).
-                                getAttributeValueDescriptions();
+                        List<EntityAttributeValueType> valueDescs = getEntity().
+                                getAttributeType(oldAttr.getAttributeTypeId()).
+                                getEntityAttributeValueTypes();
 
                         boolean isSimpleAttribute = false;
                         if (valueDescs.size() == 1) {
@@ -291,11 +294,6 @@ public abstract class Strategy {
     public abstract Class<? extends WebPage> getListPage();
 
     public abstract PageParameters getListPageParams();
-//    {
-//        PageParameters params = new PageParameters();
-//        params.put(DomainObjectList.ENTITY, getEntityTable());
-//        return params;
-//    }
 
     public abstract List<String> getSearchFilters();
 
@@ -311,14 +309,6 @@ public abstract class Strategy {
     public abstract Class<? extends WebPage> getEditPage();
 
     public abstract PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity);
-//        {
-//        PageParameters params = new PageParameters();
-//        params.put(DomainObjectEdit.ENTITY, getEntityTable());
-//        params.put(DomainObjectEdit.OBJECT_ID, objectId);
-//        params.put(DomainObjectEdit.PARENT_ID, parentId);
-//        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
-//        return params;
-//    }
 
     public List<String> getParentSearchFilters() {
         return getSearchFilters();

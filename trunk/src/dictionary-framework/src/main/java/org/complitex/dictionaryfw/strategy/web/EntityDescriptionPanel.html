@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:wicket>
+    <head>
+        <wicket:head>
+            <title wicket:id="title"></title>
+        </wicket:head>
+    </head>
+    <body>
+        <wicket:panel>
+            <h2 wicket:id="label" style="margin-bottom: 20px;"></h2>
+            <h4 style="margin-bottom: 10px;">
+                <wicket:message key="attributes_label"/>
+            </h4>
+            <table class="tbColor" cellpadding="0" cellspacing="0" border="0">
+                <thead>
+                    <tr>
+                        <th>
+                            <wicket:message key="attribute_name"/>
+                        </th>
+                        <th>
+                            <wicket:message key="attribute_value_type"/>
+                        </th>
+                        <th>
+                            <wicket:message key="attribute_mandatory"/>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr wicket:id="attributes">
+                        <td>
+                            <span wicket:id="name"></span>
+                        </td>
+                        <td>
+                            <span wicket:id="valueType"></span>
+                        </td>
+                        <td>
+                            <span wicket:id="mandatory"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- <a wicket:id="addAttribute">
+                 <wicket:message key="add_attribute"/>
+             </a>-->
+
+            <div wicket:id="parentsContainer">
+                <wicket:message key="parents"/> : <span wicket:id="parentsInfo"></span>
+            </div>
+
+
+        </wicket:panel>
+    </body>
+</html>

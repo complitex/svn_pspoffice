@@ -12,7 +12,7 @@ import org.complitex.dictionaryfw.entity.StringCulture;
  *
  * @author Artem
  */
-public class EntityDescription implements Serializable {
+public class Entity implements Serializable {
 
     private Long id;
 
@@ -20,7 +20,7 @@ public class EntityDescription implements Serializable {
 
     private List<StringCulture> entityNames;
 
-    private List<AttributeDescription> attributeDescriptions;
+    private List<EntityAttributeType> entityAttributeTypes;
 
     private List<EntityType> entityTypes;
 
@@ -40,12 +40,12 @@ public class EntityDescription implements Serializable {
         this.id = id;
     }
 
-    public List<AttributeDescription> getAttributeDescriptions() {
-        return attributeDescriptions;
+    public List<EntityAttributeType> getEntityAttributeTypes() {
+        return entityAttributeTypes;
     }
 
-    public void setAttributeDescriptions(List<AttributeDescription> attributeDescriptions) {
-        this.attributeDescriptions = attributeDescriptions;
+    public void setEntityAttributeType(List<EntityAttributeType> entityAttributeTypes) {
+        this.entityAttributeTypes = entityAttributeTypes;
     }
 
     public List<StringCulture> getEntityNames() {
@@ -62,5 +62,14 @@ public class EntityDescription implements Serializable {
 
     public void setEntityTypes(List<EntityType> entityTypes) {
         this.entityTypes = entityTypes;
+    }
+
+    public EntityAttributeType getAttributeType(Long attributeTypeId) {
+        for (EntityAttributeType attributeDescription : getEntityAttributeTypes()) {
+            if (attributeDescription.getId().equals(attributeTypeId)) {
+                return attributeDescription;
+            }
+        }
+        return null;
     }
 }

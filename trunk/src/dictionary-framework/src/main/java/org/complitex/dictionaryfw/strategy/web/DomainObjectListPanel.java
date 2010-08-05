@@ -33,8 +33,8 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
+import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
@@ -106,10 +106,10 @@ public final class DomainObjectListPanel extends Panel {
         add(searchComponent);
         add(content);
 
-        final DomainObjectDescription description = getStrategy().getDescription();
-        final List<AttributeDescription> filterAttrDescs = description.getFilterAttributes();
+        final Entity description = getStrategy().getEntity();
+        final List<EntityAttributeType> filterAttrDescs = getStrategy().getListColumns();
 
-        for (AttributeDescription filterAttrDesc : filterAttrDescs) {
+        for (EntityAttributeType filterAttrDesc : filterAttrDescs) {
             example.addAttributeExample(new DomainObjectAttributeExample(filterAttrDesc.getId()));
         }
 
@@ -157,11 +157,11 @@ public final class DomainObjectListPanel extends Panel {
         final Form filterForm = new Form("filterForm");
         content.add(filterForm);
 
-        ListView<AttributeDescription> columns = new ListView<AttributeDescription>("columns", filterAttrDescs) {
+        ListView<EntityAttributeType> columns = new ListView<EntityAttributeType>("columns", filterAttrDescs) {
 
             @Override
-            protected void populateItem(ListItem<AttributeDescription> item) {
-                AttributeDescription attrDesc = item.getModelObject();
+            protected void populateItem(ListItem<EntityAttributeType> item) {
+                EntityAttributeType attrDesc = item.getModelObject();
                 ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attrDesc.getId()), dataProvider, data, content);
                 column.add(new Label("columnName", displayLocalizedValueUtil.displayValue(attrDesc.getAttributeNames(), getLocale())));
                 item.add(column);
@@ -176,7 +176,7 @@ public final class DomainObjectListPanel extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 filterForm.clearInput();
 
-                for (final AttributeDescription attrDesc : filterAttrDescs) {
+                for (final EntityAttributeType attrDesc : filterAttrDescs) {
                     DomainObjectAttributeExample attrExample = Iterables.find(example.getAttributeExamples(),
                             new Predicate<DomainObjectAttributeExample>() {
 
@@ -192,11 +192,11 @@ public final class DomainObjectListPanel extends Panel {
         };
         filterForm.add(reset);
 
-        ListView<AttributeDescription> filters = new ListView<AttributeDescription>("filters", filterAttrDescs) {
+        ListView<EntityAttributeType> filters = new ListView<EntityAttributeType>("filters", filterAttrDescs) {
 
             @Override
-            protected void populateItem(ListItem<AttributeDescription> item) {
-                final AttributeDescription attrDesc = item.getModelObject();
+            protected void populateItem(ListItem<EntityAttributeType> item) {
+                final EntityAttributeType attrDesc = item.getModelObject();
 
                 IModel<String> filterModel = new Model<String>() {
 
@@ -245,7 +245,7 @@ public final class DomainObjectListPanel extends Panel {
                 DomainObject object = item.getModelObject();
 
                 List<Attribute> attrs = Lists.newArrayList();
-                for (final AttributeDescription attrDesc : filterAttrDescs) {
+                for (final EntityAttributeType attrDesc : filterAttrDescs) {
                     Attribute attr = null;
                     try {
                         attr = Iterables.find(object.getAttributes(), new Predicate<Attribute>() {
@@ -269,14 +269,14 @@ public final class DomainObjectListPanel extends Panel {
                         final Attribute attr = item.getModelObject();
                         String attributeValue = "";
                         if (!attr.getAttributeTypeId().equals(-1L)) {
-                            AttributeDescription desc = Iterables.find(filterAttrDescs, new Predicate<AttributeDescription>() {
+                            EntityAttributeType desc = Iterables.find(filterAttrDescs, new Predicate<EntityAttributeType>() {
 
                                 @Override
-                                public boolean apply(AttributeDescription attrDesc) {
+                                public boolean apply(EntityAttributeType attrDesc) {
                                     return attrDesc.getId().equals(attr.getAttributeTypeId());
                                 }
                             });
-                            String valueType = desc.getAttributeValueDescriptions().get(0).getValueType();
+                            String valueType = desc.getEntityAttributeValueTypes().get(0).getValueType();
                             SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
                             switch (type) {
                                 case STRING:

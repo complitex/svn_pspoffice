@@ -14,7 +14,7 @@ import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionaryfw.dao.LocaleDao;
+import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
@@ -26,7 +26,7 @@ import org.complitex.dictionaryfw.entity.StringCulture;
 public class DisplayLocalizedValueUtil {
 
     @EJB
-    private LocaleDao localeDao;
+    private LocaleBean localeDao;
 
     public String displayValue(List<StringCulture> strings, final Locale locale) {
         String value = null;

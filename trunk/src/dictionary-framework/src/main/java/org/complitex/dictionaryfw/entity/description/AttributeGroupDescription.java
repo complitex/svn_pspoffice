@@ -9,19 +9,20 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- *
+ * Unused
  * @author Artem
  */
+
 public class AttributeGroupDescription implements Serializable {
 
     private String groupLabel;
-    private List<AttributeDescription> attributeDescs;
+    private List<EntityAttributeType> attributeDescs;
 
-    public List<AttributeDescription> getAttributeDescs() {
+    public List<EntityAttributeType> getAttributeDescs() {
         return attributeDescs;
     }
 
-    public void setAttributeDescs(List<AttributeDescription> attributeDescs) {
+    public void setAttributeDescs(List<EntityAttributeType> attributeDescs) {
         this.attributeDescs = attributeDescs;
     }
 

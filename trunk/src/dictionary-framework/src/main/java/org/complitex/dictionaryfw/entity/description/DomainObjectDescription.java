@@ -19,27 +19,27 @@ public class DomainObjectDescription implements Serializable {
 
     private List<EntityType> entityTypes;
 
-    private List<AttributeDescription> attributeDescriptions;
+    private List<EntityAttributeType> attributeDescriptions;
 
-    private List<AttributeDescription> filterAttributes = Lists.newArrayList();
+    private List<EntityAttributeType> filterAttributes = Lists.newArrayList();
 
-    public List<AttributeDescription> getFilterAttributes() {
+    public List<EntityAttributeType> getFilterAttributes() {
         return filterAttributes;
     }
 
-    public void setFilterAttributes(List<AttributeDescription> filterAttributes) {
+    public void setFilterAttributes(List<EntityAttributeType> filterAttributes) {
         this.filterAttributes = filterAttributes;
     }
 
-    public void addFilterAttribute(AttributeDescription filterAttribute) {
+    public void addFilterAttribute(EntityAttributeType filterAttribute) {
         filterAttributes.add(filterAttribute);
     }
 
-    public List<AttributeDescription> getAttributeDescriptions() {
+    public List<EntityAttributeType> getAttributeDescriptions() {
         return attributeDescriptions;
     }
 
-    public void setAttributeDescriptions(List<AttributeDescription> attributeDescriptions) {
+    public void setAttributeDescriptions(List<EntityAttributeType> attributeDescriptions) {
         this.attributeDescriptions = attributeDescriptions;
     }
 
@@ -59,8 +59,8 @@ public class DomainObjectDescription implements Serializable {
         this.entityTypes = entityTypes;
     }
 
-    public AttributeDescription getAttributeDesc(Long attributeTypeId) {
-        for (AttributeDescription attributeDescription : getAttributeDescriptions()) {
+    public EntityAttributeType getAttributeDesc(Long attributeTypeId) {
+        for (EntityAttributeType attributeDescription : getAttributeDescriptions()) {
             if (attributeDescription.getId().equals(attributeTypeId)) {
                 return attributeDescription;
             }

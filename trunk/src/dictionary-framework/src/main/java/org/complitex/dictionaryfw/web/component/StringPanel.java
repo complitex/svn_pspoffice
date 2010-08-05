@@ -14,7 +14,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
-import org.complitex.dictionaryfw.dao.LocaleDao;
+import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.entity.StringCulture;
 
 /**
@@ -24,7 +24,7 @@ import org.complitex.dictionaryfw.entity.StringCulture;
 public final class StringPanel extends Panel {
 
     @EJB(name = "LocaleDao")
-    private LocaleDao localeDao;
+    private LocaleBean localeDao;
 
     public StringPanel(String id, IModel<List<StringCulture>> model, final IModel<String> labelModel, final boolean enabled, final boolean required) {
         super(id);

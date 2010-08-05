@@ -21,7 +21,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
-import org.complitex.dictionaryfw.dao.LocaleDao;
+import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
@@ -48,7 +48,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
     private static final Logger log = LoggerFactory.getLogger(BuildingEditComponent.class);
 
     @EJB(name = "LocaleDao")
-    private LocaleDao localeDao;
+    private LocaleBean localeDao;
 
     @EJB(name = "BuildingStrategy")
     private BuildingStrategy buildingStrategy;

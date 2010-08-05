@@ -1,11 +1,8 @@
 package org.complitex.pspoffice.commons.web.pages.welcome;
 
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.ResourceModel;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 import org.complitex.pspoffice.commons.web.security.SecurityRole;
 import org.complitex.pspoffice.commons.web.template.TemplatePage;
 
@@ -20,7 +17,5 @@ public class WelcomePage extends TemplatePage {
         super();
 
         add(new Label("title", new ResourceModel("title")));
-
-        add(new BookmarkablePageLink("link", DomainObjectList.class, new PageParameters("entity=apartment")));
     }
 }

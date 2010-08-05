@@ -184,15 +184,15 @@ public final class SearchComponent extends Panel {
                         protected void onUpdate(AjaxRequestTarget target) {
                             //update model
                             //update other models
-                            if (model.getObject() != null) {
-                                for (int j = index + 1; j < filterModels.size(); j++) {
-                                    filterModels.get(j).setObject(null);
-                                }
-                            }
-                            componentState.clear();
-
-                            refreshFilters(target);
-                            setFocusOnNextFilter(target);
+//                            if (model.getObject() != null) {
+//                                for (int j = index + 1; j < filterModels.size(); j++) {
+//                                    filterModels.get(j).setObject(null);
+//                                }
+//                            }
+//                            componentState.clear();
+//
+//                            refreshFilters(target);
+//                            setFocusOnNextFilter(target);
                         }
 
                         private void refreshFilters(final AjaxRequestTarget target) {
@@ -248,7 +248,7 @@ public final class SearchComponent extends Panel {
         if (isComplete(finalState)) {
             Map<String, Long> ids = transformObjects(finalState);
             componentState.updateState(finalState);
-            callback.found(getWebPage(), ids, target);
+            callback.found(this, ids, target);
         }
     }
 

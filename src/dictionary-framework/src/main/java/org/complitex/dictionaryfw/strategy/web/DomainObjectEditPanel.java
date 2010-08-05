@@ -14,9 +14,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -28,15 +26,16 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.Attribute;
+import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
+import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.Strategy;
@@ -55,17 +54,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-public final class DomainObjectEdit extends WebPage {
+public final class DomainObjectEditPanel extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(DomainObjectEdit.class);
-
-    public static final String ENTITY = "entity";
-
-    public static final String OBJECT_ID = "object_id";
-
-    public static final String PARENT_ID = "parent_id";
-
-    public static final String PARENT_ENTITY = "parent_entity";
+    private static final Logger log = LoggerFactory.getLogger(DomainObjectEditPanel.class);
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -79,7 +70,7 @@ public final class DomainObjectEdit extends WebPage {
 
     private boolean fromParent;
 
-    private String entityTable;
+    private String entity;
 
     private DomainObject oldObject;
 
@@ -89,23 +80,15 @@ public final class DomainObjectEdit extends WebPage {
 
     private String parentEntity;
 
-    private Strategy getStrategy() {
-        return strategyFactory.getStrategy(entityTable);
-    }
-
-    public DomainObject getObject() {
-        return newObject;
-    }
-
-    public DomainObjectEdit(PageParameters parameters) {
-        entityTable = parameters.getString(ENTITY);
-        parentId = parameters.getAsLong(PARENT_ID);
-        parentEntity = parameters.getString(PARENT_ENTITY);
+    public DomainObjectEditPanel(String id, String entity, Long objectId, Long parentId, String parentEntity) {
+        super(id);
+        this.entity = entity;
+        this.parentId = parentId;
+        this.parentEntity = parentEntity;
 
         fromParent = (parentId != null) && !Strings.isEmpty(parentEntity);
 
-        Long id = parameters.getAsLong(OBJECT_ID);
-        if (id == null) {
+        if (objectId == null) {
             //create new entity
             isNew = true;
             oldObject = null;
@@ -113,14 +96,28 @@ public final class DomainObjectEdit extends WebPage {
 
         } else {
             //edit existing entity
-            newObject = getStrategy().findById(id);
+            newObject = getStrategy().findById(objectId);
             oldObject = CloneUtil.cloneObject(newObject);
         }
         init();
     }
 
+    private Strategy getStrategy() {
+        return strategyFactory.getStrategy(entity);
+    }
+
+    public DomainObject getObject() {
+        return newObject;
+    }
+
     private void init() {
         final DomainObjectDescription description = getStrategy().getDescription();
+
+        Label title = new Label("title", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        add(title);
+
+        Label label = new Label("label", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        add(label);
 
         final FeedbackPanel messages = new FeedbackPanel("messages");
         messages.setOutputMarkupId(true);
@@ -195,7 +192,7 @@ public final class DomainObjectEdit extends WebPage {
             @Override
             protected void populateItem(ListItem<Attribute> item) {
                 Attribute attr = item.getModelObject();
-                AttributeDescription desc = attrAndDesc.get(attr);
+                final AttributeDescription desc = attrAndDesc.get(attr);
 
                 boolean isSimpleInput = false;
                 boolean isDate = false;
@@ -210,8 +207,14 @@ public final class DomainObjectEdit extends WebPage {
                     isString = true;
                 }
 
-                String label = displayLocalizedValueUtil.displayValue(desc.getAttributeNames(), getLocale());
-                item.add(new Label("label", label));
+                IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return displayLocalizedValueUtil.displayValue(desc.getAttributeNames(), getLocale());
+                    }
+                };
+                item.add(new Label("label", labelModel));
 
                 WebMarkupContainer required = new WebMarkupContainer("required");
                 item.add(required);
@@ -222,7 +225,7 @@ public final class DomainObjectEdit extends WebPage {
 
                 if (isString) {
                     IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-                    stringPanel = new StringPanel("stringPanel", model, label, true, desc.isMandatory());
+                    stringPanel = new StringPanel("stringPanel", model, labelModel, true, desc.isMandatory());
                 }
 
                 item.add(stringPanel);
@@ -262,20 +265,23 @@ public final class DomainObjectEdit extends WebPage {
             }
         }
 
+        WebMarkupContainer parentContainer = new WebMarkupContainer("parentContainer");
+        form.add(parentContainer);
         List<String> parentFilters = getStrategy().getParentSearchFilters();
         ISearchCallback parentSearchCallback = getStrategy().getParentSearchCallback();
         Component parentSearch = null;
         if (parentFilters == null || parentFilters.isEmpty() || parentSearchCallback == null) {
+            parentContainer.setVisible(false);
             parentSearch = new EmptyPanel("parentSearch");
         } else {
             parentSearch = new SearchComponent("parentSearch", searchComponentState, parentFilters, parentSearchCallback);
         }
-        form.add(parentSearch);
+        parentContainer.add(parentSearch);
 
         //children
         Component childrenContainer = new EmptyPanel("childrenContainer");
         if (!isNew) {
-            childrenContainer = new ChildrenContainer("childrenContainer", entityTable, newObject.getId());
+            childrenContainer = new ChildrenContainer("childrenContainer", entity, newObject.getId());
         }
         form.add(childrenContainer);
 
@@ -287,7 +293,7 @@ public final class DomainObjectEdit extends WebPage {
                 boolean valid = validateParent();
                 IValidator validator = getStrategy().getValidator();
                 if (validator != null) {
-                    valid = validator.validate(newObject, DomainObjectEdit.this);
+                    valid = validator.validate(newObject, DomainObjectEditPanel.this);
                 }
 
                 if (valid) {
@@ -339,4 +345,3 @@ public final class DomainObjectEdit extends WebPage {
         return true;
     }
 }
-

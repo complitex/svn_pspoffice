@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
@@ -26,15 +24,16 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
+import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
+import org.complitex.dictionaryfw.entity.description.AttributeDescription;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
@@ -46,16 +45,12 @@ import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentSessionState;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Artem
  */
-public class DomainObjectList extends WebPage {
-
-    private static final Logger log = LoggerFactory.getLogger(DomainObjectList.class);
+public final class DomainObjectListPanel extends Panel {
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -63,7 +58,7 @@ public class DomainObjectList extends WebPage {
     @EJB(name = "DisplayLocalizedValueUtil")
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
-    private String entityTable;
+    private String entity;
 
     private final DomainObjectExample example = new DomainObjectExample();
 
@@ -71,16 +66,15 @@ public class DomainObjectList extends WebPage {
 
     private DataView<DomainObject> data;
 
-    public static final String ENTITY = "entity";
-
-    public DomainObjectList(PageParameters params) {
-        this.entityTable = params.getString(ENTITY);
-        example.setTable(entityTable);
+    public DomainObjectListPanel(String id, String entity) {
+        super(id);
+        this.entity = entity;
+        example.setTable(entity);
         init();
     }
 
     private Strategy getStrategy() {
-        return strategyFactory.getStrategy(entityTable);
+        return strategyFactory.getStrategy(entity);
     }
 
     public DomainObjectExample getExample() {
@@ -153,6 +147,12 @@ public class DomainObjectList extends WebPage {
             }
         };
         dataProvider.setSort("", true);
+
+        Label title = new Label("title", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        add(title);
+
+        Label label = new Label("label", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        add(label);
 
         final Form filterForm = new Form("filterForm");
         content.add(filterForm);
@@ -310,12 +310,11 @@ public class DomainObjectList extends WebPage {
 
     protected SearchComponentState getSearchComponentState() {
         SearchComponentSessionState searchComponentSessionState = getDictionaryFwSession().getSearchComponentSessionState();
-        SearchComponentState componentState = searchComponentSessionState.get(entityTable);
+        SearchComponentState componentState = searchComponentSessionState.get(entity);
         if (componentState == null) {
             componentState = new SearchComponentState();
-            searchComponentSessionState.put(entityTable, componentState);
+            searchComponentSessionState.put(entity, componentState);
         }
         return componentState;
     }
 }
-

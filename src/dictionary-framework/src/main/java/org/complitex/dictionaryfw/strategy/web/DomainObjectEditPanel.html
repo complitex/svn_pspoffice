@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:wicket>
+    <head>
+        <wicket:head>
+            <title wicket:id="title"></title>
+        </wicket:head>
+    </head>
+    <body>
+        <wicket:panel>
+            <h2 wicket:id="label" style="margin-bottom: 20px;"></h2>
+            <div wicket:id="messages"></div>
+            <form wicket:id="form">
+                <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                    <wicket:container wicket:id="typeContainer">
+                        <tr>
+                            <th>
+                                <wicket:message key="entity_type"/> <b class="blue">*</b> :
+                            </th>
+                            <td>
+                                <select wicket:id="types">
+                                </select>
+                            </td>
+                        </tr>
+                    </wicket:container>
+                    <tr wicket:id="simpleAttributes">
+                        <th>
+                            <span wicket:id="label"></span>
+                            <span wicket:id="required">
+                                <b class="blue">*</b>
+                            </span>
+                            :
+                        </th>
+                        <td>
+                            <!--<div wicket:id="datePanel"></div>-->
+                            <!--<div wicket:id="inputPanel"></div>-->
+                            <div wicket:id="stringPanel"></div>
+                            <!--<div wicket:id="booleanPanel"></div>-->
+                        </td>
+                    </tr>
+                    <tr wicket:id="parentContainer">
+                        <th>
+                            <wicket:message key="parent"/> <b class="blue">*</b> :
+                        </th>
+                        <td>
+                            <span wicket:id="parentSearch"></span>
+                        </td>
+                    </tr>
+                </table>
+
+                <div>
+                    <span wicket:id="complexAttributes"></span>
+                </div>
+
+                <div wicket:id="childrenContainer"></div>
+
+                <div style="margin-bottom:30px"></div>
+                <input type="submit" wicket:message="value:save" wicket:id="submit" class="btnMiddle"/>
+                <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
+            </form>
+        </wicket:panel>
+    </body>
+</html>

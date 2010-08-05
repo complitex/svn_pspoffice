@@ -16,17 +16,18 @@ import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionaryfw.dao.LocaleDao;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
+import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.web.component.StringPanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
@@ -124,7 +125,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         }
 
         @Override
-        public void found(WebPage page, final Map<String, Long> ids, final AjaxRequestTarget target) {
+        public void found(SearchComponent component, final Map<String, Long> ids, final AjaxRequestTarget target) {
             Long streetId = ids.get("street");
             if (streetId != null && streetId > 0) {
                 buildingAttribute.getStreet().setValueId(streetId);
@@ -132,7 +133,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 buildingAttribute.getStreet().setValueId(null);
             }
 
-            page.visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
+            component.findParent(DomainObjectEditPanel.class).visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
 
                 @Override
                 public Object component(SearchComponent searchComponent) {
@@ -148,16 +149,15 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
     private class DistrictSearchCallback implements ISearchCallback, Serializable {
 
         @Override
-        public void found(WebPage page, final Map<String, Long> ids, final AjaxRequestTarget target) {
+        public void found(SearchComponent component, final Map<String, Long> ids, final AjaxRequestTarget target) {
             Long districtId = ids.get("district");
-            log.info("District found : {}", districtId);
             if (districtId != null && districtId > 0) {
                 districtAttribute.setValueId(districtId);
             } else {
                 districtAttribute.setValueId(null);
             }
 
-            page.visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
+            component.findParent(DomainObjectEditPanel.class).visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
 
                 @Override
                 public Object component(SearchComponent searchComponent) {
@@ -177,7 +177,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.setOutputMarkupId(true);
         add(attributesContainer);
 
-        final BuildingAttributeList list = new BuildingAttributeList(getEditPage().getObject(), localeDao.getAllLocales());
+        final BuildingAttributeList list = new BuildingAttributeList(getEditPagePanel().getObject(), localeDao.getAllLocales());
         AjaxLink add = new AjaxLink("add") {
 
             @Override
@@ -188,12 +188,12 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         };
         add(add);
 
-        final SearchComponentState parentSearchComponentState = getEditPage().getParentSearchComponentState();
+        final SearchComponentState parentSearchComponentState = getEditPagePanel().getParentSearchComponentState();
         final Long cityId = parentSearchComponentState.get("city") != null ? parentSearchComponentState.get("city").getId() : null;
 
         //district
         Long districtId = null;
-        districtAttribute = Iterables.find(getEditPage().getObject().getAttributes(), new Predicate<Attribute>() {
+        districtAttribute = Iterables.find(getEditPagePanel().getObject().getAttributes(), new Predicate<Attribute>() {
 
             @Override
             public boolean apply(Attribute attr) {
@@ -217,9 +217,9 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
             protected void populateItem(ListItem<BuildingAttribute> item) {
                 BuildingAttribute buildingAttribute = item.getModelObject();
 
-                item.add(newStringPanel("number", buildingAttribute.getNumber(), "Number", true));
-                item.add(newStringPanel("corp", buildingAttribute.getCorp(), "Corp", false));
-                item.add(newStringPanel("structure", buildingAttribute.getCorp(), "Structure", false));
+                item.add(newStringPanel("number", buildingAttribute.getNumber(), new ResourceModel("number"), true));
+                item.add(newStringPanel("corp", buildingAttribute.getCorp(), new ResourceModel("corp"), false));
+                item.add(newStringPanel("structure", buildingAttribute.getCorp(), new ResourceModel("structure"), false));
 
                 DomainObject street = null;
                 Long streetId = buildingAttribute.getStreet().getValueId();
@@ -241,8 +241,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.add(buildingAttributes);
     }
 
-    private static StringPanel newStringPanel(String id, Attribute attr, String label, boolean required) {
+    private static StringPanel newStringPanel(String id, Attribute attr, IModel<String> labelModel, boolean required) {
         IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-        return new StringPanel(id, model, label, true, required);
+        return new StringPanel(id, model, labelModel, true, required);
     }
 }

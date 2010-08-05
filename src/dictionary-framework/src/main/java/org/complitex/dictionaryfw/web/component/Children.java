@@ -57,7 +57,7 @@ public final class Children extends Panel {
 
         @Override
         public String getObject() {
-            return expanded ? "Hide" : "Show";
+            return expanded ? getString("hide") : getString("show");
         }
 
         public void toggle() {
@@ -123,6 +123,5 @@ public final class Children extends Panel {
         children.setReuseItems(true);
         content.add(children);
         content.add(new BookmarkablePageLink("add", getStrategy().getEditPage(), getStrategy().getEditPageParams(null, parentId, parentEntity)));
-
     }
 }

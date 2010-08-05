@@ -5,15 +5,15 @@
     </head>
     <body>
         <wicket:panel>
-            <table>
+            <table cellpadding="0" cellspacing="0" border="0">
                 <tbody wicket:id="attributesContainer">
                     <tr>
                         <td>
-                            <table>
+                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
-                                    <td>
-                                        District :
-                                    </td>
+                                    <th>
+                                        <wicket:message key="district"/> :
+                                    </th>
                                     <td>
                                         <span wicket:id="district"></span>
                                     </td>
@@ -23,63 +23,55 @@
                     </tr>
                     <tr wicket:id="buildingAttributes">
                         <td>
-                            <table>
+                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
-                                    <td>
-                                        Number <b class="blue">*</b> :
-                                    </td>
+                                    <th>
+                                        <wicket:message key="number"/> <b class="blue">*</b> :
+                                    </th>
                                     <td>
                                         <span wicket:id="number"></span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        Corp :
-                                    </td>
+                                    <th>
+                                        <wicket:message key="corp"/> :
+                                    </th>
                                     <td>
                                         <span wicket:id="corp"></span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        Structure :
-                                    </td>
+                                    <th>
+                                        <wicket:message key="structure"/> :
+                                    </th>
                                     <td>
                                         <span wicket:id="structure"></span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td rowspan="2">
-                                        Street :
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">
+                                    <th>
+                                        <wicket:message key="street"/> :
+                                    </th>
+                                    <td>
                                         <span wicket:id="street"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <!--<tr>
                                     <td>
-                                        <a wicket:id="remove">
-                                            Remove
-                                        </a>
+
                                     </td>
-                                </tr>
+                                </tr>-->
                             </table>
-                        </td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td>
-                            <a wicket:id="add">
-                                Add
+                            <a wicket:id="remove">
+                                <wicket:message key="remove"/>
                             </a>
                         </td>
                     </tr>
-                </tfoot>
+                </tbody>
             </table>
-
+            <a wicket:id="add">
+                <wicket:message key="add"/>
+            </a>
         </wicket:panel>
     </body>
 </html>

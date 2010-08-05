@@ -36,7 +36,7 @@
         <mapper resource="org/complitex/dictionaryfw/entity/Locale.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/Sequence.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/StringCulture.xml"/>
-        <mapper resource="org/complitex/dictionaryfw/entity/description/EntityDescription.xml"/>
+        <mapper resource="org/complitex/dictionaryfw/entity/description/Entity.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/Attribute.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/DomainObject.xml"/>
 

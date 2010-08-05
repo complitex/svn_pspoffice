@@ -15,7 +15,7 @@ import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
  */
 @Interceptors({SqlSessionInterceptor.class})
 @Stateless
-public class SequenceDao {
+public class SequenceBean {
 
     public static final String SEQUENCE_NAMESPACE = "org.complitex.dictionaryfw.entity.Sequence";
 

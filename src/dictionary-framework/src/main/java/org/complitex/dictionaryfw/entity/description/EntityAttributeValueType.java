@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author Artem
  */
-public class AttributeValueDescription implements Serializable {
+public class EntityAttributeValueType implements Serializable {
 
     private Long id;
 

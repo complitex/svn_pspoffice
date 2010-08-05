@@ -35,8 +35,8 @@ import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
+import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
@@ -111,7 +111,7 @@ public final class DomainObjectEditPanel extends Panel {
     }
 
     private void init() {
-        final DomainObjectDescription description = getStrategy().getDescription();
+        final Entity description = getStrategy().getEntity();
 
         Label title = new Label("title", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
         add(title);
@@ -171,14 +171,14 @@ public final class DomainObjectEditPanel extends Panel {
 
 
         //simple attributes
-        final Map<Attribute, AttributeDescription> attrAndDesc = Maps.newHashMap();
+        final Map<Attribute, EntityAttributeType> attrAndDesc = Maps.newHashMap();
 
         for (final Attribute attr : newObject.getAttributes()) {
             try {
-                AttributeDescription attrDesc = Iterables.find(description.getAttributeDescriptions(), new Predicate<AttributeDescription>() {
+                EntityAttributeType attrDesc = Iterables.find(description.getEntityAttributeTypes(), new Predicate<EntityAttributeType>() {
 
                     @Override
-                    public boolean apply(AttributeDescription attrDesc) {
+                    public boolean apply(EntityAttributeType attrDesc) {
                         return attrDesc.getId().equals(attr.getAttributeTypeId()) && getStrategy().isSimpleAttributeDesc(attrDesc);
                     }
                 });
@@ -192,7 +192,7 @@ public final class DomainObjectEditPanel extends Panel {
             @Override
             protected void populateItem(ListItem<Attribute> item) {
                 Attribute attr = item.getModelObject();
-                final AttributeDescription desc = attrAndDesc.get(attr);
+                final EntityAttributeType desc = attrAndDesc.get(attr);
 
                 boolean isSimpleInput = false;
                 boolean isDate = false;
@@ -201,7 +201,7 @@ public final class DomainObjectEditPanel extends Panel {
                 boolean isAutoComplete = false;
                 boolean isBoolean = false;
 
-                String valueType = desc.getAttributeValueDescriptions().get(0).getValueType();
+                String valueType = desc.getEntityAttributeValueTypes().get(0).getValueType();
 
                 if (valueType.equalsIgnoreCase(SimpleTypes.STRING.name())) {
                     isString = true;

@@ -103,7 +103,7 @@ public final class SearchComponent extends Panel {
 
             @Override
             public String apply(String entity) {
-                return displayLocalizedValueUtil.displayValue(strategyFactory.getStrategy(entity).getDescription().getEntityNames(),
+                return displayLocalizedValueUtil.displayValue(strategyFactory.getStrategy(entity).getEntity().getEntityNames(),
                         getLocale());
             }
         }));

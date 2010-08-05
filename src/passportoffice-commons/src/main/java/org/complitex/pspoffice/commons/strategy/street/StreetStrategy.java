@@ -24,8 +24,7 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
@@ -57,23 +56,33 @@ public class StreetStrategy extends Strategy {
     }
 
     @Override
-    public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
+    public boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
+//    @Override
+//    public DomainObjectDescription getEntity() {
+//        DomainObjectDescription description = super.getEntity();
+//
+//        description.setFilterAttributes(Lists.newArrayList(Iterables.filter(description.getAttributeDescriptions(), new Predicate<EntityAttributeType>() {
+//
+//            @Override
+//            public boolean apply(EntityAttributeType attrDesc) {
+//                return attrDesc.getId().equals(NAME_ATTRIBUTE_TYPE_ID);
+//            }
+//        })));
+//
+//        return description;
+//    }
     @Override
-    public DomainObjectDescription getDescription() {
-        DomainObjectDescription description = super.getDescription();
-
-        description.setFilterAttributes(Lists.newArrayList(Iterables.filter(description.getAttributeDescriptions(), new Predicate<AttributeDescription>() {
+    public List<EntityAttributeType> getListColumns() {
+        return Lists.newArrayList(Iterables.filter(getEntity().getEntityAttributeTypes(), new Predicate<EntityAttributeType>() {
 
             @Override
-            public boolean apply(AttributeDescription attrDesc) {
-                return attrDesc.getId().equals(NAME_ATTRIBUTE_TYPE_ID);
+            public boolean apply(EntityAttributeType attr) {
+                return attr.getId().equals(NAME_ATTRIBUTE_TYPE_ID);
             }
-        })));
-
-        return description;
+        }));
     }
 
     @Override

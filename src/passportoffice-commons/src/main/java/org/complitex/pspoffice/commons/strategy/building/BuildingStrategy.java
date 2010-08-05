@@ -25,8 +25,7 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
-import org.complitex.dictionaryfw.entity.description.AttributeDescription;
-import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
@@ -63,7 +62,7 @@ public class BuildingStrategy extends Strategy {
     }
 
     @Override
-    public boolean isSimpleAttributeDesc(AttributeDescription attributeDescription) {
+    public boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() > 504L;
     }
 
@@ -99,16 +98,27 @@ public class BuildingStrategy extends Strategy {
     }
 
     @Override
-    public DomainObjectDescription getDescription() {
-        DomainObjectDescription description = super.getDescription();
-        for (AttributeDescription attrDesc : description.getAttributeDescriptions()) {
-            if (attrDesc.getId().equals(500L) || attrDesc.getId().equals(501L) || attrDesc.getId().equals(502L)) {
-                description.addFilterAttribute(attrDesc);
-            }
-        }
-        return description;
+    public List<EntityAttributeType> getListColumns() {
+        return Lists.newArrayList(Iterables.filter(getEntity().getEntityAttributeTypes(),
+                new Predicate<EntityAttributeType>() {
+
+                    @Override
+                    public boolean apply(EntityAttributeType attr) {
+                        return attr.getId().equals(500L) || attr.getId().equals(501L) || attr.getId().equals(502L);
+                    }
+                }));
     }
 
+//    @Override
+//    public DomainObjectDescription getDescription() {
+//        DomainObjectDescription description = super.getDescription();
+//        for (EntityAttributeType attrDesc : description.getAttributeDescriptions()) {
+//            if (attrDesc.getId().equals(500L) || attrDesc.getId().equals(501L) || attrDesc.getId().equals(502L)) {
+//                description.addFilterAttribute(attrDesc);
+//            }
+//        }
+//        return description;
+//    }
     @Override
     public DomainObject newInstance() {
         DomainObject object = super.newInstance();

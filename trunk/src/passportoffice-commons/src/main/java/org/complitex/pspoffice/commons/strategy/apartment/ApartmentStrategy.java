@@ -17,6 +17,7 @@ import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
@@ -28,10 +29,14 @@ import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
+import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
+import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
+import org.complitex.dictionaryfw.util.ResourceUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
+import org.complitex.dictionaryfw.web.component.search.SearchComponent;
+import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
+import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
 
 /**
  *
@@ -122,8 +127,8 @@ public class ApartmentStrategy extends Strategy {
     private static class SearchCallback implements ISearchCallback, Serializable {
 
         @Override
-        public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
-            DomainObjectList list = (DomainObjectList) page;
+        public void found(SearchComponent component, Map<String, Long> ids, AjaxRequestTarget target) {
+            DomainObjectListPanel list = component.findParent(DomainObjectListPanel.class);
             configureExampleImpl(list.getExample(), ids, null);
             list.refreshContent(target);
         }
@@ -137,8 +142,8 @@ public class ApartmentStrategy extends Strategy {
     private static class ParentSearchCallback implements ISearchCallback, Serializable {
 
         @Override
-        public void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target) {
-            DomainObjectEdit edit = (DomainObjectEdit) page;
+        public void found(SearchComponent component, Map<String, Long> ids, AjaxRequestTarget target) {
+            DomainObjectEditPanel edit = component.findParent(DomainObjectEditPanel.class);
             DomainObject object = edit.getObject();
             Long buildingId = ids.get("building");
             if (buildingId != null && buildingId > 0) {
@@ -153,6 +158,34 @@ public class ApartmentStrategy extends Strategy {
 
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
-        return ImmutableMap.of("room", "Rooms");
+        String commonsBundle = "org.complitex.pspoffice.commons.strategy.Commons";
+        return ImmutableMap.of("room", ResourceUtil.getString(commonsBundle, "room", locale));
+    }
+
+    @Override
+    public Class<? extends WebPage> getEditPage() {
+        return DomainObjectEdit.class;
+    }
+
+    @Override
+    public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
+        PageParameters params = new PageParameters();
+        params.put(DomainObjectEdit.ENTITY, getEntityTable());
+        params.put(DomainObjectEdit.OBJECT_ID, objectId);
+        params.put(DomainObjectEdit.PARENT_ID, parentId);
+        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
+        return params;
+    }
+
+    @Override
+    public Class<? extends WebPage> getListPage() {
+        return DomainObjectList.class;
+    }
+
+    @Override
+    public PageParameters getListPageParams() {
+        PageParameters params = new PageParameters();
+        params.put(DomainObjectList.ENTITY, getEntityTable());
+        return params;
     }
 }

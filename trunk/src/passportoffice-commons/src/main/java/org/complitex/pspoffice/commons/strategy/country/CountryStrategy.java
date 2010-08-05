@@ -15,6 +15,8 @@ import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+import org.apache.wicket.PageParameters;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
@@ -26,6 +28,8 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
+import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
+import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
 
 /**
  *
@@ -118,5 +122,32 @@ public class CountryStrategy extends Strategy {
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
         return ImmutableMap.of("region", "Regions");
+    }
+
+    @Override
+    public Class<? extends WebPage> getEditPage() {
+        return DomainObjectEdit.class;
+    }
+
+    @Override
+    public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
+        PageParameters params = new PageParameters();
+        params.put(DomainObjectEdit.ENTITY, getEntityTable());
+        params.put(DomainObjectEdit.OBJECT_ID, objectId);
+        params.put(DomainObjectEdit.PARENT_ID, parentId);
+        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
+        return params;
+    }
+
+    @Override
+    public Class<? extends WebPage> getListPage() {
+        return DomainObjectList.class;
+    }
+
+    @Override
+    public PageParameters getListPageParams() {
+        PageParameters params = new PageParameters();
+        params.put(DomainObjectList.ENTITY, getEntityTable());
+        return params;
     }
 }

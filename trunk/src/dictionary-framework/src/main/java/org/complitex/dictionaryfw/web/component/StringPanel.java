@@ -23,10 +23,10 @@ import org.complitex.dictionaryfw.entity.StringCulture;
  */
 public final class StringPanel extends Panel {
 
-    @EJB(name="LocaleDao")
+    @EJB(name = "LocaleDao")
     private LocaleDao localeDao;
 
-    public StringPanel(String id, IModel<List<StringCulture>> model, final String label, final boolean enabled, final boolean required) {
+    public StringPanel(String id, IModel<List<StringCulture>> model, final IModel<String> labelModel, final boolean enabled, final boolean required) {
         super(id);
 
         add(new ListView<StringCulture>("strings", model) {
@@ -40,11 +40,11 @@ public final class StringPanel extends Panel {
 
                 boolean isSystemLocale = false;
                 if (new Locale(culture.getLocale()).getLanguage().equalsIgnoreCase(new Locale(localeDao.getSystemLocale()).getLanguage())) {
-                   isSystemLocale = true;
+                    isSystemLocale = true;
                 }
 
                 InputPanel<String> inputPanel = new InputPanel("inputPanel", new PropertyModel<String>(culture, "value"),
-                        String.class, required && isSystemLocale, label, enabled);
+                        String.class, required && isSystemLocale, labelModel, enabled);
                 item.add(inputPanel);
 
                 WebMarkupContainer requiredContainer = new WebMarkupContainer("bookFieldRequired");

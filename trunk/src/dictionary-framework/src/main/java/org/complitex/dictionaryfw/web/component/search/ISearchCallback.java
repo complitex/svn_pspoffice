@@ -6,7 +6,6 @@ package org.complitex.dictionaryfw.web.component.search;
 
 import java.util.Map;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.markup.html.WebPage;
 
 /**
  *
@@ -14,5 +13,5 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public interface ISearchCallback {
 
-    void found(WebPage page, Map<String, Long> ids, AjaxRequestTarget target);
+    void found(SearchComponent component, Map<String, Long> ids, AjaxRequestTarget target);
 }

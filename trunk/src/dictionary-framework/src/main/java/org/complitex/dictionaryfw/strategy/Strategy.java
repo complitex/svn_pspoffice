@@ -30,8 +30,6 @@ import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.DomainObjectDescription;
 import org.complitex.dictionaryfw.entity.description.EntityDescription;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectEdit;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectList;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
 import org.complitex.dictionaryfw.util.Numbers;
@@ -290,15 +288,14 @@ public abstract class Strategy {
     /*
      * List page related functionality.
      */
-    public Class<? extends WebPage> getListPage() {
-        return DomainObjectList.class;
-    }
+    public abstract Class<? extends WebPage> getListPage();
 
-    public PageParameters getListPageParams() {
-        PageParameters params = new PageParameters();
-        params.put(DomainObjectList.ENTITY, getEntityTable());
-        return params;
-    }
+    public abstract PageParameters getListPageParams();
+//    {
+//        PageParameters params = new PageParameters();
+//        params.put(DomainObjectList.ENTITY, getEntityTable());
+//        return params;
+//    }
 
     public abstract List<String> getSearchFilters();
 
@@ -311,18 +308,17 @@ public abstract class Strategy {
     /*
      * Edit page related functionality.
      */
-    public Class<? extends WebPage> getEditPage() {
-        return DomainObjectEdit.class;
-    }
+    public abstract Class<? extends WebPage> getEditPage();
 
-    public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
-        PageParameters params = new PageParameters();
-        params.put(DomainObjectEdit.ENTITY, getEntityTable());
-        params.put(DomainObjectEdit.OBJECT_ID, objectId);
-        params.put(DomainObjectEdit.PARENT_ID, parentId);
-        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
-        return params;
-    }
+    public abstract PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity);
+//        {
+//        PageParameters params = new PageParameters();
+//        params.put(DomainObjectEdit.ENTITY, getEntityTable());
+//        params.put(DomainObjectEdit.OBJECT_ID, objectId);
+//        params.put(DomainObjectEdit.PARENT_ID, parentId);
+//        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
+//        return params;
+//    }
 
     public List<String> getParentSearchFilters() {
         return getSearchFilters();

@@ -12,6 +12,8 @@ import org.apache.wicket.Component;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
+import org.complitex.dictionaryfw.util.ResourceUtil;
+import org.complitex.pspoffice.commons.strategy.building.BuildingStrategy;
 
 /**
  *
@@ -37,7 +39,8 @@ public class BuildingValidator implements IValidator {
         for (Attribute street1 : streets) {
             for (Attribute street2 : streets) {
                 if (!street1.getAttributeId().equals(street2.getAttributeId()) && street1.getValueId().equals(street2.getValueId())) {
-                    component.error("Building standing on the one street can have only one number.");
+                    component.getPage().error(ResourceUtil.getString(BuildingStrategy.RESOURCE_BUNDLE, "multiple_numbers_on_one_street",
+                            component.getLocale()));
                     return false;
                 }
             }
@@ -54,7 +57,7 @@ public class BuildingValidator implements IValidator {
             }
         }));
         if (numbers.isEmpty()) {
-            component.error("Building must has at least one number.");
+            component.getPage().error(ResourceUtil.getString(BuildingStrategy.RESOURCE_BUNDLE, "no_numbers", component.getLocale()));
             return false;
         }
         return true;

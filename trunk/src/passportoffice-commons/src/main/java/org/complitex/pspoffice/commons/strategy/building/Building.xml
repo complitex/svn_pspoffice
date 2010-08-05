@@ -15,15 +15,15 @@
     </resultMap>
 
     <resultMap id="StreetOrDistrict" type="Attribute">
-       <id column="attribute_id" property="attributeId"/>
-       <id column="object_id" property="objectId"/>
-       <id column="attribute_type_id" property="attributeTypeId"/>
-       <id column="start_date" property="startDate"/>
-       <result column="status" property="status"/>
-       <result column="end_date" property="endDate"/>
-       <result column="value_id" property="valueId"/>
-       <result column="value_type_id" property="valueTypeId"/>
-   </resultMap>
+        <id column="attribute_id" property="attributeId"/>
+        <id column="object_id" property="objectId"/>
+        <id column="attribute_type_id" property="attributeTypeId"/>
+        <id column="start_date" property="startDate"/>
+        <result column="status" property="status"/>
+        <result column="end_date" property="endDate"/>
+        <result column="value_id" property="valueId"/>
+        <result column="value_type_id" property="valueTypeId"/>
+    </resultMap>
 
     <select id="loadSimpleAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.Attribute.Attribute">
         SELECT attr.`attribute_id`, attr.`object_id`, attr.`attribute_type_id`, attr.`value_id`, attr.`value_type_id`, attr.`start_date`, attr.`end_date`,
@@ -83,21 +83,21 @@
             </when>
             <otherwise>
                 <foreach item="attrExample" collection="attributeExamples">
-                    <if test="attrExample.value != null">
-                        <choose>
-                            <when test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
-                                AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
-                                AND attr.`status` = 'ACTIVE' AND attr.`value_id` = #{attrExample.value}
-                                AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
-                            </when>
-                            <otherwise>
+                    <choose>
+                        <when test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
+                            AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
+                            AND attr.`status` = 'ACTIVE' AND attr.`value_id` = #{attrExample.value}
+                            AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
+                        </when>
+                        <otherwise>
+                            <if test="attrExample.value != null">
                                 AND EXISTS(SELECT 1 FROM `building_attribute` attr WHERE attr.`object_id` = e.`object_id`
                                 AND attr.`status` = 'ACTIVE'
                                 AND attr.`value_id` IN (SELECT sc.`id` FROM `${table}_string_culture` sc WHERE sc.`value` LIKE '%${attrExample.value}%')
                                 AND attr.`attribute_type_id` = #{attrExample.attributeTypeId})
-                            </otherwise>
-                        </choose>
-                    </if>
+                            </if>
+                        </otherwise>
+                    </choose>
                 </foreach>
                 <if test="parentId != null and parentEntity != null">
                     AND e.`parent_entity_id` = (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{parentEntity}) AND e.`parent_id` = #{parentId}

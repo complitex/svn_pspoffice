@@ -7,6 +7,7 @@ package org.complitex.dictionaryfw.dao;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 
 /**
@@ -22,8 +23,14 @@ public class SequenceBean {
     private SqlSession session;
 
     public long nextStringId(String entityTable) {
-        long nextStringId = (Long) session.selectOne(SEQUENCE_NAMESPACE + ".nextStringId", entityTable);
-        session.update(SEQUENCE_NAMESPACE + ".incrementStringId", entityTable);
+        long nextStringId;
+        if (Strings.isEmpty(entityTable)) {
+            nextStringId = (Long) session.selectOne(SEQUENCE_NAMESPACE + ".nextStringIdForDescriptionData", entityTable);
+            session.update(SEQUENCE_NAMESPACE + ".incrementStringIdForDescriptionData", entityTable);
+        } else {
+            nextStringId = (Long) session.selectOne(SEQUENCE_NAMESPACE + ".nextStringId", entityTable);
+            session.update(SEQUENCE_NAMESPACE + ".incrementStringId", entityTable);
+        }
         return nextStringId;
     }
 

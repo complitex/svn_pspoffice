@@ -16,7 +16,11 @@ public class EntityAttributeType implements Serializable {
 
     private Long id;
 
+    private Long entityId;
+
     private boolean mandatory;
+
+    private Long attributeNameId;
 
     private List<StringCulture> attributeNames;
 
@@ -52,5 +56,21 @@ public class EntityAttributeType implements Serializable {
 
     public void setMandatory(boolean mandatory) {
         this.mandatory = mandatory;
+    }
+
+    public Long getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
+    }
+
+    public Long getAttributeNameId() {
+        return attributeNameId;
+    }
+
+    public void setAttributeNameId(Long attributeNameId) {
+        this.attributeNameId = attributeNameId;
     }
 }

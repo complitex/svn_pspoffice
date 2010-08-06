@@ -44,7 +44,7 @@ public class CountryStrategy extends Strategy {
     private static final long NAME_ATTRIBUTE_TYPE_ID = 800L;
 
     @Override
-    public boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription) {
+    public boolean isSimpleAttributeType(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
@@ -158,5 +158,10 @@ public class CountryStrategy extends Strategy {
         PageParameters params = new PageParameters();
         params.put(DomainObjectList.ENTITY, getEntityTable());
         return params;
+    }
+
+    @Override
+    public String[] getParents() {
+        return null;
     }
 }

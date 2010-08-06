@@ -51,7 +51,7 @@ public class ApartmentStrategy extends Strategy {
     private static final long NAME_ATTRIBUTE_TYPE_ID = 100L;
 
     @Override
-    public boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription) {
+    public boolean isSimpleAttributeType(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
@@ -196,5 +196,10 @@ public class ApartmentStrategy extends Strategy {
         PageParameters params = new PageParameters();
         params.put(DomainObjectList.ENTITY, getEntityTable());
         return params;
+    }
+
+    @Override
+    public String[] getParents() {
+        return new String[]{"building"};
     }
 }

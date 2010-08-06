@@ -33,6 +33,9 @@
                         </td>
                         <td>
                             <span wicket:id="valueType"></span>
+                            <ul wicket:id="valueTypesContainer">
+                                <li wicket:id="valueTypeItem"></li>
+                            </ul>
                         </td>
                         <td>
                             <span wicket:id="mandatory"></span>
@@ -40,15 +43,12 @@
                     </tr>
                 </tbody>
             </table>
-            <!-- <a wicket:id="addAttribute">
-                 <wicket:message key="add_attribute"/>
-             </a>-->
-
+            <div>
+                <input type="button" class="btnSmall" wicket:id="addAttribute" wicket:message="value:add_attribute"/>
+            </div>
             <div wicket:id="parentsContainer">
                 <wicket:message key="parents"/> : <span wicket:id="parentsInfo"></span>
             </div>
-
-
         </wicket:panel>
     </body>
 </html>

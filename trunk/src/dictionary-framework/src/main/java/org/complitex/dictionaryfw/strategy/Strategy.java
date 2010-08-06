@@ -4,19 +4,21 @@
  */
 package org.complitex.dictionaryfw.strategy;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.EntityBean;
-import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.dao.SequenceBean;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
@@ -34,12 +36,16 @@ import org.complitex.dictionaryfw.strategy.web.IValidator;
 import org.complitex.dictionaryfw.util.Numbers;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Artem
  */
 public abstract class Strategy {
+
+    private static final Logger log = LoggerFactory.getLogger(Strategy.class);
 
     public static final String DOMAIN_OBJECT_NAMESPACE = "org.complitex.dictionaryfw.entity.DomainObject";
 
@@ -69,24 +75,59 @@ public abstract class Strategy {
     @EJB
     private EntityBean entityBean;
 
-    @EJB
-    private LocaleBean localeBean;
-
     protected SqlSession session;
 
     public abstract String getEntityTable();
 
-//    protected EntityBean getEntityDescriptionDao() {
-//        return entityDescriptionDao;
-//    }
-    public abstract boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription);
+    public abstract boolean isSimpleAttributeType(EntityAttributeType attributeType);
 
     public DomainObject findById(Long id) {
         DomainObjectExample example = new DomainObjectExample();
         example.setId(id);
         example.setTable(getEntityTable());
-        DomainObject entity = (DomainObject) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_BY_ID_OPERATION, example);
-        return entity;
+        DomainObject object = (DomainObject) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_BY_ID_OPERATION, example);
+
+        updateForNewAttributeTypes(object);
+        updateStringsForNewLocales(object);
+
+        return object;
+    }
+
+    protected void updateStringsForNewLocales(DomainObject object) {
+        for (Attribute attribute : object.getAttributes()) {
+            List<StringCulture> strings = attribute.getLocalizedValues();
+            if (strings != null) {
+                stringBean.updateForNewLocales(strings);
+            }
+        }
+    }
+
+    protected void updateForNewAttributeTypes(DomainObject object) {
+        List<Attribute> newAttributes = Lists.newArrayList();
+        for (final EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
+            if (isSimpleAttributeType(attributeType)) {
+                try {
+                    Iterables.find(object.getAttributes(), new Predicate<Attribute>() {
+
+                        @Override
+                        public boolean apply(Attribute attr) {
+                            return attr.getAttributeTypeId().equals(attributeType.getId());
+                        }
+                    });
+                } catch (NoSuchElementException e) {
+                    Attribute attribute = new Attribute();
+                    EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
+                    attribute.setAttributeTypeId(attributeType.getId());
+                    attribute.setValueTypeId(attributeValueType.getId());
+                    attribute.setAttributeId(1L);
+                    attribute.setLocalizedValues(stringBean.newStringCultures());
+                    newAttributes.add(attribute);
+                }
+            }
+        }
+        if (!newAttributes.isEmpty()) {
+            object.getAttributes().addAll(newAttributes);
+        }
     }
 
     public List<DomainObject> find(DomainObjectExample example) {
@@ -114,31 +155,21 @@ public abstract class Strategy {
     public abstract List<EntityAttributeType> getListColumns();
 
     public DomainObject newInstance() {
-        DomainObject entity = new DomainObject();
+        DomainObject object = new DomainObject();
 
-        for (EntityAttributeType attributeDesc : getEntity().getEntityAttributeTypes()) {
-            if (isSimpleAttributeDesc(attributeDesc)) {
+        for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
+            if (isSimpleAttributeType(attributeType)) {
                 //simple attributes
                 Attribute attribute = new Attribute();
-                EntityAttributeValueType attributeValueDesc = attributeDesc.getEntityAttributeValueTypes().get(0);
-                if (attributeValueDesc.getValueType().equalsIgnoreCase(SimpleTypes.STRING.name())) {
-                    attribute.setAttributeTypeId(attributeDesc.getId());
-                    attribute.setValueTypeId(attributeValueDesc.getId());
-                    attribute.setAttributeId(1L);
-                    List<StringCulture> strings = Lists.newArrayList();
-                    for (String locale : localeBean.getAllLocales()) {
-                        strings.add(new StringCulture(locale, null));
-                    }
-                    attribute.setLocalizedValues(strings);
-                }
-                entity.addAttribute(attribute);
+                EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
+                attribute.setAttributeTypeId(attributeType.getId());
+                attribute.setValueTypeId(attributeValueType.getId());
+                attribute.setAttributeId(1L);
+                attribute.setLocalizedValues(stringBean.newStringCultures());
+                object.addAttribute(attribute);
             }
         }
-        return entity;
-    }
-
-    protected void insertStringCulture(StringCulture stringCulture) {
-        stringBean.insert(stringCulture, getEntityTable());
+        return object;
     }
 
     protected void insertAttribute(Attribute attribute) {
@@ -146,12 +177,8 @@ public abstract class Strategy {
         if (strings == null) {
             //reference attribute
         } else {
-            long stringId = sequenceBean.nextStringId(getEntityTable());
-            for (StringCulture string : strings) {
-                string.setId(stringId);
-                insertStringCulture(string);
-            }
-            attribute.setValueId(stringId);
+            Long generatedStringId = stringBean.insertStrings(strings, getEntityTable());
+            attribute.setValueId(generatedStringId);
         }
         session.insert(ATTRIBUTE_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), attribute));
     }
@@ -414,4 +441,9 @@ public abstract class Strategy {
         }
         return null;
     }
+
+    /*
+     * Description metadata
+     */
+    public abstract String[] getParents();
 }

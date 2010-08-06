@@ -14,6 +14,8 @@ public class EntityAttributeValueType implements Serializable {
 
     private Long id;
 
+    private Long attributeTypeId;
+
     private String valueType;
 
     public Long getId() {
@@ -30,5 +32,13 @@ public class EntityAttributeValueType implements Serializable {
 
     public void setValueType(String valueType) {
         this.valueType = valueType;
+    }
+
+    public Long getAttributeTypeId() {
+        return attributeTypeId;
+    }
+
+    public void setAttributeTypeId(Long attributeTypeId) {
+        this.attributeTypeId = attributeTypeId;
     }
 }

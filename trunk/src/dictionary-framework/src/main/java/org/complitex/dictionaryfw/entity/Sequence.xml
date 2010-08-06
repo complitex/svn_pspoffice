@@ -16,5 +16,13 @@
     <update id="incrementStringId" parameterType="string">
         update `sequence` s set s.`sequence_value` = s.`sequence_value` + 1 where s.`sequence_name` = '${value}_string_culture'
     </update>
+
+    <select id="nextStringIdForDescriptionData" resultType="long">
+        select s.`sequence_value` from `sequence` s where s.`sequence_name` = 'string_culture' for update
+    </select>
+
+    <update id="incrementStringIdForDescriptionData">
+        update `sequence` s set s.`sequence_value` = s.`sequence_value` + 1 where s.`sequence_name` = 'string_culture'
+    </update>
     
 </mapper>

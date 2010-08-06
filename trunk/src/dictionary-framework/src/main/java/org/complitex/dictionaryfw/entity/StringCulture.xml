@@ -19,4 +19,8 @@
         ORDER BY (SELECT l.`system` FROM `locales` l WHERE l.`locale` = sc.`locale`) DESC
     </select>
 
+    <insert id="insertDescriptionData" parameterType="StringCulture">
+        insert into `string_culture`(`id`, `locale`, `value`) values (#{id}, #{locale}, #{value})
+    </insert>
+
 </mapper>

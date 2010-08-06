@@ -54,7 +54,7 @@ public class RoomStrategy extends Strategy {
     }
 
     @Override
-    public boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription) {
+    public boolean isSimpleAttributeType(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
@@ -204,5 +204,10 @@ public class RoomStrategy extends Strategy {
         PageParameters params = new PageParameters();
         params.put(DomainObjectList.ENTITY, getEntityTable());
         return params;
+    }
+
+    @Override
+    public String[] getParents() {
+        return new String[]{"apartment", "building"};
     }
 }

@@ -179,7 +179,7 @@ public final class DomainObjectEditPanel extends Panel {
 
                     @Override
                     public boolean apply(EntityAttributeType attrDesc) {
-                        return attrDesc.getId().equals(attr.getAttributeTypeId()) && getStrategy().isSimpleAttributeDesc(attrDesc);
+                        return attrDesc.getId().equals(attr.getAttributeTypeId()) && getStrategy().isSimpleAttributeType(attrDesc);
                     }
                 });
                 attrAndDesc.put(attr, attrDesc);

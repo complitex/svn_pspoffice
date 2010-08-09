@@ -18,11 +18,9 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
@@ -55,6 +53,7 @@ import org.complitex.dictionaryfw.web.component.ChildrenContainer;
 import org.complitex.dictionaryfw.web.component.DatePanel;
 import org.complitex.dictionaryfw.web.component.DoublePanel;
 import org.complitex.dictionaryfw.web.component.IntegerPanel;
+import org.complitex.dictionaryfw.web.component.SaveCancelPanel;
 import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 import org.complitex.dictionaryfw.web.component.StringPanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
@@ -248,16 +247,11 @@ public final class DomainObjectEditPanel extends Panel {
                 item.add(required);
                 required.setVisible(desc.isMandatory());
 
-                Panel stringPanel = new EmptyPanel("stringPanel");
-                Panel stringCulturePanel = new EmptyPanel("stringCulturePanel");
-                Panel integerPanel = new EmptyPanel("integerPanel");
-                Panel doublePanel = new EmptyPanel("doublePanel");
-                Panel datePanel = new EmptyPanel("datePanel");
-                Panel booleanPanel = new EmptyPanel("booleanPanel");
 
                 String valueType = desc.getEntityAttributeValueTypes().get(0).getValueType();
                 SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
 
+                Component input = null;
                 final StringCulture systemLocaleStringCulture = stringBean.getSystemStringCulture(attr.getLocalizedValues());
                 switch (type) {
                     case STRING: {
@@ -274,42 +268,37 @@ public final class DomainObjectEditPanel extends Panel {
                             }
                         };
                         IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, stringConverter);
-                        stringPanel = new StringPanel("stringPanel", model, desc.isMandatory(), labelModel, true);
+                        input = new StringPanel("input", model, desc.isMandatory(), labelModel, true);
                     }
                     break;
                     case STRING_CULTURE: {
                         IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-                        stringCulturePanel = new StringCulturePanel("stringCulturePanel", model, desc.isMandatory(), labelModel, true);
+                        input = new StringCulturePanel("input", model, desc.isMandatory(), labelModel, true);
                     }
                     break;
                     case INTEGER: {
                         IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
-                        integerPanel = new IntegerPanel("integerPanel", model, desc.isMandatory(), labelModel, true);
+                        input = new IntegerPanel("input", model, desc.isMandatory(), labelModel, true);
                     }
                     break;
                     case DATE: {
                         IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                        datePanel = new DatePanel("datePanel", model, desc.isMandatory(), labelModel, true);
+                        input = new DatePanel("input", model, desc.isMandatory(), labelModel, true);
                     }
                     break;
                     case BOOLEAN: {
                         IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
-                        booleanPanel = new BooleanPanel("booleanPanel", model, labelModel, true);
+                        input = new BooleanPanel("input", model, labelModel, true);
                     }
                     break;
                     case DOUBLE: {
                         IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
-                        doublePanel = new DoublePanel("doublePanel", model, desc.isMandatory(), labelModel, true);
+                        input = new DoublePanel("input", model, desc.isMandatory(), labelModel, true);
                     }
                     break;
                 }
 
-                item.add(stringPanel);
-                item.add(stringCulturePanel);
-                item.add(integerPanel);
-                item.add(doublePanel);
-                item.add(datePanel);
-                item.add(booleanPanel);
+                item.add(input);
             }
         };
         simpleAttributes.setReuseItems(true);
@@ -366,63 +355,32 @@ public final class DomainObjectEditPanel extends Panel {
         }
         form.add(childrenContainer);
 
-
-        Button submit = new Button("submit") {
-
-            @Override
-            public void onSubmit() {
-                boolean valid = validateParent();
-                IValidator validator = getStrategy().getValidator();
-                if (validator != null) {
-                    valid = validator.validate(newObject, DomainObjectEditPanel.this);
-                }
-
-                if (valid) {
-                    if (isNew) {
-                        getStrategy().insert(newObject);
-                    } else {
-                        getStrategy().update(oldObject, newObject);
-                    }
-                    back();
-                }
-
-            }
-        };
-        form.add(submit);
-        Link cancel = new Link("cancel") {
-
-            @Override
-            public void onClick() {
-                back();
-            }
-        };
-        form.add(cancel);
+        //save-cancel panel
+        form.add(new SaveCancelPanel("saveCancelPanel", entity, oldObject, newObject, parentId, parentEntity));
         add(form);
     }
 
-    private void back() {
-        if (!fromParent) {
-            //return to list page for current entity.
-            setResponsePage(getStrategy().getListPage(), getStrategy().getListPageParams());
-        } else {
-            //return to edit page for parent entity.
-            Strategy parentStrategy = strategyFactory.getStrategy(parentEntity);
-            setResponsePage(parentStrategy.getEditPage(), parentStrategy.getEditPageParams(parentId, null, null));
-        }
-    }
-
+//    private void back() {
+//        if (!fromParent) {
+//            //return to list page for current entity.
+//            setResponsePage(getStrategy().getListPage(), getStrategy().getListPageParams());
+//        } else {
+//            //return to edit page for parent entity.
+//            Strategy parentStrategy = strategyFactory.getStrategy(parentEntity);
+//            setResponsePage(parentStrategy.getEditPage(), parentStrategy.getEditPageParams(parentId, null, null));
+//        }
+//    }
     public SearchComponentState getParentSearchComponentState() {
         return searchComponentState;
     }
-
-    private boolean validateParent() {
-        if (!(getStrategy().getParentSearchFilters() == null || getStrategy().getParentSearchFilters().isEmpty()
-                || getStrategy().getParentSearchCallback() == null)) {
-            if ((newObject.getParentId() == null) || (newObject.getParentEntityId() == null)) {
-                error("Parent must be specified.");
-                return false;
-            }
-        }
-        return true;
-    }
+//    private boolean validateParent() {
+//        if (!(getStrategy().getParentSearchFilters() == null || getStrategy().getParentSearchFilters().isEmpty()
+//                || getStrategy().getParentSearchCallback() == null)) {
+//            if ((newObject.getParentId() == null) || (newObject.getParentEntityId() == null)) {
+//                error(getString("parent_required"));
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 }

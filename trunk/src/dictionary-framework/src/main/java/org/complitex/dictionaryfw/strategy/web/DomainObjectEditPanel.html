@@ -32,12 +32,7 @@
                             :
                         </th>
                         <td>
-                            <div wicket:id="datePanel"></div>
-                            <div wicket:id="integerPanel"></div>
-                            <div wicket:id="doublePanel"></div>
-                            <div wicket:id="stringPanel"></div>
-                            <div wicket:id="stringCulturePanel"></div>
-                            <div wicket:id="booleanPanel"></div>
+                            <div wicket:id="input"></div>
                         </td>
                     </tr>
                     <tr wicket:id="parentContainer">
@@ -56,9 +51,7 @@
 
                 <div wicket:id="childrenContainer"></div>
 
-                <div style="margin-bottom:30px"></div>
-                <input type="submit" wicket:message="value:save" wicket:id="submit" class="btnMiddle"/>
-                <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
+                <div style="margin-bottom:30px" wicket:id="saveCancelPanel"></div>
             </form>
         </wicket:panel>
     </body>

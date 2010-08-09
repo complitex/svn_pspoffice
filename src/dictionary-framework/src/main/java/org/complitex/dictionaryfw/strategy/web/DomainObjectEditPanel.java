@@ -360,27 +360,7 @@ public final class DomainObjectEditPanel extends Panel {
         add(form);
     }
 
-//    private void back() {
-//        if (!fromParent) {
-//            //return to list page for current entity.
-//            setResponsePage(getStrategy().getListPage(), getStrategy().getListPageParams());
-//        } else {
-//            //return to edit page for parent entity.
-//            Strategy parentStrategy = strategyFactory.getStrategy(parentEntity);
-//            setResponsePage(parentStrategy.getEditPage(), parentStrategy.getEditPageParams(parentId, null, null));
-//        }
-//    }
     public SearchComponentState getParentSearchComponentState() {
         return searchComponentState;
     }
-//    private boolean validateParent() {
-//        if (!(getStrategy().getParentSearchFilters() == null || getStrategy().getParentSearchFilters().isEmpty()
-//                || getStrategy().getParentSearchCallback() == null)) {
-//            if ((newObject.getParentId() == null) || (newObject.getParentEntityId() == null)) {
-//                error(getString("parent_required"));
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
 }

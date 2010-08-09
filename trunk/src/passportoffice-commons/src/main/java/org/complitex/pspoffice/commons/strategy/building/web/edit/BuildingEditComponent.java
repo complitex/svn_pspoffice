@@ -177,7 +177,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.setOutputMarkupId(true);
         add(attributesContainer);
 
-        final BuildingAttributeList list = new BuildingAttributeList(getEditPagePanel().getObject(), localeBean.getAllLocales());
+        final BuildingAttributeList list = new BuildingAttributeList(getEditPanel().getObject(), localeBean.getAllLocales());
         AjaxLink add = new AjaxLink("add") {
 
             @Override
@@ -188,12 +188,12 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         };
         add(add);
 
-        final SearchComponentState parentSearchComponentState = getEditPagePanel().getParentSearchComponentState();
+        final SearchComponentState parentSearchComponentState = getEditPanel().getParentSearchComponentState();
         final Long cityId = parentSearchComponentState.get("city") != null ? parentSearchComponentState.get("city").getId() : null;
 
         //district
         Long districtId = null;
-        districtAttribute = Iterables.find(getEditPagePanel().getObject().getAttributes(), new Predicate<Attribute>() {
+        districtAttribute = Iterables.find(getEditPanel().getObject().getAttributes(), new Predicate<Attribute>() {
 
             @Override
             public boolean apply(Attribute attr) {

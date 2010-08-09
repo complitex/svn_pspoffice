@@ -352,16 +352,8 @@ public abstract class Strategy {
             return entityTable;
         }
 
-        public void setEntityTable(String entityTable) {
-            this.entityTable = entityTable;
-        }
-
         public Long getId() {
             return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
         }
     }
 
@@ -398,8 +390,8 @@ public abstract class Strategy {
 
             RestrictedObjectInfo parentData = new RestrictedObjectInfo(parentEntity, parentId);
             while (parentData != null) {
-                String currentParentEntity = parentData.entityTable;
-                Long currentParentId = parentData.id;
+                String currentParentEntity = parentData.getEntityTable();
+                Long currentParentId = parentData.getId();
                 ids.put(currentParentEntity, currentParentId);
                 parentData = strategyFactory.getStrategy(currentParentEntity).findParentInSearchComponent(currentParentId);
             }

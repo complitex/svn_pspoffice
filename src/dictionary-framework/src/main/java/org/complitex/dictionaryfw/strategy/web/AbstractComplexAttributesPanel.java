@@ -16,7 +16,7 @@ public abstract class AbstractComplexAttributesPanel extends Panel {
         super(id);
     }
 
-    protected DomainObjectEditPanel getEditPagePanel() {
+    protected DomainObjectEditPanel getEditPanel() {
         return this.findParent(DomainObjectEditPanel.class);
     }
 }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.admin.service.UserBean">
+    <resultMap id="userResultMap" type="org.complitex.pspoffice.commons.entity.User">
+        <id column="user_id" property="id"/>
+        <result column="login" property="login"/>
+        <collection property="userGroups" ofType="org.complitex.pspoffice.commons.entity.UserGroup">
+            <id column="user_group_id" property="id"/>
+            <result column="login" property="login"/>
+            <result column="group_name" property="groupName"/>
+        </collection>
+    </resultMap>
+
+    <!--User-->
+
+    <select id="getAll" resultMap="userResultMap">
+        select u.id as id, u.login as login from `user` u
+    </select>
+
+    <select id="selectUser" resultMap="userResultMap" parameterType="long">
+        select
+            u.id as user_id,
+            u.login as login,
+            g.id as user_group_id,
+            g.group_name as group_name
+        from `user` u
+            left join `usergroup` g on u.`login` = g.`login`
+        where u.id = #{id}
+    </select>
+
+    <insert id="insertUser" parameterType="org.complitex.pspoffice.commons.entity.User">
+        insert into `user` (`login`, `password`) values (#{login}, #{password})
+    </insert>
+
+    <update id="updateUser" parameterType="org.complitex.pspoffice.commons.entity.User">
+        update `user`
+        <set>
+            <if test="password != null"> `password` = #{password}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--User Group-->
+    <insert id="insertUserGroup" parameterType="org.complitex.pspoffice.commons.entity.UserGroup">
+        insert into `usergroup` (`login`, `group_name`) values (#{login}, #{groupName});
+    </insert>
+
+    <delete id="deleteUserGroup" parameterType="long">
+        delete from `usergroup` where id = #{id}
+    </delete>
+</mapper>

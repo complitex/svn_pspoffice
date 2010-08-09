@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"  xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd">
+<head>
+    <wicket:head><title wicket:id="title"></title></wicket:head>
+</head>
+
+<body>
+<wicket:extend>
+    <h2><wicket:message key="admin.user_edit.title"/></h2>
+
+    <div id="messages" wicket:id="messages"></div>
+
+    <form action="" wicket:id="admin.user_edit.form">
+        <table  border="0" cellspacing="0" cellpadding="0" class="tbForm">
+            <tbody>
+            <tr>
+                <th><label for="login"><wicket:message key="admin.user_edit.login"/><b class="blue">*</b>:</label></th>
+                <td><input id="login" wicket:id="admin.user_edit.login" type="text"/></td>
+            </tr>
+            <tr>
+                <th><label for="password"><wicket:message key="admin.user_edit.password"/>:</label></th>
+                <td><input id="password" wicket:id="admin.user_edit.password" type="password"/></td>
+            </tr>
+            <tr>
+                <th><label for="last_name"><wicket:message key="admin.user_edit.last_name"/><b class="blue">*</b>:</label></th>
+                <td><input id="last_name" wicket:id="admin.user_edit.last_name" type="text"/></td>
+            </tr>
+            <tr>
+                <th><label for="first_name"><wicket:message key="admin.user_edit.first_name"/><b class="blue">*</b>:</label></th>
+                <td><input id="first_name" wicket:id="admin.user_edit.first_name" type="text"/></td>
+            </tr>
+            <tr>
+                <th><label for="middle_name"><wicket:message key="admin.user_edit.middle_name"/><b class="blue">*</b>:</label></th>
+                <td><input id="middle_name" wicket:id="admin.user_edit.middle_name" type="text"/></td>
+            </tr>
+            <!-- <tr>
+                <th><wicket:message key="admin.user_edit.department"/><b class="blue">*</b>:</th>
+                <td><select wicket:id="user.department"></select></td>
+            </tr>-->
+
+            <tr>
+                <th><wicket:message key="admin.user_edit.usergroup"/>:</th>
+                <td>
+                    <ul wicket:id="admin.user_edit.usergroups">
+                        <li>
+                            <input type="checkbox" wicket:id="ADMINISTRATORS"/>
+                            <wicket:message key="admin.user_edit.administrators"/>
+                        </li>
+                        <li>
+                            <input type="checkbox" wicket:id="DEPARTMENT_OFFICERS"/>
+                            <wicket:message key="admin.user_edit.department_officers"/>
+                        </li>
+                        <li>
+                            <input type="checkbox" wicket:id="LOCAL_OFFICERS"/>
+                            <wicket:message key="admin.user_edit.local_officers"/>
+                            <ul>
+                                <li>
+                                    <wicket:message key="admin.user_edit.local_officers.view"/>
+                                    <ul>
+                                        <li>
+                                            <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_VIEW"/>
+                                            <wicket:message key="admin.user_edit.local_officers.view.dep"/>
+                                        </li>
+                                        <li>
+                                            <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_CHILD_VIEW"/>
+                                            <wicket:message key="admin.user_edit.local_officers.view.dep.child"/>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <wicket:message key="admin.user_edit.local_officers.edit"/>
+                                    <ul>
+                                        <li>
+                                            <input type="checkbox" wicket:id="LOCAL_OFFICERS_EDIT"/>
+                                            <wicket:message key="admin.user_edit.local_officers.edit.own"/>
+                                        </li>
+                                        <li>
+                                            <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_EDIT"/>
+                                            <wicket:message key="admin.user_edit.local_officers.edit.dep"/>
+                                        </li>
+                                        <li>
+                                            <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_CHILD_EDIT"/>
+                                            <wicket:message key="admin.user_edit.local_officers.edit.dep.child"/>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <input type="submit" class="btnBig" wicket:message="value:admin.user_edit.save" wicket:id="admin.user_edit.save"/>
+        <input type="submit" class="btnMiddle" wicket:message="value:admin.user_edit.cancel" wicket:id="admin.user_edit.cancel"/>
+
+    </form>
+</wicket:extend>
+</body>
+</html>

@@ -104,3 +104,7 @@ insert into country_attribute(attribute_id, object_id, attribute_type_id, value_
 (1,2,800,2,800);
 update sequence set sequence_value = 3 where sequence_name = 'country_string_culture';
 update sequence set sequence_value = 3 where sequence_name = 'country';
+
+-- Users
+insert into user value (1, 'admin', '21232f297a57a5a743894a0e4a801fc3', null);
+insert into usergroup value (1, 'admin', 'ADMINISTRATORS');

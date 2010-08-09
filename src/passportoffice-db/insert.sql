@@ -7,7 +7,7 @@ insert into `sequence` (`sequence_name`, `sequence_value`) values
 ('country',1), ('country_string_culture',1), ('district',1), ('district_string_culture',1),
 ('city',1), ('city_string_culture',1), ('region',1), ('region_string_culture',1),
 ('room',1), ('room_string_culture',1), ('street',1), ('street_string_culture',1),
-('person',1), ('person_string_culture',1);
+('person',1), ('person_string_culture',1), ('user_info', 1), ('user_info_string_culture', 1);
 
 insert into `string_culture`(`id`, `locale`, `value`) values (100, 'ru', 'Квартира'), (100, 'en', 'Apartment');
 insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (100, 'apartment', 100, '');
@@ -108,4 +108,13 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (908, 907, 'apartment');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (909, 907, 'building');
 
-update `sequence` set `sequence_value` = 1000 where `sequence_name` = 'string_culture';
+insert into `string_culture`(`id`, `locale`, `value`) values (1000, 'ru', 'Пользователь'), (1000, 'en', 'User');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (1000, 'user_info', 1000, '');
+insert into `string_culture`(`id`, `locale`, `value`) values (1001, 'ru', 'Имя'), (1001, 'en', 'Name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1000, 1000, 1, 1001, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (1002, 'ru', 'Отчество'), (1002, 'en', 'Middle name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1001, 1000, 1, 1002, 1);
+insert into `string_culture`(`id`, `locale`, `value`) values (1003, 'ru', 'Фамилия'), (1003, 'en', 'Last name');
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1002, 1000, 1, 1003, 1);
+
+update `sequence` set `sequence_value` = 2000 where `sequence_name` = 'string_culture';

@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
-            <artifactId>pspoffice-user</artifactId>
+            <artifactId>pspoffice-admin</artifactId>
         </dependency>
 
         <dependency>

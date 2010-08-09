@@ -30,6 +30,9 @@ import java.util.*;
 /**
  * @author Anatoly A. Ivanov java@inheaven.ru
  *         Date: 22.07.2010 16:09:45
+ *
+ * Суперкласс шаблон для отображения содержания страниц.
+ * Для инициализации шаблона наследники должны вызывать метод super().
  */
 public class TemplatePage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(TemplatePage.class);

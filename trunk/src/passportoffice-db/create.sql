@@ -574,6 +574,84 @@ CREATE TABLE `person_string_culture` (
   CONSTRAINT `FK_person_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- user info --
+DROP TABLE IF EXISTS `user_info`;
+
+CREATE TABLE `user_info` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  `object_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `parent_id` bigint(20) default NULL,
+  `parent_entity_id` bigint(20) default NULL,
+  `entity_type_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`object_id`,`start_date`),
+  KEY `FK_user_info_type` (`entity_type_id`),
+  CONSTRAINT `FK_user_info_type` FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`),
+  KEY `FK_user_info_parent` (`parent_entity_id`),
+  CONSTRAINT `FK_user_info_parent` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `user_info_attribute`;
+
+CREATE TABLE `user_info_attribute` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `attribute_id` bigint(20) NOT NULL,
+  `object_id` bigint(20) NOT NULL,
+  `attribute_type_id` bigint(20) NOT NULL,
+  `value_id` bigint(20) default NULL,
+  `value_type_id` bigint(20) default NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
+  `status` varchar(20) NOT NULL default 'ACTIVE',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `ID` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `FK_user_info_object_id` (`object_id`),
+  CONSTRAINT `FK_user_info_object_id` FOREIGN KEY (`object_id`) REFERENCES `user_info`(`object_id`),
+  KEY `FK_user_info_attribute_attribute_type` (`attribute_type_id`),
+  CONSTRAINT `FK_user_info_attribute_attribute_type` FOREIGN KEY (`attribute_type_id`) REFERENCES `entity_attribute_type` (`id`),
+  KEY `FK_user_info_attribute_value_type` (`value_type_id`),
+  CONSTRAINT `FK_user_info_attribute_value_type` FOREIGN KEY (`value_type_id`) REFERENCES `entity_attribute_value_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `user_info_string_culture`;
+
+CREATE TABLE `user_info_string_culture` (
+  `id` bigint(20) NOT NULL,
+  `locale` varchar(2) NOT NULL,
+  `value` varchar(1000) default NULL,
+  PRIMARY KEY  (`id`,`locale`),
+  KEY `FK_user_info_string_culture_locale` (`locale`),
+  CONSTRAINT `FK_user_info_string_culture_locale` FOREIGN KEY (`locale`) REFERENCES `locales` (`locale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- user --
+
+DROP TABLE IF EXISTS `user`;
+
+CREATE TABLE  `user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `login` varchar(45) DEFAULT NULL,
+  `password` varchar(45) DEFAULT NULL,
+  `user_info_object_id` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- usergroup --
+
+DROP TABLE IF EXISTS `usergroup`;
+
+CREATE TABLE  `usergroup` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `login` varchar(45) NOT NULL,
+  `group_name` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

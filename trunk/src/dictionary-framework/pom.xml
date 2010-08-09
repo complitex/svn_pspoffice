@@ -34,6 +34,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.odlabs.wiquery</groupId>
+            <artifactId>wiquery</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.wicket</groupId>
+            <artifactId>wicket-datetime</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <scope>provided</scope>
@@ -53,6 +63,6 @@
             <artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
     </dependencies>
 </project>

@@ -38,8 +38,10 @@ public class StringCultureBean {
         if (strings != null && !strings.isEmpty()) {
             long stringId = sequenceBean.nextStringId(entityTable);
             for (StringCulture string : strings) {
-                string.setId(stringId);
-                insert(string, entityTable);
+                if (!Strings.isEmpty(string.getValue())) {
+                    string.setId(stringId);
+                    insert(string, entityTable);
+                }
             }
             return stringId;
         }
@@ -74,5 +76,15 @@ public class StringCultureBean {
                 stringCultures.add(new StringCulture(locale, null));
             }
         }
+    }
+
+    public StringCulture getSystemStringCulture(List<StringCulture> stringCultures) {
+        return Iterables.find(stringCultures, new Predicate<StringCulture>() {
+
+            @Override
+            public boolean apply(StringCulture stringCulture) {
+                return stringCulture.getLocale().equals(localeBean.getSystemLocale());
+            }
+        });
     }
 }

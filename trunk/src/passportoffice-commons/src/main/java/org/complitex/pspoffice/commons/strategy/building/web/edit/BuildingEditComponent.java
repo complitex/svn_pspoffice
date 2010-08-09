@@ -28,7 +28,7 @@ import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
-import org.complitex.dictionaryfw.web.component.StringPanel;
+import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
@@ -241,8 +241,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.add(buildingAttributes);
     }
 
-    private static StringPanel newStringPanel(String id, Attribute attr, IModel<String> labelModel, boolean required) {
+    private static StringCulturePanel newStringPanel(String id, Attribute attr, IModel<String> labelModel, boolean required) {
         IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-        return new StringPanel(id, model, labelModel, true, required);
+        return new StringCulturePanel(id, model, required, labelModel, true);
     }
 }

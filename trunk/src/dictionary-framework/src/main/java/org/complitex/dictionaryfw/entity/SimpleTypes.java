@@ -12,7 +12,7 @@ import java.util.Date;
  */
 public enum SimpleTypes {
 
-    STRING(String.class), INTEGER(Integer.class), DOUBLE(Double.class), DATE(Date.class);
+    STRING(String.class), STRING_CULTURE(String.class), INTEGER(Integer.class), DOUBLE(Double.class), DATE(Date.class), BOOLEAN(Boolean.class);
 
     private Class type;
 

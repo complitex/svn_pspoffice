@@ -8,7 +8,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -30,7 +32,14 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.converter.BooleanConverter;
+import org.complitex.dictionaryfw.converter.DateConverter;
+import org.complitex.dictionaryfw.converter.DoubleConverter;
+import org.complitex.dictionaryfw.converter.IConverter;
+import org.complitex.dictionaryfw.converter.IntegerConverter;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
@@ -42,7 +51,12 @@ import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
+import org.complitex.dictionaryfw.web.component.BooleanPanel;
 import org.complitex.dictionaryfw.web.component.ChildrenContainer;
+import org.complitex.dictionaryfw.web.component.DatePanel;
+import org.complitex.dictionaryfw.web.component.DoublePanel;
+import org.complitex.dictionaryfw.web.component.IntegerPanel;
+import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 import org.complitex.dictionaryfw.web.component.StringPanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
@@ -64,6 +78,9 @@ public final class DomainObjectEditPanel extends Panel {
     @EJB(name = "DisplayLocalizedValueUtil")
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
+    @EJB(name = "StringCultureBean")
+    private StringCultureBean stringBean;
+
     private SearchComponentState searchComponentState;
 
     private boolean isNew;
@@ -79,6 +96,33 @@ public final class DomainObjectEditPanel extends Panel {
     private Long parentId;
 
     private String parentEntity;
+
+    private static class SimpleTypeModel<T extends Serializable> extends Model<T> {
+
+        private StringCulture systemLocaleStringCulture;
+
+        private IConverter<T> converter;
+
+        public SimpleTypeModel(StringCulture systemLocaleStringCulture, IConverter<T> converter) {
+            this.systemLocaleStringCulture = systemLocaleStringCulture;
+            this.converter = converter;
+        }
+
+        @Override
+        public T getObject() {
+            if (!Strings.isEmpty(systemLocaleStringCulture.getValue())) {
+                return converter.toObject(systemLocaleStringCulture.getValue());
+            }
+            return null;
+        }
+
+        @Override
+        public void setObject(T object) {
+            if (object != null) {
+                systemLocaleStringCulture.setValue(converter.toString(object));
+            }
+        }
+    }
 
     public DomainObjectEditPanel(String id, String entity, Long objectId, Long parentId, String parentEntity) {
         super(id);
@@ -166,6 +210,7 @@ public final class DomainObjectEditPanel extends Panel {
                 return String.valueOf(object.getId());
             }
         });
+        types.setLabel(new ResourceModel("entity_type"));
         types.setRequired(true);
         typeContainer.add(types);
 
@@ -194,19 +239,6 @@ public final class DomainObjectEditPanel extends Panel {
                 Attribute attr = item.getModelObject();
                 final EntityAttributeType desc = attrAndDesc.get(attr);
 
-                boolean isSimpleInput = false;
-                boolean isDate = false;
-                boolean isString = false;
-                boolean isSelectable = false;
-                boolean isAutoComplete = false;
-                boolean isBoolean = false;
-
-                String valueType = desc.getEntityAttributeValueTypes().get(0).getValueType();
-
-                if (valueType.equalsIgnoreCase(SimpleTypes.STRING.name())) {
-                    isString = true;
-                }
-
                 IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
                     @Override
@@ -218,17 +250,70 @@ public final class DomainObjectEditPanel extends Panel {
 
                 WebMarkupContainer required = new WebMarkupContainer("required");
                 item.add(required);
-
-                required.setVisible(isString ? false : desc.isMandatory());
+                required.setVisible(desc.isMandatory());
 
                 Panel stringPanel = new EmptyPanel("stringPanel");
+                Panel stringCulturePanel = new EmptyPanel("stringCulturePanel");
+                Panel integerPanel = new EmptyPanel("integerPanel");
+                Panel doublePanel = new EmptyPanel("doublePanel");
+                Panel datePanel = new EmptyPanel("datePanel");
+                Panel booleanPanel = new EmptyPanel("booleanPanel");
 
-                if (isString) {
-                    IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-                    stringPanel = new StringPanel("stringPanel", model, labelModel, true, desc.isMandatory());
+                String valueType = desc.getEntityAttributeValueTypes().get(0).getValueType();
+                SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
+
+                final StringCulture systemLocaleStringCulture = stringBean.getSystemStringCulture(attr.getLocalizedValues());
+                switch (type) {
+                    case STRING: {
+                        IConverter<String> stringConverter = new IConverter<String>() {
+
+                            @Override
+                            public String toString(String object) {
+                                return object;
+                            }
+
+                            @Override
+                            public String toObject(String value) {
+                                return value;
+                            }
+                        };
+                        IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, stringConverter);
+                        stringPanel = new StringPanel("stringPanel", model, desc.isMandatory(), labelModel, true);
+                    }
+                    break;
+                    case STRING_CULTURE: {
+                        IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
+                        stringCulturePanel = new StringCulturePanel("stringCulturePanel", model, desc.isMandatory(), labelModel, true);
+                    }
+                    break;
+                    case INTEGER: {
+                        IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
+                        integerPanel = new IntegerPanel("integerPanel", model, desc.isMandatory(), labelModel, true);
+                    }
+                    break;
+                    case DATE: {
+                        IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
+                        datePanel = new DatePanel("datePanel", model, desc.isMandatory(), labelModel, true);
+                    }
+                    break;
+                    case BOOLEAN: {
+                        IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
+                        booleanPanel = new BooleanPanel("booleanPanel", model, labelModel, true);
+                    }
+                    break;
+                    case DOUBLE: {
+                        IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
+                        doublePanel = new DoublePanel("doublePanel", model, desc.isMandatory(), labelModel, true);
+                    }
+                    break;
                 }
 
                 item.add(stringPanel);
+                item.add(stringCulturePanel);
+                item.add(integerPanel);
+                item.add(doublePanel);
+                item.add(datePanel);
+                item.add(booleanPanel);
             }
         };
         simpleAttributes.setReuseItems(true);

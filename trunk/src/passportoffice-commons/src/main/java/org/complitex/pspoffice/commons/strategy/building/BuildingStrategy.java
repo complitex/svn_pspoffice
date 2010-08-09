@@ -62,7 +62,7 @@ public class BuildingStrategy extends Strategy {
     }
 
     @Override
-    public boolean isSimpleAttributeDesc(EntityAttributeType attributeDescription) {
+    public boolean isSimpleAttributeType(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() > 504L;
     }
 
@@ -83,12 +83,14 @@ public class BuildingStrategy extends Strategy {
         DomainObjectExample example = new DomainObjectExample();
         example.setId(id);
         example.setTable(getEntityTable());
-        DomainObject entity = (DomainObject) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building." + FIND_BY_ID_OPERATION, example);
-        entity.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", example));
+        DomainObject object = (DomainObject) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building." + FIND_BY_ID_OPERATION, example);
+        object.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", example));
         for (Attribute complexAttr : (List<Attribute>) session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadComplexAttributes", example)) {
-            entity.addAttribute(complexAttr);
+            object.addAttribute(complexAttr);
         }
-        return entity;
+        super.updateForNewAttributeTypes(object);
+        super.updateStringsForNewLocales(object);
+        return object;
     }
 
     @Override
@@ -301,5 +303,10 @@ public class BuildingStrategy extends Strategy {
         PageParameters params = new PageParameters();
         params.put(DomainObjectList.ENTITY, getEntityTable());
         return params;
+    }
+
+    @Override
+    public String[] getParents() {
+        return new String[]{"city"};
     }
 }

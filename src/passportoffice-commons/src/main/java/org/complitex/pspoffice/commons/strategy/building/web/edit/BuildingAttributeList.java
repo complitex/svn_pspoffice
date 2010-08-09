@@ -19,6 +19,7 @@ import java.util.Set;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
+import org.complitex.pspoffice.commons.strategy.building.BuildingStrategy;
 
 /**
  *
@@ -40,7 +41,10 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
             @Override
             public boolean apply(Attribute attr) {
                 Long attributeTypeId = attr.getAttributeTypeId();
-                return attributeTypeId.equals(500L) || attributeTypeId.equals(501L) || attributeTypeId.equals(502L) || attributeTypeId.equals(503L);
+                return attributeTypeId.equals(BuildingStrategy.NUMBER)
+                        || attributeTypeId.equals(BuildingStrategy.CORP)
+                        || attributeTypeId.equals(BuildingStrategy.STRUCTURE)
+                        || attributeTypeId.equals(BuildingStrategy.STREET);
             }
         });
         Set<Long> attributeIds = Sets.newTreeSet(Iterables.transform(suitedAttributes, new Function<Attribute, Long>() {
@@ -52,10 +56,10 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
         }));
         for (Long attributeId : attributeIds) {
             buildingAttributes.add(new BuildingAttribute(attributeId,
-                    findEntityAttribute(suitedAttributes, attributeId, 500L),
-                    findEntityAttribute(suitedAttributes, attributeId, 501L),
-                    findEntityAttribute(suitedAttributes, attributeId, 502L),
-                    findEntityAttribute(suitedAttributes, attributeId, 503L)));
+                    findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.NUMBER),
+                    findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.CORP),
+                    findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.STRUCTURE),
+                    findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.STREET)));
 
         }
 
@@ -78,9 +82,9 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
     private BuildingAttribute newBuildingAttribute() {
         long attributeId = calculateMaxAttributeId() + 1;
         BuildingAttribute buildingAttribute = new BuildingAttribute(attributeId,
-                newEntityAttribute(attributeId, 500, 500),
-                newEntityAttribute(attributeId, 501, 501),
-                newEntityAttribute(attributeId, 502, 502),
+                newEntityAttribute(attributeId, BuildingStrategy.NUMBER, BuildingStrategy.NUMBER),
+                newEntityAttribute(attributeId, BuildingStrategy.CORP, BuildingStrategy.CORP),
+                newEntityAttribute(attributeId, BuildingStrategy.STRUCTURE, BuildingStrategy.STRUCTURE),
                 newStreetAttribute(attributeId));
         return buildingAttribute;
     }
@@ -100,11 +104,11 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
         return attribute;
     }
 
-    private Attribute newStreetAttribute(long attributeId){
+    private Attribute newStreetAttribute(long attributeId) {
         Attribute attribute = new Attribute();
         attribute.setObjectId(object.getId());
-        attribute.setAttributeTypeId(503L);
-        attribute.setValueTypeId(503L);
+        attribute.setAttributeTypeId(BuildingStrategy.STREET);
+        attribute.setValueTypeId(BuildingStrategy.STREET);
         attribute.setAttributeId(attributeId);
         object.addAttribute(attribute);
         return attribute;
@@ -149,8 +153,10 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
             public boolean apply(Attribute attr) {
                 Long attributeTypeId = attr.getAttributeTypeId();
                 return attr.getAttributeId().equals(toRemove.getAttributeId())
-                        && (attributeTypeId.equals(500L) || attributeTypeId.equals(501L) 
-                            || attributeTypeId.equals(502L) || attributeTypeId.equals(503L));
+                        && (attributeTypeId.equals(BuildingStrategy.NUMBER)
+                        || attributeTypeId.equals(BuildingStrategy.CORP)
+                        || attributeTypeId.equals(BuildingStrategy.STRUCTURE)
+                        || attributeTypeId.equals(BuildingStrategy.STREET));
             }
         }));
         object.getAttributes().removeAll(attrs);

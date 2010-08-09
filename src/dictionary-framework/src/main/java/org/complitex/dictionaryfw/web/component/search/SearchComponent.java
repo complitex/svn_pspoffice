@@ -19,10 +19,10 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +36,8 @@ public final class SearchComponent extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(SearchComponent.class);
 
-    @EJB(name = "DisplayLocalizedValueUtil")
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+    @EJB(name = "StringCultureBean")
+    private StringCultureBean stringBean;
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -103,7 +103,7 @@ public final class SearchComponent extends Panel {
 
             @Override
             public String apply(String entity) {
-                return displayLocalizedValueUtil.displayValue(strategyFactory.getStrategy(entity).getEntity().getEntityNames(),
+                return stringBean.displayValue(strategyFactory.getStrategy(entity).getEntity().getEntityNames(),
                         getLocale());
             }
         }));

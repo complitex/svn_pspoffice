@@ -25,6 +25,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.dictionaryfw.dao.EntityBean;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.Entity;
@@ -32,7 +33,6 @@ import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 
 /**
@@ -44,8 +44,8 @@ public final class EntityAttributeEditPanel extends Panel {
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
 
-    @EJB(name = "DisplayLocalizedValueUtil")
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+    @EJB(name = "StringCultureBean")
+    private StringCultureBean stringBean;
 
     @EJB(name = "EntityBean")
     private EntityBean entityBean;
@@ -65,7 +65,7 @@ public final class EntityAttributeEditPanel extends Panel {
         final EntityAttributeType attributeType = entityBean.newAttributeType();
         attributeType.getEntityAttributeValueTypes().add(new EntityAttributeValueType());
 
-        String entityLabel = displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale());
+        String entityLabel = stringBean.displayValue(description.getEntityNames(), getLocale());
         IModel<String> labelModel = new StringResourceModel("label", null, new Object[]{entityLabel});
         add(new Label("title", labelModel));
         add(new Label("label", labelModel));

@@ -33,7 +33,7 @@ public class BuildingValidator implements IValidator {
 
             @Override
             public boolean apply(Attribute attr) {
-                return attr.getAttributeTypeId().equals(503L);
+                return attr.getAttributeTypeId().equals(BuildingStrategy.STREET);
             }
         }));
         for (Attribute street1 : streets) {
@@ -53,7 +53,7 @@ public class BuildingValidator implements IValidator {
 
             @Override
             public boolean apply(Attribute attr) {
-                return attr.getAttributeTypeId().equals(500L);
+                return attr.getAttributeTypeId().equals(BuildingStrategy.NUMBER);
             }
         }));
         if (numbers.isEmpty()) {

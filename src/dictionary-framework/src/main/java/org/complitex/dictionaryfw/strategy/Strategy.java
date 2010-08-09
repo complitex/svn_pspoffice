@@ -140,14 +140,6 @@ public abstract class Strategy {
         return (Integer) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + COUNT_OPERATION, example);
     }
 
-//    public DomainObjectDescription getDescription() {
-//        DomainObjectDescription description = new DomainObjectDescription();
-//        Entity descriptionFromDb = entityDescriptionDao.getEntity(getEntityTable());
-//        description.setEntityNames(descriptionFromDb.getEntityNames());
-//        description.setEntityTypes(descriptionFromDb.getEntityTypes());
-//        description.setAttributeDescriptions(descriptionFromDb.getAttributeDescriptions());
-//        return description;
-//    }
     public Entity getEntity() {
         return entityBean.getEntity(getEntityTable());
     }

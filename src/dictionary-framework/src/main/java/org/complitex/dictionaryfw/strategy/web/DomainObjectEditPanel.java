@@ -50,7 +50,6 @@ import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.BooleanPanel;
 import org.complitex.dictionaryfw.web.component.ChildrenContainer;
 import org.complitex.dictionaryfw.web.component.DatePanel;
@@ -74,9 +73,6 @@ public final class DomainObjectEditPanel extends Panel {
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
-
-    @EJB(name = "DisplayLocalizedValueUtil")
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
     @EJB(name = "StringCultureBean")
     private StringCultureBean stringBean;
@@ -157,10 +153,10 @@ public final class DomainObjectEditPanel extends Panel {
     private void init() {
         final Entity description = getStrategy().getEntity();
 
-        Label title = new Label("title", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        Label title = new Label("title", stringBean.displayValue(description.getEntityNames(), getLocale()));
         add(title);
 
-        Label label = new Label("label", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        Label label = new Label("label", stringBean.displayValue(description.getEntityNames(), getLocale()));
         add(label);
 
         final FeedbackPanel messages = new FeedbackPanel("messages");
@@ -202,7 +198,7 @@ public final class DomainObjectEditPanel extends Panel {
 
             @Override
             public Object getDisplayValue(EntityType object) {
-                return displayLocalizedValueUtil.displayValue(object.getEntityTypeNames(), getLocale());
+                return stringBean.displayValue(object.getEntityTypeNames(), getLocale());
             }
 
             @Override
@@ -243,7 +239,7 @@ public final class DomainObjectEditPanel extends Panel {
 
                     @Override
                     public String getObject() {
-                        return displayLocalizedValueUtil.displayValue(desc.getAttributeNames(), getLocale());
+                        return stringBean.displayValue(desc.getAttributeNames(), getLocale());
                     }
                 };
                 item.add(new Label("label", labelModel));

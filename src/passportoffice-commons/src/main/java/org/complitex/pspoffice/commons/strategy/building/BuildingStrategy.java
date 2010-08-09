@@ -22,6 +22,7 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
@@ -34,7 +35,6 @@ import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
 import org.complitex.dictionaryfw.util.CloneUtil;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.util.ResourceUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
@@ -53,8 +53,18 @@ public class BuildingStrategy extends Strategy {
 
     public static final String RESOURCE_BUNDLE = BuildingStrategy.class.getName();
 
+    public static final long NUMBER = 500;
+
+    public static final long CORP = 501;
+
+    public static final long STRUCTURE = 502;
+
+    public static final long STREET = 503;
+
+    public static final long DISTRICT = 504;
+
     @EJB
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+    private StringCultureBean stringBean;
 
     @Override
     public String getEntityTable() {
@@ -111,16 +121,6 @@ public class BuildingStrategy extends Strategy {
                 }));
     }
 
-//    @Override
-//    public DomainObjectDescription getDescription() {
-//        DomainObjectDescription description = super.getDescription();
-//        for (EntityAttributeType attrDesc : description.getAttributeDescriptions()) {
-//            if (attrDesc.getId().equals(500L) || attrDesc.getId().equals(501L) || attrDesc.getId().equals(502L)) {
-//                description.addFilterAttribute(attrDesc);
-//            }
-//        }
-//        return description;
-//    }
     @Override
     public DomainObject newInstance() {
         DomainObject object = super.newInstance();
@@ -141,7 +141,7 @@ public class BuildingStrategy extends Strategy {
                 return attr.getAttributeTypeId().equals(500L);
             }
         }));
-        return displayLocalizedValueUtil.displayValue(numbers.get(0).getLocalizedValues(), locale);
+        return stringBean.displayValue(numbers.get(0).getLocalizedValues(), locale);
     }
 
     @Override

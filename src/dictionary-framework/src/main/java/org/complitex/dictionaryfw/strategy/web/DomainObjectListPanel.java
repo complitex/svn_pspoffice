@@ -7,6 +7,8 @@ package org.complitex.dictionaryfw.strategy.web;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,6 +32,11 @@ import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.converter.BooleanConverter;
+import org.complitex.dictionaryfw.converter.DateConverter;
+import org.complitex.dictionaryfw.converter.DoubleConverter;
+import org.complitex.dictionaryfw.converter.IntegerConverter;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
@@ -57,6 +64,9 @@ public final class DomainObjectListPanel extends Panel {
 
     @EJB(name = "DisplayLocalizedValueUtil")
     private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+
+    @EJB(name = "StringCultureBean")
+    private StringCultureBean stringBean;
 
     private String entity;
 
@@ -278,17 +288,27 @@ public final class DomainObjectListPanel extends Panel {
                             });
                             String valueType = desc.getEntityAttributeValueTypes().get(0).getValueType();
                             SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
+                            String systemLocaleValue = stringBean.getSystemStringCulture(attr.getLocalizedValues()).getValue();
                             switch (type) {
-                                case STRING:
+                                case STRING_CULTURE:
                                     attributeValue = displayLocalizedValueUtil.displayValue(attr.getLocalizedValues(), getLocale());
                                     break;
+                                case STRING:
+                                    attributeValue = systemLocaleValue;
+                                    break;
                                 case DOUBLE:
+                                    attributeValue = new DoubleConverter().toObject(systemLocaleValue).toString();
+                                    break;
                                 case INTEGER:
-                                    attributeValue = attr.getLocalizedValues().get(0).getValue();
+                                    attributeValue = new IntegerConverter().toObject(systemLocaleValue).toString();
+                                    break;
+                                case BOOLEAN:
+                                    attributeValue = getString(new BooleanConverter().toObject(systemLocaleValue).toString());
                                     break;
                                 case DATE:
+                                    DateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy", getLocale());
+                                    attributeValue = dateFormatter.format(new DateConverter().toObject(systemLocaleValue));
                                     break;
-
                             }
                         }
                         item.add(new Label("dataColumn", attributeValue));

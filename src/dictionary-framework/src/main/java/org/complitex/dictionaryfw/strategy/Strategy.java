@@ -223,7 +223,7 @@ public abstract class Strategy {
                         if (valueDescs.size() == 1) {
                             String attrValueType = valueDescs.get(0).getValueType();
 
-                            if (attrValueType.equalsIgnoreCase(SimpleTypes.STRING.name())) {
+                            if (attrValueType.equalsIgnoreCase(SimpleTypes.STRING_CULTURE.name())) {
                                 isSimpleAttribute = true;
                                 boolean valueChanged = false;
                                 for (StringCulture oldString : oldAttr.getLocalizedValues()) {

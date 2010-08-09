@@ -33,7 +33,7 @@ import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
-import org.complitex.dictionaryfw.web.component.StringPanel;
+import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 
 /**
  *
@@ -75,8 +75,8 @@ public final class EntityAttributeEditPanel extends Panel {
         Form form = new Form("form");
         add(form);
 
-        StringPanel name = new StringPanel("name", new PropertyModel<List<StringCulture>>(attributeType, "attributeNames"),
-                new ResourceModel("name"), true, true);
+        StringCulturePanel name = new StringCulturePanel("name", new PropertyModel<List<StringCulture>>(attributeType, "attributeNames"),
+                true, new ResourceModel("name"), true);
         form.add(name);
 
         List<String> valueTypes = Lists.newArrayList(Iterables.transform(Arrays.asList(SimpleTypes.values()), new Function<SimpleTypes, String>() {
@@ -89,6 +89,7 @@ public final class EntityAttributeEditPanel extends Panel {
         DropDownChoice<String> valueType = new DropDownChoice<String>("valueType",
                 new PropertyModel<String>(attributeType.getEntityAttributeValueTypes().get(0), "valueType"), valueTypes);
         valueType.setRequired(true);
+        valueType.setLabel(new ResourceModel("value_type"));
         form.add(valueType);
 
         CheckBox mandatory = new CheckBox("mandatory", new PropertyModel<Boolean>(attributeType, "mandatory"));

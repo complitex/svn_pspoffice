@@ -46,7 +46,6 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.DictionaryFwSession;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
@@ -61,9 +60,6 @@ public final class DomainObjectListPanel extends Panel {
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
-
-    @EJB(name = "DisplayLocalizedValueUtil")
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
 
     @EJB(name = "StringCultureBean")
     private StringCultureBean stringBean;
@@ -158,10 +154,10 @@ public final class DomainObjectListPanel extends Panel {
         };
         dataProvider.setSort("", true);
 
-        Label title = new Label("title", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        Label title = new Label("title", stringBean.displayValue(description.getEntityNames(), getLocale()));
         add(title);
 
-        Label label = new Label("label", displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale()));
+        Label label = new Label("label", stringBean.displayValue(description.getEntityNames(), getLocale()));
         add(label);
 
         final Form filterForm = new Form("filterForm");
@@ -173,7 +169,7 @@ public final class DomainObjectListPanel extends Panel {
             protected void populateItem(ListItem<EntityAttributeType> item) {
                 EntityAttributeType attrDesc = item.getModelObject();
                 ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attrDesc.getId()), dataProvider, data, content);
-                column.add(new Label("columnName", displayLocalizedValueUtil.displayValue(attrDesc.getAttributeNames(), getLocale())));
+                column.add(new Label("columnName", stringBean.displayValue(attrDesc.getAttributeNames(), getLocale())));
                 item.add(column);
             }
         };
@@ -291,7 +287,7 @@ public final class DomainObjectListPanel extends Panel {
                             String systemLocaleValue = stringBean.getSystemStringCulture(attr.getLocalizedValues()).getValue();
                             switch (type) {
                                 case STRING_CULTURE:
-                                    attributeValue = displayLocalizedValueUtil.displayValue(attr.getLocalizedValues(), getLocale());
+                                    attributeValue = stringBean.displayValue(attr.getLocalizedValues(), getLocale());
                                     break;
                                 case STRING:
                                     attributeValue = systemLocaleValue;

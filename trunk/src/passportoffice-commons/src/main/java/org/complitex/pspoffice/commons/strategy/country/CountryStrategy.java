@@ -18,6 +18,7 @@ import javax.interceptor.Interceptors;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
@@ -25,7 +26,6 @@ import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
@@ -39,7 +39,7 @@ import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
 public class CountryStrategy extends Strategy {
 
     @EJB
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+    private StringCultureBean stringBean;
 
     private static final long NAME_ATTRIBUTE_TYPE_ID = 800L;
 
@@ -48,20 +48,6 @@ public class CountryStrategy extends Strategy {
         return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
 
-//    @Override
-//    public DomainObjectDescription getEntity() {
-//        DomainObjectDescription description = super.getEntity();
-//
-//        description.setFilterAttributes(Lists.newArrayList(Iterables.filter(description.getAttributeDescriptions(), new Predicate<EntityAttributeType>() {
-//
-//            @Override
-//            public boolean apply(EntityAttributeType attrDesc) {
-//                return attrDesc.getId().equals(NAME_ATTRIBUTE_TYPE_ID);
-//            }
-//        })));
-//
-//        return description;
-//    }
     @Override
     public List<EntityAttributeType> getListColumns() {
         return Lists.newArrayList(Iterables.filter(getEntity().getEntityAttributeTypes(), new Predicate<EntityAttributeType>() {
@@ -80,7 +66,7 @@ public class CountryStrategy extends Strategy {
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
-        return displayLocalizedValueUtil.displayValue(Iterables.find(object.getAttributes(), new Predicate<Attribute>() {
+        return stringBean.displayValue(Iterables.find(object.getAttributes(), new Predicate<Attribute>() {
 
             @Override
             public boolean apply(Attribute attr) {

@@ -48,7 +48,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
     private static final Logger log = LoggerFactory.getLogger(BuildingEditComponent.class);
 
     @EJB(name = "LocaleDao")
-    private LocaleBean localeDao;
+    private LocaleBean localeBean;
 
     @EJB(name = "BuildingStrategy")
     private BuildingStrategy buildingStrategy;
@@ -177,7 +177,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.setOutputMarkupId(true);
         add(attributesContainer);
 
-        final BuildingAttributeList list = new BuildingAttributeList(getEditPagePanel().getObject(), localeDao.getAllLocales());
+        final BuildingAttributeList list = new BuildingAttributeList(getEditPagePanel().getObject(), localeBean.getAllLocales());
         AjaxLink add = new AjaxLink("add") {
 
             @Override
@@ -197,7 +197,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
             @Override
             public boolean apply(Attribute attr) {
-                return attr.getAttributeTypeId().equals(504L);
+                return attr.getAttributeTypeId().equals(BuildingStrategy.DISTRICT);
             }
         });
         districtId = districtAttribute.getValueId();

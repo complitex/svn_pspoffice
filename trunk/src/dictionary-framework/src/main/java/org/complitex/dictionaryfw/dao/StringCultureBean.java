@@ -8,6 +8,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -86,5 +87,34 @@ public class StringCultureBean {
                 return stringCulture.getLocale().equals(localeBean.getSystemLocale());
             }
         });
+    }
+
+    public String displayValue(List<StringCulture> strings, final Locale locale) {
+        String value = null;
+        try {
+            value = Iterables.find(strings, new Predicate<StringCulture>() {
+
+                @Override
+                public boolean apply(StringCulture string) {
+                    return locale.getLanguage().equalsIgnoreCase(string.getLocale());
+
+                }
+            }).getValue();
+
+        } catch (NoSuchElementException e) {
+        }
+        if (Strings.isEmpty(value)) {
+            try {
+                value = Iterables.find(strings, new Predicate<StringCulture>() {
+
+                    @Override
+                    public boolean apply(StringCulture string) {
+                        return localeBean.getSystemLocale().equalsIgnoreCase(string.getLocale());
+                    }
+                }).getValue();
+            } catch (NoSuchElementException e) {
+            }
+        }
+        return value;
     }
 }

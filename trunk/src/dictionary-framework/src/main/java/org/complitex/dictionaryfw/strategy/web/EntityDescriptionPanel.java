@@ -17,13 +17,13 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
-import org.complitex.dictionaryfw.util.DisplayLocalizedValueUtil;
 
 /**
  *
@@ -34,8 +34,8 @@ public final class EntityDescriptionPanel extends Panel {
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
 
-    @EJB(name = "DisplayLocalizedValueUtil")
-    private DisplayLocalizedValueUtil displayLocalizedValueUtil;
+    @EJB(name = "StringCultureBean")
+    private StringCultureBean stringBean;
 
     public EntityDescriptionPanel(String id, String entity, Class<? extends WebPage> attributeEditPage, PageParameters attributeEditPageParams) {
         super(id);
@@ -49,7 +49,7 @@ public final class EntityDescriptionPanel extends Panel {
     private void init(final String entity, Class<? extends WebPage> attributeEditPage, PageParameters attributeEditPageParams) {
         Entity description = getStrategy(entity).getEntity();
 
-        String entityLabel = displayLocalizedValueUtil.displayValue(description.getEntityNames(), getLocale());
+        String entityLabel = stringBean.displayValue(description.getEntityNames(), getLocale());
         add(new Label("title", new StringResourceModel("label", null, new Object[]{entityLabel})));
         add(new Label("label", new StringResourceModel("label", null, new Object[]{entityLabel})));
 
@@ -58,7 +58,7 @@ public final class EntityDescriptionPanel extends Panel {
             @Override
             protected void populateItem(ListItem<EntityAttributeType> item) {
                 EntityAttributeType attributeType = item.getModelObject();
-                item.add(new Label("name", displayLocalizedValueUtil.displayValue(attributeType.getAttributeNames(), getLocale())));
+                item.add(new Label("name", stringBean.displayValue(attributeType.getAttributeNames(), getLocale())));
                 item.add(new Label("mandatory", attributeType.isMandatory() ? getString("yes") : getString("no")));
 
                 List<EntityAttributeValueType> valueTypes = attributeType.getEntityAttributeValueTypes();
@@ -99,7 +99,7 @@ public final class EntityDescriptionPanel extends Panel {
         StringBuilder parentsLabel = new StringBuilder();
         for (int i = 0; i < parents.length; i++) {
             parentsLabel.append("'").
-                    append(displayLocalizedValueUtil.displayValue(getStrategy(parents[i]).getEntity().getEntityNames(), getLocale())).
+                    append(stringBean.displayValue(getStrategy(parents[i]).getEntity().getEntityNames(), getLocale())).
                     append("'");
             if (i < parents.length - 1) {
                 parentsLabel.append(", ");
@@ -113,7 +113,7 @@ public final class EntityDescriptionPanel extends Panel {
             return valueType;
         } else {
             return new StringResourceModel("reference", this, null, new Object[]{
-                        displayLocalizedValueUtil.displayValue(getStrategy(valueType).getEntity().getEntityNames(), getLocale())
+                        stringBean.displayValue(getStrategy(valueType).getEntity().getEntityNames(), getLocale())
                     }).getObject();
         }
     }

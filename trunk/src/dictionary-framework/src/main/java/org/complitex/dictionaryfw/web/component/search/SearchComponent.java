@@ -17,6 +17,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
@@ -99,21 +100,28 @@ public final class SearchComponent extends Panel {
         final AutoCompleteSettings settings = new AutoCompleteSettings();
         settings.setAdjustInputWidth(false);
 
-        List<String> entityTitles = Lists.newArrayList(Iterables.transform(searchFilters, new Function<String, String>() {
+//        List<String> entityTitles = Lists.newArrayList(Iterables.transform(searchFilters, new Function<String, String>() {
+//
+//            @Override
+//            public String apply(String entity) {
+//                return stringBean.displayValue(strategyFactory.getStrategy(entity).getEntity().getEntityNames(),
+//                        getLocale());
+//            }
+//        }));
 
-            @Override
-            public String apply(String entity) {
-                return stringBean.displayValue(strategyFactory.getStrategy(entity).getEntity().getEntityNames(),
-                        getLocale());
-            }
-        }));
-
-        ListView<String> columns = new ListView<String>("columns", entityTitles) {
+        ListView<String> columns = new ListView<String>("columns", searchFilters) {
 
             @Override
             protected void populateItem(ListItem<String> item) {
-                String entityTitle = item.getModelObject();
-                item.add(new Label("column", entityTitle));
+                final String entityTable = item.getModelObject();
+                IModel<String> entityLabelModel = new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return stringBean.displayValue(strategyFactory.getStrategy(entityTable).getEntity().getEntityNames(), getLocale());
+                    }
+                };
+                item.add(new Label("column", entityLabelModel));
             }
         };
         searchPanel.add(columns);

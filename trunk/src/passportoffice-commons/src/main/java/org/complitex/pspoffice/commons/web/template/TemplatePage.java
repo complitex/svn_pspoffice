@@ -35,8 +35,8 @@ import java.util.*;
  * Для инициализации шаблона наследники должны вызывать метод super().
  */
 public class TemplatePage extends WebPage {
-    private static final Logger log = LoggerFactory.getLogger(TemplatePage.class);
 
+    private static final Logger log = LoggerFactory.getLogger(TemplatePage.class);
 
     public TemplatePage() {
         add(JavascriptPackageResource.getHeaderContribution(CoreJavaScriptResourceReference.get()));
@@ -44,7 +44,7 @@ public class TemplatePage extends WebPage {
         add(JavascriptPackageResource.getHeaderContribution(TemplatePage.class, TemplatePage.class.getSimpleName() + ".js"));
         add(CSSPackageResource.getHeaderContribution(WebCommonResourceInitializer.STYLE_CSS));
 
-        add(new Link("home"){
+        add(new Link("home") {
 
             @Override
             public void onClick() {
@@ -53,7 +53,7 @@ public class TemplatePage extends WebPage {
         });
 
         //locale picker
-        add(new LocalePicker("localePicker", Arrays.asList(getLocale())));
+        add(new LocalePicker("localePicker"));
 
         //toolbar
         WebMarkupContainer toolbar = new WebMarkupContainer("toolbar");
@@ -197,7 +197,7 @@ public class TemplatePage extends WebPage {
         return (TemplateWebApplication) getApplication();
     }
 
-    protected TemplateSession getTemplateSession(){
+    protected TemplateSession getTemplateSession() {
         return (TemplateSession) getSession();
     }
 

@@ -103,7 +103,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
         @Override
         public DomainObject get(String entity) {
-            if (!entity.equals(this.entity)) {
+            if (!entity.equals(this.entity) || (object == null)) {
                 return parentComponentState.get(entity);
             } else {
                 return object;

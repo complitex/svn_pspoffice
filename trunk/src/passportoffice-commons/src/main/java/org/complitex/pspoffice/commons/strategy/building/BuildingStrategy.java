@@ -22,10 +22,12 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
+import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
@@ -66,6 +68,9 @@ public class BuildingStrategy extends Strategy {
     @EJB
     private StringCultureBean stringBean;
 
+    @EJB
+    private LocaleBean localeBean;
+
     @Override
     public String getEntityTable() {
         return "building";
@@ -73,7 +78,7 @@ public class BuildingStrategy extends Strategy {
 
     @Override
     public boolean isSimpleAttributeType(EntityAttributeType attributeDescription) {
-        return attributeDescription.getId() > 504L;
+        return attributeDescription.getId() > DISTRICT;
     }
 
     @Override
@@ -116,7 +121,7 @@ public class BuildingStrategy extends Strategy {
 
                     @Override
                     public boolean apply(EntityAttributeType attr) {
-                        return attr.getId().equals(500L) || attr.getId().equals(501L) || attr.getId().equals(502L);
+                        return attr.getId().equals(NUMBER) || attr.getId().equals(CORP) || attr.getId().equals(STRUCTURE);
                     }
                 }));
     }
@@ -124,12 +129,46 @@ public class BuildingStrategy extends Strategy {
     @Override
     public DomainObject newInstance() {
         DomainObject object = super.newInstance();
+        newDistrictAttribute(object);
+        List<String> locales = localeBean.getAllLocales();
+        newEntityAttribute(object, 1, NUMBER, NUMBER, locales);
+        newEntityAttribute(object, 1, CORP, CORP, locales);
+        newEntityAttribute(object, 1, STRUCTURE, STRUCTURE, locales);
+        newStreetAttribute(object, 1);
+        return object;
+    }
+
+    public static Attribute newEntityAttribute(DomainObject object, long attributeId, long attributeTypeId, long attributeValueId, List<String> locales) {
+        Attribute attribute = new Attribute();
+        attribute.setObjectId(object.getId());
+        attribute.setAttributeTypeId(attributeTypeId);
+        attribute.setValueTypeId(attributeValueId);
+        attribute.setAttributeId(attributeId);
+        List<StringCulture> strings = Lists.newArrayList();
+        for (String locale : locales) {
+            strings.add(new StringCulture(locale, null));
+        }
+        attribute.setLocalizedValues(strings);
+        object.addAttribute(attribute);
+        return attribute;
+    }
+
+    public static Attribute newStreetAttribute(DomainObject object, long attributeId) {
+        Attribute attribute = new Attribute();
+        attribute.setObjectId(object.getId());
+        attribute.setAttributeTypeId(BuildingStrategy.STREET);
+        attribute.setValueTypeId(BuildingStrategy.STREET);
+        attribute.setAttributeId(attributeId);
+        object.addAttribute(attribute);
+        return attribute;
+    }
+
+    private static void newDistrictAttribute(DomainObject object) {
         Attribute districtAttr = new Attribute();
         districtAttr.setAttributeId(1L);
-        districtAttr.setAttributeTypeId(504L);
-        districtAttr.setValueTypeId(504L);
+        districtAttr.setAttributeTypeId(DISTRICT);
+        districtAttr.setValueTypeId(DISTRICT);
         object.addAttribute(districtAttr);
-        return object;
     }
 
     @Override
@@ -138,7 +177,7 @@ public class BuildingStrategy extends Strategy {
 
             @Override
             public boolean apply(Attribute attr) {
-                return attr.getAttributeTypeId().equals(500L);
+                return attr.getAttributeTypeId().equals(NUMBER);
             }
         }));
         return stringBean.displayValue(numbers.get(0).getLocalizedValues(), locale);
@@ -167,11 +206,11 @@ public class BuildingStrategy extends Strategy {
 
                     @Override
                     public boolean apply(DomainObjectAttributeExample attrExample) {
-                        return attrExample.getAttributeTypeId().equals(500L);
+                        return attrExample.getAttributeTypeId().equals(NUMBER);
                     }
                 });
             } catch (NoSuchElementException e) {
-                number = new DomainObjectAttributeExample(500L);
+                number = new DomainObjectAttributeExample(NUMBER);
                 example.addAttributeExample(number);
             }
             number.setValue(searchTextInput);
@@ -184,11 +223,11 @@ public class BuildingStrategy extends Strategy {
 
                     @Override
                     public boolean apply(DomainObjectAttributeExample example) {
-                        return example.getAttributeTypeId().equals(503L);
+                        return example.getAttributeTypeId().equals(STREET);
                     }
                 });
             } catch (NoSuchElementException e) {
-                streetExample = new DomainObjectAttributeExample(503L);
+                streetExample = new DomainObjectAttributeExample(STREET);
                 example.addAttributeExample(streetExample);
             }
             String streetIdAsString = streetId.equals(-1L) ? null : String.valueOf(streetId);

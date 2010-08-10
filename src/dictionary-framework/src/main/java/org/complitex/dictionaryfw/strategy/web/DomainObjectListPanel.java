@@ -29,6 +29,7 @@ import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
@@ -154,10 +155,17 @@ public final class DomainObjectListPanel extends Panel {
         };
         dataProvider.setSort("", true);
 
-        Label title = new Label("title", stringBean.displayValue(description.getEntityNames(), getLocale()));
-        add(title);
 
-        Label label = new Label("label", stringBean.displayValue(description.getEntityNames(), getLocale()));
+        IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return stringBean.displayValue(description.getEntityNames(), getLocale());
+            }
+        };
+        Label title = new Label("title", labelModel);
+        add(title);
+        Label label = new Label("label", labelModel);
         add(label);
 
         final Form filterForm = new Form("filterForm");
@@ -167,9 +175,16 @@ public final class DomainObjectListPanel extends Panel {
 
             @Override
             protected void populateItem(ListItem<EntityAttributeType> item) {
-                EntityAttributeType attrDesc = item.getModelObject();
-                ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attrDesc.getId()), dataProvider, data, content);
-                column.add(new Label("columnName", stringBean.displayValue(attrDesc.getAttributeNames(), getLocale())));
+                final EntityAttributeType attributeType = item.getModelObject();
+                ArrowOrderByBorder column = new ArrowOrderByBorder("column", String.valueOf(attributeType.getId()), dataProvider, data, content);
+                IModel<String> columnNameModel = new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return stringBean.displayValue(attributeType.getAttributeNames(), getLocale());
+                    }
+                };
+                column.add(new Label("columnName", columnNameModel));
                 item.add(column);
             }
         };

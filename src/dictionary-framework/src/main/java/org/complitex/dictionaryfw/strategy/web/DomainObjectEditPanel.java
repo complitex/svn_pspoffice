@@ -13,6 +13,8 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.DomainObject;
@@ -82,10 +84,16 @@ public final class DomainObjectEditPanel extends Panel {
     private void init() {
         final Entity description = getStrategy().getEntity();
 
-        Label title = new Label("title", stringBean.displayValue(description.getEntityNames(), getLocale()));
-        add(title);
+        IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
-        Label label = new Label("label", stringBean.displayValue(description.getEntityNames(), getLocale()));
+            @Override
+            public String getObject() {
+                return stringBean.displayValue(description.getEntityNames(), getLocale());
+            }
+        };
+        Label title = new Label("title", labelModel);
+        add(title);
+        Label label = new Label("label", labelModel);
         add(label);
 
         final FeedbackPanel messages = new FeedbackPanel("messages");

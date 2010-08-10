@@ -80,7 +80,7 @@ public final class DomainObjectListPanel extends Panel {
         init();
     }
 
-    private Strategy getStrategy() {
+    public Strategy getStrategy() {
         return strategyFactory.getStrategy(entity);
     }
 
@@ -331,8 +331,6 @@ public final class DomainObjectListPanel extends Panel {
             }
         };
         filterForm.add(data);
-
-        add(new BookmarkablePageLink("add", getStrategy().getEditPage(), getStrategy().getEditPageParams(null, null, null)));
     }
 
     protected DictionaryFwSession getDictionaryFwSession() {

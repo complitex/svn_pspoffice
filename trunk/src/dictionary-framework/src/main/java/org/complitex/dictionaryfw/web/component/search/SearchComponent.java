@@ -100,15 +100,6 @@ public final class SearchComponent extends Panel {
         final AutoCompleteSettings settings = new AutoCompleteSettings();
         settings.setAdjustInputWidth(false);
 
-//        List<String> entityTitles = Lists.newArrayList(Iterables.transform(searchFilters, new Function<String, String>() {
-//
-//            @Override
-//            public String apply(String entity) {
-//                return stringBean.displayValue(strategyFactory.getStrategy(entity).getEntity().getEntityNames(),
-//                        getLocale());
-//            }
-//        }));
-
         ListView<String> columns = new ListView<String>("columns", searchFilters) {
 
             @Override

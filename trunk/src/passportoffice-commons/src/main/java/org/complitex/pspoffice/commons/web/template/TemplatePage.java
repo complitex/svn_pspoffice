@@ -66,7 +66,7 @@ public class TemplatePage extends WebPage {
         commonPart.add(help);
 
         //add page custom buttons.
-        List<ToolbarButton> pageToolbarButtonsList = getToolbarButtons("pageToolbarButton");
+        List<? extends ToolbarButton> pageToolbarButtonsList = getToolbarButtons("pageToolbarButton");
         if (pageToolbarButtonsList == null) {
             pageToolbarButtonsList = Collections.emptyList();
         }
@@ -185,7 +185,7 @@ public class TemplatePage extends WebPage {
      * @param id Component id
      * @return List of ToolbarButton to add to Template
      */
-    protected List<ToolbarButton> getToolbarButtons(String id) {
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
         return null;
     }
 

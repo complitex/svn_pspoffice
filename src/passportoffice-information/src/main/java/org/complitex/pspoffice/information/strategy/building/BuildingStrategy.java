@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.complitex.pspoffice.information.strategy.building.web.edit.BuildingEd
 import org.complitex.pspoffice.information.strategy.building.web.edit.BuildingValidator;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
  *
@@ -89,10 +91,28 @@ public class BuildingStrategy extends Strategy {
             DomainObjectExample loadAttrsExample = CloneUtil.cloneObject(example);
             loadAttrsExample.setId(building.getId());
             building.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", loadAttrsExample));
+            super.updateStringsForNewLocales(building);
         }
         return buildings;
     }
 
+//    private void updateAttributes(DomainObject building) {
+//        for (Attribute attr : building.getAttributes()) {
+//            if (attr.getAttributeTypeId().equals(NUMBER)) {
+//                for (Attribute attr2 : building.getAttributes()) {
+//                    if (attr2.getAttributeId().equals(attr.getAttributeId())) {
+//                        if (attr2.getAttributeTypeId().equals(CORP) || attr2.getAttributeTypeId().equals(STRUCTURE)) {
+//                            if (attr2.getLocalizedValues() == null) {
+//                                attr2.setLocalizedValues(new ArrayList<StringCulture>());
+//                                stringBean.updateForNewLocales(attr2.getLocalizedValues());
+//                                attr2.setValueId(null);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     @Override
     public DomainObject findById(Long id) {
         DomainObjectExample example = new DomainObjectExample();
@@ -288,9 +308,8 @@ public class BuildingStrategy extends Strategy {
 
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
-        String commonsBundle = "org.complitex.pspoffice.information.strategy.Commons";
-        return ImmutableMap.of("apartment", ResourceUtil.getString(commonsBundle, "apartment", locale),
-                "room", ResourceUtil.getString(commonsBundle, "room", locale));
+        return ImmutableMap.of("apartment", ResourceUtil.getString(CommonResources.class.getName(), "apartment", locale),
+                "room", ResourceUtil.getString(CommonResources.class.getName(), "room", locale));
     }
 
     @Override

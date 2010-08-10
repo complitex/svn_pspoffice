@@ -4,5 +4,6 @@
           xsi:schemaLocation="http://www.vetcontrol.org/web/template http://www.vetcontrol.org/web/template/vetcontrol-template.xsd">
     <sidebar>
         <menu class="org.complitex.pspoffice.admin.web.AdminTemplateMenu"/>
+        <menu class="org.complitex.pspoffice.information.web.InformationTemplateMenu"/>
     </sidebar>
 </template>

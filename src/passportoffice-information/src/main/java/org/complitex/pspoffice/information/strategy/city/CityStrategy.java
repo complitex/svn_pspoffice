@@ -36,6 +36,7 @@ import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
  *
@@ -152,8 +153,7 @@ public class CityStrategy extends Strategy {
 
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
-        String commonsBundle = "org.complitex.pspoffice.information.strategy.Commons";
-        return ImmutableMap.of("street", ResourceUtil.getString(commonsBundle, "street", locale));
+        return ImmutableMap.of("street", ResourceUtil.getString(CommonResources.class.getName(), "street", locale));
     }
 
     @Override

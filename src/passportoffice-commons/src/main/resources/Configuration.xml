@@ -20,9 +20,9 @@
                 <property name="driver" value="com.mysql.jdbc.Driver"/>
                 <!--<property name="driver" value="com.p6spy.engine.spy.P6SpyDriver"/>-->
 
-                <property name="url" value="jdbc:mysql://localhost:3306/po"/>
-                <property name="username" value="po"/>
-                <property name="password" value="po"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/${database}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${passpword}"/>
             </dataSource>
         </environment>
         <environment id="development">

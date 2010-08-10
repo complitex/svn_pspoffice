@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
-import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.pspoffice.commons.strategy.building.BuildingStrategy;
 
 /**
@@ -60,7 +59,6 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
                     findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.CORP),
                     findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.STRUCTURE),
                     findEntityAttribute(suitedAttributes, attributeId, BuildingStrategy.STREET)));
-
         }
 
     }
@@ -82,36 +80,11 @@ public class BuildingAttributeList extends AbstractList<BuildingAttribute> imple
     private BuildingAttribute newBuildingAttribute() {
         long attributeId = calculateMaxAttributeId() + 1;
         BuildingAttribute buildingAttribute = new BuildingAttribute(attributeId,
-                newEntityAttribute(attributeId, BuildingStrategy.NUMBER, BuildingStrategy.NUMBER),
-                newEntityAttribute(attributeId, BuildingStrategy.CORP, BuildingStrategy.CORP),
-                newEntityAttribute(attributeId, BuildingStrategy.STRUCTURE, BuildingStrategy.STRUCTURE),
-                newStreetAttribute(attributeId));
+                BuildingStrategy.newEntityAttribute(object, attributeId, BuildingStrategy.NUMBER, BuildingStrategy.NUMBER, locales),
+                BuildingStrategy.newEntityAttribute(object, attributeId, BuildingStrategy.CORP, BuildingStrategy.CORP, locales),
+                BuildingStrategy.newEntityAttribute(object, attributeId, BuildingStrategy.STRUCTURE, BuildingStrategy.STRUCTURE, locales),
+                BuildingStrategy.newStreetAttribute(object, attributeId));
         return buildingAttribute;
-    }
-
-    private Attribute newEntityAttribute(long attributeId, long attributeTypeId, long attributeValueId) {
-        Attribute attribute = new Attribute();
-        attribute.setObjectId(object.getId());
-        attribute.setAttributeTypeId(attributeTypeId);
-        attribute.setValueTypeId(attributeValueId);
-        attribute.setAttributeId(attributeId);
-        List<StringCulture> strings = Lists.newArrayList();
-        for (String locale : locales) {
-            strings.add(new StringCulture(locale, null));
-        }
-        attribute.setLocalizedValues(strings);
-        object.addAttribute(attribute);
-        return attribute;
-    }
-
-    private Attribute newStreetAttribute(long attributeId) {
-        Attribute attribute = new Attribute();
-        attribute.setObjectId(object.getId());
-        attribute.setAttributeTypeId(BuildingStrategy.STREET);
-        attribute.setValueTypeId(BuildingStrategy.STREET);
-        attribute.setAttributeId(attributeId);
-        object.addAttribute(attribute);
-        return attribute;
     }
 
     private long calculateMaxAttributeId() {

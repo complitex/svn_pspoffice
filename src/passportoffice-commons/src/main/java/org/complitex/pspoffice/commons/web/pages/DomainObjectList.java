@@ -4,8 +4,12 @@
  */
 package org.complitex.pspoffice.commons.web.pages;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.apache.wicket.PageParameters;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
+import org.complitex.pspoffice.commons.web.component.toolbar.AddItemButton;
+import org.complitex.pspoffice.commons.web.component.toolbar.ToolbarButton;
 import org.complitex.pspoffice.commons.web.template.TemplatePage;
 
 /**
@@ -15,12 +19,25 @@ public class DomainObjectList extends TemplatePage {
 
     public static final String ENTITY = "entity";
 
+    private DomainObjectListPanel listPanel;
+
     public DomainObjectList(PageParameters params) {
         init(params.getString(ENTITY));
     }
 
     private void init(String entity) {
-        add(new DomainObjectListPanel("listPanel", entity));
+        add(listPanel = new DomainObjectListPanel("listPanel", entity));
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return ImmutableList.of(new AddItemButton(id) {
+
+            @Override
+            protected void onClick() {
+                setResponsePage(listPanel.getStrategy().getEditPage(), listPanel.getStrategy().getEditPageParams(null, null, null));
+            }
+        });
     }
 }
 

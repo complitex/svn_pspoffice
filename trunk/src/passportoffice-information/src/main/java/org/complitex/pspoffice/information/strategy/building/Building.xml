@@ -34,7 +34,7 @@
             <if test="attrExample.value != null">
                 <if test="attrExample.attributeTypeId == 503 or attrExample.attributeTypeId == 504">
                     AND EXISTS(SELECT 1 FROM `building_attribute` ba WHERE ba.`object_id` = attr.`object_id`
-                    AND ba.`status` = 'ACTIVE' AND ba.`start_date` = attr.`start_date` AND ba.`value_id` = #{attrExample.value}
+                    AND ba.`status` = 'ACTIVE' AND ba.`value_id` = #{attrExample.value}
                     AND ba.`attribute_type_id` = #{attrExample.attributeTypeId} AND ba.`attribute_id` = attr.`attribute_id`)
                 </if>
             </if>

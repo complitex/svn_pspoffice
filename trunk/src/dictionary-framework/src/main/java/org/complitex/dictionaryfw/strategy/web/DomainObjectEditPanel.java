@@ -103,7 +103,6 @@ public final class DomainObjectEditPanel extends Panel {
         if (clazz != null) {
             try {
                 complexAttributes = clazz.getConstructor(String.class).newInstance("complexAttributes");
-
             } catch (Exception e) {
                 log.warn("Couldn't instantiate complex attributes panel object.", e);
             }

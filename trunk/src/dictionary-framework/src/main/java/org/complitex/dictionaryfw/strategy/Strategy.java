@@ -215,24 +215,45 @@ public abstract class Strategy {
                         if (valueDescs.size() == 1) {
                             String attrValueType = valueDescs.get(0).getValueType();
 
-                            if (attrValueType.equalsIgnoreCase(SimpleTypes.STRING_CULTURE.name())) {
+                            try {
+                                SimpleTypes simpleType = SimpleTypes.valueOf(attrValueType.toUpperCase());
                                 isSimpleAttribute = true;
-                                boolean valueChanged = false;
-                                for (StringCulture oldString : oldAttr.getLocalizedValues()) {
-                                    for (StringCulture newString : newAttr.getLocalizedValues()) {
-                                        //compare strings
-                                        if (oldString.getLocale().equals(newString.getLocale())) {
-                                            if (!Strings.isEqual(oldString.getValue(), newString.getValue())) {
-                                                valueChanged = true;
-                                                break;
+                                switch (simpleType) {
+                                    case STRING_CULTURE: {
+                                        isSimpleAttribute = true;
+                                        boolean valueChanged = false;
+                                        for (StringCulture oldString : oldAttr.getLocalizedValues()) {
+                                            for (StringCulture newString : newAttr.getLocalizedValues()) {
+                                                //compare strings
+                                                if (oldString.getLocale().equals(newString.getLocale())) {
+                                                    if (!Strings.isEqual(oldString.getValue(), newString.getValue())) {
+                                                        valueChanged = true;
+                                                        break;
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
-                                }
 
-                                if (valueChanged) {
-                                    needToUpdateAttribute = true;
+                                        if (valueChanged) {
+                                            needToUpdateAttribute = true;
+                                        }
+                                    }
+                                    break;
+
+                                    case BOOLEAN:
+                                    case DATE:
+                                    case DOUBLE:
+                                    case INTEGER:
+                                    case STRING: {
+                                        String oldString = stringBean.getSystemStringCulture(oldAttr.getLocalizedValues()).getValue();
+                                        String newString = stringBean.getSystemStringCulture(newAttr.getLocalizedValues()).getValue();
+                                        if (!Strings.isEqual(oldString, newString)) {
+                                            needToUpdateAttribute = true;
+                                        }
+                                    }
+                                    break;
                                 }
+                            } catch (IllegalArgumentException e) {
                             }
                         }
 

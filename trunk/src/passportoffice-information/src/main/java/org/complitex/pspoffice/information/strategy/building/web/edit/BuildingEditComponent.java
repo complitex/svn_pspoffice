@@ -219,7 +219,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
                 item.add(newStringPanel("number", buildingAttribute.getNumber(), new ResourceModel("number"), true));
                 item.add(newStringPanel("corp", buildingAttribute.getCorp(), new ResourceModel("corp"), false));
-                item.add(newStringPanel("structure", buildingAttribute.getCorp(), new ResourceModel("structure"), false));
+                item.add(newStringPanel("structure", buildingAttribute.getStructure(), new ResourceModel("structure"), false));
 
                 DomainObject street = null;
                 Long streetId = buildingAttribute.getStreet().getValueId();

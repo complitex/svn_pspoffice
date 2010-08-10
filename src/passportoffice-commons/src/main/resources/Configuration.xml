@@ -40,7 +40,7 @@
         <mapper resource="org/complitex/dictionaryfw/entity/Attribute.xml"/>
         <mapper resource="org/complitex/dictionaryfw/entity/DomainObject.xml"/>
 
-        <mapper resource="org/complitex/pspoffice/commons/strategy/building/Building.xml"/>
+        <mapper resource="org/complitex/pspoffice/information/strategy/building/Building.xml"/>
 
         <mapper resource="org/complitex/pspoffice/admin/service/UserBean.xml"/>
     </mappers>

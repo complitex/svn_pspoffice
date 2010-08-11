@@ -48,6 +48,8 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.web.DictionaryFwSession;
+import org.complitex.dictionaryfw.web.component.ShowMode;
+import org.complitex.dictionaryfw.web.component.ShowModePanel;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentSessionState;
@@ -107,7 +109,7 @@ public final class DomainObjectListPanel extends Panel {
             content.setVisible(true);
         } else {
             SearchComponentState componentState = getSearchComponentState();
-            searchComponent = new SearchComponent("searchComponent", componentState, searchFilters, getStrategy().getSearchCallback());
+            searchComponent = new SearchComponent("searchComponent", componentState, searchFilters, getStrategy().getSearchCallback(), true);
             content.setVisible(false);
         }
         add(searchComponent);
@@ -119,42 +121,6 @@ public final class DomainObjectListPanel extends Panel {
         for (EntityAttributeType filterAttrDesc : filterAttrDescs) {
             example.addAttributeExample(new DomainObjectAttributeExample(filterAttrDesc.getId()));
         }
-
-        final SortableDataProvider<DomainObject> dataProvider = new SortableDataProvider<DomainObject>() {
-
-            @Override
-            public Iterator<? extends DomainObject> iterator(int first, int count) {
-                boolean asc = getSort().isAscending();
-
-                if (!Strings.isEmpty(getSort().getProperty())) {
-                    Long sortProperty = Long.valueOf(getSort().getProperty());
-                    example.setOrderByAttribureTypeId(sortProperty);
-                }
-
-                example.setLocale(getLocale().getLanguage());
-                example.setAsc(asc);
-                example.setStart(first);
-                example.setSize(count);
-                return getStrategy().find(example).iterator();
-            }
-
-            @Override
-            public int size() {
-                if (!Strings.isEmpty(getSort().getProperty())) {
-                    Long sortProperty = Long.valueOf(getSort().getProperty());
-                    example.setOrderByAttribureTypeId(sortProperty);
-                }
-                example.setLocale(getLocale().getLanguage());
-                return getStrategy().count(example);
-            }
-
-            @Override
-            public IModel<DomainObject> model(DomainObject object) {
-                return new Model<DomainObject>(object);
-            }
-        };
-        dataProvider.setSort("", true);
-
 
         IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
@@ -170,6 +136,47 @@ public final class DomainObjectListPanel extends Panel {
 
         final Form filterForm = new Form("filterForm");
         content.add(filterForm);
+
+        final IModel<ShowMode> showModeModel = new Model<ShowMode>(ShowMode.ACTIVE);
+        ShowModePanel showModePanel = new ShowModePanel("showModePanel", showModeModel);
+        filterForm.add(showModePanel);
+
+        final SortableDataProvider<DomainObject> dataProvider = new SortableDataProvider<DomainObject>() {
+
+            @Override
+            public Iterator<? extends DomainObject> iterator(int first, int count) {
+                boolean asc = getSort().isAscending();
+
+                if (!Strings.isEmpty(getSort().getProperty())) {
+                    Long sortProperty = Long.valueOf(getSort().getProperty());
+                    example.setOrderByAttribureTypeId(sortProperty);
+                }
+
+                example.setStatus(showModeModel.getObject().name());
+                example.setLocale(getLocale().getLanguage());
+                example.setAsc(asc);
+                example.setStart(first);
+                example.setSize(count);
+                return getStrategy().find(example).iterator();
+            }
+
+            @Override
+            public int size() {
+                if (!Strings.isEmpty(getSort().getProperty())) {
+                    Long sortProperty = Long.valueOf(getSort().getProperty());
+                    example.setOrderByAttribureTypeId(sortProperty);
+                }
+                example.setStatus(showModeModel.getObject().name());
+                example.setLocale(getLocale().getLanguage());
+                return getStrategy().count(example);
+            }
+
+            @Override
+            public IModel<DomainObject> model(DomainObject object) {
+                return new Model<DomainObject>(object);
+            }
+        };
+        dataProvider.setSort("", true);
 
         ListView<EntityAttributeType> columns = new ListView<EntityAttributeType>("columns", filterAttrDescs) {
 
@@ -245,6 +252,7 @@ public final class DomainObjectListPanel extends Panel {
                 };
                 TextField<String> filter = new TextField<String>("filter", filterModel);
                 item.add(filter);
+                //TODO : add filter components for another simple types such as boolean and date
             }
         };
         filters.setReuseItems(true);

@@ -26,22 +26,33 @@
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
         (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
         e.`parent_entity_id`, e.`entity_type_id`, '${table}' as table_name
-        FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
+        FROM `${table}` e WHERE (e.`status` = 'ACTIVE' OR e.`status` = 'INACTIVE') AND e.`object_id` = #{id}
     </select>
+
+    <sql id="statusFilter">
+        <choose>
+            <when test="status == 'ALL'">
+                (e.`status` = 'ACTIVE' OR e.`status` = 'INACTIVE')
+            </when>
+            <otherwise>
+                e.`status` = #{status}
+            </otherwise>
+        </choose>
+    </sql>
 
     <select id="find" resultMap="org.complitex.dictionaryfw.entity.DomainObject.DomainObject" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
         (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
         e.`parent_entity_id`, e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
-        FROM `${table}` e WHERE e.`status` = 'ACTIVE'
+        FROM `${table}` e WHERE
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.statusFilter"/>
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
         <if test="orderByAttribureTypeId != null">
             ORDER BY (
             SELECT sc.`value` FROM `${table}_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
             (SELECT orderByAttr.`value_id` FROM `${table}_attribute` orderByAttr WHERE orderByAttr.`object_id` = e.`object_id`
-            AND orderByAttr.`status` = 'ACTIVE' AND orderByAttr.`start_date` >= e.`start_date`
-            AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId})
+            AND orderByAttr.`status` = 'ACTIVE' AND orderByAttr.`attribute_type_id` = #{orderByAttribureTypeId})
             )
             <choose>
                 <when test="asc">
@@ -77,7 +88,8 @@
     </sql>
 
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
-        SELECT COUNT(*) FROM `${table}` e WHERE e.`status` = 'ACTIVE'
+        SELECT COUNT(*) FROM `${table}` e WHERE
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.statusFilter"/>
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.filter"/>
     </select>
 
@@ -93,7 +105,7 @@
 
     <select id="findParentInSearchComponent" parameterType="DomainObjectExample" resultType="hashmap">
         SELECT (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) parentEntity,
-        e.`parent_id` parentId FROM `${table}` e WHERE e.`object_id` = #{id} AND e.`status` = 'ACTIVE'
+        e.`parent_id` parentId FROM `${table}` e WHERE e.`object_id` = #{id} AND (e.`status` = 'ACTIVE' OR e.`status` = 'INACTIVE')
     </select>
 
 </mapper>

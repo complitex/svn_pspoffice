@@ -51,12 +51,15 @@ public final class SearchComponent extends Panel {
 
     private SearchComponentState componentState;
 
-    public SearchComponent(String id, SearchComponentState componentState, List<String> searchFilters, ISearchCallback callback) {
+    private boolean enabled;
+
+    public SearchComponent(String id, SearchComponentState componentState, List<String> searchFilters, ISearchCallback callback, boolean enabled) {
         super(id);
         setOutputMarkupId(true);
         this.componentState = componentState;
         this.searchFilters = searchFilters;
         this.callback = callback;
+        this.enabled = enabled;
         init();
     }
 
@@ -163,6 +166,7 @@ public final class SearchComponent extends Panel {
                         return list;
                     }
                 };
+                filter.setEnabled(enabled);
                 filter.setOutputMarkupId(true);
                 if (index == searchFilters.size() - 1) {
                     invokeCallbackIfNecessary(index, filterModels, null);

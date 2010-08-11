@@ -81,6 +81,10 @@ public final class DomainObjectEditPanel extends Panel {
         return newObject;
     }
 
+    public boolean isNew() {
+        return oldObject == null;
+    }
+
     private void init() {
         final Entity description = getStrategy().getEntity();
 
@@ -124,7 +128,7 @@ public final class DomainObjectEditPanel extends Panel {
         //children
         Component childrenContainer = new EmptyPanel("childrenContainer");
         if (oldObject != null) {
-            childrenContainer = new ChildrenContainer("childrenContainer", entity, newObject.getId());
+            childrenContainer = new ChildrenContainer("childrenContainer", entity, newObject);
         }
         form.add(childrenContainer);
 
@@ -136,15 +140,26 @@ public final class DomainObjectEditPanel extends Panel {
                 save();
             }
         };
+        submit.setVisible(CanEditUtil.canEdit(newObject));
         form.add(submit);
         Link cancel = new Link("cancel") {
 
             @Override
             public void onClick() {
-                cancel();
+                back();
             }
         };
+        cancel.setVisible(CanEditUtil.canEdit(newObject));
         form.add(cancel);
+        Link back = new Link("back") {
+
+            @Override
+            public void onClick() {
+                back();
+            }
+        };
+        back.setVisible(!CanEditUtil.canEdit(newObject));
+        form.add(back);
         add(form);
     }
 
@@ -171,16 +186,16 @@ public final class DomainObjectEditPanel extends Panel {
 
     protected void save() {
         if (validate()) {
-            if (oldObject == null) {
+            if (isNew()) {
                 getStrategy().insert(newObject);
             } else {
                 getStrategy().update(oldObject, newObject);
             }
-            cancel();
+            back();
         }
     }
 
-    private void cancel() {
+    private void back() {
         if (!fromParent()) {
             //return to list page for current entity.
             setResponsePage(getStrategy().getListPage(), getStrategy().getListPageParams());
@@ -189,6 +204,16 @@ public final class DomainObjectEditPanel extends Panel {
             setResponsePage(strategyFactory.getStrategy(parentEntity).getEditPage(),
                     strategyFactory.getStrategy(parentEntity).getEditPageParams(parentId, null, null));
         }
+    }
+
+    public void disable() {
+        getStrategy().disable(newObject);
+        back();
+    }
+
+    public void enable() {
+        getStrategy().enable(newObject);
+        back();
     }
 
     private boolean fromParent() {

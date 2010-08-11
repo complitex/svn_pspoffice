@@ -11,6 +11,7 @@ import javax.ejb.EJB;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 
@@ -25,12 +26,12 @@ public final class ChildrenContainer extends Panel {
 
     private String entity;
 
-    private Long objectId;
+    private DomainObject object;
 
-    public ChildrenContainer(String id, String entity, Long objectId) {
+    public ChildrenContainer(String id, String entity, DomainObject object) {
         super(id);
         this.entity = entity;
-        this.objectId = objectId;
+        this.object = object;
         init();
     }
 
@@ -48,7 +49,7 @@ public final class ChildrenContainer extends Panel {
             @Override
             protected void populateItem(ListItem<String> item) {
                 String childEntity = item.getModelObject();
-                item.add(new Children("children", entity, objectId, childEntity));
+                item.add(new Children("children", entity, object, childEntity));
             }
         };
         add(childrenContainers);

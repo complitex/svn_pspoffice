@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.complitex.dictionaryfw.web.component.ShowMode;
 
 /**
  *
@@ -37,6 +38,8 @@ public class DomainObjectExample implements Serializable {
     private Map<String, Object> additionalParams = Maps.newHashMap();
 
     private List<DomainObjectAttributeExample> attributeExamples = new ArrayList<DomainObjectAttributeExample>();
+
+    private String status = ShowMode.ALL.name();
 
     public int getSize() {
         return size;
@@ -132,5 +135,13 @@ public class DomainObjectExample implements Serializable {
 
     public void addAdditionalParam(String key, Object value) {
         additionalParams.put(key, value);
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

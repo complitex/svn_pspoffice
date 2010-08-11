@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.information.web;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,8 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
-import org.complitex.dictionaryfw.strategy.Strategy;
-import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.pspoffice.commons.web.pages.EntityDescription;
 import org.complitex.pspoffice.commons.web.template.ITemplateLink;
 import org.complitex.pspoffice.commons.web.template.ResourceTemplateMenu;
 import org.complitex.pspoffice.information.BookEntities;
@@ -22,15 +22,11 @@ import org.complitex.pspoffice.information.resource.CommonResources;
  *
  * @author Artem
  */
-public class InformationTemplateMenu extends ResourceTemplateMenu {
-
-    private static Strategy getStrategy(String entity) {
-        return StrategyFactory.get().getStrategy(entity);
-    }
+public class InformationDescriptionTemplateMenu extends ResourceTemplateMenu {
 
     @Override
     public String getTitle(Locale locale) {
-        return getString(CommonResources.class, locale, "information_menu");
+        return getString(CommonResources.class, locale, "description_menu");
     }
 
     @Override
@@ -46,17 +42,17 @@ public class InformationTemplateMenu extends ResourceTemplateMenu {
 
                 @Override
                 public Class<? extends Page> getPage() {
-                    return getStrategy(bookEntity).getListPage();
+                    return EntityDescription.class;
                 }
 
                 @Override
                 public PageParameters getParameters() {
-                    return getStrategy(bookEntity).getListPageParams();
+                    return new PageParameters(ImmutableMap.of(EntityDescription.ENTITY, bookEntity));
                 }
 
                 @Override
                 public String getTagId() {
-                    return bookEntity + "_book_item";
+                    return bookEntity + "_description_item";
                 }
             });
         }
@@ -72,6 +68,6 @@ public class InformationTemplateMenu extends ResourceTemplateMenu {
 
     @Override
     public String getTagId() {
-        return "information_menu";
+        return "description_menu";
     }
 }

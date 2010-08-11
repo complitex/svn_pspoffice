@@ -20,7 +20,7 @@
         <collection property="entityTypes" ofType="org.complitex.dictionaryfw.entity.description.EntityType">
         <id column="entity_type_id" property="id"/>
         <collection property="entityTypeNames" ofType="StringCulture" column="entity_type_name_id"
-                    select="org.complitex.dictionaryfw.entity.description.EntityDescription.findNames"/>
+                    select="org.complitex.dictionaryfw.entity.description.Entity.findNames"/>
         </collection>
     </resultMap>
 
@@ -55,5 +55,9 @@
     <insert id="insertValueType">
         INSERT INTO `entity_attribute_value_type`(`attribute_type_id`, `attribute_value_type`) VALUES (#{attributeTypeId}, #{valueType})
     </insert>
+
+    <select id="allEntities" resultType="string">
+        SELECT e.`entity_table` FROM `entity` e
+    </select>
 
 </mapper>

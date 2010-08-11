@@ -5,6 +5,7 @@
 package org.complitex.dictionaryfw.dao;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
@@ -22,13 +23,15 @@ import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
 @Interceptors({SqlSessionInterceptor.class})
 public class EntityBean {
 
+    private static final String ENTITY_NAMESPACE = "org.complitex.dictionaryfw.entity.description.Entity";
+
     @EJB
     private StringCultureBean stringBean;
 
     private SqlSession session;
 
     public Entity getEntity(String entity) {
-        return (Entity) session.selectOne("org.complitex.dictionaryfw.entity.description.EntityDescription.load", entity);
+        return (Entity) session.selectOne(ENTITY_NAMESPACE + ".load", entity);
     }
 
     public EntityAttributeType newAttributeType() {
@@ -42,9 +45,13 @@ public class EntityBean {
         attributeType.setEntityId(entityId);
         Long stringId = stringBean.insertStrings(attributeType.getAttributeNames(), null);
         attributeType.setAttributeNameId(stringId);
-        session.insert("org.complitex.dictionaryfw.entity.description.EntityDescription.insertAttributeType", attributeType);
+        session.insert(ENTITY_NAMESPACE + ".insertAttributeType", attributeType);
         EntityAttributeValueType valueType = attributeType.getEntityAttributeValueTypes().get(0);
         valueType.setAttributeTypeId(attributeType.getId());
-        session.insert("org.complitex.dictionaryfw.entity.description.EntityDescription.insertValueType", valueType);
+        session.insert(ENTITY_NAMESPACE + ".insertValueType", valueType);
+    }
+
+    public Collection<String> getAllEntities() {
+        return session.selectList(ENTITY_NAMESPACE + ".allEntities");
     }
 }

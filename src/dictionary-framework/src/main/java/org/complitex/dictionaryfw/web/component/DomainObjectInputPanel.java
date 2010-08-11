@@ -45,6 +45,7 @@ import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.dictionaryfw.strategy.web.CanEditUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
@@ -161,6 +162,7 @@ public final class DomainObjectInputPanel extends Panel {
         });
         types.setLabel(new ResourceModel("entity_type"));
         types.setRequired(true);
+        types.setEnabled(CanEditUtil.canEdit(object));
         typeContainer.add(types);
 
 
@@ -222,32 +224,32 @@ public final class DomainObjectInputPanel extends Panel {
                             }
                         };
                         IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, stringConverter);
-                        input = new StringPanel("input", model, desc.isMandatory(), labelModel, true);
+                        input = new StringPanel("input", model, desc.isMandatory(), labelModel, CanEditUtil.canEdit(object));
                     }
                     break;
                     case STRING_CULTURE: {
                         IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-                        input = new StringCulturePanel("input", model, desc.isMandatory(), labelModel, true);
+                        input = new StringCulturePanel("input", model, desc.isMandatory(), labelModel, CanEditUtil.canEdit(object));
                     }
                     break;
                     case INTEGER: {
                         IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
-                        input = new IntegerPanel("input", model, desc.isMandatory(), labelModel, true);
+                        input = new IntegerPanel("input", model, desc.isMandatory(), labelModel, CanEditUtil.canEdit(object));
                     }
                     break;
                     case DATE: {
                         IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                        input = new DatePanel("input", model, desc.isMandatory(), labelModel, true);
+                        input = new DatePanel("input", model, desc.isMandatory(), labelModel, CanEditUtil.canEdit(object));
                     }
                     break;
                     case BOOLEAN: {
                         IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
-                        input = new BooleanPanel("input", model, labelModel, true);
+                        input = new BooleanPanel("input", model, labelModel, CanEditUtil.canEdit(object));
                     }
                     break;
                     case DOUBLE: {
                         IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
-                        input = new DoublePanel("input", model, desc.isMandatory(), labelModel, true);
+                        input = new DoublePanel("input", model, desc.isMandatory(), labelModel, CanEditUtil.canEdit(object));
                     }
                     break;
                 }
@@ -281,7 +283,7 @@ public final class DomainObjectInputPanel extends Panel {
             parentContainer.setVisible(false);
             parentSearch = new EmptyPanel("parentSearch");
         } else {
-            parentSearch = new SearchComponent("parentSearch", searchComponentState, parentFilters, parentSearchCallback);
+            parentSearch = new SearchComponent("parentSearch", searchComponentState, parentFilters, parentSearchCallback, CanEditUtil.canEdit(object));
         }
         parentContainer.add(parentSearch);
     }

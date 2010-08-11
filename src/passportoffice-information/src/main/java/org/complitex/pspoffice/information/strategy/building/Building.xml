@@ -45,7 +45,8 @@
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
         e.`parent_entity_id`, e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
-        FROM `building` e WHERE e.`status` = 'ACTIVE'
+        FROM `building` e WHERE
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.statusFilter"/>
         <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
         <if test="orderByAttribureTypeId != null">
             ORDER BY (
@@ -107,7 +108,8 @@
     </sql>
 
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
-        SELECT COUNT(*) FROM `building` e WHERE e.`status` = 'ACTIVE'
+        SELECT COUNT(*) FROM `building` e WHERE
+        <include refid="org.complitex.dictionaryfw.entity.DomainObject.statusFilter"/>
         <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
     </select>
 
@@ -120,7 +122,7 @@
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
         (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
         e.`parent_entity_id`, e.`entity_type_id`, '${table}' as table_name
-        FROM `${table}` e WHERE e.`status` = 'ACTIVE' AND e.`object_id` = #{id}
+        FROM `${table}` e WHERE (e.`status` = 'ACTIVE' OR e.`status` = 'INACTIVE') AND e.`object_id` = #{id}
     </select>
 
     <select id="loadComplexAttributes" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.StreetOrDistrict" parameterType="DomainObjectExample">

@@ -5,6 +5,7 @@
 package org.complitex.dictionaryfw.strategy;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,6 +20,7 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.EntityBean;
+import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.dao.SequenceBean;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
@@ -75,11 +77,52 @@ public abstract class Strategy {
     @EJB
     private EntityBean entityBean;
 
+    @EJB
+    private LocaleBean localeBean;
+
     protected SqlSession session;
 
     public abstract String getEntityTable();
 
     public abstract boolean isSimpleAttributeType(EntityAttributeType attributeType);
+
+    public void disable(DomainObject object) {
+        object.setStatus(StatusType.INACTIVE);
+        session.update(DOMAIN_OBJECT_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), object));
+
+        Map<String, String> childrenInfoInSystemLocale = getChildrenInfo(new Locale(localeBean.getSystemLocale()));
+        if (childrenInfoInSystemLocale != null) {
+            for (String childEntity : childrenInfoInSystemLocale.keySet()) {
+                DomainObjectExample example = new DomainObjectExample();
+                example.setStatus(StatusType.ACTIVE.name());
+                Strategy childStrategy = strategyFactory.getStrategy(childEntity);
+                childStrategy.configureExample(example, ImmutableMap.of(getEntityTable(), object.getId()), null);
+                List<DomainObject> children = childStrategy.find(example);
+                for (DomainObject child : children) {
+                    childStrategy.disable(child);
+                }
+            }
+        }
+    }
+
+    public void enable(DomainObject object) {
+        object.setStatus(StatusType.ACTIVE);
+        session.update(DOMAIN_OBJECT_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), object));
+
+        Map<String, String> childrenInfoInSystemLocale = getChildrenInfo(new Locale(localeBean.getSystemLocale()));
+        if (childrenInfoInSystemLocale != null) {
+            for (String childEntity : childrenInfoInSystemLocale.keySet()) {
+                Strategy childStrategy = strategyFactory.getStrategy(childEntity);
+                DomainObjectExample example = new DomainObjectExample();
+                example.setStatus(StatusType.INACTIVE.name());
+                childStrategy.configureExample(example, ImmutableMap.of(getEntityTable(), object.getId()), null);
+                List<DomainObject> children = childStrategy.find(example);
+                for (DomainObject child : children) {
+                    childStrategy.enable(child);
+                }
+            }
+        }
+    }
 
     public DomainObject findById(Long id) {
         DomainObjectExample example = new DomainObjectExample();

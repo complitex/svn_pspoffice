@@ -23,6 +23,7 @@ import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.dictionaryfw.strategy.web.CanEditUtil;
 
 /**
  *
@@ -37,13 +38,13 @@ public final class Children extends Panel {
 
     private String parentEntity;
 
-    private Long parentId;
+    private DomainObject parentObject;
 
-    public Children(String id, String parentEntity, Long parentId, String childEntity) {
+    public Children(String id, String parentEntity, DomainObject parentObject, String childEntity) {
         super(id);
         this.childEntity = childEntity;
         this.parentEntity = parentEntity;
-        this.parentId = parentId;
+        this.parentObject = parentObject;
         init();
     }
 
@@ -104,7 +105,7 @@ public final class Children extends Panel {
             protected List<DomainObject> load() {
                 DomainObjectExample example = new DomainObjectExample();
                 example.setLocale(getLocale().getLanguage());
-                getStrategy().configureExample(example, ImmutableMap.of(parentEntity, parentId), null);
+                getStrategy().configureExample(example, ImmutableMap.of(parentEntity, parentObject.getId()), null);
                 return getStrategy().find(example);
             }
         };
@@ -115,13 +116,18 @@ public final class Children extends Panel {
             protected void populateItem(ListItem<DomainObject> item) {
                 DomainObject child = item.getModelObject();
                 BookmarkablePageLink<WebPage> link = new BookmarkablePageLink<WebPage>("link", getStrategy().getEditPage(),
-                        getStrategy().getEditPageParams(child.getId(), parentId, parentEntity));
+                        getStrategy().getEditPageParams(child.getId(), parentObject.getId(), parentEntity));
                 link.add(new Label("displayName", getStrategy().displayDomainObject(child, getLocale())));
                 item.add(link);
             }
         };
         children.setReuseItems(true);
         content.add(children);
-        content.add(new BookmarkablePageLink("add", getStrategy().getEditPage(), getStrategy().getEditPageParams(null, parentId, parentEntity)));
+        BookmarkablePageLink addLink = new BookmarkablePageLink("add", getStrategy().getEditPage(), getStrategy().
+                getEditPageParams(null, parentObject.getId(), parentEntity));
+        content.add(addLink);
+        if (!CanEditUtil.canEdit(parentObject)) {
+            addLink.setVisible(false);
+        }
     }
 }

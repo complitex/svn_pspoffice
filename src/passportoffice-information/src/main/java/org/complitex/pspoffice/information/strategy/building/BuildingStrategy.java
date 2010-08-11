@@ -96,23 +96,6 @@ public class BuildingStrategy extends Strategy {
         return buildings;
     }
 
-//    private void updateAttributes(DomainObject building) {
-//        for (Attribute attr : building.getAttributes()) {
-//            if (attr.getAttributeTypeId().equals(NUMBER)) {
-//                for (Attribute attr2 : building.getAttributes()) {
-//                    if (attr2.getAttributeId().equals(attr.getAttributeId())) {
-//                        if (attr2.getAttributeTypeId().equals(CORP) || attr2.getAttributeTypeId().equals(STRUCTURE)) {
-//                            if (attr2.getLocalizedValues() == null) {
-//                                attr2.setLocalizedValues(new ArrayList<StringCulture>());
-//                                stringBean.updateForNewLocales(attr2.getLocalizedValues());
-//                                attr2.setValueId(null);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
     @Override
     public DomainObject findById(Long id) {
         DomainObjectExample example = new DomainObjectExample();

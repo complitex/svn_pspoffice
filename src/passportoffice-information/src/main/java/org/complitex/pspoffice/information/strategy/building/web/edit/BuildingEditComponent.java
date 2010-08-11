@@ -27,6 +27,7 @@ import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
+import org.complitex.dictionaryfw.strategy.web.CanEditUtil;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
@@ -209,7 +210,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
             district = districtStrategy.find(example).get(0);
         }
         attributesContainer.add(new SearchComponent("district", new SynchronizedSearchComponentState(parentSearchComponentState, "district", district),
-                ImmutableList.of("country", "region", "city", "district"), new DistrictSearchCallback()));
+                ImmutableList.of("country", "region", "city", "district"), new DistrictSearchCallback(),
+                CanEditUtil.canEdit(getEditPanel().getObject())));
 
         ListView<BuildingAttribute> buildingAttributes = new AjaxRemovableListView<BuildingAttribute>("buildingAttributes", list) {
 
@@ -217,9 +219,12 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
             protected void populateItem(ListItem<BuildingAttribute> item) {
                 BuildingAttribute buildingAttribute = item.getModelObject();
 
-                item.add(newStringPanel("number", buildingAttribute.getNumber(), new ResourceModel("number"), true));
-                item.add(newStringPanel("corp", buildingAttribute.getCorp(), new ResourceModel("corp"), false));
-                item.add(newStringPanel("structure", buildingAttribute.getStructure(), new ResourceModel("structure"), false));
+                item.add(newStringPanel("number", buildingAttribute.getNumber(), new ResourceModel("number"), true,
+                        CanEditUtil.canEdit(getEditPanel().getObject())));
+                item.add(newStringPanel("corp", buildingAttribute.getCorp(), new ResourceModel("corp"), false,
+                        CanEditUtil.canEdit(getEditPanel().getObject())));
+                item.add(newStringPanel("structure", buildingAttribute.getStructure(), new ResourceModel("structure"), false,
+                        CanEditUtil.canEdit(getEditPanel().getObject())));
 
                 DomainObject street = null;
                 Long streetId = buildingAttribute.getStreet().getValueId();
@@ -233,7 +238,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 }
 
                 item.add(new SearchComponent("street", new SynchronizedSearchComponentState(parentSearchComponentState, "street", street),
-                        buildingStrategy.getSearchFilters(), new StreetSearchCallback(buildingAttribute)));
+                        buildingStrategy.getSearchFilters(), new StreetSearchCallback(buildingAttribute),
+                        CanEditUtil.canEdit(getEditPanel().getObject())));
 
                 addRemoveLink("remove", item, null, attributesContainer);
             }
@@ -241,8 +247,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.add(buildingAttributes);
     }
 
-    private static StringCulturePanel newStringPanel(String id, Attribute attr, IModel<String> labelModel, boolean required) {
+    private static StringCulturePanel newStringPanel(String id, Attribute attr, IModel<String> labelModel, boolean required, boolean enabled) {
         IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attr, "localizedValues");
-        return new StringCulturePanel(id, model, required, labelModel, true);
+        return new StringCulturePanel(id, model, required, labelModel, enabled);
     }
 }

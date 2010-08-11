@@ -10,8 +10,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import javax.naming.InitialContext;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
+import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.pspoffice.commons.web.pages.EntityDescription;
 import org.complitex.pspoffice.commons.web.template.ITemplateLink;
 import org.complitex.pspoffice.commons.web.template.ResourceTemplateMenu;
@@ -37,7 +40,8 @@ public class InformationDescriptionTemplateMenu extends ResourceTemplateMenu {
 
                 @Override
                 public String getLabel(Locale locale) {
-                    return getString(CommonResources.class, locale, bookEntity);
+                    StringCultureBean stringBean = getStringBean();
+                    return stringBean.displayValue(StrategyFactory.get().getStrategy(bookEntity).getEntity().getEntityNames(), locale);
                 }
 
                 @Override
@@ -69,5 +73,18 @@ public class InformationDescriptionTemplateMenu extends ResourceTemplateMenu {
     @Override
     public String getTagId() {
         return "description_menu";
+    }
+
+    private static <T> T getEJBBean(Class<T> beanClass, String name) {
+        try {
+            InitialContext context = new InitialContext();
+            return beanClass.cast(context.lookup("java:module/" + name));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static StringCultureBean getStringBean() {
+        return getEJBBean(StringCultureBean.class, "StringCultureBean");
     }
 }

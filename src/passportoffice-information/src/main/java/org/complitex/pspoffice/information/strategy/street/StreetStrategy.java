@@ -57,6 +57,12 @@ public class StreetStrategy extends Strategy {
     }
 
     @Override
+    public List<DomainObject> find(DomainObjectExample example) {
+        example.setTable(getEntityTable());
+        return session.selectList("org.complitex.pspoffice.information.strategy.street.Street." + FIND_OPERATION, example);
+    }
+
+    @Override
     public boolean isSimpleAttributeType(EntityAttributeType attributeDescription) {
         return attributeDescription.getId() >= NAME_ATTRIBUTE_TYPE_ID;
     }
@@ -104,6 +110,10 @@ public class StreetStrategy extends Strategy {
                 example.addAttributeExample(attrExample);
             }
             attrExample.setValue(searchTextInput);
+        }
+        Long districtId = ids.get("district");
+        if (districtId != null) {
+            example.addAdditionalParam("district", districtId);
         }
         Long cityId = ids.get("city");
         example.setParentId(cityId);

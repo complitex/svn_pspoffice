@@ -41,6 +41,7 @@
         <mapper resource="org/complitex/dictionaryfw/entity/DomainObject.xml"/>
 
         <mapper resource="org/complitex/pspoffice/information/strategy/building/Building.xml"/>
+        <mapper resource="org/complitex/pspoffice/information/strategy/street/Street.xml"/>
 
         <mapper resource="org/complitex/pspoffice/admin/service/UserBean.xml"/>
     </mappers>

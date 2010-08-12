@@ -17,7 +17,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
@@ -66,27 +66,46 @@ public final class EntityDescriptionPanel extends Panel {
 
             @Override
             protected void populateItem(ListItem<EntityAttributeType> item) {
-                EntityAttributeType attributeType = item.getModelObject();
-                item.add(new Label("name", stringBean.displayValue(attributeType.getAttributeNames(), getLocale())));
-                item.add(new Label("mandatory", attributeType.isMandatory() ? getString("yes") : getString("no")));
+                final EntityAttributeType attributeType = item.getModelObject();
+                item.add(new Label("name", new AbstractReadOnlyModel<String>() {
 
-                List<EntityAttributeValueType> valueTypes = attributeType.getEntityAttributeValueTypes();
-                Label valueType = new Label("valueType", new Model<String>());
+                    @Override
+                    public String getObject() {
+                        return stringBean.displayValue(attributeType.getAttributeNames(), getLocale());
+                    }
+                }));
+                item.add(new Label("mandatory", new ResourceModel(attributeType.isMandatory() ? "yes" : "no")));
+
+                final List<EntityAttributeValueType> valueTypes = attributeType.getEntityAttributeValueTypes();
+                Label valueType = new Label("valueType", new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        return displayValueType(valueTypes.get(0).getValueType());
+                    }
+                });
                 item.add(valueType);
                 WebMarkupContainer valueTypesContainer = new WebMarkupContainer("valueTypesContainer");
                 RepeatingView valueTypeItem = new RepeatingView("valueTypeItem");
                 valueTypesContainer.add(valueTypeItem);
                 item.add(valueTypesContainer);
                 if (valueTypes.size() == 1) {
-                    valueType.setDefaultModelObject(displayValueType(valueTypes.get(0).getValueType()));
                     valueTypesContainer.setVisible(false);
                 } else {
-                    for (EntityAttributeValueType currentValueType : valueTypes) {
-                        valueTypeItem.add(new Label(String.valueOf(currentValueType.getId()), displayValueType(currentValueType.getValueType())));
+                    valueType.setVisible(false);
+                    for (final EntityAttributeValueType currentValueType : valueTypes) {
+                        valueTypeItem.add(new Label(String.valueOf(currentValueType.getId()), new AbstractReadOnlyModel<String>() {
+
+                            @Override
+                            public String getObject() {
+                                return displayValueType(currentValueType.getValueType());
+                            }
+                        }));
                     }
                 }
             }
         };
+        attributes.setReuseItems(true);
         add(attributes);
 
         BookmarkablePageLink addAttribute = new BookmarkablePageLink("addAttribute", attributeEditPage, attributeEditPageParams);

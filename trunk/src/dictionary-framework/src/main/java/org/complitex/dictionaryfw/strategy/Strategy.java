@@ -20,7 +20,6 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.EntityBean;
-import org.complitex.dictionaryfw.dao.LocaleBean;
 import org.complitex.dictionaryfw.dao.SequenceBean;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
@@ -77,9 +76,6 @@ public abstract class Strategy {
     @EJB
     private EntityBean entityBean;
 
-    @EJB
-    private LocaleBean localeBean;
-
     protected SqlSession session;
 
     public abstract String getEntityTable();
@@ -90,9 +86,9 @@ public abstract class Strategy {
         object.setStatus(StatusType.INACTIVE);
         session.update(DOMAIN_OBJECT_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), object));
 
-        Map<String, String> childrenInfoInSystemLocale = getChildrenInfo(new Locale(localeBean.getSystemLocale()));
-        if (childrenInfoInSystemLocale != null) {
-            for (String childEntity : childrenInfoInSystemLocale.keySet()) {
+        String[] childrenEntities = getChildrenEntities();
+        if (childrenEntities != null) {
+            for (String childEntity : childrenEntities) {
                 DomainObjectExample example = new DomainObjectExample();
                 example.setStatus(StatusType.ACTIVE.name());
                 Strategy childStrategy = strategyFactory.getStrategy(childEntity);
@@ -109,9 +105,9 @@ public abstract class Strategy {
         object.setStatus(StatusType.ACTIVE);
         session.update(DOMAIN_OBJECT_NAMESPACE + "." + UPDATE_OPERATION, new InsertParameter(getEntityTable(), object));
 
-        Map<String, String> childrenInfoInSystemLocale = getChildrenInfo(new Locale(localeBean.getSystemLocale()));
-        if (childrenInfoInSystemLocale != null) {
-            for (String childEntity : childrenInfoInSystemLocale.keySet()) {
+        String[] childrenEntities = getChildrenEntities();
+        if (childrenEntities != null) {
+            for (String childEntity : childrenEntities) {
                 Strategy childStrategy = strategyFactory.getStrategy(childEntity);
                 DomainObjectExample example = new DomainObjectExample();
                 example.setStatus(StatusType.INACTIVE.name());
@@ -186,8 +182,6 @@ public abstract class Strategy {
     public Entity getEntity() {
         return entityBean.getEntity(getEntityTable());
     }
-
-    public abstract List<EntityAttributeType> getListColumns();
 
     public DomainObject newInstance() {
         DomainObject object = new DomainObject();
@@ -374,6 +368,8 @@ public abstract class Strategy {
     /*
      * List page related functionality.
      */
+    public abstract List<EntityAttributeType> getListColumns();
+
     public abstract Class<? extends WebPage> getListPage();
 
     public abstract PageParameters getListPageParams();
@@ -385,6 +381,10 @@ public abstract class Strategy {
     public abstract String displayDomainObject(DomainObject object, Locale locale);
 
     public abstract void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput);
+
+    public String getPluralEntityLabel(Locale locale) {
+        return null;
+    }
 
     /*
      * Edit page related functionality.
@@ -399,8 +399,7 @@ public abstract class Strategy {
 
     public abstract ISearchCallback getParentSearchCallback();
 
-    public abstract Map<String, String> getChildrenInfo(Locale locale);
-
+//    public abstract Map<String, String> getChildrenInfo(Locale locale);
     public static class RestrictedObjectInfo {
 
         private String entityTable;
@@ -493,5 +492,7 @@ public abstract class Strategy {
     /*
      * Description metadata
      */
+    public abstract String[] getChildrenEntities();
+
     public abstract String[] getParents();
 }

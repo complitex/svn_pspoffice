@@ -30,10 +30,12 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
+import org.complitex.dictionaryfw.util.ResourceUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
  *
@@ -162,7 +164,12 @@ public class RoomStrategy extends Strategy {
     }
 
     @Override
-    public Map<String, String> getChildrenInfo(Locale locale) {
+    public String getPluralEntityLabel(Locale locale) {
+        return ResourceUtil.getString(CommonResources.class.getName(), getEntityTable(), locale);
+    }
+
+    @Override
+    public String[] getChildrenEntities() {
         return null;
     }
 

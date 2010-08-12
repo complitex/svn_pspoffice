@@ -6,7 +6,6 @@ package org.complitex.pspoffice.information.strategy.building;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
@@ -291,9 +290,13 @@ public class BuildingStrategy extends Strategy {
     }
 
     @Override
-    public Map<String, String> getChildrenInfo(Locale locale) {
-        return ImmutableMap.of("apartment", ResourceUtil.getString(CommonResources.class.getName(), "apartment", locale),
-                "room", ResourceUtil.getString(CommonResources.class.getName(), "room", locale));
+    public String getPluralEntityLabel(Locale locale) {
+        return ResourceUtil.getString(CommonResources.class.getName(), getEntityTable(), locale);
+    }
+
+    @Override
+    public String[] getChildrenEntities() {
+        return new String[]{"apartment", "room"};
     }
 
     @Override

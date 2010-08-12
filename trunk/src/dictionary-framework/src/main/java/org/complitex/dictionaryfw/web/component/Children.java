@@ -71,7 +71,7 @@ public final class Children extends Panel {
     }
 
     private void init() {
-        Label title = new Label("title", strategyFactory.getStrategy(parentEntity).getChildrenInfo(getLocale()).get(childEntity));
+        Label title = new Label("title", strategyFactory.getStrategy(childEntity).getPluralEntityLabel(getLocale()));
         add(title);
 
         final WebMarkupContainer content = new WebMarkupContainer("content");

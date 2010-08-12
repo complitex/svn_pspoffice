@@ -366,6 +366,13 @@ public abstract class Strategy {
     }
 
     /*
+     * Search component functionality
+     */
+    public int getSearchTextFieldSize() {
+        return 20;
+    }
+
+    /*
      * List page related functionality.
      */
     public abstract List<EntityAttributeType> getListColumns();

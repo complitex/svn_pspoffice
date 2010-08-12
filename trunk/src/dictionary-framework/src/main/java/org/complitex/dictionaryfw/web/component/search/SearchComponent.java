@@ -142,7 +142,7 @@ public final class SearchComponent extends Panel {
                     model.setObject(fromComponentState);
                 }
                 AutoCompleteTextField filter = new AutoCompleteTextField("filter", new FilterModel(model, entity),
-                        renderer, settings) {
+                        renderer, settings, strategyFactory.getStrategy(entity).getSearchTextFieldSize()) {
 
                     @Override
                     protected List<DomainObject> getChoiceList(String searchTextInput) {

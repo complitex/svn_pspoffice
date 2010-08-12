@@ -204,4 +204,9 @@ public class RoomStrategy extends Strategy {
     public String[] getParents() {
         return new String[]{"apartment", "building"};
     }
+
+    @Override
+    public int getSearchTextFieldSize() {
+        return 5;
+    }
 }

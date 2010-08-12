@@ -192,4 +192,9 @@ public class ApartmentStrategy extends Strategy {
     public String[] getParents() {
         return new String[]{"building"};
     }
+
+    @Override
+    public int getSearchTextFieldSize() {
+        return 5;
+    }
 }

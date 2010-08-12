@@ -41,7 +41,7 @@ public class InformationTemplateMenu extends ResourceTemplateMenu {
 
                 @Override
                 public String getLabel(Locale locale) {
-                    return getString(CommonResources.class, locale, bookEntity);
+                    return getStrategy(bookEntity).getPluralEntityLabel(locale);
                 }
 
                 @Override

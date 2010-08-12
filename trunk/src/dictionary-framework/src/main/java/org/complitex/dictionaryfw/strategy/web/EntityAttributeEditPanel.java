@@ -20,6 +20,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -65,8 +66,14 @@ public final class EntityAttributeEditPanel extends Panel {
         final EntityAttributeType attributeType = entityBean.newAttributeType();
         attributeType.getEntityAttributeValueTypes().add(new EntityAttributeValueType());
 
-        String entityLabel = stringBean.displayValue(description.getEntityNames(), getLocale());
-        IModel<String> labelModel = new StringResourceModel("label", null, new Object[]{entityLabel});
+        IModel<String> entityLabelModel = new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return stringBean.displayValue(description.getEntityNames(), getLocale());
+            }
+        };
+        IModel<String> labelModel = new StringResourceModel("label", null, new Object[]{entityLabelModel});
         add(new Label("title", labelModel));
         add(new Label("label", labelModel));
 

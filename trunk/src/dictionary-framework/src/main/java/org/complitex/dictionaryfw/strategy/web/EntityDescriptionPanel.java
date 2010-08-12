@@ -15,6 +15,8 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
@@ -47,11 +49,18 @@ public final class EntityDescriptionPanel extends Panel {
     }
 
     private void init(final String entity, Class<? extends WebPage> attributeEditPage, PageParameters attributeEditPageParams) {
-        Entity description = getStrategy(entity).getEntity();
+        final Entity description = getStrategy(entity).getEntity();
 
-        String entityLabel = stringBean.displayValue(description.getEntityNames(), getLocale());
-        add(new Label("title", new StringResourceModel("label", null, new Object[]{entityLabel})));
-        add(new Label("label", new StringResourceModel("label", null, new Object[]{entityLabel})));
+        IModel<String> entityLabelModel = new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return stringBean.displayValue(description.getEntityNames(), getLocale());
+            }
+        };
+        IModel<String> labelModel = new StringResourceModel("label", null, new Object[]{entityLabelModel});
+        add(new Label("title", labelModel));
+        add(new Label("label", labelModel));
 
         ListView<EntityAttributeType> attributes = new ListView<EntityAttributeType>("attributes", description.getEntityAttributeTypes()) {
 
@@ -83,14 +92,21 @@ public final class EntityDescriptionPanel extends Panel {
         BookmarkablePageLink addAttribute = new BookmarkablePageLink("addAttribute", attributeEditPage, attributeEditPageParams);
         add(addAttribute);
 
-        String[] parents = getStrategy(entity).getParents();
+        final String[] parents = getStrategy(entity).getParents();
         WebMarkupContainer parentsContainer = new WebMarkupContainer("parentsContainer");
-        Label parentsInfo = new Label("parentsInfo", new Model<String>());
+        Label parentsInfo = new Label("parentsInfo", new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                if ((parents != null) && (parents.length > 0)) {
+                    return displayParents(parents);
+                }
+                return null;
+            }
+        });
         parentsContainer.add(parentsInfo);
         add(parentsContainer);
-        if ((parents != null) && (parents.length > 0)) {
-            parentsInfo.setDefaultModelObject(displayParents(parents));
-        } else {
+        if (parents == null || parents.length == 0) {
             parentsContainer.setVisible(false);
         }
     }

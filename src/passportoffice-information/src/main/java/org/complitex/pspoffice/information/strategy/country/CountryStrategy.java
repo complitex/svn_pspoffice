@@ -5,7 +5,6 @@
 package org.complitex.pspoffice.information.strategy.country;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -117,8 +116,13 @@ public class CountryStrategy extends Strategy {
     }
 
     @Override
-    public Map<String, String> getChildrenInfo(Locale locale) {
-        return ImmutableMap.of("region", ResourceUtil.getString(CommonResources.class.getName(), "region", locale));
+    public String getPluralEntityLabel(Locale locale) {
+        return ResourceUtil.getString(CommonResources.class.getName(), getEntityTable(), locale);
+    }
+
+    @Override
+    public String[] getChildrenEntities() {
+        return new String[]{"region"};
     }
 
     @Override

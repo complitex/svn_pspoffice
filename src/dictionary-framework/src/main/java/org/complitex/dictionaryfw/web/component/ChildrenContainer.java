@@ -4,9 +4,8 @@
  */
 package org.complitex.dictionaryfw.web.component;
 
-import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
+import java.lang.String;
 import javax.ejb.EJB;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -40,11 +39,11 @@ public final class ChildrenContainer extends Panel {
     }
 
     private void init() {
-        Map<String, String> childrenInfo = getStrategy().getChildrenInfo(getLocale());
-        if (childrenInfo == null) {
-            childrenInfo = Collections.emptyMap();
+        String[] childrenEntities = getStrategy().getChildrenEntities();
+        if (childrenEntities == null) {
+            childrenEntities = new String[0];
         }
-        ListView<String> childrenContainers = new ListView<String>("childrenContainers", Lists.newArrayList(childrenInfo.keySet())) {
+        ListView<String> childrenContainers = new ListView<String>("childrenContainers", ImmutableList.of(childrenEntities)) {
 
             @Override
             protected void populateItem(ListItem<String> item) {

@@ -42,7 +42,6 @@ import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
-import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
@@ -115,9 +114,7 @@ public final class DomainObjectListPanel extends Panel {
         add(searchComponent);
         add(content);
 
-        final Entity description = getStrategy().getEntity();
         final List<EntityAttributeType> filterAttrDescs = getStrategy().getListColumns();
-
         for (EntityAttributeType filterAttrDesc : filterAttrDescs) {
             example.addAttributeExample(new DomainObjectAttributeExample(filterAttrDesc.getId()));
         }
@@ -126,7 +123,7 @@ public final class DomainObjectListPanel extends Panel {
 
             @Override
             public String getObject() {
-                return stringBean.displayValue(description.getEntityNames(), getLocale());
+                return getStrategy().getPluralEntityLabel(getLocale());
             }
         };
         Label title = new Label("title", labelModel);

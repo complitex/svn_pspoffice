@@ -6,6 +6,7 @@ package org.complitex.pspoffice.information.strategy.district;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
@@ -30,10 +31,12 @@ import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
+import org.complitex.dictionaryfw.util.ResourceUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
  *
@@ -150,7 +153,7 @@ public class DistrictStrategy extends Strategy {
 
     @Override
     public Map<String, String> getChildrenInfo(Locale locale) {
-        return null;
+        return ImmutableMap.of("street", ResourceUtil.getString(CommonResources.class.getName(), "street", locale));
     }
 
     @Override

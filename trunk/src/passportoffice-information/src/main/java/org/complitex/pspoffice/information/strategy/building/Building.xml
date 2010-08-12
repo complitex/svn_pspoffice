@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="org.complitex.pspoffice.commons.strategy.building.Building">
+<mapper namespace="org.complitex.pspoffice.information.strategy.building.Building">
 
     <resultMap id="Building" type="DomainObject">
         <id column="object_id" property="id"/>
@@ -41,13 +41,13 @@
         </foreach>
     </select>
 
-    <select id="find" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.Building" parameterType="DomainObjectExample">
+    <select id="find" resultMap="org.complitex.pspoffice.information.strategy.building.Building.Building" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
         e.`parent_entity_id`, e.`entity_type_id`, '${locale}' as locale, '${table}' as table_name
         FROM `building` e WHERE
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.statusFilter"/>
-        <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
+        <include refid="org.complitex.pspoffice.information.strategy.building.Building.filter"/>
         <if test="orderByAttribureTypeId != null">
             ORDER BY (
             SELECT sc.`value` FROM `building_string_culture` sc WHERE sc.`locale` = #{locale} AND sc.`id` =
@@ -110,14 +110,14 @@
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
         SELECT COUNT(*) FROM `building` e WHERE
         <include refid="org.complitex.dictionaryfw.entity.DomainObject.statusFilter"/>
-        <include refid="org.complitex.pspoffice.commons.strategy.building.Building.filter"/>
+        <include refid="org.complitex.pspoffice.information.strategy.building.Building.filter"/>
     </select>
 
     <select id="findStreetInSearchComponent" parameterType="DomainObjectExample" resultType="hashmap">
         SELECT attr.`value_id` streetId FROM `building_attribute` attr WHERE attr.`status` = 'ACTIVE' AND attr.`object_id` = #{id} AND attr.`attribute_type_id` = 503 limit 0,1
     </select>
 
-    <select id="findById" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.Building" parameterType="DomainObjectExample">
+    <select id="findById" resultMap="org.complitex.pspoffice.information.strategy.building.Building.Building" parameterType="DomainObjectExample">
         SELECT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`,
         (SELECT ent.`id` FROM `entity` ent WHERE ent.`entity_table` = #{table}) as entity_id,
         (SELECT ent.`entity_table` FROM `entity` ent WHERE ent.`id` = e.`parent_entity_id`) as parent_entity,
@@ -125,7 +125,7 @@
         FROM `${table}` e WHERE (e.`status` = 'ACTIVE' OR e.`status` = 'INACTIVE') AND e.`object_id` = #{id}
     </select>
 
-    <select id="loadComplexAttributes" resultMap="org.complitex.pspoffice.commons.strategy.building.Building.StreetOrDistrict" parameterType="DomainObjectExample">
+    <select id="loadComplexAttributes" resultMap="org.complitex.pspoffice.information.strategy.building.Building.StreetOrDistrict" parameterType="DomainObjectExample">
         SELECT attr.`attribute_id`, attr.`object_id`, attr.`attribute_type_id`, attr.`value_id`, attr.`value_type_id`, attr.`start_date`, attr.`end_date`,
         attr.`status`
         FROM `building_attribute` attr WHERE attr.`object_id` = #{id} AND attr.`status` = 'ACTIVE' AND attr.`attribute_type_id` IN (503, 504)

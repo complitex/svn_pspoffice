@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,6 +66,8 @@ public class BuildingStrategy extends Strategy {
 
     public static final long DISTRICT = 504;
 
+    private static final String BUILDING_NAMESPACE = "org.complitex.pspoffice.information.strategy.building.Building";
+
     @EJB
     private StringCultureBean stringBean;
 
@@ -86,11 +87,11 @@ public class BuildingStrategy extends Strategy {
     @Override
     public List<DomainObject> find(DomainObjectExample example) {
         example.setTable(getEntityTable());
-        List<DomainObject> buildings = session.selectList("org.complitex.pspoffice.commons.strategy.building.Building." + FIND_OPERATION, example);
+        List<DomainObject> buildings = session.selectList(BUILDING_NAMESPACE + "." + FIND_OPERATION, example);
         for (DomainObject building : buildings) {
             DomainObjectExample loadAttrsExample = CloneUtil.cloneObject(example);
             loadAttrsExample.setId(building.getId());
-            building.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", loadAttrsExample));
+            building.setAttributes(session.selectList(BUILDING_NAMESPACE + ".loadSimpleAttributes", loadAttrsExample));
             super.updateStringsForNewLocales(building);
         }
         return buildings;
@@ -101,9 +102,9 @@ public class BuildingStrategy extends Strategy {
         DomainObjectExample example = new DomainObjectExample();
         example.setId(id);
         example.setTable(getEntityTable());
-        DomainObject object = (DomainObject) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building." + FIND_BY_ID_OPERATION, example);
-        object.setAttributes(session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadSimpleAttributes", example));
-        for (Attribute complexAttr : (List<Attribute>) session.selectList("org.complitex.pspoffice.commons.strategy.building.Building.loadComplexAttributes", example)) {
+        DomainObject object = (DomainObject) session.selectOne(BUILDING_NAMESPACE + "." + FIND_BY_ID_OPERATION, example);
+        object.setAttributes(session.selectList(BUILDING_NAMESPACE + ".loadSimpleAttributes", example));
+        for (Attribute complexAttr : (List<Attribute>) session.selectList(BUILDING_NAMESPACE + ".loadComplexAttributes", example)) {
             object.addAttribute(complexAttr);
         }
         super.updateForNewAttributeTypes(object);
@@ -114,7 +115,7 @@ public class BuildingStrategy extends Strategy {
     @Override
     public int count(DomainObjectExample example) {
         example.setTable(getEntityTable());
-        return (Integer) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building." + COUNT_OPERATION, example);
+        return (Integer) session.selectOne(BUILDING_NAMESPACE + "." + COUNT_OPERATION, example);
     }
 
     @Override
@@ -300,7 +301,7 @@ public class BuildingStrategy extends Strategy {
         DomainObjectExample example = new DomainObjectExample();
         example.setTable(getEntityTable());
         example.setId(id);
-        Map<String, Object> result = (Map<String, Object>) session.selectOne("org.complitex.pspoffice.commons.strategy.building.Building.findStreetInSearchComponent", example);
+        Map<String, Object> result = (Map<String, Object>) session.selectOne(BUILDING_NAMESPACE + ".findStreetInSearchComponent", example);
         Long streetId = (Long) result.get("streetId");
         if (streetId != null) {
             return new RestrictedObjectInfo("street", streetId);

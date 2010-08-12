@@ -35,7 +35,7 @@ public class DomainObjectExample implements Serializable {
 
     private Long parentId;
 
-    private Map<String, Object> additionalParams = Maps.newHashMap();
+    private Map<String, Object> additionalParams;
 
     private List<DomainObjectAttributeExample> attributeExamples = new ArrayList<DomainObjectAttributeExample>();
 
@@ -134,6 +134,9 @@ public class DomainObjectExample implements Serializable {
     }
 
     public void addAdditionalParam(String key, Object value) {
+        if (additionalParams == null) {
+            additionalParams = Maps.newHashMap();
+        }
         additionalParams.put(key, value);
     }
 

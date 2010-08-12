@@ -1,5 +1,6 @@
 package org.complitex.dictionaryfw.web.component.search;
 
+import org.apache.wicket.behavior.SimpleAttributeModifier;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.IAutoCompleteRenderer;
 import org.apache.wicket.model.IModel;
@@ -51,10 +52,13 @@ public abstract class AutoCompleteTextField extends AbstractAutoCompleteTextFiel
         public abstract String getTextValue(DomainObject object);
     }
 
-    public AutoCompleteTextField(String id, AutoCompleteTextFieldModel model, IAutoCompleteRenderer renderer, AutoCompleteSettings settings) {
+    public AutoCompleteTextField(String id, AutoCompleteTextFieldModel model, IAutoCompleteRenderer renderer, AutoCompleteSettings settings, int size) {
         super(id, null, String.class, renderer, settings);
         model.setAutoComplete(this);
         this.setModel(model);
+        if (size > 0) {
+            add(new SimpleAttributeModifier("size", String.valueOf(size)));
+        }
     }
 
     @Override

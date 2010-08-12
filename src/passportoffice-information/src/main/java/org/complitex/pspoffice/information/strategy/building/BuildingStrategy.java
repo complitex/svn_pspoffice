@@ -354,4 +354,9 @@ public class BuildingStrategy extends Strategy {
     public String[] getParents() {
         return new String[]{"city"};
     }
+
+    @Override
+    public int getSearchTextFieldSize() {
+        return 5;
+    }
 }

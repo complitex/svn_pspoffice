@@ -1,8 +1,25 @@
 package org.complitex.pspoffice.admin.web;
 
+import org.apache.wicket.PageParameters;
+import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.data.DataView;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.complitex.dictionaryfw.entity.Attribute;
+import org.complitex.dictionaryfw.web.component.AttributeColumnsPanel;
+import org.complitex.dictionaryfw.web.component.AttributeFiltersPanel;
+import org.complitex.dictionaryfw.web.component.AttributeHeadersPanel;
+import org.complitex.dictionaryfw.web.component.BookmarkablePageLinkPanel;
 import org.complitex.pspoffice.admin.service.UserBean;
+import org.complitex.pspoffice.admin.service.UserFilter;
 import org.complitex.pspoffice.commons.entity.User;
 import org.complitex.pspoffice.commons.web.component.toolbar.AddUserButton;
 import org.complitex.pspoffice.commons.web.component.toolbar.ToolbarButton;
@@ -10,6 +27,7 @@ import org.complitex.pspoffice.commons.web.template.TemplatePage;
 
 import javax.ejb.EJB;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,17 +41,75 @@ public class UserList extends TemplatePage {
     public UserList() {
         super();
 
-        add(new Label("title", new ResourceModel("admin.user_list.title")));
+        add(new Label("admin.user_list.title", new ResourceModel("admin.user_list.title")));        
+        add(new FeedbackPanel("admin.user_list.messages"));
 
-        String users = "";
+        //Фильтр
+        UserFilter filterObject = userBean.newUserFilter();
+        final IModel<UserFilter> filterModel = new Model<UserFilter>(filterObject);
 
-        List<User> list = userBean.getUsers();
+        final Form filterForm = new Form("admin.user_list.filter_form");
+        add(filterForm);
 
-        for (User u : list){
-            users += u.getLogin() + ":" + u.getPassword() + "\n";
-        }
+        Link filterReset = new Link("admin.user_list.filter_form.reset"){
+            @Override
+            public void onClick() {
+                filterForm.clearInput();
+            }
+        };
+        filterForm.add(filterReset);
 
-        add(new Label("users", users));        
+        filterForm.add(new TextField<String>("admin.user_list.filter_form.login", new PropertyModel<String>(filterModel, "login")));
+        filterForm.add(new AttributeFiltersPanel("admin.user_list.filter_form.user_info", filterObject.getAttributeExamples()));
+
+        //Модель
+        final SortableDataProvider<User> dataProvider = new SortableDataProvider<User>(){
+            @Override
+            public Iterator<? extends User> iterator(int first, int count) {
+                UserFilter filter = filterModel.getObject();
+
+                filter.setFirst(first);
+                filter.setCount(count);
+                filter.setSortProperty(getSort().getProperty());
+                filter.setAscending(getSort().isAscending());
+
+                return userBean.getUsers(filterModel.getObject()).iterator();
+            }
+
+            @Override
+            public int size() {
+                return userBean.getUsersCount(filterModel.getObject());
+            }
+
+            @Override
+            public IModel<User> model(User object) {
+                return new Model<User>(object);
+            }
+        };
+        dataProvider.setSort("login", true);
+
+        //Таблица
+        DataView<User> dataView = new DataView<User>("admin.user_list.users", dataProvider, 10){
+            @Override
+            protected void populateItem(Item<User> item) {
+                User user = item.getModelObject();
+
+                item.add(new Label("admin.user_list.users.login", user.getLogin()));
+
+                List<Attribute> attributeColumns = userBean.getUserInfoStrategy().getAttributeColumns(user.getUserInfo());
+                item.add(new AttributeColumnsPanel("admin.user_list.users.user_info", attributeColumns));
+
+                item.add(new BookmarkablePageLinkPanel<User>("admin.user_list.users.action_edit",
+                        getString("admin.user_list.users.action_edit"), UserEdit.class, 
+                                new PageParameters("user_id=" + user.getId())));
+            }
+        };
+        filterForm.add(dataView);
+
+        //Названия колонок и сортировка
+        filterForm.add(new AttributeHeadersPanel("admin.user_list.users.headers.user_info",
+                userBean.getUserInfoStrategy().getListColumns(), dataProvider, dataView, filterForm));
+
     }
 
     @Override

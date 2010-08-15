@@ -25,7 +25,7 @@ import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
-import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
+import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
@@ -94,17 +94,17 @@ public class CityStrategy extends Strategy {
 
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
         if (!Strings.isEmpty(searchTextInput)) {
-            DomainObjectAttributeExample attrExample = null;
+            AttributeExample attrExample = null;
             try {
-                attrExample = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+                attrExample = Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
 
                     @Override
-                    public boolean apply(DomainObjectAttributeExample attrExample) {
+                    public boolean apply(AttributeExample attrExample) {
                         return attrExample.getAttributeTypeId().equals(NAME_ATTRIBUTE_TYPE_ID);
                     }
                 });
             } catch (NoSuchElementException e) {
-                attrExample = new DomainObjectAttributeExample(NAME_ATTRIBUTE_TYPE_ID);
+                attrExample = new AttributeExample(NAME_ATTRIBUTE_TYPE_ID);
                 example.addAttributeExample(attrExample);
             }
             attrExample.setValue(searchTextInput);

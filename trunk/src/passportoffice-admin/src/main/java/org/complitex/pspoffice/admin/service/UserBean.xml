@@ -5,9 +5,10 @@
     <resultMap id="userResultMap" type="org.complitex.pspoffice.commons.entity.User">
         <id column="user_id" property="id"/>
         <result column="login" property="login"/>
+        <result column="user_info_object_id" property="userInfoObjectId"/>
         <collection property="userGroups" ofType="org.complitex.pspoffice.commons.entity.UserGroup">
             <id column="user_group_id" property="id"/>
-            <result column="login" property="login"/>
+            <result column="user_group_login" property="login"/>
             <result column="group_name" property="groupName"/>
         </collection>
     </resultMap>
@@ -17,20 +18,59 @@
     <select id="getAll" resultMap="userResultMap">
         select u.id as id, u.login as login from `user` u
     </select>
+    
+    <sql id="userColumns">
+        distinct u.id as user_id,
+        u.login as login,
+        u.user_info_object_id as user_info_object_id,
+        g.id as user_group_id,
+        g.login as user_group_login,
+        g.group_name as group_name
+    </sql>
 
     <select id="selectUser" resultMap="userResultMap" parameterType="long">
         select
-            u.id as user_id,
-            u.login as login,
-            g.id as user_group_id,
-            g.group_name as group_name
+            <include refid="userColumns"/>
         from `user` u
             left join `usergroup` g on u.`login` = g.`login`
         where u.id = #{id}
     </select>
 
+    <sql id="userFilter">
+        from `user` u
+            left join `usergroup` g on u.`login` = g.`login`
+            left join `user_info` ui on u.`user_info_object_id` = ui.`object_id`
+            left join `user_info_attribute` uia on ui.`object_id` = uia.`object_id`
+            left join `user_info_string_culture` uis on uia.`value_id` = uis.`id`
+        <where>
+            <if test="login != null">u.login like #{login}</if>
+            <foreach collection="attributeExamples" item="attributeExample">
+                <if test="attributeExample.value != null">
+                    or (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
+                        and uis.`value` like #{attributeExample.value})
+                </if>
+            </foreach>
+        </where>
+    </sql>
+
+    <sql id="userSort">
+        <!--todo-->
+    </sql>
+
+    <select id="selectUsers" resultMap="userResultMap" parameterType="org.complitex.pspoffice.admin.service.UserFilter">
+        select <include refid="userColumns"/>
+        <include refid="userFilter"/>
+        <include refid="userSort"/> 
+        limit #{first}, #{count}
+    </select>
+
+    <select id="selectUsersCount" resultType="int" parameterType="org.complitex.pspoffice.admin.service.UserFilter">
+        select count(distinct u.id)
+        <include refid="userFilter"/>
+    </select>
+
     <insert id="insertUser" parameterType="org.complitex.pspoffice.commons.entity.User">
-        insert into `user` (`login`, `password`) values (#{login}, #{password})
+        insert into `user` (`login`, `password`, `user_info_object_id`) values (#{login}, #{password}, #{userInfoObjectId})
     </insert>
 
     <update id="updateUser" parameterType="org.complitex.pspoffice.commons.entity.User">

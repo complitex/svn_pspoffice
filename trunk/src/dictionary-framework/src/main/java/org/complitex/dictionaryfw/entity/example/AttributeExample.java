@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author Artem
  */
-public class DomainObjectAttributeExample implements Serializable {
+public class AttributeExample implements Serializable {
 
     private Long attributeId;
 
@@ -18,7 +18,7 @@ public class DomainObjectAttributeExample implements Serializable {
 
     private String value;
 
-    public DomainObjectAttributeExample(Long attributeTypeId) {
+    public AttributeExample(Long attributeTypeId) {
         this.attributeTypeId = attributeTypeId;
     }
 

@@ -28,7 +28,7 @@ import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
-import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
+import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
@@ -203,34 +203,34 @@ public class BuildingStrategy extends Strategy {
 
     private static void configureExampleImpl(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
         if (!Strings.isEmpty(searchTextInput)) {
-            DomainObjectAttributeExample number = null;
+            AttributeExample number = null;
             try {
-                number = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+                number = Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
 
                     @Override
-                    public boolean apply(DomainObjectAttributeExample attrExample) {
+                    public boolean apply(AttributeExample attrExample) {
                         return attrExample.getAttributeTypeId().equals(NUMBER);
                     }
                 });
             } catch (NoSuchElementException e) {
-                number = new DomainObjectAttributeExample(NUMBER);
+                number = new AttributeExample(NUMBER);
                 example.addAttributeExample(number);
             }
             number.setValue(searchTextInput);
         }
         Long streetId = ids.get("street");
         if (streetId != null) {
-            DomainObjectAttributeExample streetExample = null;
+            AttributeExample streetExample = null;
             try {
-                streetExample = Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+                streetExample = Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
 
                     @Override
-                    public boolean apply(DomainObjectAttributeExample example) {
+                    public boolean apply(AttributeExample example) {
                         return example.getAttributeTypeId().equals(STREET);
                     }
                 });
             } catch (NoSuchElementException e) {
-                streetExample = new DomainObjectAttributeExample(STREET);
+                streetExample = new AttributeExample(STREET);
                 example.addAttributeExample(streetExample);
             }
             String streetIdAsString = streetId.equals(-1L) ? null : String.valueOf(streetId);

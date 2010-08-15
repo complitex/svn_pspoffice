@@ -108,13 +108,18 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (908, 907, 'apartment');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (909, 907, 'building');
 
+
 insert into `string_culture`(`id`, `locale`, `value`) values (1000, 'ru', 'Пользователь'), (1000, 'en', 'User');
 insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (1000, 'user_info', 1000, '');
-insert into `string_culture`(`id`, `locale`, `value`) values (1001, 'ru', 'Имя'), (1001, 'en', 'Name');
+insert into `string_culture`(`id`, `locale`, `value`) values (1001, 'ru', 'Фамилия'), (1001, 'en', 'Last Name');
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1000, 1000, 1, 1001, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (1002, 'ru', 'Отчество'), (1002, 'en', 'Middle name');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (1000, 1000, 'string');
+insert into `string_culture`(`id`, `locale`, `value`) values (1002, 'ru', 'Имя'), (1002, 'en', 'First name');
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1001, 1000, 1, 1002, 1);
-insert into `string_culture`(`id`, `locale`, `value`) values (1003, 'ru', 'Фамилия'), (1003, 'en', 'Last name');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (1001, 1001, 'string');
+insert into `string_culture`(`id`, `locale`, `value`) values (1003, 'ru', 'Отчество'), (1003, 'en', 'Middle name');
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (1002, 1000, 1, 1003, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (1002, 1002, 'string');
+
 
 update `sequence` set `sequence_value` = 2000 where `sequence_name` = 'string_culture';

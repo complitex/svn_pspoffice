@@ -37,7 +37,7 @@ public class DomainObjectExample implements Serializable {
 
     private Map<String, Object> additionalParams;
 
-    private List<DomainObjectAttributeExample> attributeExamples = new ArrayList<DomainObjectAttributeExample>();
+    private List<AttributeExample> attributeExamples = new ArrayList<AttributeExample>();
 
     private String status = ShowMode.ALL.name();
 
@@ -97,15 +97,15 @@ public class DomainObjectExample implements Serializable {
         this.orderByAttribureTypeId = orderByAttribureTypeId;
     }
 
-    public List<DomainObjectAttributeExample> getAttributeExamples() {
+    public List<AttributeExample> getAttributeExamples() {
         return attributeExamples;
     }
 
-    public void setAttributeExamples(List<DomainObjectAttributeExample> attributeExamples) {
+    public void setAttributeExamples(List<AttributeExample> attributeExamples) {
         this.attributeExamples = attributeExamples;
     }
 
-    public void addAttributeExample(DomainObjectAttributeExample attributeExample) {
+    public void addAttributeExample(AttributeExample attributeExample) {
         attributeExamples.add(attributeExample);
     }
 

@@ -9,12 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import javax.ejb.EJB;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
@@ -22,15 +16,10 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.EntityBean;
 import org.complitex.dictionaryfw.dao.SequenceBean;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
+import org.complitex.dictionaryfw.entity.*;
+import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
-import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.Attribute;
-import org.complitex.dictionaryfw.entity.InsertParameter;
-import org.complitex.dictionaryfw.entity.SimpleTypes;
-import org.complitex.dictionaryfw.entity.StatusType;
-import org.complitex.dictionaryfw.entity.StringCulture;
-import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
@@ -39,6 +28,9 @@ import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ejb.EJB;
+import java.util.*;
 
 /**
  *
@@ -169,6 +161,7 @@ public abstract class Strategy {
         }
     }
 
+    @SuppressWarnings({"unchecked"})
     public List<DomainObject> find(DomainObjectExample example) {
         example.setTable(getEntityTable());
         return session.selectList(DOMAIN_OBJECT_NAMESPACE + "." + FIND_OPERATION, example);
@@ -179,6 +172,7 @@ public abstract class Strategy {
         return (Integer) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + COUNT_OPERATION, example);
     }
 
+    //todo add cache
     public Entity getEntity() {
         return entityBean.getEntity(getEntityTable());
     }
@@ -365,6 +359,10 @@ public abstract class Strategy {
         }
     }
 
+    public void update(DomainObject domainObject){
+        update(findById(domainObject.getId()), domainObject);
+    }
+
     /*
      * Search component functionality
      */
@@ -375,7 +373,36 @@ public abstract class Strategy {
     /*
      * List page related functionality.
      */
-    public abstract List<EntityAttributeType> getListColumns();
+
+    /**
+     *  Используется для отображения в пользовательском интерфейсе
+     * @return Сортированный список метамодели (описания) атрибутов
+     */
+    public List<EntityAttributeType> getListColumns(){
+        return getEntity().getEntityAttributeTypes();
+    }
+
+    /**
+     * Используется для отображения в пользовательском интерфейсе
+     * @param object DomainObject
+     * @return Сортированный список атрибутов согласно метамодели
+     * @see #getListColumns
+     * todo cache or sort performance
+     */
+    public List<Attribute> getAttributeColumns(DomainObject object){
+        List<EntityAttributeType> entityAttributeTypes = getListColumns();
+        List<Attribute> attributeColumns = new ArrayList<Attribute>(entityAttributeTypes.size());
+
+        for (EntityAttributeType entityAttributeType : entityAttributeTypes){
+            for (Attribute attribute : object.getAttributes()){
+                if (attribute.getAttributeTypeId().equals(entityAttributeType.getId())){
+                    attributeColumns.add(attribute);
+                }
+            }
+        }
+
+        return attributeColumns;
+    }
 
     public abstract Class<? extends WebPage> getListPage();
 
@@ -427,6 +454,7 @@ public abstract class Strategy {
         }
     }
 
+    @SuppressWarnings({"unchecked"})
     public RestrictedObjectInfo findParentInSearchComponent(long id) {
         DomainObjectExample example = new DomainObjectExample();
         example.setTable(getEntityTable());

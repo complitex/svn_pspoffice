@@ -1,11 +1,17 @@
 package org.complitex.pspoffice.admin.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
+import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.service.AbstractBean;
+import org.complitex.dictionaryfw.strategy.Strategy;
+import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.pspoffice.commons.entity.User;
 import org.complitex.pspoffice.commons.entity.UserGroup;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +20,24 @@ import java.util.List;
  */
 @Stateless(name = "UserBean")
 public class UserBean extends AbstractBean {
-    public static final String STATEMENT_PREFIX = UserBean.class.getCanonicalName();       
+    public static final String STATEMENT_PREFIX = UserBean.class.getCanonicalName();
+    public static final String USER_INFO_ENTITY_TABLE = "user_info";
+
+    @EJB(beanName = "StrategyFactory")
+    private StrategyFactory strategyFactory;
+
+    public Strategy getUserInfoStrategy(){
+        return strategyFactory.getStrategy(USER_INFO_ENTITY_TABLE);
+    }
+
+    public User newUser(){
+        User user = new User();
+
+        user.setUserGroups(new ArrayList<UserGroup>());
+        user.setUserInfo(getUserInfoStrategy().newInstance());
+
+        return user;
+    }
 
     @SuppressWarnings({"unchecked"})
     public List<User> getUsers(){
@@ -23,12 +46,19 @@ public class UserBean extends AbstractBean {
     }
 
     public User getUser(Long id){
+        User user = (User) sqlSession.selectOne(STATEMENT_PREFIX + ".selectUser", id);
 
-        return (User) sqlSession.selectOne(STATEMENT_PREFIX + ".selectUser", id);
+        user.setUserInfo(getUserInfoStrategy().findById(user.getUserInfoObjectId()));
+
+        return user;
     }
 
     public void save(User user){
         if (user.getId() == null){ //Сохранение нового пользователя
+            //сохранение информации о пользователе
+            getUserInfoStrategy().insert(user.getUserInfo());
+            user.setUserInfoObjectId(user.getUserInfo().getId());
+
             user.setPassword(DigestUtils.md5Hex(user.getLogin())); //md5 password
 
             sqlSession.insert(STATEMENT_PREFIX + ".insertUser", user);
@@ -37,10 +67,9 @@ public class UserBean extends AbstractBean {
             for(UserGroup userGroup : user.getUserGroups()){
                 userGroup.setLogin(user.getLogin());
 
+                //сохранение информации о пользователе
                 sqlSession.insert(STATEMENT_PREFIX + ".insertUserGroup", userGroup);
             }
-
-            //todo save attribute
         }else{ //Редактирование пользователя
             User dbUser = (User) sqlSession.selectOne(STATEMENT_PREFIX + ".selectUser", user.getId());
 
@@ -83,10 +112,36 @@ public class UserBean extends AbstractBean {
                 sqlSession.update(STATEMENT_PREFIX + ".updateUser", user);
             }
 
-            //todo save attribute
+            //сохранение информации о пользователе
+            getUserInfoStrategy().update(user.getUserInfo());
+        }
+    }
 
+    @SuppressWarnings({"unchecked"})
+    public List<User> getUsers(UserFilter filter){
+        List<User> users = sqlSession.selectList(STATEMENT_PREFIX + ".selectUsers", filter);
+        //todo change to db load
+        for (User user : users){
+            if (user.getUserInfoObjectId() != null){
+                user.setUserInfo(getUserInfoStrategy().findById(user.getUserInfoObjectId()));
+            }
         }
 
+        return users;
+    }
+
+    public Integer getUsersCount(UserFilter filter){
+        return (Integer) sqlSession.selectOne(STATEMENT_PREFIX + ".selectUsersCount", filter);
+    }
+
+    public UserFilter newUserFilter(){
+        UserFilter userFilter = new UserFilter();
+
+        for (EntityAttributeType entityAttributeType : getUserInfoStrategy().getListColumns()){
+            userFilter.getAttributeExamples().add(new AttributeExample(entityAttributeType.getId()));
+        }
+
+        return userFilter;
     }
 
 }

@@ -23,23 +23,18 @@
                 <th><label for="password"><wicket:message key="admin.user_edit.password"/>:</label></th>
                 <td><input id="password" wicket:id="admin.user_edit.password" type="password"/></td>
             </tr>
-            <tr>
-                <th><label for="last_name"><wicket:message key="admin.user_edit.last_name"/><b class="blue">*</b>:</label></th>
-                <td><input id="last_name" wicket:id="admin.user_edit.last_name" type="text"/></td>
-            </tr>
-            <tr>
-                <th><label for="first_name"><wicket:message key="admin.user_edit.first_name"/><b class="blue">*</b>:</label></th>
-                <td><input id="first_name" wicket:id="admin.user_edit.first_name" type="text"/></td>
-            </tr>
-            <tr>
-                <th><label for="middle_name"><wicket:message key="admin.user_edit.middle_name"/><b class="blue">*</b>:</label></th>
-                <td><input id="middle_name" wicket:id="admin.user_edit.middle_name" type="text"/></td>
-            </tr>
-            <!-- <tr>
-                <th><wicket:message key="admin.user_edit.department"/><b class="blue">*</b>:</th>
-                <td><select wicket:id="user.department"></select></td>
-            </tr>-->
+            </tbody>
+        </table>
 
+        <div wicket:id="admin.user_edit.user_info"></div>
+
+        <!-- <tr>
+            <th><wicket:message key="admin.user_edit.department"/><b class="blue">*</b>:</th>
+            <td><select wicket:id="user.department"></select></td>
+        </tr>-->
+
+        <table  border="0" cellspacing="0" cellpadding="0" class="tbForm">
+            <tbody>
             <tr>
                 <th><wicket:message key="admin.user_edit.usergroup"/>:</th>
                 <td>

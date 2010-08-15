@@ -30,5 +30,13 @@ public class UserFilter extends AbstractFilter{
         this.attributeExamples = attributeExamples;
     }
 
-    
+    public boolean isFilterAttributes(){
+        for(AttributeExample attributeExample : attributeExamples){
+            if (attributeExample.getValue() != null){
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

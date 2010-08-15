@@ -5,6 +5,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.*;
+import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
 import org.complitex.pspoffice.admin.service.UserBean;
 import org.complitex.pspoffice.commons.entity.User;
 import org.complitex.pspoffice.commons.entity.UserGroup;
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.complitex.pspoffice.commons.entity.UserGroup.GROUP_NAME.*;
@@ -45,26 +45,8 @@ public class UserEdit extends FormTemplatePage{
         add(new FeedbackPanel("messages"));
 
         //Модель данных
-        final LoadableDetachableModel<User> userModel = new LoadableDetachableModel<User>() {
-
-            @Override
-            protected User load() {
-                try {
-                    if (id != null){
-                        return userBean.getUser(id);
-                    }
-                    else{
-                        User user = new User();
-                        user.setUserGroups(new ArrayList<UserGroup>());
-                        return user;
-                    }
-                } catch (Exception e) {
-                    //log
-                }
-
-                return null;
-            }
-        };
+        //todo catch exception
+        final IModel<User> userModel = new Model<User>(id != null ? userBean.getUser(id) : userBean.newUser());
 
         //Форма
         Form form = new Form<User>("admin.user_edit.form");
@@ -110,10 +92,10 @@ public class UserEdit extends FormTemplatePage{
         password.setRequired(false);
         form.add(password);
 
-        //todo domain object from
-        form.add(new TextField<String>("admin.user_edit.last_name", new Model<String>()));
-        form.add(new TextField<String>("admin.user_edit.first_name", new Model<String>()));
-        form.add(new TextField<String>("admin.user_edit.middle_name", new Model<String>()));
+        //Информация о пользователе
+        DomainObjectInputPanel userInfo = new DomainObjectInputPanel("admin.user_edit.user_info", 
+                userModel.getObject().getUserInfo(), UserBean.USER_INFO_ENTITY_TABLE, null, null);
+        form.add(userInfo);
 
         //Группы привилегий
         CheckGroup<UserGroup> usergroups = new CheckGroup<UserGroup>("admin.user_edit.usergroups",
@@ -133,9 +115,11 @@ public class UserEdit extends FormTemplatePage{
     }
 
     private IModel<UserGroup> getUserGroup(User user, UserGroup.GROUP_NAME group_name){
-        for (UserGroup userGroup : user.getUserGroups()) {
-            if (userGroup.getGroupName().equals(group_name)) {
-                return new Model<UserGroup>(userGroup);
+        if (!user.getUserGroups().isEmpty()) {
+            for (UserGroup userGroup : user.getUserGroups()) {
+                if (userGroup.getGroupName().equals(group_name)) {
+                    return new Model<UserGroup>(userGroup);
+                }
             }
         }
 

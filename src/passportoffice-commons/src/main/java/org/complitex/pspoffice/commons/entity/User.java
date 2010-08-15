@@ -1,5 +1,7 @@
 package org.complitex.pspoffice.commons.entity;
 
+import org.complitex.dictionaryfw.entity.DomainObject;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -13,6 +15,8 @@ public class User implements Serializable{
     private String password;
     private String newPassword;
     private Long userInfoObjectId;
+    private DomainObject userInfo;    
+
     private List<UserGroup> userGroups;
 
     public Long getId() {
@@ -55,6 +59,14 @@ public class User implements Serializable{
         this.userInfoObjectId = userInfoObjectId;
     }
 
+    public DomainObject getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(DomainObject userInfo) {
+        this.userInfo = userInfo;
+    }
+
     public List<UserGroup> getUserGroups() {
         return userGroups;
     }
@@ -70,7 +82,7 @@ public class User implements Serializable{
                 ", login='" + login + '\'' +
                 ", password='" + password + '\'' +
                 ", newPassword='" + newPassword + '\'' +
-                ", userInfoObjectId=" + userInfoObjectId +
+                ", userInfo=" + userInfo +
                 ", userGroups=" + userGroups +
                 '}';
     }

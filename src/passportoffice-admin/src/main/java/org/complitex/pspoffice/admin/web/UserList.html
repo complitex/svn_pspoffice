@@ -3,15 +3,43 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"  xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd">
 <head>
-    <wicket:head><title wicket:id="title"></title></wicket:head>
+    <wicket:head><title wicket:id="admin.user_list.title"></title></wicket:head>
 </head>
 
 <body>
 <wicket:extend>
     <h1><wicket:message key="admin.user_list.title"/></h1>
-    
-    <span wicket:id="users"></span>
+    <div wicket:id="admin.user_list.messages"></div>
 
+    <form action="#" wicket:id="admin.user_list.filter_form">
+        <table  border="0" cellspacing="0" cellpadding="0" class="tbColor table_input">
+            <thead>
+            <tr>
+                <th><wicket:message key="admin.user_list.users.headers.login"/></th>
+                <wicket:container wicket:id="admin.user_list.users.headers.user_info"/>
+                <th class="center">
+                    <input class="btnSmall"  wicket:id="admin.user_list.filter_form.reset"
+                           type="button" wicket:message="value:admin.user_list.filter_form.reset"/>
+                </th>
+            </tr>
+            <tr>
+                <th><input type="text" wicket:id="admin.user_list.filter_form.login"/></th>
+                <wicket:container wicket:id="admin.user_list.filter_form.user_info"/>
+                <th class="center">
+                    <input class="btnSmall default" type="submit" tabindex="0"
+                           wicket:message="value:admin.user_list.filter_form.filter"/>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr wicket:id="admin.user_list.users">
+                <td><span wicket:id="admin.user_list.users.login"></span></td>
+                <wicket:container wicket:id="admin.user_list.users.user_info"/>
+                <td><span wicket:id="admin.user_list.users.action_edit"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
 </wicket:extend>
 </body>
 </html>

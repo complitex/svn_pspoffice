@@ -6,20 +6,21 @@ package org.complitex.pspoffice.information.web;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import javax.naming.InitialContext;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
-import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.dictionaryfw.strategy.StrategyFactoryStatic;
 import org.complitex.pspoffice.commons.web.pages.EntityDescription;
 import org.complitex.pspoffice.commons.web.template.ITemplateLink;
 import org.complitex.pspoffice.commons.web.template.ResourceTemplateMenu;
 import org.complitex.pspoffice.information.BookEntities;
 import org.complitex.pspoffice.information.resource.CommonResources;
+
+import javax.naming.InitialContext;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 /**
  *
@@ -41,7 +42,7 @@ public class InformationDescriptionTemplateMenu extends ResourceTemplateMenu {
                 @Override
                 public String getLabel(Locale locale) {
                     StringCultureBean stringBean = getStringBean();
-                    return stringBean.displayValue(StrategyFactory.get().getStrategy(bookEntity).getEntity().getEntityNames(), locale);
+                    return stringBean.displayValue(StrategyFactoryStatic.getStrategy(bookEntity).getEntity().getEntityNames(), locale);
                 }
 
                 @Override

@@ -7,12 +7,6 @@ package org.complitex.dictionaryfw.strategy.web;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -42,7 +36,7 @@ import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.entity.DomainObject;
 import org.complitex.dictionaryfw.entity.SimpleTypes;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
-import org.complitex.dictionaryfw.entity.example.DomainObjectAttributeExample;
+import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
@@ -53,6 +47,13 @@ import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentSessionState;
 import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
+
+import javax.ejb.EJB;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  *
@@ -116,7 +117,7 @@ public final class DomainObjectListPanel extends Panel {
 
         final List<EntityAttributeType> filterAttrDescs = getStrategy().getListColumns();
         for (EntityAttributeType filterAttrDesc : filterAttrDescs) {
-            example.addAttributeExample(new DomainObjectAttributeExample(filterAttrDesc.getId()));
+            example.addAttributeExample(new AttributeExample(filterAttrDesc.getId()));
         }
 
         IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
@@ -202,11 +203,11 @@ public final class DomainObjectListPanel extends Panel {
                 filterForm.clearInput();
 
                 for (final EntityAttributeType attrDesc : filterAttrDescs) {
-                    DomainObjectAttributeExample attrExample = Iterables.find(example.getAttributeExamples(),
-                            new Predicate<DomainObjectAttributeExample>() {
+                    AttributeExample attrExample = Iterables.find(example.getAttributeExamples(),
+                            new Predicate<AttributeExample>() {
 
                                 @Override
-                                public boolean apply(DomainObjectAttributeExample attrExample) {
+                                public boolean apply(AttributeExample attrExample) {
                                     return attrExample.getAttributeTypeId().equals(attrDesc.getId());
                                 }
                             });
@@ -227,10 +228,10 @@ public final class DomainObjectListPanel extends Panel {
 
                     @Override
                     public String getObject() {
-                        return Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+                        return Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
 
                             @Override
-                            public boolean apply(DomainObjectAttributeExample attrExample) {
+                            public boolean apply(AttributeExample attrExample) {
                                 return attrExample.getAttributeTypeId().equals(attrDesc.getId());
                             }
                         }).getValue();
@@ -238,10 +239,10 @@ public final class DomainObjectListPanel extends Panel {
 
                     @Override
                     public void setObject(String object) {
-                        Iterables.find(example.getAttributeExamples(), new Predicate<DomainObjectAttributeExample>() {
+                        Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
 
                             @Override
-                            public boolean apply(DomainObjectAttributeExample attrExample) {
+                            public boolean apply(AttributeExample attrExample) {
                                 return attrExample.getAttributeTypeId().equals(attrDesc.getId());
                             }
                         }).setValue(object);

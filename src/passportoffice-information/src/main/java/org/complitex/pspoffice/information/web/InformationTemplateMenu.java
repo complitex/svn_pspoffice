@@ -5,18 +5,19 @@
 package org.complitex.pspoffice.information.web;
 
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.complitex.dictionaryfw.strategy.Strategy;
-import org.complitex.dictionaryfw.strategy.StrategyFactory;
+import org.complitex.dictionaryfw.strategy.StrategyFactoryStatic;
 import org.complitex.pspoffice.commons.web.template.ITemplateLink;
 import org.complitex.pspoffice.commons.web.template.ResourceTemplateMenu;
 import org.complitex.pspoffice.information.BookEntities;
 import org.complitex.pspoffice.information.resource.CommonResources;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 /**
  *
@@ -25,7 +26,7 @@ import org.complitex.pspoffice.information.resource.CommonResources;
 public class InformationTemplateMenu extends ResourceTemplateMenu {
 
     private static Strategy getStrategy(String entity) {
-        return StrategyFactory.get().getStrategy(entity);
+        return StrategyFactoryStatic.getStrategy(entity);
     }
 
     @Override

@@ -18,7 +18,7 @@
     <select id="getAll" resultMap="userResultMap">
         select u.id as id, u.login as login from `user` u
     </select>
-    
+
     <sql id="userColumns">
         distinct u.id as user_id,
         u.login as login,
@@ -43,13 +43,15 @@
             left join `user_info_attribute` uia on ui.`object_id` = uia.`object_id`
             left join `user_info_string_culture` uis on uia.`value_id` = uis.`id`
         <where>
-            <if test="login != null">u.login like #{login}</if>
-            <foreach collection="attributeExamples" item="attributeExample">
-                <if test="attributeExample.value != null">
-                    or (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
-                        and uis.`value` like #{attributeExample.value})
+            <if test="login != null">u.login like concat('%', #{login}, '%') and</if>
+                <if test="filterAttributes">
+                    <foreach collection="attributeExamples" item="attributeExample" open="(" separator="or" close=")">
+                        <if test="attributeExample.value != null">
+                            (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
+                            and uis.`value` like concat('%', #{attributeExample.value}, '%'))
+                        </if>
+                    </foreach>
                 </if>
-            </foreach>
         </where>
     </sql>
 
@@ -60,7 +62,7 @@
     <select id="selectUsers" resultMap="userResultMap" parameterType="org.complitex.pspoffice.admin.service.UserFilter">
         select <include refid="userColumns"/>
         <include refid="userFilter"/>
-        <include refid="userSort"/> 
+        <include refid="userSort"/>
         limit #{first}, #{count}
     </select>
 

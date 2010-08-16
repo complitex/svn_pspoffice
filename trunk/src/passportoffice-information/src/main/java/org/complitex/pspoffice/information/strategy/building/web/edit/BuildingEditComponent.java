@@ -36,7 +36,7 @@ import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.information.strategy.building.BuildingStrategy;
 import org.complitex.pspoffice.information.strategy.district.DistrictStrategy;
 import org.complitex.pspoffice.information.strategy.street.StreetStrategy;
-import org.complitex.pspoffice.commons.web.component.list.AjaxRemovableListView;
+import org.complitex.dictionaryfw.web.component.list.AjaxRemovableListView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

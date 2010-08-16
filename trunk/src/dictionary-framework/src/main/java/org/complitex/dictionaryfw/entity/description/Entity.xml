@@ -10,6 +10,9 @@
         <collection property="entityAttributeTypes" ofType="org.complitex.dictionaryfw.entity.description.EntityAttributeType">
         <id column="entity_attribute_type_id" property="id"/>
         <result column="mandatory" property="mandatory" javaType="_boolean" jdbcType="TINYINT"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="system" property="system" javaType="_boolean" jdbcType="TINYINT"/>
         <collection property="attributeNames" ofType="StringCulture" column="attribute_type_name_id"
                     select="org.complitex.dictionaryfw.entity.description.Entity.findNames"/>
             <collection property="entityAttributeValueTypes" ofType="org.complitex.dictionaryfw.entity.description.EntityAttributeValueType">
@@ -21,17 +24,20 @@
         <id column="entity_type_id" property="id"/>
         <collection property="entityTypeNames" ofType="StringCulture" column="entity_type_name_id"
                     select="org.complitex.dictionaryfw.entity.description.Entity.findNames"/>
-        </collection>
+        </collection>        
     </resultMap>
 
-    <select id="load" parameterType="string" resultMap="org.complitex.dictionaryfw.entity.description.Entity.Entity">
+    <select id="load" parameterType="hashmap" resultMap="org.complitex.dictionaryfw.entity.description.Entity.Entity">
         SELECT
         e.`id` as entity_id,
         e.`entity_table`,
         e.`entity_name_id`,
         eat.`id` as entity_attribute_type_id,
         eat.`mandatory`,
+        eat.`start_date`,
+        eat.`end_date`,
         eat.`attribute_type_name_id`,
+        eat.`system`,
         eavt.`id` as entity_attribute_value_type_id,
         eavt.`attribute_value_type`,
         et.`id` as entity_type_id,
@@ -40,7 +46,10 @@
         JOIN `entity_attribute_type` eat ON eat.`entity_id` = e.`id`
         JOIN `entity_attribute_value_type` eavt ON eavt.`attribute_type_id` = eat.`id`
         LEFT OUTER JOIN `entity_type` et ON et.`entity_id` = e.`id`
-        WHERE e.`entity_table` = #{value}
+        WHERE e.`entity_table` = #{entity}
+        <if test="all == null">
+            AND eat.`end_date` IS NULL
+        </if>
     </select>
 
     <select id="findNames" parameterType="long" resultMap="org.complitex.dictionaryfw.entity.StringCulture.StringCulture">
@@ -49,7 +58,7 @@
 
     <insert id="insertAttributeType" useGeneratedKeys="true" keyProperty="id"
             parameterType="org.complitex.dictionaryfw.entity.description.EntityAttributeType">
-        INSERT INTO `entity_attribute_type`(`entity_id`, `mandatory`, `attribute_type_name_id`) VALUES (#{entityId}, #{mandatory}, #{attributeNameId})
+        INSERT INTO `entity_attribute_type`(`entity_id`, `mandatory`, `attribute_type_name_id`, `start_date`) VALUES (#{entityId}, #{mandatory}, #{attributeNameId}, #{startDate})
     </insert>
 
     <insert id="insertValueType">
@@ -59,5 +68,12 @@
     <select id="allEntities" resultType="string">
         SELECT e.`entity_table` FROM `entity` e
     </select>
+
+    <update id="removeAttributeTypes" parameterType="hashmap">
+        UPDATE `entity_attribute_type` SET `end_date` = #{endDate} WHERE `id` IN
+        <foreach item="id" collection="attributeTypeIds" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 
 </mapper>

@@ -98,7 +98,7 @@ ul { margin: 0px; padding: 5px 0px 15px 30px; list-style-type: square; }
 .tbColor tr.subTitle2 th { background:url('../images/arrow2top.gif') no-repeat 8px 7px; color: #273540; border-bottom: 1px solid #C2CBD3; padding: 4px 8px 5px 22px; text-align:left; font-weight: bold; font-size: 11px;}
 .tbColor tr.subTitle2Off th { background:url('../images/arrow2bot.gif') no-repeat 8px 7px; color: #273540; border-bottom: 1px solid #C2CBD3; padding: 4px 8px 5px 22px; text-align:left; font-weight: bold; font-size: 11px;}
 .tbColor tr.subTitle2Off a, .tbColor tr.subTitle2Off a:visited, .tbColor tr.subTitle2Off a:hover,.tbColor tr.subTitle2 a, .tbColor tr.subTitle2 a:visited, .tbColor tr.subTitle2 a:hover { color: #273540; }
-.tbColor td { border-bottom: 1px solid #C2CBD3; padding: 3px 8px 4px 8px; text-align:left; font-size: 12px;}
+.tbColor > tbody > tr > td { border-bottom: 1px solid #C2CBD3; padding: 3px 8px 4px 8px; text-align:left; font-size: 12px;}
 
 .tbColor td.left, .tbColor th.left { text-align: left;}
 .tbColor td.right, .tbColor th.right { text-align: right;}
@@ -205,8 +205,12 @@ table.bookContentHeader{
     width: 100%;
     padding-bottom: 6px;
 }
-.bookContent td {text-align: center;}
-.bookContent th {text-align: center;}
+.bookContent td {
+    text-align: center !important;
+}
+.bookContent th {
+    text-align: center  !important;
+}
 .filter-td input[type="text"]{
     width:100%;
 }

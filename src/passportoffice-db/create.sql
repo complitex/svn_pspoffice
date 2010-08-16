@@ -76,6 +76,8 @@ CREATE TABLE `entity_attribute_type` (
   `entity_id` bigint(20) NOT NULL,
   `mandatory` tinyint(1) default 0 NOT NULL,
   `attribute_type_name_id` bigint(20) NOT NULL,
+  `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `end_date` timestamp NULL default NULL,
   `system` tinyint(1) default 0 NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `FK_entity_attribute_type_entity` (`entity_id`),

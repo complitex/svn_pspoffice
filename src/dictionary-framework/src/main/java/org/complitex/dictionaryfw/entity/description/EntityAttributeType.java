@@ -5,6 +5,7 @@
 package org.complitex.dictionaryfw.entity.description;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import org.complitex.dictionaryfw.entity.StringCulture;
 
@@ -20,11 +21,17 @@ public class EntityAttributeType implements Serializable {
 
     private boolean mandatory;
 
+    private Date startDate;
+
+    private Date endDate;
+
     private Long attributeNameId;
 
     private List<StringCulture> attributeNames;
 
     private List<EntityAttributeValueType> entityAttributeValueTypes;
+
+    private boolean system;
 
     public List<StringCulture> getAttributeNames() {
         return attributeNames;
@@ -72,5 +79,29 @@ public class EntityAttributeType implements Serializable {
 
     public void setAttributeNameId(Long attributeNameId) {
         this.attributeNameId = attributeNameId;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public boolean isSystem() {
+        return system;
+    }
+
+    public void setSystem(boolean system) {
+        this.system = system;
     }
 }

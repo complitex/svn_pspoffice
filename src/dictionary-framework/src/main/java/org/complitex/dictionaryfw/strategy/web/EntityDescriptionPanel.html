@@ -9,46 +9,77 @@
     <body>
         <wicket:panel>
             <h2 wicket:id="label" style="margin-bottom: 20px;"></h2>
+
+            <div wicket:id="messages"></div>
+
+            <div wicket:id="parentsContainer" style="margin-bottom: 20px;">
+                <wicket:message key="parents"/> : <span wicket:id="parentsInfo"></span>
+            </div>
+
             <h4 style="margin-bottom: 10px;">
                 <wicket:message key="attributes_label"/>
             </h4>
-            <table class="tbColor" cellpadding="0" cellspacing="0" border="0">
-                <thead>
-                    <tr>
-                        <th>
-                            <wicket:message key="attribute_name"/>
-                        </th>
-                        <th>
-                            <wicket:message key="attribute_value_type"/>
-                        </th>
-                        <th>
-                            <wicket:message key="attribute_mandatory"/>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr wicket:id="attributes">
-                        <td>
-                            <span wicket:id="name"></span>
-                        </td>
-                        <td>
-                            <span wicket:id="valueType"></span>
-                            <ul wicket:id="valueTypesContainer">
-                                <li wicket:id="valueTypeItem"></li>
-                            </ul>
-                        </td>
-                        <td>
-                            <span wicket:id="mandatory"></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div>
-                <input type="button" class="btnSmall" wicket:id="addAttribute" wicket:message="value:add_attribute"/>
-            </div>
-            <div wicket:id="parentsContainer">
-                <wicket:message key="parents"/> : <span wicket:id="parentsInfo"></span>
-            </div>
+
+            <form wicket:id="form">
+                <table class="tbColor" cellpadding="0" cellspacing="0" border="0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <wicket:message key="attribute_name"/>
+                            </th>
+                            <th>
+                                <wicket:message key="attribute_value_type"/>
+                            </th>
+                            <th>
+                                <wicket:message key="attribute_mandatory"/>
+                            </th>
+                            <th>
+                                <wicket:message key="attribute_start_date"/>
+                            </th>
+                            <th>
+                                <wicket:message key="attribute_end_date"/>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody wicket:id="attributesContainer">
+                        <tr wicket:id="attributes">
+                            <td>
+                                <span wicket:id="name"></span>
+                            </td>
+                            <td>
+                                <span wicket:id="valueType"></span>
+                                <ul wicket:id="valueTypesContainer">
+                                    <li wicket:id="valueTypeItem"></li>
+                                </ul>
+                                <select wicket:id="valueTypeSelect"></select>
+                            </td>
+                            <td>
+                                <span wicket:id="mandatoryLabel"></span>
+                                <input type="checkbox" wicket:id="mandatoryInput"/>
+                            </td>
+                            <td>
+                                <span wicket:id="startDate"></span>
+                            </td>
+                            <td>
+                                <span wicket:id="endDate"></span>
+                            </td>
+                            <td>
+                                <a wicket:id="remove">
+                                    <wicket:message key="remove_attribute"/>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-bottom: 10px;">
+                    <input type="button" class="btnSmall" wicket:id="addAttribute" wicket:message="value:add_attribute"/>
+                </div>
+
+                <div>
+                    <input type="submit" wicket:message="value:save" wicket:id="submit" class="btnMiddle"/>
+                </div>
+            </form>
         </wicket:panel>
     </body>
 </html>

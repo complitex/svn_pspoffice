@@ -25,6 +25,14 @@
         `attribute_id` = #{entity.attributeId} AND `object_id` = #{entity.objectId} AND `attribute_type_id` = #{entity.attributeTypeId} AND `start_date` = #{entity.startDate}
     </update>
 
+    <update id="archiveAttributes" parameterType="hashmap">
+        UPDATE `${table}_attribute` SET `end_date` = #{endDate}, `status` = 'ARCHIVE' WHERE
+        `attribute_type_id` IN
+        <foreach item="id" collection="attributeTypeIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
     <select id="find" parameterType="hashmap" resultMap="org.complitex.dictionaryfw.entity.Attribute.Attribute">
         SELECT aa.`attribute_id`, aa.`object_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
         '${table}' as table_name

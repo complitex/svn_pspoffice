@@ -19,8 +19,8 @@ public final class EntityDescription extends TemplatePage {
 
     public EntityDescription(PageParameters params) {
         String entity = params.getString(ENTITY);
-        PageParameters attributeEditPageParams = new PageParameters(ImmutableMap.of(EntityAttributeEdit.ENTITY, entity));
-        add(new EntityDescriptionPanel("entityDescriptionPanel", entity, EntityAttributeEdit.class, attributeEditPageParams));
+        PageParameters attributeEditPageParams = new PageParameters(ImmutableMap.of(ENTITY, entity));
+        add(new EntityDescriptionPanel("entityDescriptionPanel", entity, attributeEditPageParams));
     }
 }
 

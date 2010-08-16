@@ -54,6 +54,8 @@ public abstract class Strategy {
 
     public static final String UPDATE_OPERATION = "update";
 
+    public static final String ARCHIVE_ATTRIBUTES_OPERATION = "archiveAttributes";
+
     public static final String FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION = "findParentInSearchComponent";
 
     @EJB
@@ -222,6 +224,17 @@ public abstract class Strategy {
         session.insert(DOMAIN_OBJECT_NAMESPACE + "." + INSERT_OPERATION, new InsertParameter(getEntityTable(), object));
     }
 
+    public void archiveAttributes(Collection<Long> attributeTypeIds, Date endDate) {
+        if (attributeTypeIds != null && !attributeTypeIds.isEmpty()) {
+            Map<String, Object> params = ImmutableMap.<String, Object>builder().
+                    put("table", getEntityTable()).
+                    put("endDate", endDate).
+                    put("attributeTypeIds", attributeTypeIds).
+                    build();
+            session.update(ATTRIBUTE_NAMESPACE + "." + ARCHIVE_ATTRIBUTES_OPERATION, params);
+        }
+    }
+
     public void update(DomainObject oldEntity, DomainObject newEntity) {
         Date updateDate = new Date();
 
@@ -359,7 +372,7 @@ public abstract class Strategy {
         }
     }
 
-    public void update(DomainObject domainObject){
+    public void update(DomainObject domainObject) {
         update(findById(domainObject.getId()), domainObject);
     }
 
@@ -373,12 +386,11 @@ public abstract class Strategy {
     /*
      * List page related functionality.
      */
-
     /**
      *  Используется для отображения в пользовательском интерфейсе
      * @return Сортированный список метамодели (описания) атрибутов
      */
-    public List<EntityAttributeType> getListColumns(){
+    public List<EntityAttributeType> getListColumns() {
         return getEntity().getEntityAttributeTypes();
     }
 
@@ -389,13 +401,13 @@ public abstract class Strategy {
      * @see #getListColumns
      * todo cache or sort performance
      */
-    public List<Attribute> getAttributeColumns(DomainObject object){
+    public List<Attribute> getAttributeColumns(DomainObject object) {
         List<EntityAttributeType> entityAttributeTypes = getListColumns();
         List<Attribute> attributeColumns = new ArrayList<Attribute>(entityAttributeTypes.size());
 
-        for (EntityAttributeType entityAttributeType : entityAttributeTypes){
-            for (Attribute attribute : object.getAttributes()){
-                if (attribute.getAttributeTypeId().equals(entityAttributeType.getId())){
+        for (EntityAttributeType entityAttributeType : entityAttributeTypes) {
+            for (Attribute attribute : object.getAttributes()) {
+                if (attribute.getAttributeTypeId().equals(entityAttributeType.getId())) {
                     attributeColumns.add(attribute);
                 }
             }

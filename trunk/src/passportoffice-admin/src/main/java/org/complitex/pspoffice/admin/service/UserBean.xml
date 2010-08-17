@@ -48,10 +48,10 @@
                     and uia.`attribute_type_id` = ${sortAttributeTypeId})
             </if>
         <where>
-            <if test="groupName != null">g.`group_name` = #{groupName} and</if>
-            <if test="login != null">u.login like concat('%', #{login}, '%') and</if>
+            <if test="login != null">u.login like concat('%', #{login}, '%')</if>
+            <if test="groupName != null">and g.`group_name` = #{groupName}</if>                      
             <if test="filterAttributes">
-                <foreach collection="attributeExamples" item="attributeExample" open="(" separator="or" close=")">
+                <foreach collection="attributeExamples" item="attributeExample" open="and (" separator="or" close=")">
                     <if test="attributeExample.value != null">
                         (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
                             and uis.`value` like concat('%', #{attributeExample.value}, '%'))
@@ -59,9 +59,10 @@
                 </foreach>
             </if>
             <if test="sortAttributeTypeId != null">
-                uis_sort.`value` is not null or uia.`attribute_type_id` is null                
+                and (uis_sort.`value` is not null or uia.`attribute_type_id` is null)
             </if>
         </where>
+        
         <if test="sortAttributeTypeId != null">
             order by uis_sort.`value` <choose><when test="ascending">asc</when><otherwise>desc</otherwise></choose>
         </if>

@@ -18,6 +18,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.complitex.dictionaryfw.entity.Attribute;
+import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.web.component.AttributeColumnsPanel;
 import org.complitex.dictionaryfw.web.component.AttributeFiltersPanel;
 import org.complitex.dictionaryfw.web.component.AttributeHeadersPanel;
@@ -66,7 +67,13 @@ public class UserList extends TemplatePage {
             @Override
             public void onClick() {
                 filterForm.clearInput();
-                filterModel.setObject(userBean.newUserFilter());
+
+                UserFilter filterObject = filterModel.getObject();
+                filterObject.setLogin(null);
+                filterObject.setGroupName(null);
+                for (AttributeExample attributeExample : filterObject.getAttributeExamples()){
+                    attributeExample.setValue(null);
+                }                                                   
             }
         };
         filterForm.add(filterReset);

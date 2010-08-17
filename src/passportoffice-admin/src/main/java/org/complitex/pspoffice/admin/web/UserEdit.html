@@ -8,25 +8,25 @@
 
 <body>
 <wicket:extend>
-    <h2><wicket:message key="admin.user_edit.title"/></h2>
+    <h2><wicket:message key="title"/></h2>
 
     <div id="messages" wicket:id="messages"></div>
 
-    <form action="" wicket:id="admin.user_edit.form">
+    <form action="" wicket:id="form">
         <table  border="0" cellspacing="0" cellpadding="0" class="tbForm">
             <tbody>
             <tr>
-                <th><label for="login"><wicket:message key="admin.user_edit.login"/><b class="blue">*</b>:</label></th>
-                <td><input id="login" wicket:id="admin.user_edit.login" type="text"/></td>
+                <th><label for="login"><wicket:message key="login"/><b class="blue">*</b>:</label></th>
+                <td><input id="login" wicket:id="login" type="text"/></td>
             </tr>
             <tr>
-                <th><label for="password"><wicket:message key="admin.user_edit.password"/>:</label></th>
-                <td><input id="password" wicket:id="admin.user_edit.password" type="password"/></td>
+                <th><label for="password"><wicket:message key="password"/>:</label></th>
+                <td><input id="password" wicket:id="password" type="password"/></td>
             </tr>
             </tbody>
         </table>
 
-        <div wicket:id="admin.user_edit.user_info"></div>
+        <div wicket:id="user_info"></div>
 
         <!-- <tr>
             <th><wicket:message key="admin.user_edit.department"/><b class="blue">*</b>:</th>
@@ -36,48 +36,48 @@
         <table  border="0" cellspacing="0" cellpadding="0" class="tbForm">
             <tbody>
             <tr>
-                <th><wicket:message key="admin.user_edit.usergroup"/>:</th>
+                <th><wicket:message key="usergroup"/>:</th>
                 <td>
-                    <ul wicket:id="admin.user_edit.usergroups">
+                    <ul wicket:id="usergroups">
                         <li>
                             <input type="checkbox" wicket:id="ADMINISTRATORS"/>
-                            <wicket:message key="admin.user_edit.administrators"/>
+                            <wicket:message key="administrators"/>
                         </li>
                         <li>
                             <input type="checkbox" wicket:id="DEPARTMENT_OFFICERS"/>
-                            <wicket:message key="admin.user_edit.department_officers"/>
+                            <wicket:message key="department_officers"/>
                         </li>
                         <li>
                             <input type="checkbox" wicket:id="LOCAL_OFFICERS"/>
-                            <wicket:message key="admin.user_edit.local_officers"/>
+                            <wicket:message key="local_officers"/>
                             <ul>
                                 <li>
-                                    <wicket:message key="admin.user_edit.local_officers.view"/>
+                                    <wicket:message key="local_officers.view"/>
                                     <ul>
                                         <li>
                                             <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_VIEW"/>
-                                            <wicket:message key="admin.user_edit.local_officers.view.dep"/>
+                                            <wicket:message key="local_officers.view.dep"/>
                                         </li>
                                         <li>
                                             <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_CHILD_VIEW"/>
-                                            <wicket:message key="admin.user_edit.local_officers.view.dep.child"/>
+                                            <wicket:message key="local_officers.view.dep.child"/>
                                         </li>
                                     </ul>
                                 </li>
                                 <li>
-                                    <wicket:message key="admin.user_edit.local_officers.edit"/>
+                                    <wicket:message key="local_officers.edit"/>
                                     <ul>
                                         <li>
                                             <input type="checkbox" wicket:id="LOCAL_OFFICERS_EDIT"/>
-                                            <wicket:message key="admin.user_edit.local_officers.edit.own"/>
+                                            <wicket:message key="local_officers.edit.own"/>
                                         </li>
                                         <li>
                                             <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_EDIT"/>
-                                            <wicket:message key="admin.user_edit.local_officers.edit.dep"/>
+                                            <wicket:message key="local_officers.edit.dep"/>
                                         </li>
                                         <li>
                                             <input type="checkbox" wicket:id="LOCAL_OFFICERS_DEP_CHILD_EDIT"/>
-                                            <wicket:message key="admin.user_edit.local_officers.edit.dep.child"/>
+                                            <wicket:message key="local_officers.edit.dep.child"/>
                                         </li>
                                     </ul>
                                 </li>
@@ -89,8 +89,8 @@
             </tbody>
         </table>
 
-        <input type="submit" class="btnBig" wicket:message="value:admin.user_edit.save" wicket:id="admin.user_edit.save"/>
-        <input type="submit" class="btnMiddle" wicket:message="value:admin.user_edit.cancel" wicket:id="admin.user_edit.cancel"/>
+        <input type="submit" class="btnBig" wicket:message="value:save" wicket:id="save"/>
+        <input type="submit" class="btnMiddle" wicket:message="value:cancel" wicket:id="cancel"/>
 
     </form>
 </wicket:extend>

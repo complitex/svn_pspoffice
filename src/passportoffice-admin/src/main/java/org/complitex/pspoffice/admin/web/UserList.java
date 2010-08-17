@@ -18,6 +18,7 @@ import org.complitex.dictionaryfw.web.component.AttributeColumnsPanel;
 import org.complitex.dictionaryfw.web.component.AttributeFiltersPanel;
 import org.complitex.dictionaryfw.web.component.AttributeHeadersPanel;
 import org.complitex.dictionaryfw.web.component.BookmarkablePageLinkPanel;
+import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.pspoffice.admin.service.UserBean;
 import org.complitex.pspoffice.admin.service.UserFilter;
 import org.complitex.pspoffice.commons.entity.User;
@@ -41,17 +42,18 @@ public class UserList extends TemplatePage {
     public UserList() {
         super();
 
-        add(new Label("admin.user_list.title", new ResourceModel("admin.user_list.title")));        
-        add(new FeedbackPanel("admin.user_list.messages"));
+        add(new Label("title", new ResourceModel("title")));
+        add(new FeedbackPanel("messages"));
 
         //Фильтр
         UserFilter filterObject = userBean.newUserFilter();
         final IModel<UserFilter> filterModel = new Model<UserFilter>(filterObject);
 
-        final Form filterForm = new Form("admin.user_list.filter_form");
+        final Form filterForm = new Form("filter_form");
+        filterForm.setOutputMarkupId(true);
         add(filterForm);
 
-        Link filterReset = new Link("admin.user_list.filter_form.reset"){
+        Link filterReset = new Link("reset"){
             @Override
             public void onClick() {
                 filterForm.clearInput();
@@ -59,8 +61,8 @@ public class UserList extends TemplatePage {
         };
         filterForm.add(filterReset);
 
-        filterForm.add(new TextField<String>("admin.user_list.filter_form.login", new PropertyModel<String>(filterModel, "login")));
-        filterForm.add(new AttributeFiltersPanel("admin.user_list.filter_form.user_info", filterObject.getAttributeExamples()));
+        filterForm.add(new TextField<String>("login", new PropertyModel<String>(filterModel, "login")));
+        filterForm.add(new AttributeFiltersPanel("user_info", filterObject.getAttributeExamples()));
 
         //Модель
         final SortableDataProvider<User> dataProvider = new SortableDataProvider<User>(){
@@ -70,7 +72,13 @@ public class UserList extends TemplatePage {
 
                 filter.setFirst(first);
                 filter.setCount(count);
-                filter.setSortProperty(getSort().getProperty());
+                try {
+                    filter.setSortProperty(null);
+                    filter.setSortAttributeTypeId(Long.valueOf(getSort().getProperty()));
+                } catch (NumberFormatException e) {
+                    filter.setSortProperty(getSort().getProperty());
+                    filter.setSortAttributeTypeId(null);
+                }                
                 filter.setAscending(getSort().isAscending());
 
                 return userBean.getUsers(filterModel.getObject()).iterator();
@@ -89,27 +97,26 @@ public class UserList extends TemplatePage {
         dataProvider.setSort("login", true);
 
         //Таблица
-        DataView<User> dataView = new DataView<User>("admin.user_list.users", dataProvider, 10){
+        DataView<User> dataView = new DataView<User>("users", dataProvider, 10){
             @Override
             protected void populateItem(Item<User> item) {
                 User user = item.getModelObject();
 
-                item.add(new Label("admin.user_list.users.login", user.getLogin()));
+                item.add(new Label("login", user.getLogin()));
 
                 List<Attribute> attributeColumns = userBean.getUserInfoStrategy().getAttributeColumns(user.getUserInfo());
-                item.add(new AttributeColumnsPanel("admin.user_list.users.user_info", attributeColumns));
+                item.add(new AttributeColumnsPanel("user_info", attributeColumns));
 
-                item.add(new BookmarkablePageLinkPanel<User>("admin.user_list.users.action_edit",
-                        getString("admin.user_list.users.action_edit"), UserEdit.class, 
+                item.add(new BookmarkablePageLinkPanel<User>("action_edit", getString("action_edit"), UserEdit.class,
                                 new PageParameters("user_id=" + user.getId())));
             }
         };
         filterForm.add(dataView);
 
         //Названия колонок и сортировка
-        filterForm.add(new AttributeHeadersPanel("admin.user_list.users.headers.user_info",
-                userBean.getUserInfoStrategy().getListColumns(), dataProvider, dataView, filterForm));
-
+        filterForm.add(new ArrowOrderByBorder("header.login", "login", dataProvider, dataView, filterForm));
+        filterForm.add(new AttributeHeadersPanel("header.user_info", userBean.getUserInfoStrategy().getListColumns(),
+                dataProvider, dataView, filterForm));
     }
 
     @Override

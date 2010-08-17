@@ -58,16 +58,16 @@ public abstract class Strategy {
 
     public static final String FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION = "findParentInSearchComponent";
 
-    @EJB
+    @EJB(beanName = "StrategyFactory")
     private StrategyFactory strategyFactory;
 
-    @EJB
+    @EJB(beanName = "SequenceBean")
     private SequenceBean sequenceBean;
 
-    @EJB
+    @EJB(beanName = "StringCultureBean")
     private StringCultureBean stringBean;
 
-    @EJB
+    @EJB(beanName = "EntityBean")
     private EntityBean entityBean;
 
     protected SqlSession session;
@@ -402,6 +402,10 @@ public abstract class Strategy {
      * todo cache or sort performance
      */
     public List<Attribute> getAttributeColumns(DomainObject object) {
+        if (object == null){
+            return newInstance().getAttributes();           
+        }
+
         List<EntityAttributeType> entityAttributeTypes = getListColumns();
         List<Attribute> attributeColumns = new ArrayList<Attribute>(entityAttributeTypes.size());
 

@@ -155,7 +155,7 @@
             </dependency>
 
             <!-- hibernate -->
-            <dependency>
+            <!--<dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>3.5.1-Final</version>
@@ -169,7 +169,7 @@
                         <artifactId>jta</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
+            </dependency>-->
 
             <!-- mysql connector -->
             <dependency>
@@ -193,11 +193,11 @@
             </dependency>
 
             <!-- JPA API -->
-            <dependency>
+            <!--<dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.0-api</artifactId>
                 <version>1.0.0.Final</version>
-            </dependency>
+            </dependency>-->
 
             <!-- commons codec -->
             <dependency>

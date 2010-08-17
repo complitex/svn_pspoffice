@@ -33,6 +33,7 @@ public class AttributeColumnsPanel extends Panel {
                 item.add(new Label("column", value));                
             }
         };
+        columns.setReuseItems(true);
         add(columns);
     }
 }

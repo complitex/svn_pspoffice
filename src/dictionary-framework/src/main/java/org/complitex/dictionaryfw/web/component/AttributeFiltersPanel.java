@@ -23,6 +23,7 @@ public class AttributeFiltersPanel extends Panel {
                 item.add(new TextField<String>("filter", new PropertyModel<String>(item.getModel(), "value")));
             }
         };
+        filters.setReuseItems(true);
         add(filters);
     }
 }

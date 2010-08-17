@@ -167,7 +167,7 @@ public final class DomainObjectInputPanel extends Panel {
 
 
         //simple attributes
-        final Map<Attribute, EntityAttributeType> attrAndDesc = Maps.newHashMap();
+        final Map<Attribute, EntityAttributeType> attrAndDesc = Maps.newLinkedHashMap();
 
         for (final Attribute attr : object.getAttributes()) {
             try {

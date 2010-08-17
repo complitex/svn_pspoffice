@@ -13,6 +13,7 @@ import java.util.List;
 public class UserFilter extends AbstractFilter{
     private String login;
     private List<AttributeExample> attributeExamples = new ArrayList<AttributeExample>();
+    private Long sortAttributeTypeId;
 
     public String getLogin() {
         return login;
@@ -38,5 +39,13 @@ public class UserFilter extends AbstractFilter{
         }
 
         return false;
+    }
+
+    public Long getSortAttributeTypeId() {
+        return sortAttributeTypeId;
+    }
+
+    public void setSortAttributeTypeId(Long sortAttributeTypeId) {
+        this.sortAttributeTypeId = sortAttributeTypeId;
     }
 }

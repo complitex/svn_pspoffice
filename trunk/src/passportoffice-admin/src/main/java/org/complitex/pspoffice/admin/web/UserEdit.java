@@ -41,7 +41,7 @@ public class UserEdit extends FormTemplatePage{
     }
 
     private void init(final Long id){
-        add(new Label("title", new ResourceModel("admin.user_edit.title")));
+        add(new Label("title", new ResourceModel("title")));
         add(new FeedbackPanel("messages"));
 
         //Модель данных
@@ -49,22 +49,22 @@ public class UserEdit extends FormTemplatePage{
         final IModel<User> userModel = new Model<User>(id != null ? userBean.getUser(id) : userBean.newUser());
 
         //Форма
-        Form form = new Form<User>("admin.user_edit.form");
+        Form form = new Form<User>("form");
         add(form);
 
         //Сохранить
-        Button save = new Button("admin.user_edit.save"){
+        Button save = new Button("save"){
             @Override
             public void onSubmit() {
                 try {
                     userBean.save(userModel.getObject());
 
                     log.info("Пользователь сохранен: {}", userModel.getObject());
-                    getSession().info(getString("admin.user_edit.info.saved"));
+                    getSession().info(getString("info.saved"));
 
                 } catch (Exception e) {
                     log.error("Ошибка сохранения пользователя", e);
-                    getSession().error(getString("admin.user_edit.error.saved"));
+                    getSession().error(getString("error.saved"));
                 }
 
                 setResponsePage(UserList.class);
@@ -73,32 +73,33 @@ public class UserEdit extends FormTemplatePage{
         form.add(save);
 
         //Отмена
-        Button cancel = new Button("admin.user_edit.cancel"){
+        Button cancel = new Button("cancel"){
             @Override
             public void onSubmit() {
                setResponsePage(UserList.class);
             }
         };
+        cancel.setDefaultFormProcessing(false);
         form.add(cancel);
 
         //Логин
-        RequiredTextField login = new RequiredTextField<String>("admin.user_edit.login", new PropertyModel<String>(userModel, "login"));
+        RequiredTextField login = new RequiredTextField<String>("login", new PropertyModel<String>(userModel, "login"));
         login.setEnabled(id == null);
         form.add(login);
 
         //Пароль
-        PasswordTextField password = new PasswordTextField("admin.user_edit.password", new PropertyModel<String>(userModel, "newPassword"));
+        PasswordTextField password = new PasswordTextField("password", new PropertyModel<String>(userModel, "newPassword"));
         password.setEnabled(id != null);
         password.setRequired(false);
         form.add(password);
 
         //Информация о пользователе
-        DomainObjectInputPanel userInfo = new DomainObjectInputPanel("admin.user_edit.user_info", 
-                userModel.getObject().getUserInfo(), UserBean.USER_INFO_ENTITY_TABLE, null, null);
+        DomainObjectInputPanel userInfo = new DomainObjectInputPanel("user_info", userModel.getObject().getUserInfo(),
+                UserBean.USER_INFO_ENTITY_TABLE, null, null);
         form.add(userInfo);
 
         //Группы привилегий
-        CheckGroup<UserGroup> usergroups = new CheckGroup<UserGroup>("admin.user_edit.usergroups",
+        CheckGroup<UserGroup> usergroups = new CheckGroup<UserGroup>("usergroups",
                 new PropertyModel<Collection<UserGroup>>(userModel, "userGroups"));
 
         usergroups.add(new Check<UserGroup>("ADMINISTRATORS", getUserGroup(userModel.getObject(), ADMINISTRATORS)));
@@ -111,7 +112,6 @@ public class UserEdit extends FormTemplatePage{
         usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS_DEP_CHILD_EDIT", getUserGroup(userModel.getObject(), LOCAL_OFFICERS_DEP_CHILD_EDIT)));
 
         form.add(usergroups);
-
     }
 
     private IModel<UserGroup> getUserGroup(User user, UserGroup.GROUP_NAME group_name){

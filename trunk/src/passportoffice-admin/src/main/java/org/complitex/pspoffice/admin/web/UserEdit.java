@@ -1,6 +1,7 @@
 package org.complitex.pspoffice.admin.web;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -9,6 +10,7 @@ import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
 import org.complitex.pspoffice.admin.service.UserBean;
 import org.complitex.pspoffice.commons.entity.User;
 import org.complitex.pspoffice.commons.entity.UserGroup;
+import org.complitex.pspoffice.commons.web.security.SecurityRole;
 import org.complitex.pspoffice.commons.web.template.FormTemplatePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import static org.complitex.pspoffice.commons.entity.UserGroup.GROUP_NAME.*;
  *
  *  Страница создания и редактирования пользователя
  */
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class UserEdit extends FormTemplatePage{
     private static final Logger log = LoggerFactory.getLogger(UserEdit.class);
 
@@ -56,10 +59,17 @@ public class UserEdit extends FormTemplatePage{
         Button save = new Button("save"){
             @Override
             public void onSubmit() {
-                try {
-                    userBean.save(userModel.getObject());
+                User user = userModel.getObject();
 
-                    log.info("Пользователь сохранен: {}", userModel.getObject());
+                try {
+                    if (id == null && !userBean.isUniqueLogin(user.getLogin())){
+                        error(getString("error.login_not_unique"));
+                        return;
+                    }
+
+                    userBean.save(user);
+
+                    log.info("Пользователь сохранен: {}", user);
                     getSession().info(getString("info.saved"));
 
                 } catch (Exception e) {
@@ -103,13 +113,7 @@ public class UserEdit extends FormTemplatePage{
                 new PropertyModel<Collection<UserGroup>>(userModel, "userGroups"));
 
         usergroups.add(new Check<UserGroup>("ADMINISTRATORS", getUserGroup(userModel.getObject(), ADMINISTRATORS)));
-        usergroups.add(new Check<UserGroup>("DEPARTMENT_OFFICERS", getUserGroup(userModel.getObject(), DEPARTMENT_OFFICERS)));
-        usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS", getUserGroup(userModel.getObject(), LOCAL_OFFICERS)));
-        usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS_EDIT", getUserGroup(userModel.getObject(), LOCAL_OFFICERS_EDIT)));
-        usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS_DEP_VIEW", getUserGroup(userModel.getObject(), LOCAL_OFFICERS_DEP_VIEW)));
-        usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS_DEP_EDIT", getUserGroup(userModel.getObject(), LOCAL_OFFICERS_DEP_EDIT)));
-        usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS_DEP_CHILD_VIEW", getUserGroup(userModel.getObject(), LOCAL_OFFICERS_DEP_CHILD_VIEW)));
-        usergroups.add(new Check<UserGroup>("LOCAL_OFFICERS_DEP_CHILD_EDIT", getUserGroup(userModel.getObject(), LOCAL_OFFICERS_DEP_CHILD_EDIT)));
+        usergroups.add(new Check<UserGroup>("EMPLOYEES", getUserGroup(userModel.getObject(), EMPLOYEES)));
 
         form.add(usergroups);
     }

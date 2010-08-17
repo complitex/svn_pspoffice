@@ -54,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.complitex.dictionaryfw.web.component.paging.PagingNavigator;
 
 /**
  *
@@ -337,6 +338,7 @@ public final class DomainObjectListPanel extends Panel {
             }
         };
         filterForm.add(data);
+        content.add(new PagingNavigator("navigator", data, content));
     }
 
     protected DictionaryFwSession getDictionaryFwSession() {

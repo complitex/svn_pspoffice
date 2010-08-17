@@ -637,10 +637,13 @@ DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE  `user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `login` varchar(45) DEFAULT NULL,
-  `password` varchar(45) DEFAULT NULL,
+  `login` varchar(45) NOT NULL,
+  `password` varchar(45) NOT NULL,
   `user_info_object_id` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_key_login` (`login`),
+  KEY `fk_user_info_object` (`user_info_object_id`),
+  CONSTRAINT `fk_user_info_object` FOREIGN KEY (`user_info_object_id`) REFERENCES `user_info` (`object_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- usergroup --
@@ -648,11 +651,13 @@ CREATE TABLE  `user` (
 DROP TABLE IF EXISTS `usergroup`;
 
 CREATE TABLE  `usergroup` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `login` varchar(45) NOT NULL,
   `group_name` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fk_login_usergroup` (`login`, `group_name`),
+  CONSTRAINT `fk_user_login` FOREIGN KEY (`login`) REFERENCES `user` (`login`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 

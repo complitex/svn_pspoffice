@@ -39,16 +39,18 @@ public class UserBean extends AbstractBean {
         return user;
     }
 
-    @SuppressWarnings({"unchecked"})
-    public List<User> getUsers(){
-
-        return sqlSession.selectList(STATEMENT_PREFIX + ".getAll");
+    public boolean isUniqueLogin(String login){
+        return (Boolean) sqlSession.selectOne(STATEMENT_PREFIX + ".isUniqueLogin", login);
     }
 
     public User getUser(Long id){
         User user = (User) sqlSession.selectOne(STATEMENT_PREFIX + ".selectUser", id);
 
-        user.setUserInfo(getUserInfoStrategy().findById(user.getUserInfoObjectId()));
+        if (user.getUserInfoObjectId() != null){
+            user.setUserInfo(getUserInfoStrategy().findById(user.getUserInfoObjectId()));
+        }else{
+            user.setUserInfo(getUserInfoStrategy().newInstance());
+        }
 
         return user;
     }
@@ -105,7 +107,6 @@ public class UserBean extends AbstractBean {
                 }
             }
 
-
             //изменение пароля
             if(user.getNewPassword() != null){
                 user.setPassword(DigestUtils.md5Hex(user.getNewPassword())); //md5 password
@@ -113,7 +114,13 @@ public class UserBean extends AbstractBean {
             }
 
             //сохранение информации о пользователе
-            getUserInfoStrategy().update(user.getUserInfo());
+            if (user.getUserInfoObjectId() != null){
+                getUserInfoStrategy().update(user.getUserInfo());
+            }else{
+                getUserInfoStrategy().insert(user.getUserInfo());
+                user.setUserInfoObjectId(user.getUserInfo().getId());
+                sqlSession.update(STATEMENT_PREFIX + ".updateUser", user);
+            }
         }
     }
 
@@ -130,7 +137,7 @@ public class UserBean extends AbstractBean {
         return users;
     }
 
-    public Integer getUsersCount(UserFilter filter){
+    public int getUsersCount(UserFilter filter){
         return (Integer) sqlSession.selectOne(STATEMENT_PREFIX + ".selectUsersCount", filter);
     }
 

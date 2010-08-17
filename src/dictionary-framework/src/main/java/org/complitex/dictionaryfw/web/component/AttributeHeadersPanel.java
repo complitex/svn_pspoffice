@@ -39,8 +39,7 @@ public class AttributeHeadersPanel extends Panel {
                 
                 header.add(new Label("header_name", stringBean.displayValue(entityAttributeType.getAttributeNames(), getLocale())));
             }
-        };
-        headers.setReuseItems(true);
+        };       
 
         add(headers);
     }

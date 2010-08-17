@@ -1,6 +1,7 @@
 package org.complitex.pspoffice.admin.service;
 
 import org.complitex.dictionaryfw.entity.example.AttributeExample;
+import org.complitex.pspoffice.commons.entity.UserGroup;
 import org.complitex.pspoffice.commons.service.AbstractFilter;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ public class UserFilter extends AbstractFilter{
     private String login;
     private List<AttributeExample> attributeExamples = new ArrayList<AttributeExample>();
     private Long sortAttributeTypeId;
+    private UserGroup.GROUP_NAME groupName;
 
     public String getLogin() {
         return login;
@@ -47,5 +49,13 @@ public class UserFilter extends AbstractFilter{
 
     public void setSortAttributeTypeId(Long sortAttributeTypeId) {
         this.sortAttributeTypeId = sortAttributeTypeId;
+    }
+
+    public UserGroup.GROUP_NAME getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(UserGroup.GROUP_NAME groupName) {
+        this.groupName = groupName;
     }
 }

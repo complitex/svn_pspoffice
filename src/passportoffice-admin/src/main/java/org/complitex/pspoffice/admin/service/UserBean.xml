@@ -15,8 +15,8 @@
 
     <!--User-->
 
-    <select id="getAll" resultMap="userResultMap">
-        select u.id as id, u.login as login from `user` u
+    <select id="isUniqueLogin" resultType="boolean" parameterType="string">
+        select count(*) = 0 from `user` u where u.`login` = #{login}
     </select>
 
     <sql id="userColumns">
@@ -36,6 +36,7 @@
         where u.id = #{id}
     </select>
 
+    <!--todo separate filters-->
     <sql id="userFilter">
         from `user` u
             left join `usergroup` g on u.`login` = g.`login`
@@ -47,15 +48,16 @@
                     and uia.`attribute_type_id` = ${sortAttributeTypeId})
             </if>
         <where>
+            <if test="groupName != null">g.`group_name` = #{groupName} and</if>
             <if test="login != null">u.login like concat('%', #{login}, '%') and</if>
-                <if test="filterAttributes">
-                    <foreach collection="attributeExamples" item="attributeExample" open="(" separator="or" close=")">
-                        <if test="attributeExample.value != null">
-                            (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
-                                and uis.`value` like concat('%', #{attributeExample.value}, '%'))
-                        </if>
-                    </foreach>
-                </if>
+            <if test="filterAttributes">
+                <foreach collection="attributeExamples" item="attributeExample" open="(" separator="or" close=")">
+                    <if test="attributeExample.value != null">
+                        (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
+                            and uis.`value` like concat('%', #{attributeExample.value}, '%'))
+                    </if>
+                </foreach>
+            </if>
             <if test="sortAttributeTypeId != null">
                 uis_sort.`value` is not null or uia.`attribute_type_id` is null                
             </if>
@@ -86,7 +88,8 @@
     <update id="updateUser" parameterType="org.complitex.pspoffice.commons.entity.User">
         update `user`
         <set>
-            <if test="password != null"> `password` = #{password}</if>
+            <if test="password != null"> `password` = #{password},</if>
+            <if test="userInfoObjectId != null"> `user_info_object_id` = #{userInfoObjectId}</if>
         </set>
         where id = #{id}
     </update>

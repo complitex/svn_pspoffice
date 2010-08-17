@@ -9,10 +9,7 @@ import java.io.Serializable;
 public class UserGroup implements Serializable{
     public static enum GROUP_NAME{
         ADMINISTRATORS,
-        DEPARTMENT_OFFICERS,
-        LOCAL_OFFICERS, LOCAL_OFFICERS_EDIT,
-        LOCAL_OFFICERS_DEP_VIEW, LOCAL_OFFICERS_DEP_EDIT,
-        LOCAL_OFFICERS_DEP_CHILD_VIEW, LOCAL_OFFICERS_DEP_CHILD_EDIT
+        EMPLOYEES        
     }
 
     private Long id;

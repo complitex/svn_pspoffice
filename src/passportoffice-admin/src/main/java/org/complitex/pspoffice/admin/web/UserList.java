@@ -1,9 +1,12 @@
 package org.complitex.pspoffice.admin.web;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -13,20 +16,25 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.util.ListModel;
 import org.complitex.dictionaryfw.entity.Attribute;
 import org.complitex.dictionaryfw.web.component.AttributeColumnsPanel;
 import org.complitex.dictionaryfw.web.component.AttributeFiltersPanel;
 import org.complitex.dictionaryfw.web.component.AttributeHeadersPanel;
 import org.complitex.dictionaryfw.web.component.BookmarkablePageLinkPanel;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
+import org.complitex.dictionaryfw.web.component.paging.PagingNavigator;
 import org.complitex.pspoffice.admin.service.UserBean;
 import org.complitex.pspoffice.admin.service.UserFilter;
 import org.complitex.pspoffice.commons.entity.User;
+import org.complitex.pspoffice.commons.entity.UserGroup;
 import org.complitex.pspoffice.commons.web.component.toolbar.AddUserButton;
 import org.complitex.pspoffice.commons.web.component.toolbar.ToolbarButton;
+import org.complitex.pspoffice.commons.web.security.SecurityRole;
 import org.complitex.pspoffice.commons.web.template.TemplatePage;
 
 import javax.ejb.EJB;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +43,7 @@ import java.util.List;
  * @author Anatoly A. Ivanov java@inheaven.ru
  *         Date: 22.07.2010 15:03:45
  */
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class UserList extends TemplatePage {
     @EJB(name = "UserBean")
     private UserBean userBean;
@@ -57,6 +66,7 @@ public class UserList extends TemplatePage {
             @Override
             public void onClick() {
                 filterForm.clearInput();
+                filterModel.setObject(userBean.newUserFilter());
             }
         };
         filterForm.add(filterReset);
@@ -107,6 +117,8 @@ public class UserList extends TemplatePage {
                 List<Attribute> attributeColumns = userBean.getUserInfoStrategy().getAttributeColumns(user.getUserInfo());
                 item.add(new AttributeColumnsPanel("user_info", attributeColumns));
 
+                item.add(new Label("usergroup", getDisplayGroupNames(user)));
+
                 item.add(new BookmarkablePageLinkPanel<User>("action_edit", getString("action_edit"), UserEdit.class,
                                 new PageParameters("user_id=" + user.getId())));
             }
@@ -117,6 +129,47 @@ public class UserList extends TemplatePage {
         filterForm.add(new ArrowOrderByBorder("header.login", "login", dataProvider, dataView, filterForm));
         filterForm.add(new AttributeHeadersPanel("header.user_info", userBean.getUserInfoStrategy().getListColumns(),
                 dataProvider, dataView, filterForm));
+
+        DropDownChoice<UserGroup.GROUP_NAME> usergroups = new DropDownChoice<UserGroup.GROUP_NAME>("usergroups",
+                new PropertyModel<UserGroup.GROUP_NAME>(filterModel, "groupName"),
+                new ListModel<UserGroup.GROUP_NAME>(Arrays.asList(UserGroup.GROUP_NAME.values())),
+                new IChoiceRenderer<UserGroup.GROUP_NAME>(){
+
+                    @Override
+                    public Object getDisplayValue(UserGroup.GROUP_NAME object) {
+                        return getStringOrKey(object.name());
+                    }
+
+                    @Override
+                    public String getIdValue(UserGroup.GROUP_NAME object, int index) {
+                        return object.name();
+                    }
+                });
+        filterForm.add(usergroups);
+
+        //Постраничная навигация
+        filterForm.add(new PagingNavigator("paging", dataView, filterForm));
+    }
+
+    /**
+     * Генерирует строку списка групп пользователей для отображения
+     * @param user Пользователь
+     * @return Список групп
+     */
+    private String getDisplayGroupNames(User user) {
+        if (user.getUserGroups() == null || user.getUserGroups().isEmpty()) {
+            return getString("blocked");
+        }
+
+         StringBuilder sb = new StringBuilder();
+
+        for (Iterator<UserGroup> it = user.getUserGroups().iterator();;) {
+            sb.append(getString(it.next().getGroupName().name()));
+            if (!it.hasNext()) {
+                return sb.toString();
+            }
+            sb.append(", ");
+        }
     }
 
     @Override

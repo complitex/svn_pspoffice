@@ -19,6 +19,7 @@ import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
 import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
+import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 
 /**
@@ -54,9 +55,16 @@ public class EntityBean {
         return attributeType;
     }
 
+    public EntityType newEntityType() {
+        EntityType entityType = new EntityType();
+        entityType.setEntityTypeNames(stringBean.newStringCultures());
+        return entityType;
+    }
+
     public void save(Entity oldEntity, Entity newEntity) {
         Date updateDate = new Date();
 
+        //attributes
         Set<Long> toDeleteAttributeIds = Sets.newHashSet();
 
         for (EntityAttributeType oldAttributeType : oldEntity.getEntityAttributeTypes()) {
@@ -78,6 +86,29 @@ public class EntityBean {
                 insertAttributeType(attributeType, newEntity.getId(), updateDate);
             }
         }
+
+        //entity types
+        Set<Long> toDeleteEntityTypeIds = Sets.newHashSet();
+
+        for (EntityType oldEntityType : oldEntity.getEntityTypes()) {
+            boolean removed = true;
+            for (EntityType newEntityType : newEntity.getEntityTypes()) {
+                if (oldEntityType.getId().equals(newEntityType.getId())) {
+                    removed = false;
+                    break;
+                }
+            }
+            if (removed) {
+                toDeleteEntityTypeIds.add(oldEntityType.getId());
+            }
+        }
+        removeEntityTypes(toDeleteEntityTypeIds, updateDate);
+
+        for (EntityType entityType : newEntity.getEntityTypes()) {
+            if (entityType.getId() == null) {
+                insertEntityType(entityType, newEntity.getId(), updateDate);
+            }
+        }
     }
 
     protected void insertAttributeType(EntityAttributeType attributeType, long entityId, Date startDate) {
@@ -91,8 +122,12 @@ public class EntityBean {
         session.insert(ENTITY_NAMESPACE + ".insertValueType", valueType);
     }
 
-    public Collection<String> getAllEntities() {
-        return session.selectList(ENTITY_NAMESPACE + ".allEntities");
+    protected void insertEntityType(EntityType entityType, long entityId, Date startDate) {
+        entityType.setStartDate(startDate);
+        entityType.setEntityId(entityId);
+        Long stringId = stringBean.insertStrings(entityType.getEntityTypeNames(), null);
+        entityType.setEntityTypeNameId(stringId);
+        session.insert(ENTITY_NAMESPACE + ".insertEntityType", entityType);
     }
 
     protected void removeAttributeTypes(String entityTable, Collection<Long> attributeTypeIds, Date endDate) {
@@ -104,5 +139,19 @@ public class EntityBean {
             session.update(ENTITY_NAMESPACE + ".removeAttributeTypes", params);
             strategyFactory.getStrategy(entityTable).archiveAttributes(attributeTypeIds, endDate);
         }
+    }
+
+    protected void removeEntityTypes(Collection<Long> entityTypeIds, Date endDate) {
+        if (entityTypeIds != null && !entityTypeIds.isEmpty()) {
+            Map<String, Object> params = ImmutableMap.<String, Object>builder().
+                    put("endDate", endDate).
+                    put("entityTypeIds", entityTypeIds).
+                    build();
+            session.update(ENTITY_NAMESPACE + ".removeEntityTypes", params);
+        }
+    }
+
+    public Collection<String> getAllEntities() {
+        return session.selectList(ENTITY_NAMESPACE + ".allEntities");
     }
 }

@@ -30,8 +30,8 @@ insert into `string_culture`(`id`, `locale`, `value`) values
 (302, 'ru', 'улица'), (302, 'en', 'street'),
 (303, 'ru', 'проспект'), (303, 'en', 'avenue'),
 (304, 'ru', 'переулок'), (304, 'en', 'alley');
-insert into `entity_type` (`id`, `entity_id`, `entity_type_name_id`, `system`) values
-(300, 300, 302, 1), (301, 300, 303, 1), (302, 300, 304, 1);
+insert into `entity_type` (`id`, `entity_id`, `entity_type_name_id`) values
+(300, 300, 302), (301, 300, 303), (302, 300, 304);
 
 insert into `string_culture`(`id`, `locale`, `value`) values (400, 'ru', 'Населенный пункт'), (400, 'en', 'City');
 insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (400, 'city', 400, '');
@@ -41,7 +41,7 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `string_culture`(`id`, `locale`, `value`) values
 (402, 'ru', 'город'), (402, 'en', 'city'),
 (403, 'ru', 'деревня'), (403, 'en', 'village');
-insert into `entity_type`(`id`, `entity_id`, `entity_type_name_id`, `system`) values (400, 400, 402, 1), (401, 400, 403, 1);
+insert into `entity_type`(`id`, `entity_id`, `entity_type_name_id`) values (400, 400, 402), (401, 400, 403);
 
 insert into `string_culture`(`id`, `locale`, `value`) values (500, 'ru', 'Дом'), (500, 'en', 'Building');
 insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (500, 'building', 500, '');

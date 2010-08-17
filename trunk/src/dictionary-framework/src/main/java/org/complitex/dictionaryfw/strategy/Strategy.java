@@ -449,7 +449,6 @@ public abstract class Strategy {
 
     public abstract ISearchCallback getParentSearchCallback();
 
-//    public abstract Map<String, String> getChildrenInfo(Locale locale);
     public static class RestrictedObjectInfo {
 
         private String entityTable;

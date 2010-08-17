@@ -106,7 +106,7 @@ public final class DomainObjectEditPanel extends Panel {
 
         Form form = new Form("form");
 
-        objectInputPanel = new DomainObjectInputPanel("domainObjectInputPanel", newObject, entity, parentId, parentEntity);
+        objectInputPanel = new DomainObjectInputPanel("domainObjectInputPanel", newObject, entity, parentId, parentEntity, isNew());
         form.add(objectInputPanel);
 
         //complex attributes

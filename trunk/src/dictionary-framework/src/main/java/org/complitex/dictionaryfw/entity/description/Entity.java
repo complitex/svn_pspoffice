@@ -4,6 +4,7 @@
  */
 package org.complitex.dictionaryfw.entity.description;
 
+import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.List;
 import org.complitex.dictionaryfw.entity.StringCulture;
@@ -62,6 +63,13 @@ public class Entity implements Serializable {
 
     public void setEntityTypes(List<EntityType> entityTypes) {
         this.entityTypes = entityTypes;
+    }
+
+    public void addEntityType(EntityType entityType) {
+        if (entityTypes == null) {
+            entityTypes = Lists.newArrayList();
+        }
+        entityTypes.add(entityType);
     }
 
     public EntityAttributeType getAttributeType(Long attributeTypeId) {

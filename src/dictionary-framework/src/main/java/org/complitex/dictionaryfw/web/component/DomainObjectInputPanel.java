@@ -18,8 +18,6 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
@@ -99,12 +97,15 @@ public final class DomainObjectInputPanel extends Panel {
 
     private String parentEntity;
 
-    public DomainObjectInputPanel(String id, DomainObject object, String entity, Long parentId, String parentEntity) {
+    private boolean isNew;
+
+    public DomainObjectInputPanel(String id, DomainObject object, String entity, Long parentId, String parentEntity, boolean isNew) {
         super(id);
         this.object = object;
         this.entity = entity;
         this.parentId = parentId;
         this.parentEntity = parentEntity;
+        this.isNew = isNew;
         init();
     }
 
@@ -122,7 +123,16 @@ public final class DomainObjectInputPanel extends Panel {
         //entity type
         WebMarkupContainer typeContainer = new WebMarkupContainer("typeContainer");
         add(typeContainer);
-        final List<EntityType> entityTypes = description.getEntityTypes() != null ? description.getEntityTypes() : new ArrayList<EntityType>();
+        List<EntityType> allEntityTypes = description.getEntityTypes() != null ? description.getEntityTypes() : new ArrayList<EntityType>();
+        List<EntityType> nonArchiveEntityTypes = Lists.newArrayList(Iterables.filter(allEntityTypes, new Predicate<EntityType>() {
+
+            @Override
+            public boolean apply(EntityType entityType) {
+                return entityType.getEndDate() == null;
+            }
+        }));
+
+        final List<EntityType> entityTypes = isNew ? nonArchiveEntityTypes : allEntityTypes;
         if (entityTypes.isEmpty()) {
             typeContainer.setVisible(false);
         }
@@ -148,7 +158,12 @@ public final class DomainObjectInputPanel extends Panel {
                 }
             }
         };
-        DropDownChoice<EntityType> types = new DropDownChoice<EntityType>("types", typeModel, entityTypes, new IChoiceRenderer<EntityType>() {
+        IDisableAwareChoiceRenderer<EntityType> renderer = new IDisableAwareChoiceRenderer<EntityType>() {
+
+            @Override
+            public boolean isDisabled(EntityType object) {
+                return object.getEndDate() != null;
+            }
 
             @Override
             public Object getDisplayValue(EntityType object) {
@@ -159,7 +174,8 @@ public final class DomainObjectInputPanel extends Panel {
             public String getIdValue(EntityType object, int index) {
                 return String.valueOf(object.getId());
             }
-        });
+        };
+        DisableAwareDropDownChoice<EntityType> types = new DisableAwareDropDownChoice<EntityType>("types", typeModel, entityTypes, renderer);
         types.setLabel(new ResourceModel("entity_type"));
         types.setRequired(true);
         types.setEnabled(CanEditUtil.canEdit(object));

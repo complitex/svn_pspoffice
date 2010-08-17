@@ -10,8 +10,8 @@
         <collection property="entityAttributeTypes" ofType="org.complitex.dictionaryfw.entity.description.EntityAttributeType">
         <id column="entity_attribute_type_id" property="id"/>
         <result column="mandatory" property="mandatory" javaType="_boolean" jdbcType="TINYINT"/>
-        <result column="start_date" property="startDate"/>
-        <result column="end_date" property="endDate"/>
+        <result column="attr_start_date" property="startDate"/>
+        <result column="attr_end_date" property="endDate"/>
         <result column="system" property="system" javaType="_boolean" jdbcType="TINYINT"/>
         <collection property="attributeNames" ofType="StringCulture" column="attribute_type_name_id"
                     select="org.complitex.dictionaryfw.entity.description.Entity.findNames"/>
@@ -22,6 +22,8 @@
         </collection>
         <collection property="entityTypes" ofType="org.complitex.dictionaryfw.entity.description.EntityType">
         <id column="entity_type_id" property="id"/>
+        <result column="type_start_date" property="startDate"/>
+        <result column="type_end_date" property="endDate"/>
         <collection property="entityTypeNames" ofType="StringCulture" column="entity_type_name_id"
                     select="org.complitex.dictionaryfw.entity.description.Entity.findNames"/>
         </collection>        
@@ -34,14 +36,16 @@
         e.`entity_name_id`,
         eat.`id` as entity_attribute_type_id,
         eat.`mandatory`,
-        eat.`start_date`,
-        eat.`end_date`,
+        eat.`start_date` as attr_start_date,
+        eat.`end_date` as attr_end_date,
         eat.`attribute_type_name_id`,
         eat.`system`,
         eavt.`id` as entity_attribute_value_type_id,
         eavt.`attribute_value_type`,
         et.`id` as entity_type_id,
-        et.`entity_type_name_id`
+        et.`entity_type_name_id`,
+        et.`start_date` as type_start_date,
+        et.`end_date` as type_end_date
         FROM `entity` e
         JOIN `entity_attribute_type` eat ON eat.`entity_id` = e.`id`
         JOIN `entity_attribute_value_type` eavt ON eavt.`attribute_type_id` = eat.`id`
@@ -55,6 +59,11 @@
     <select id="findNames" parameterType="long" resultMap="org.complitex.dictionaryfw.entity.StringCulture.StringCulture">
         SELECT sc.`id`, sc.`value`, sc.`locale` FROM `string_culture` sc WHERE sc.`id` = #{value}
     </select>
+
+    <insert id="insertEntityType" useGeneratedKeys="true" keyProperty="id"
+            parameterType="org.complitex.dictionaryfw.entity.description.EntityType">
+        INSERT INTO `entity_type`(`entity_id`, `entity_type_name_id`, `start_date`) VALUES (#{entityId}, #{entityTypeNameId}, #{startDate})
+    </insert>
 
     <insert id="insertAttributeType" useGeneratedKeys="true" keyProperty="id"
             parameterType="org.complitex.dictionaryfw.entity.description.EntityAttributeType">
@@ -72,6 +81,13 @@
     <update id="removeAttributeTypes" parameterType="hashmap">
         UPDATE `entity_attribute_type` SET `end_date` = #{endDate} WHERE `id` IN
         <foreach item="id" collection="attributeTypeIds" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="removeEntityTypes" parameterType="hashmap">
+        UPDATE `entity_type` SET `end_date` = #{endDate} WHERE `id` IN
+        <foreach item="id" collection="entityTypeIds" open="(" close=")" separator=",">
             #{id}
         </foreach>
     </update>

@@ -37,6 +37,7 @@ import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeValueType;
+import org.complitex.dictionaryfw.entity.description.EntityType;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
@@ -58,7 +59,7 @@ public final class EntityDescriptionPanel extends Panel {
     @EJB(name = "EntityBean")
     private EntityBean entityBean;
 
-    private static final String DATE_FORMAT = "dd.MM.yyyy";
+    private static final String DATE_FORMAT = "HH:mm dd.MM.yyyy";
 
     public EntityDescriptionPanel(String id, String entity, PageParameters pageParameters) {
         super(id);
@@ -89,6 +90,7 @@ public final class EntityDescriptionPanel extends Panel {
         Form form = new Form("form");
         add(form);
 
+        //attributes
         final WebMarkupContainer attributesContainer = new WebMarkupContainer("attributesContainer");
         attributesContainer.setOutputMarkupId(true);
         form.add(attributesContainer);
@@ -199,7 +201,7 @@ public final class EntityDescriptionPanel extends Panel {
         attributes.setReuseItems(true);
         attributesContainer.add(attributes);
 
-        AjaxLink add = new AjaxLink("addAttribute") {
+        AjaxLink addAttribute = new AjaxLink("addAttribute") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -209,7 +211,73 @@ public final class EntityDescriptionPanel extends Panel {
                 target.addComponent(attributesContainer);
             }
         };
-        form.add(add);
+        form.add(addAttribute);
+
+
+        //entity types
+        final WebMarkupContainer entityTypesContainer = new WebMarkupContainer("entityTypesContainer");
+        entityTypesContainer.setOutputMarkupId(true);
+        form.add(entityTypesContainer);
+
+        ListView<EntityType> entityTypes = new AjaxRemovableListView<EntityType>("entityTypes", description.getEntityTypes()) {
+
+            @Override
+            protected void populateItem(ListItem<EntityType> item) {
+                final EntityType entityType = item.getModelObject();
+
+
+                item.add(new Label("startDate", new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        if (entityType.getId() != null) {
+                            return new SimpleDateFormat(DATE_FORMAT, getLocale()).format(entityType.getStartDate());
+                        } else {
+                            return null;
+                        }
+                    }
+                }));
+                item.add(new Label("endDate", new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        if (entityType.getEndDate() == null) {
+                            return null;
+                        } else {
+                            return new SimpleDateFormat(DATE_FORMAT, getLocale()).format(entityType.getEndDate());
+                        }
+                    }
+                }));
+
+                if (entityType.getId() != null) { // New entity type
+                    item.add(new Label("name", new AbstractReadOnlyModel<String>() {
+
+                        @Override
+                        public String getObject() {
+                            return stringBean.displayValue(entityType.getEntityTypeNames(), getLocale());
+                        }
+                    }));
+                } else {
+                    //old entity type
+                    item.add(new StringCulturePanel("name", new PropertyModel<List<StringCulture>>(entityType, "entityTypeNames"), true,
+                            new ResourceModel("entity_type_name"), true));
+                }
+
+                addRemoveLink("remove", item, null, entityTypesContainer).setVisible(entityType.getEndDate() == null);
+            }
+        };
+        entityTypes.setReuseItems(true);
+        entityTypesContainer.add(entityTypes);
+
+        AjaxLink addEntityType = new AjaxLink("addEntityType") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                description.addEntityType(entityBean.newEntityType());
+                target.addComponent(entityTypesContainer);
+            }
+        };
+        form.add(addEntityType);
 
         Button submit = new Button("submit") {
 

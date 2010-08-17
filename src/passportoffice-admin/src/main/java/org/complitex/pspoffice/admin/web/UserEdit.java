@@ -95,7 +95,7 @@ public class UserEdit extends FormTemplatePage{
 
         //Информация о пользователе
         DomainObjectInputPanel userInfo = new DomainObjectInputPanel("user_info", userModel.getObject().getUserInfo(),
-                UserBean.USER_INFO_ENTITY_TABLE, null, null);
+                UserBean.USER_INFO_ENTITY_TABLE, null, null, id == null);
         form.add(userInfo);
 
         //Группы привилегий

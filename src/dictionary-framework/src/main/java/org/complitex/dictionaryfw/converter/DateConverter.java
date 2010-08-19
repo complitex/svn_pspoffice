@@ -14,7 +14,7 @@ import java.util.Date;
  */
 public class DateConverter implements IConverter<Date> {
 
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
+    private final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
 
     @Override
     public Date toObject(String date) {

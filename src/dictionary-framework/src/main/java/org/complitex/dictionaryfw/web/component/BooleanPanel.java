@@ -12,7 +12,7 @@ import org.apache.wicket.model.IModel;
  *
  * @author Artem
  */
-public final class BooleanPanel extends Panel {
+public class BooleanPanel extends Panel {
 
     public BooleanPanel(String id, IModel<Boolean> model, IModel<String> labelModel, boolean enabled) {
         super(id);

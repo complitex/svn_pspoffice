@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-public final class DomainObjectInputPanel extends Panel {
+public class DomainObjectInputPanel extends Panel {
 
     private static class SimpleTypeModel<T extends Serializable> extends Model<T> {
 

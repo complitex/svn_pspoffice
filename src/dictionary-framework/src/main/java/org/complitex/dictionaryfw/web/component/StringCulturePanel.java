@@ -7,6 +7,7 @@ package org.complitex.dictionaryfw.web.component;
 import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -21,14 +22,41 @@ import org.complitex.dictionaryfw.entity.StringCulture;
  *
  * @author Artem
  */
-public final class StringCulturePanel extends Panel {
+public class StringCulturePanel extends Panel {
 
     @EJB(name = "LocaleDao")
     private LocaleBean localeDao;
 
-    public StringCulturePanel(String id, IModel<List<StringCulture>> model, final boolean required, final IModel<String> labelModel, final boolean enabled) {
+    /**
+     * For use in non-ajax environment
+     * @param id
+     * @param model
+     * @param required
+     * @param labelModel
+     * @param enabled
+     */
+    public StringCulturePanel(String id, IModel<List<StringCulture>> model, final boolean required, final IModel<String> labelModel,
+            final boolean enabled) {
         super(id);
+        init(model, required, labelModel, enabled, null);
+    }
 
+    /**
+     * For use in ajax environment
+     * @param id
+     * @param model
+     * @param required
+     * @param labelModel
+     * @param enabled
+     */
+    public StringCulturePanel(String id, IModel<List<StringCulture>> model, final boolean required, final IModel<String> labelModel,
+            final boolean enabled, MarkupContainer[] toUpdate) {
+        super(id);
+        init(model, required, labelModel, enabled, toUpdate);
+    }
+
+    protected void init(IModel<List<StringCulture>> model, final boolean required, final IModel<String> labelModel, final boolean enabled,
+            final MarkupContainer[] toUpdate){
         add(new ListView<StringCulture>("strings", model) {
 
             @Override
@@ -44,7 +72,7 @@ public final class StringCulturePanel extends Panel {
                 }
 
                 InputPanel<String> inputPanel = new InputPanel("inputPanel", new PropertyModel<String>(culture, "value"),
-                        String.class, required && isSystemLocale, labelModel, enabled);
+                        String.class, required && isSystemLocale, labelModel, enabled, toUpdate);
                 item.add(inputPanel);
 
                 WebMarkupContainer requiredContainer = new WebMarkupContainer("bookFieldRequired");

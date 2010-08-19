@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-public final class DomainObjectEditPanel extends Panel {
+public class DomainObjectEditPanel extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(DomainObjectEditPanel.class);
 
@@ -99,7 +99,7 @@ public final class DomainObjectEditPanel extends Panel {
         add(label);
 
         final FeedbackPanel messages = new FeedbackPanel("messages");
-        messages.setOutputMarkupId(true);
+//        messages.setOutputMarkupId(true);
         add(messages);
 
         Form form = new Form("form");

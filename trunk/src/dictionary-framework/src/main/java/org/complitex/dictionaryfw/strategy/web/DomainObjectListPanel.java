@@ -15,7 +15,6 @@ import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvid
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -51,16 +50,20 @@ import org.complitex.dictionaryfw.web.component.search.SearchComponentState;
 import javax.ejb.EJB;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.complitex.dictionaryfw.web.component.BooleanPanel;
+import org.complitex.dictionaryfw.web.component.DatePanel;
+import org.complitex.dictionaryfw.web.component.StringPanel;
 import org.complitex.dictionaryfw.web.component.paging.PagingNavigator;
 
 /**
  *
  * @author Artem
  */
-public final class DomainObjectListPanel extends Panel {
+public class DomainObjectListPanel extends Panel {
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -223,35 +226,86 @@ public final class DomainObjectListPanel extends Panel {
 
             @Override
             protected void populateItem(ListItem<EntityAttributeType> item) {
-                final EntityAttributeType attrDesc = item.getModelObject();
+                final EntityAttributeType attributeType = item.getModelObject();
+                final AttributeExample attributeExample = Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
 
-                IModel<String> filterModel = new Model<String>() {
+                    @Override
+                    public boolean apply(AttributeExample attrExample) {
+                        return attrExample.getAttributeTypeId().equals(attributeType.getId());
+                    }
+                });
+
+                final IModel<String> filterModel = new Model<String>() {
 
                     @Override
                     public String getObject() {
-                        return Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
-
-                            @Override
-                            public boolean apply(AttributeExample attrExample) {
-                                return attrExample.getAttributeTypeId().equals(attrDesc.getId());
-                            }
-                        }).getValue();
+                        return attributeExample.getValue();
                     }
 
                     @Override
                     public void setObject(String object) {
-                        Iterables.find(example.getAttributeExamples(), new Predicate<AttributeExample>() {
-
-                            @Override
-                            public boolean apply(AttributeExample attrExample) {
-                                return attrExample.getAttributeTypeId().equals(attrDesc.getId());
-                            }
-                        }).setValue(object);
+                        attributeExample.setValue(object);
                     }
                 };
-                TextField<String> filter = new TextField<String>("filter", filterModel);
+
+                Panel filter = new EmptyPanel("filter");
+                SimpleTypes valueType = SimpleTypes.valueOf(attributeType.getEntityAttributeValueTypes().get(0).getValueType().toUpperCase());
+                switch (valueType) {
+                    case STRING:
+                    case STRING_CULTURE:
+                    case INTEGER:
+                    case DOUBLE: {
+                        filter = new StringPanel("filter", filterModel, false, null, true);
+                    }
+                    break;
+                    case DATE: {
+                        IModel<Date> dateModel = new Model<Date>() {
+
+                            DateConverter dateConverter = new DateConverter();
+
+                            @Override
+                            public void setObject(Date object) {
+                                if (object != null) {
+                                    filterModel.setObject(dateConverter.toString(object));
+                                }
+                            }
+
+                            @Override
+                            public Date getObject() {
+                                if (!Strings.isEmpty(filterModel.getObject())) {
+                                    return dateConverter.toObject(filterModel.getObject());
+                                }
+                                return null;
+                            }
+                        };
+                        filter = new DatePanel("filter", dateModel, false, null, true);
+                    }
+                    break;
+                    case BOOLEAN: {
+                        IModel<Boolean> booleanModel = new Model<Boolean>() {
+
+                            BooleanConverter booleanConverter = new BooleanConverter();
+
+                            @Override
+                            public void setObject(Boolean object) {
+                                if (object != null) {
+                                    filterModel.setObject(booleanConverter.toString(object));
+                                }
+                            }
+
+                            @Override
+                            public Boolean getObject() {
+                                if (!Strings.isEmpty(filterModel.getObject())) {
+                                    return booleanConverter.toObject(filterModel.getObject());
+                                }
+                                return null;
+                            }
+                        };
+                        filter = new BooleanPanel("filter", booleanModel, null, true);
+                    }
+                    break;
+                }
                 item.add(filter);
-                //TODO : add filter components for another simple types such as boolean and date
             }
         };
         filters.setReuseItems(true);
@@ -266,7 +320,7 @@ public final class DomainObjectListPanel extends Panel {
         };
         filterForm.add(submit);
 
-        data = new DataView<DomainObject>("data", dataProvider, 5) {
+        data = new DataView<DomainObject>("data", dataProvider, 1) {
 
             @Override
             protected void populateItem(Item<DomainObject> item) {

@@ -11,8 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import javax.ejb.EJB;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -48,7 +50,7 @@ import org.complitex.dictionaryfw.web.component.list.AjaxRemovableListView;
  *
  * @author Artem
  */
-public final class EntityDescriptionPanel extends Panel {
+public class EntityDescriptionPanel extends Panel {
 
     @EJB(name = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -127,12 +129,26 @@ public final class EntityDescriptionPanel extends Panel {
                         new PropertyModel<String>(attributeType.getEntityAttributeValueTypes().get(0), "valueType"), supportedValueTypes);
                 valueTypeSelect.setRequired(true);
                 valueTypeSelect.setLabel(new ResourceModel("attribute_value_type"));
+                valueTypeSelect.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        //update model
+                    }
+                });
                 item.add(valueTypeSelect);
 
                 Label mandatoryLabel = new Label("mandatoryLabel", new ResourceModel(attributeType.isMandatory() ? "yes" : "no"));
                 item.add(mandatoryLabel);
 
                 CheckBox mandatoryInput = new CheckBox("mandatoryInput", new PropertyModel<Boolean>(attributeType, "mandatory"));
+                mandatoryInput.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        //update model
+                    }
+                });
                 item.add(mandatoryInput);
 
                 item.add(new Label("startDate", new AbstractReadOnlyModel<String>() {
@@ -160,7 +176,7 @@ public final class EntityDescriptionPanel extends Panel {
                     }
                 }));
 
-                if (attributeType.getId() != null) { // New attribute
+                if (attributeType.getId() != null) { // old attribute
                     item.add(new Label("name", new AbstractReadOnlyModel<String>() {
 
                         @Override
@@ -186,9 +202,9 @@ public final class EntityDescriptionPanel extends Panel {
                     valueTypeSelect.setVisible(false);
                     mandatoryInput.setVisible(false);
                 } else {
-                    //old attribute
+                    //new attribute
                     item.add(new StringCulturePanel("name", new PropertyModel<List<StringCulture>>(attributeType, "attributeNames"), true,
-                            new ResourceModel("attribute_name"), true));
+                            new ResourceModel("attribute_name"), true, new MarkupContainer[0]));
 
                     valueType.setVisible(false);
                     valueTypesContainer.setVisible(false);
@@ -249,7 +265,7 @@ public final class EntityDescriptionPanel extends Panel {
                     }
                 }));
 
-                if (entityType.getId() != null) { // New entity type
+                if (entityType.getId() != null) { // old entity type
                     item.add(new Label("name", new AbstractReadOnlyModel<String>() {
 
                         @Override
@@ -258,9 +274,9 @@ public final class EntityDescriptionPanel extends Panel {
                         }
                     }));
                 } else {
-                    //old entity type
+                    //new entity type
                     item.add(new StringCulturePanel("name", new PropertyModel<List<StringCulture>>(entityType, "entityTypeNames"), true,
-                            new ResourceModel("entity_type_name"), true));
+                            new ResourceModel("entity_type_name"), true, new MarkupContainer[0]));
                 }
 
                 addRemoveLink("remove", item, null, entityTypesContainer).setVisible(entityType.getEndDate() == null);

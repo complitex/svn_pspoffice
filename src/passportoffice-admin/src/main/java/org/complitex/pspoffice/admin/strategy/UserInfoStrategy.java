@@ -21,7 +21,8 @@ import java.util.Map;
  */
 @Stateless(name = "User_infoStrategy")
 @Interceptors({SqlSessionInterceptor.class})
-public class UserInfoStrategy extends Strategy{
+public class UserInfoStrategy extends Strategy {
+
     @Override
     public String getEntityTable() {
         return "user_info";
@@ -60,7 +61,6 @@ public class UserInfoStrategy extends Strategy{
 
     @Override
     public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-
     }
 
     @Override
@@ -85,6 +85,16 @@ public class UserInfoStrategy extends Strategy{
 
     @Override
     public String[] getParents() {
+        return null;
+    }
+
+    @Override
+    public Class<? extends WebPage> getHistoryPage() {
+        return null;
+    }
+
+    @Override
+    public PageParameters getHistoryPageParams(long objectId) {
         return null;
     }
 }

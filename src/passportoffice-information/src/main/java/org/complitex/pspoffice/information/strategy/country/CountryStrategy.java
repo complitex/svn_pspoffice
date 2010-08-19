@@ -29,6 +29,7 @@ import org.complitex.dictionaryfw.util.ResourceUtil;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.commons.web.pages.HistoryPage;
 import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
@@ -155,5 +156,18 @@ public class CountryStrategy extends Strategy {
     @Override
     public String[] getParents() {
         return null;
+    }
+
+    @Override
+    public Class<? extends WebPage> getHistoryPage() {
+        return HistoryPage.class;
+    }
+
+    @Override
+    public PageParameters getHistoryPageParams(long objectId) {
+        PageParameters params = new PageParameters();
+        params.put(HistoryPage.ENTITY, getEntityTable());
+        params.put(HistoryPage.OBJECT_ID, objectId);
+        return params;
     }
 }

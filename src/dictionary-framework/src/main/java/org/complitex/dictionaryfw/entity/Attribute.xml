@@ -40,4 +40,14 @@
         ORDER BY aa.`attribute_id`
     </select>
 
+    <!-- history -->
+    
+    <select id="findHistoryAttributes" parameterType="DomainObjectExample" resultMap="org.complitex.dictionaryfw.entity.Attribute.Attribute">
+        SELECT aa.`attribute_id`, aa.`object_id`, aa.`attribute_type_id`, aa.`value_id`, aa.`value_type_id`, aa.`start_date`, aa.`end_date`, aa.`status`,
+        '${table}' as table_name
+        FROM `${table}_attribute` aa
+        WHERE aa.`object_id` = #{id}
+        AND aa.`start_date` <![CDATA[ <= ]]> #{startDate} AND ((aa.`end_date` IS NULL) OR (aa.`end_date` <![CDATA[ > ]]> #{startDate}))
+    </select>
+
 </mapper>

@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
@@ -57,6 +58,12 @@ public abstract class Strategy {
     public static final String ARCHIVE_ATTRIBUTES_OPERATION = "archiveAttributes";
 
     public static final String FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION = "findParentInSearchComponent";
+
+    public static final String HAS_HISTORY_OPERATION = "hasHistory";
+
+    public static final String FIND_HISTORY_OBJECT_OPERATION = "findHistoryObject";
+
+    public static final String FIND_HISTORY_ATTRIBUTES_OPERATION = "findHistoryAttributes";
 
     @EJB(beanName = "StrategyFactory")
     private StrategyFactory strategyFactory;
@@ -152,6 +159,7 @@ public abstract class Strategy {
                     EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
                     attribute.setAttributeTypeId(attributeType.getId());
                     attribute.setValueTypeId(attributeValueType.getId());
+                    attribute.setObjectId(object.getId());
                     attribute.setAttributeId(1L);
                     attribute.setLocalizedValues(stringBean.newStringCultures());
                     newAttributes.add(attribute);
@@ -402,8 +410,8 @@ public abstract class Strategy {
      * todo cache or sort performance
      */
     public List<Attribute> getAttributeColumns(DomainObject object) {
-        if (object == null){
-            return newInstance().getAttributes();           
+        if (object == null) {
+            return newInstance().getAttributes();
         }
 
         List<EntityAttributeType> entityAttributeTypes = getListColumns();
@@ -470,16 +478,71 @@ public abstract class Strategy {
     }
 
     @SuppressWarnings({"unchecked"})
-    public RestrictedObjectInfo findParentInSearchComponent(long id) {
+    public RestrictedObjectInfo findParentInSearchComponent(long id, Date date) {
         DomainObjectExample example = new DomainObjectExample();
         example.setTable(getEntityTable());
         example.setId(id);
-        Map<String, Object> result = (Map<String, Object>) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION, example);
+        example.setStartDate(date);
+        Map<String, Object> result = (Map<String, Object>) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_PARENT_IN_SEARCH_COMPONENT_OPERATION,
+                example);
         if (result != null) {
             Long parentId = (Long) result.get("parentId");
             String parentEntity = (String) result.get("parentEntity");
             if (parentId != null && !Strings.isEmpty(parentEntity)) {
                 return new RestrictedObjectInfo(parentEntity, parentId);
+            }
+        }
+        return null;
+    }
+
+    /*
+     * Helper util method.
+     */
+    public SearchComponentState getSearchComponentStateForParent(Long parentId, String parentEntity, Date date) {
+        if (parentId != null && parentEntity != null) {
+            SearchComponentState componentState = new SearchComponentState();
+            Map<String, Long> ids = Maps.newHashMap();
+
+            RestrictedObjectInfo parentData = new RestrictedObjectInfo(parentEntity, parentId);
+            while (parentData != null) {
+                String currentParentEntity = parentData.getEntityTable();
+                Long currentParentId = parentData.getId();
+                ids.put(currentParentEntity, currentParentId);
+                parentData = strategyFactory.getStrategy(currentParentEntity).findParentInSearchComponent(currentParentId, date);
+            }
+            List<String> searchFilters = getSearchFilters();
+            if (searchFilters != null && !searchFilters.isEmpty()) {
+                for (String searchFilter : getSearchFilters()) {
+                    Long idForFilter = ids.get(searchFilter);
+                    if (idForFilter == null) {
+                        ids.put(searchFilter, -1L);
+                    }
+                }
+
+                for (String searchFilter : getSearchFilters()) {
+                    DomainObject object = new DomainObject();
+                    object.setId(-1L);
+                    if (date == null) {
+                        DomainObjectExample example = new DomainObjectExample();
+                        example.setTable(searchFilter);
+                        example.setId(ids.get(searchFilter));
+                        example.setStart(0);
+                        example.setSize(1);
+
+                        strategyFactory.getStrategy(searchFilter).configureExample(example, ids, null);
+                        List<DomainObject> objects = strategyFactory.getStrategy(searchFilter).find(example);
+                        if (objects != null && !objects.isEmpty()) {
+                            object = objects.get(0);
+                        }
+                    } else {
+                        DomainObject historyObject = strategyFactory.getStrategy(searchFilter).findHistoryObject(ids.get(searchFilter), date);
+                        if (historyObject != null) {
+                            object = historyObject;
+                        }
+                    }
+                    componentState.put(searchFilter, object);
+                }
+                return componentState;
             }
         }
         return null;
@@ -494,49 +557,109 @@ public abstract class Strategy {
     }
 
     /*
-     * Helper util method.
+     * History related functional.
      */
-    public SearchComponentState getSearchComponentStateForParent(Long parentId, String parentEntity) {
-        if (parentId != null && parentEntity != null) {
-            SearchComponentState componentState = new SearchComponentState();
-            Map<String, Long> ids = Maps.newHashMap();
+    public abstract Class<? extends WebPage> getHistoryPage();
 
-            RestrictedObjectInfo parentData = new RestrictedObjectInfo(parentEntity, parentId);
-            while (parentData != null) {
-                String currentParentEntity = parentData.getEntityTable();
-                Long currentParentId = parentData.getId();
-                ids.put(currentParentEntity, currentParentId);
-                parentData = strategyFactory.getStrategy(currentParentEntity).findParentInSearchComponent(currentParentId);
-            }
-            List<String> searchFilters = getSearchFilters();
-            if (searchFilters != null && !searchFilters.isEmpty()) {
-                for (String searchFilter : getSearchFilters()) {
-                    Long idForFilter = ids.get(searchFilter);
-                    if (idForFilter == null) {
-                        ids.put(searchFilter, -1L);
-                    }
-                }
+    public abstract PageParameters getHistoryPageParams(long objectId);
 
-                for (String searchFilter : getSearchFilters()) {
-                    DomainObjectExample example = new DomainObjectExample();
-                    example.setTable(searchFilter);
-                    example.setId(ids.get(searchFilter));
-                    example.setStart(0);
-                    example.setSize(1);
-
-                    strategyFactory.getStrategy(searchFilter).configureExample(example, ids, null);
-                    DomainObject object = new DomainObject();
-                    object.setId(-1L);
-                    List<DomainObject> objects = strategyFactory.getStrategy(searchFilter).find(example);
-                    if (objects != null && !objects.isEmpty()) {
-                        object = objects.get(0);
-                    }
-                    componentState.put(searchFilter, object);
-                }
-                return componentState;
-            }
+    public boolean hasHistory(Long objectId) {
+        if (objectId == null) {
+            return false;
         }
-        return null;
+        DomainObjectExample example = new DomainObjectExample();
+        example.setTable(getEntityTable());
+        example.setId(objectId);
+        return session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + HAS_HISTORY_OPERATION, example) != null;
+    }
+
+    public List<History> getHistory(long objectId) {
+        List<History> historyList = Lists.newArrayList();
+
+        DomainObjectExample example = new DomainObjectExample();
+        example.setTable(getEntityTable());
+        example.setId(objectId);
+
+        List<Date> allDates = Lists.newArrayList(Sets.newTreeSet(Iterables.filter(session.selectList(DOMAIN_OBJECT_NAMESPACE + ".historyDates", example),
+                new Predicate<Date>() {
+
+                    @Override
+                    public boolean apply(Date input) {
+                        return input != null;
+                    }
+                })));
+
+        for (final Date date : allDates) {
+            DomainObject historyObject = findHistoryObject(objectId, date);
+            History history = new History(date, historyObject);
+            historyList.add(history);
+        }
+        return historyList;
+    }
+
+//    protected List<Attribute> getSuitedAttributes(Long attributeTypeId, List<Attribute> allAttributesWithOneType, Date date) {
+//        Attribute result = null;
+//        long time = Long.MIN_VALUE;
+//        for (Attribute attr : allAttributesWithOneType) {
+//            if ((attr.getEndDate() == null) || (attr.getEndDate().getTime() > date.getTime())) {
+//                if (attr.getStartDate().getTime() >= time) {
+//                    time = attr.getStartDate().getTime();
+//                    result = attr;
+//                }
+//            } else {
+//                if (attr.getEndDate().getTime() > time) {
+//                    time = attr.getEndDate().getTime();
+//                    result = null;
+//                }
+//            }
+//        }
+//        if (result == null) {
+//            return null;
+//        }
+//        return Lists.newArrayList(result);
+//    }
+    public DomainObject findHistoryObject(long objectId, Date date) {
+        DomainObjectExample example = new DomainObjectExample();
+        example.setTable(getEntityTable());
+        example.setId(objectId);
+        example.setStartDate(date);
+
+        DomainObject object = (DomainObject) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
+        if (object == null) {
+            return null;
+        }
+
+        List<Attribute> allAttributes = loadHistoryAttributes(objectId, date);
+//        ArrayListMultimap<Long, Attribute> attributesWithOneType = ArrayListMultimap.create();
+//        Entity description = entityBean.getFullEntity(getEntityTable());
+//        for (final EntityAttributeType attributeType : description.getEntityAttributeTypes()) {
+//            List<Attribute> attributes = Lists.newArrayList(Iterables.filter(allAttributes, new Predicate<Attribute>() {
+//
+//                @Override
+//                public boolean apply(Attribute attr) {
+//                    return attr.getAttributeTypeId().equals(attributeType.getId());
+//                }
+//            }));
+//            attributesWithOneType.putAll(attributeType.getId(), attributes);
+//        }
+//
+//        for (final EntityAttributeType attributeType : description.getEntityAttributeTypes()) {
+//            List<Attribute> suitedAttributes = getSuitedAttributes(attributeType.getId(), attributesWithOneType.get(attributeType.getId()), date);
+//            if (suitedAttributes != null) {
+//                object.getAttributes().addAll(suitedAttributes);
+//            }
+//        }
+        object.getAttributes().addAll(allAttributes);
+        updateStringsForNewLocales(object);
+        return object;
+    }
+
+    protected List<Attribute> loadHistoryAttributes(long objectId, Date date) {
+        DomainObjectExample example = new DomainObjectExample();
+        example.setTable(getEntityTable());
+        example.setId(objectId);
+        example.setStartDate(date);
+        return session.selectList(ATTRIBUTE_NAMESPACE + "." + FIND_HISTORY_ATTRIBUTES_OPERATION, example);
     }
 
     /*

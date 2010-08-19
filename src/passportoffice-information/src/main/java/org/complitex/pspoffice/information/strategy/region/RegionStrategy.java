@@ -28,13 +28,14 @@ import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
 import org.complitex.dictionaryfw.util.ResourceUtil;
+import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.commons.web.pages.HistoryPage;
 import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
@@ -138,14 +139,14 @@ public class RegionStrategy extends Strategy {
 
         @Override
         public void found(SearchComponent component, Map<String, Long> ids, AjaxRequestTarget target) {
-            DomainObjectEditPanel edit = component.findParent(DomainObjectEditPanel.class);
+            DomainObjectInputPanel inputPanel = component.findParent(DomainObjectInputPanel.class);
             Long countryId = ids.get("country");
             if (countryId != null && countryId > 0) {
-                edit.getObject().setParentId(countryId);
-                edit.getObject().setParentEntityId(800L);
+                inputPanel.getObject().setParentId(countryId);
+                inputPanel.getObject().setParentEntityId(800L);
             } else {
-                edit.getObject().setParentId(null);
-                edit.getObject().setParentEntityId(null);
+                inputPanel.getObject().setParentId(null);
+                inputPanel.getObject().setParentEntityId(null);
             }
         }
     }
@@ -190,5 +191,18 @@ public class RegionStrategy extends Strategy {
     @Override
     public String[] getParents() {
         return new String[]{"country"};
+    }
+
+    @Override
+    public Class<? extends WebPage> getHistoryPage() {
+        return HistoryPage.class;
+    }
+
+    @Override
+    public PageParameters getHistoryPageParams(long objectId) {
+        PageParameters params = new PageParameters();
+        params.put(HistoryPage.ENTITY, getEntityTable());
+        params.put(HistoryPage.OBJECT_ID, objectId);
+        return params;
     }
 }

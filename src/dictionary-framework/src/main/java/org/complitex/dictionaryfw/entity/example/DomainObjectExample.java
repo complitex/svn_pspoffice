@@ -7,6 +7,7 @@ package org.complitex.dictionaryfw.entity.example;
 import com.google.common.collect.Maps;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.complitex.dictionaryfw.web.component.ShowMode;
@@ -34,6 +35,8 @@ public class DomainObjectExample implements Serializable {
     private String parentEntity;
 
     private Long parentId;
+
+    private Date startDate;
 
     private Map<String, Object> additionalParams;
 
@@ -146,5 +149,13 @@ public class DomainObjectExample implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 }

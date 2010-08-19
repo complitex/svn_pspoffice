@@ -5,6 +5,7 @@
 package org.complitex.dictionaryfw.strategy.web;
 
 import org.apache.wicket.markup.html.panel.Panel;
+import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
 
 /**
  *
@@ -12,11 +13,18 @@ import org.apache.wicket.markup.html.panel.Panel;
  */
 public abstract class AbstractComplexAttributesPanel extends Panel {
 
-    public AbstractComplexAttributesPanel(String id) {
+    private boolean disabled;
+
+    public AbstractComplexAttributesPanel(String id, boolean disabled) {
         super(id);
+        this.disabled = disabled;
     }
 
-    protected DomainObjectEditPanel getEditPanel() {
-        return this.findParent(DomainObjectEditPanel.class);
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    protected DomainObjectInputPanel getInputPanel() {
+        return this.findParent(DomainObjectInputPanel.class);
     }
 }

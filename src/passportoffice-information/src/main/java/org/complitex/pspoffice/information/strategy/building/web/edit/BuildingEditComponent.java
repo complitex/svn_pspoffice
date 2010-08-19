@@ -28,7 +28,7 @@ import org.complitex.dictionaryfw.entity.StringCulture;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionaryfw.strategy.web.CanEditUtil;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
+import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
 import org.complitex.dictionaryfw.web.component.StringCulturePanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
@@ -62,8 +62,8 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
     private boolean firstRendering = true;
 
-    public BuildingEditComponent(String id) {
-        super(id);
+    public BuildingEditComponent(String id, boolean disabled) {
+        super(id, disabled);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 buildingAttribute.getStreet().setValueId(null);
             }
 
-            component.findParent(DomainObjectEditPanel.class).visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
+            component.findParent(DomainObjectInputPanel.class).visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
 
                 @Override
                 public Object component(SearchComponent searchComponent) {
@@ -158,7 +158,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 districtAttribute.setValueId(null);
             }
 
-            component.findParent(DomainObjectEditPanel.class).visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
+            component.findParent(DomainObjectInputPanel.class).visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
 
                 @Override
                 public Object component(SearchComponent searchComponent) {
@@ -178,7 +178,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         attributesContainer.setOutputMarkupId(true);
         add(attributesContainer);
 
-        final BuildingAttributeList list = new BuildingAttributeList(getEditPanel().getObject(), localeBean.getAllLocales());
+        final BuildingAttributeList list = new BuildingAttributeList(getInputPanel().getObject(), localeBean.getAllLocales());
         AjaxLink add = new AjaxLink("add") {
 
             @Override
@@ -187,14 +187,15 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 target.addComponent(attributesContainer);
             }
         };
+        add.setVisible(!isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject()));
         add(add);
 
-        final SearchComponentState parentSearchComponentState = getEditPanel().getParentSearchComponentState();
+        final SearchComponentState parentSearchComponentState = getInputPanel().getParentSearchComponentState();
         final Long cityId = parentSearchComponentState.get("city") != null ? parentSearchComponentState.get("city").getId() : null;
 
         //district
         Long districtId = null;
-        districtAttribute = Iterables.find(getEditPanel().getObject().getAttributes(), new Predicate<Attribute>() {
+        districtAttribute = Iterables.find(getInputPanel().getObject().getAttributes(), new Predicate<Attribute>() {
 
             @Override
             public boolean apply(Attribute attr) {
@@ -211,7 +212,7 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
         }
         attributesContainer.add(new SearchComponent("district", new SynchronizedSearchComponentState(parentSearchComponentState, "district", district),
                 ImmutableList.of("country", "region", "city", "district"), new DistrictSearchCallback(),
-                CanEditUtil.canEdit(getEditPanel().getObject())));
+                !isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject())));
 
         ListView<BuildingAttribute> buildingAttributes = new AjaxRemovableListView<BuildingAttribute>("buildingAttributes", list) {
 
@@ -220,11 +221,11 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
                 BuildingAttribute buildingAttribute = item.getModelObject();
 
                 item.add(newStringPanel("number", buildingAttribute.getNumber(), new ResourceModel("number"), true,
-                        CanEditUtil.canEdit(getEditPanel().getObject())));
+                        !isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject())));
                 item.add(newStringPanel("corp", buildingAttribute.getCorp(), new ResourceModel("corp"), false,
-                        CanEditUtil.canEdit(getEditPanel().getObject())));
+                        !isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject())));
                 item.add(newStringPanel("structure", buildingAttribute.getStructure(), new ResourceModel("structure"), false,
-                        CanEditUtil.canEdit(getEditPanel().getObject())));
+                        !isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject())));
 
                 DomainObject street = null;
                 Long streetId = buildingAttribute.getStreet().getValueId();
@@ -239,9 +240,9 @@ public class BuildingEditComponent extends AbstractComplexAttributesPanel {
 
                 item.add(new SearchComponent("street", new SynchronizedSearchComponentState(parentSearchComponentState, "street", street),
                         buildingStrategy.getSearchFilters(), new StreetSearchCallback(buildingAttribute),
-                        CanEditUtil.canEdit(getEditPanel().getObject())));
+                        !isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject())));
 
-                addRemoveLink("remove", item, null, attributesContainer);
+                addRemoveLink("remove", item, null, attributesContainer).setVisible(!isDisabled() && CanEditUtil.canEdit(getInputPanel().getObject()));
             }
         };
         attributesContainer.add(buildingAttributes);

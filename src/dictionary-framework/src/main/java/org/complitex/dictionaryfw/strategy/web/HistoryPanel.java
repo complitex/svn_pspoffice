@@ -4,7 +4,11 @@
  */
 package org.complitex.dictionaryfw.strategy.web;
 
+import java.lang.String;
+import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.markup.html.basic.Label;
@@ -53,7 +57,8 @@ public class HistoryPanel extends Panel {
 
             @Override
             public String getObject() {
-                return stringBean.displayValue(getStrategy().getEntity().getEntityNames(), getLocale());
+                return MessageFormat.format(getString("label"), stringBean.displayValue(getStrategy().getEntity().getEntityNames(), getLocale()),
+                        objectId);
             }
         };
         Label title = new Label("title", labelModel);
@@ -73,12 +78,17 @@ public class HistoryPanel extends Panel {
 
                     @Override
                     public String getObject() {
-                        String dateAsString = new SimpleDateFormat(DATE_FORMAT, getLocale()).format(currentHistory.getDate());
+                        final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, getLocale());
+                        String dateAsString = dateFormat.format(currentHistory.getDate());
+                        String nextDateAsString;
                         if (item.getIndex() < historyList.size() - 1) {
-                            return dateAsString;
+                            History nextHistory = historyList.get(item.getIndex() + 1);
+                            Date nextDate = nextHistory.getDate();
+                            nextDateAsString = dateFormat.format(nextDate);
                         } else {
-                            return dateAsString + ". " + getString("current_item");
+                            nextDateAsString = getString("current_time");
                         }
+                        return MessageFormat.format(getString("date_label"), dateAsString, nextDateAsString);
                     }
                 };
                 item.add(new Label("date", dateModel));

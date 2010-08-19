@@ -11,12 +11,25 @@
             <h2 wicket:id="label" style="margin-bottom: 30px;"></h2>
             <div>
                 <wicket:container wicket:id="history">
-                    <div>
-                        <div>
-                            <span wicket:id="date"></span>
-                        </div>
-                        <div wicket:id="domainObjectInputPanel"></div>
-                    </div>
+                    <table style="margin-bottom: 10px;" border="0" cellspacing="0" cellpadding="0" class="formFrame">
+                        <tr valign="top">
+                            <td class="ff_l"><img src="resources/org.apache.wicket.Application/images/formFrame-tl.gif" width="4" height="180" alt=""/></td>
+                            <td class="ff_t">
+                                <div>
+                                    <div>
+                                        <h2><span wicket:id="date"></span></h2>
+                                    </div>
+                                    <div wicket:id="domainObjectInputPanel"></div>
+                                </div>
+                            </td>
+                            <td class="ff_r"><img src="resources/org.apache.wicket.Application/images/formFrame-tr.gif" width="4" height="180" alt=""/></td>
+                        </tr>
+                        <tr>
+                            <td class="ff_bl"><img src="resources/org.apache.wicket.Application/images/formFrame-bl.gif" width="4" height="4" alt=""/></td>
+                            <td class="ff_b"><img src="resources/org.apache.wicket.Application/images/spacer.gif" width="4" height="4" alt=""/></td>
+                            <td class="ff_br"><img src="resources/org.apache.wicket.Application/images/formFrame-br.gif"  width="4" height="4" alt=""/></td>
+                        </tr>
+                    </table>
                 </wicket:container>
             </div>
         </wicket:panel>

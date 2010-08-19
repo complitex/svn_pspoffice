@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class SearchComponent extends Panel {
 
-    private static final String NOT_SPECIFIED = "Not specified";
+    private static final String NOT_SPECIFIED_KEY = "not_specified";
 
     private static final Logger log = LoggerFactory.getLogger(SearchComponent.class);
 
@@ -72,7 +72,7 @@ public final class SearchComponent extends Panel {
         @Override
         public String getTextValue(DomainObject object) {
             if (object.getId().equals(-1L)) {
-                return NOT_SPECIFIED;
+                return getString(NOT_SPECIFIED_KEY);
             } else {
                 return strategyFactory.getStrategy(getEntityTable()).displayDomainObject(object, getLocale());
             }
@@ -90,7 +90,7 @@ public final class SearchComponent extends Panel {
         @Override
         protected String getTextValue(DomainObject object) {
             if (object.getId().equals(-1L)) {
-                return NOT_SPECIFIED;
+                return getString(NOT_SPECIFIED_KEY);
             } else {
                 return strategyFactory.getStrategy(entityTable).displayDomainObject(object, getLocale());
             }

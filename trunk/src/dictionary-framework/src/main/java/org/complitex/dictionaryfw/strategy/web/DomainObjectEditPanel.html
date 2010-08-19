@@ -13,13 +13,15 @@
             <form wicket:id="form">
                 <div wicket:id="domainObjectInputPanel"></div>
 
-                <div>
-                    <span wicket:id="complexAttributes"></span>
+                <div wicket:id="childrenContainer" style="margin-top: 10px;"></div>
+
+                <div wicket:id="historyContainer" style="margin-top: 10px;">
+                    <a wicket:id="history" target="_blank">
+                        <wicket:message key="history"/>
+                    </a>
                 </div>
 
-                <div wicket:id="childrenContainer"></div>
-
-                <div style="margin-top: 30px">
+                <div style="margin-top: 30px;">
                     <input type="submit" wicket:message="value:save" wicket:id="submit" class="btnMiddle"/>
                     <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
                     <input type="button" wicket:message="value:back" wicket:id="back" class="btnMiddle"/>

@@ -38,7 +38,8 @@ public class BuildingValidator implements IValidator {
         }));
         for (Attribute street1 : streets) {
             for (Attribute street2 : streets) {
-                if (!street1.getAttributeId().equals(street2.getAttributeId()) && street1.getValueId().equals(street2.getValueId())) {
+                if (!street1.getAttributeId().equals(street2.getAttributeId()) && street1.getValueId() != null
+                        && street1.getValueId().equals(street2.getValueId())) {
                     component.getPage().error(ResourceUtil.getString(BuildingStrategy.RESOURCE_BUNDLE, "multiple_numbers_on_one_street",
                             component.getLocale()));
                     return false;

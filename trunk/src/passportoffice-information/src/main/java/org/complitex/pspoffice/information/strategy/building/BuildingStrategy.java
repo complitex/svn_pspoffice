@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,17 +33,18 @@ import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.web.AbstractComplexAttributesPanel;
-import org.complitex.dictionaryfw.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionaryfw.strategy.web.DomainObjectListPanel;
 import org.complitex.dictionaryfw.strategy.web.IValidator;
 import org.complitex.dictionaryfw.util.CloneUtil;
 import org.complitex.dictionaryfw.util.ResourceUtil;
+import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
 import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
 import org.complitex.dictionaryfw.web.component.search.SearchComponent;
 import org.complitex.pspoffice.information.strategy.building.web.edit.BuildingEditComponent;
 import org.complitex.pspoffice.information.strategy.building.web.edit.BuildingValidator;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
 import org.complitex.pspoffice.commons.web.pages.DomainObjectList;
+import org.complitex.pspoffice.commons.web.pages.HistoryPage;
 import org.complitex.pspoffice.information.resource.CommonResources;
 
 /**
@@ -266,14 +268,14 @@ public class BuildingStrategy extends Strategy {
 
         @Override
         public void found(SearchComponent component, final Map<String, Long> ids, final AjaxRequestTarget target) {
-            DomainObjectEditPanel edit = component.findParent(DomainObjectEditPanel.class);
+            DomainObjectInputPanel inputPanel = component.findParent(DomainObjectInputPanel.class);
             Long cityId = ids.get("city");
             if (cityId != null && cityId > 0) {
-                edit.getObject().setParentId(cityId);
-                edit.getObject().setParentEntityId(400L);
+                inputPanel.getObject().setParentId(cityId);
+                inputPanel.getObject().setParentEntityId(400L);
             } else {
-                edit.getObject().setParentId(null);
-                edit.getObject().setParentEntityId(null);
+                inputPanel.getObject().setParentId(null);
+                inputPanel.getObject().setParentEntityId(null);
             }
 
             component.getPage().visitChildren(SearchComponent.class, new IVisitor<SearchComponent>() {
@@ -300,16 +302,15 @@ public class BuildingStrategy extends Strategy {
     }
 
     @Override
-    public RestrictedObjectInfo findParentInSearchComponent(long id) {
+    public RestrictedObjectInfo findParentInSearchComponent(long id, Date startDate) {
         DomainObjectExample example = new DomainObjectExample();
         example.setTable(getEntityTable());
         example.setId(id);
-        Map<String, Object> result = (Map<String, Object>) session.selectOne(BUILDING_NAMESPACE + ".findStreetInSearchComponent", example);
-        Long streetId = (Long) result.get("streetId");
+        Long streetId = (Long) session.selectOne(BUILDING_NAMESPACE + ".findStreetInSearchComponent", example);
         if (streetId != null) {
             return new RestrictedObjectInfo("street", streetId);
         } else {
-            return super.findParentInSearchComponent(id);
+            return super.findParentInSearchComponent(id, startDate);
         }
     }
 
@@ -358,5 +359,18 @@ public class BuildingStrategy extends Strategy {
     @Override
     public int getSearchTextFieldSize() {
         return 5;
+    }
+
+    @Override
+    public Class<? extends WebPage> getHistoryPage() {
+        return HistoryPage.class;
+    }
+
+    @Override
+    public PageParameters getHistoryPageParams(long objectId) {
+        PageParameters params = new PageParameters();
+        params.put(HistoryPage.ENTITY, getEntityTable());
+        params.put(HistoryPage.OBJECT_ID, objectId);
+        return params;
     }
 }

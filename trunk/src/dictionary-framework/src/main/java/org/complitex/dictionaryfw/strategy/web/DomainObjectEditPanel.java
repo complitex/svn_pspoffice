@@ -6,6 +6,7 @@ package org.complitex.dictionaryfw.strategy.web;
 
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
@@ -18,7 +19,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.description.Entity;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
@@ -86,13 +86,11 @@ public final class DomainObjectEditPanel extends Panel {
     }
 
     private void init() {
-        final Entity description = getStrategy().getEntity();
-
         IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
             @Override
             public String getObject() {
-                return stringBean.displayValue(description.getEntityNames(), getLocale());
+                return stringBean.displayValue(getStrategy().getEntity().getEntityNames(), getLocale());
             }
         };
         Label title = new Label("title", labelModel);
@@ -106,24 +104,8 @@ public final class DomainObjectEditPanel extends Panel {
 
         Form form = new Form("form");
 
-        objectInputPanel = new DomainObjectInputPanel("domainObjectInputPanel", newObject, entity, parentId, parentEntity, isNew());
+        objectInputPanel = new DomainObjectInputPanel("domainObjectInputPanel", newObject, entity, parentId, parentEntity);
         form.add(objectInputPanel);
-
-        //complex attributes
-        AbstractComplexAttributesPanel complexAttributes = null;
-        Class<? extends AbstractComplexAttributesPanel> clazz = getStrategy().getComplexAttributesPanelClass();
-        if (clazz != null) {
-            try {
-                complexAttributes = clazz.getConstructor(String.class).newInstance("complexAttributes");
-            } catch (Exception e) {
-                log.warn("Couldn't instantiate complex attributes panel object.", e);
-            }
-        }
-        if (complexAttributes == null) {
-            form.add(new EmptyPanel("complexAttributes"));
-        } else {
-            form.add(complexAttributes);
-        }
 
         //children
         Component childrenContainer = new EmptyPanel("childrenContainer");
@@ -131,6 +113,19 @@ public final class DomainObjectEditPanel extends Panel {
             childrenContainer = new ChildrenContainer("childrenContainer", entity, newObject);
         }
         form.add(childrenContainer);
+
+        //history
+        WebMarkupContainer historyContainer = new WebMarkupContainer("historyContainer");
+        Link history = new Link("history") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(getStrategy().getHistoryPage(), getStrategy().getHistoryPageParams(newObject.getId()));
+            }
+        };
+        historyContainer.add(history);
+        historyContainer.setVisible(getStrategy().hasHistory(newObject.getId()));
+        form.add(historyContainer);
 
         //save-cancel functional
         Button submit = new Button("submit") {
@@ -163,20 +158,8 @@ public final class DomainObjectEditPanel extends Panel {
         add(form);
     }
 
-    protected boolean validateParent() {
-        if (!(getStrategy().getParentSearchFilters() == null
-                || getStrategy().getParentSearchFilters().isEmpty()
-                || getStrategy().getParentSearchCallback() == null)) {
-            if ((newObject.getParentId() == null) || (newObject.getParentEntityId() == null)) {
-                error(getString("parent_required"));
-                return false;
-            }
-        }
-        return true;
-    }
-
     protected boolean validate() {
-        boolean valid = validateParent();
+        boolean valid = objectInputPanel.validateParent();
         IValidator validator = getStrategy().getValidator();
         if (validator != null) {
             valid = validator.validate(newObject, this);

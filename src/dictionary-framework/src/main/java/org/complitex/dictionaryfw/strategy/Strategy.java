@@ -182,7 +182,10 @@ public abstract class Strategy {
         return (Integer) session.selectOne(DOMAIN_OBJECT_NAMESPACE + "." + COUNT_OPERATION, example);
     }
 
-    //todo add cache
+    /**
+     * Simple wrapper around EntityBean.getEntity for convenience.
+     * @return Entity description
+     */
     public Entity getEntity() {
         return entityBean.getEntity(getEntityTable());
     }
@@ -669,7 +672,7 @@ public abstract class Strategy {
 
     public abstract String[] getParents();
 
-    public String getDisplayValue(Attribute attribute, Locale locale){
-        return stringBean.displayValue(getEntity().getAttributeType(attribute.getAttributeTypeId()).getAttributeNames(), locale);               
+    public String getAttributeLabel(Attribute attribute, Locale locale) {
+        return entityBean.getAttributeLabel(getEntityTable(), attribute.getAttributeTypeId(), locale);
     }
 }

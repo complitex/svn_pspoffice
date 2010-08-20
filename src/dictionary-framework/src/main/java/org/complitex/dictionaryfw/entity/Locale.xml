@@ -3,7 +3,7 @@
 <mapper namespace="org.complitex.dictionaryfw.entity.Locale">
 
     <select id="getAll" resultType="string">
-        SELECT l.`locale` FROM `locales` l ORDER BY l.`system` DESC
+        SELECT l.`locale` FROM `locales` l
     </select>
 
     <select id="getSystem" resultType="string">

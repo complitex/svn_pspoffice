@@ -4,8 +4,11 @@
  */
 package org.complitex.dictionaryfw.dao;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
-import javax.ejb.Stateless;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.Singleton;
 import javax.interceptor.Interceptors;
 import org.apache.ibatis.session.SqlSession;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
@@ -14,17 +17,33 @@ import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
  *
  * @author Artem
  */
-@Stateless
+@Singleton
 @Interceptors({SqlSessionInterceptor.class})
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class LocaleBean {
 
     private SqlSession session;
 
+    /*
+     * Cache for locales.
+     */
+    private ImmutableList<String> allLocales;
+
+    private String systemLocale;
+
     public List<String> getAllLocales() {
-        return session.selectList("org.complitex.dictionaryfw.entity.Locale.getAll");
+        if (allLocales == null) {
+            allLocales = ImmutableList.<String>builder().
+                    addAll(session.selectList("org.complitex.dictionaryfw.entity.Locale.getAll")).
+                    build();
+        }
+        return allLocales;
     }
 
-    public String getSystemLocale(){
-        return (String)session.selectOne("org.complitex.dictionaryfw.entity.Locale.getSystem");
+    public String getSystemLocale() {
+        if (systemLocale == null) {
+            systemLocale = (String) session.selectOne("org.complitex.dictionaryfw.entity.Locale.getSystem");
+        }
+        return systemLocale;
     }
 }

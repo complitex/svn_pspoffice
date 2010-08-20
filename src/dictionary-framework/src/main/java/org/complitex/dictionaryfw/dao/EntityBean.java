@@ -9,10 +9,14 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
 import javax.interceptor.Interceptors;
 import org.apache.ibatis.session.SqlSession;
 import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
@@ -26,8 +30,9 @@ import org.complitex.dictionaryfw.strategy.StrategyFactory;
  *
  * @author Artem
  */
-@Stateless
+@Singleton
 @Interceptors({SqlSessionInterceptor.class})
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class EntityBean {
 
     private static final String ENTITY_NAMESPACE = "org.complitex.dictionaryfw.entity.description.Entity";
@@ -40,8 +45,30 @@ public class EntityBean {
 
     private SqlSession session;
 
+    /**
+     * Cache for Entity objects.
+     */
+    private ConcurrentHashMap<String, Entity> metadataMap = new ConcurrentHashMap<String, Entity>();
+
     public Entity getEntity(String entity) {
-        return (Entity) session.selectOne(ENTITY_NAMESPACE + ".load", ImmutableMap.of("entity", entity));
+        Entity cacheEntity = metadataMap.get(entity);
+        if (cacheEntity != null) {
+            return cacheEntity;
+        } else {
+            Entity dbEntity = (Entity) session.selectOne(ENTITY_NAMESPACE + ".load", ImmutableMap.of("entity", entity));
+            metadataMap.put(entity, dbEntity);
+            return dbEntity;
+        }
+    }
+
+    protected void invalidateCache(String entity) {
+        metadataMap.put(entity, null);
+        getEntity(entity);
+    }
+
+    public String getAttributeLabel(String entityTable, long attributeTypeId, Locale locale) {
+        Entity entity = getEntity(entityTable);
+        return stringBean.displayValue(entity.getAttributeType(attributeTypeId).getAttributeNames(), locale);
     }
 
     public Entity getFullEntity(String entity) {
@@ -64,6 +91,8 @@ public class EntityBean {
     public void save(Entity oldEntity, Entity newEntity) {
         Date updateDate = new Date();
 
+        boolean changed = false;
+
         //attributes
         Set<Long> toDeleteAttributeIds = Sets.newHashSet();
 
@@ -76,6 +105,7 @@ public class EntityBean {
                 }
             }
             if (removed) {
+                changed = true;
                 toDeleteAttributeIds.add(oldAttributeType.getId());
             }
         }
@@ -83,6 +113,7 @@ public class EntityBean {
 
         for (EntityAttributeType attributeType : newEntity.getEntityAttributeTypes()) {
             if (attributeType.getId() == null) {
+                changed = true;
                 insertAttributeType(attributeType, newEntity.getId(), updateDate);
             }
         }
@@ -99,6 +130,7 @@ public class EntityBean {
                 }
             }
             if (removed) {
+                changed = true;
                 toDeleteEntityTypeIds.add(oldEntityType.getId());
             }
         }
@@ -106,8 +138,12 @@ public class EntityBean {
 
         for (EntityType entityType : newEntity.getEntityTypes()) {
             if (entityType.getId() == null) {
+                changed = true;
                 insertEntityType(entityType, newEntity.getId(), updateDate);
             }
+        }
+        if (changed) {
+            invalidateCache(oldEntity.getEntityTable());
         }
     }
 
@@ -151,6 +187,9 @@ public class EntityBean {
         }
     }
 
+    /*
+     * Unused while.
+     */
     public Collection<String> getAllEntities() {
         return session.selectList(ENTITY_NAMESPACE + ".allEntities");
     }

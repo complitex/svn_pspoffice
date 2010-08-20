@@ -46,11 +46,11 @@
         from
             (select * from `log` <include refid="logFilterWhere"/>
             <if test="sortProperty != null">
-              order by #{sortProperty} <choose><when test="ascending">asc</when><otherwise>desc</otherwise></choose>
+              order by `${sortProperty}` <choose><when test="ascending">asc</when><otherwise>desc</otherwise></choose>
             </if>
             limit #{first}, #{count}
             ) as l
-        left join `log_change` as lc on l.id = lc.log_id        
+        left join `log_change` as lc on l.id = lc.log_id
     </select>
 
     <select id="selectLogsCount" resultType="int">

@@ -52,9 +52,21 @@ public class LogBean extends AbstractBean{
                      Log.EVENT event, List<LogChange> changes, String descriptionPattern, Object... descriptionArguments){
 
         String controller = controllerClass != null ? controllerClass.getName() : null;
-        String model = modelClass != null ? modelClass.getName() + (entityName != null ? ":" + entityName : "") : null;
+        String model = modelClass != null ? modelClass.getName() + (entityName != null ? "#" + entityName : "") : null;
 
         log(module, controller, model, objectId, event, Log.STATUS.OK, changes, descriptionPattern, descriptionArguments);
+    }
+
+    public void log(Log.STATUS status, String module, Class controllerClass, Log.EVENT event,
+                     Strategy strategy, DomainObject oldDomainObject, DomainObject newDomainObject,
+                     Locale locale, String descriptionPattern, Object... descriptionArguments){
+
+        String controller = controllerClass != null ? controllerClass.getName() : null;
+        String model = DomainObject.class.getName() + "#" + strategy.getEntityTable();
+
+        log(module, controller, model, newDomainObject.getId(), event, status,
+                getLogChanges(strategy, oldDomainObject, newDomainObject, locale),
+                descriptionPattern, descriptionArguments);
     }
 
     public void error(String module, Class controllerClass, Class modelClass, String entityName, Long objectId,

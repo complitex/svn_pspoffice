@@ -20,63 +20,69 @@
         select count(*) = 0 from `user` u where u.`login` = #{login}
     </select>
 
-    <sql id="userColumns">
-        distinct u.id as user_id,
-        u.login as login,
-        u.password as password,
-        u.user_info_object_id as user_info_object_id,
-        g.id as user_group_id,
-        g.login as user_group_login,
-        g.group_name as group_name
-    </sql>
-
     <select id="selectUser" resultMap="userResultMap" parameterType="long">
         select
-            <include refid="userColumns"/>
+            distinct u.id as user_id,
+            u.login as login,
+            u.password as password,
+            u.user_info_object_id as user_info_object_id,
+            g.id as user_group_id,
+            g.login as user_group_login,
+            g.group_name as group_name
         from `user` u
             left join `usergroup` g on u.`login` = g.`login`
         where u.id = #{id}
     </select>
 
-    <!--todo separate filters-->
     <sql id="userFilter">
         from `user` u
             left join `usergroup` g on u.`login` = g.`login`
             left join `user_info` ui on u.`user_info_object_id` = ui.`object_id`
-            left join `user_info_attribute` uia on ui.`object_id` = uia.`object_id`
-            left join `user_info_string_culture` uis on uia.`value_id` = uis.`id`
+            <foreach collection="attributeExamples" item="item" index="index">
+                <if test="item.value != null">
+                    left join `user_info_attribute` uia_${index}
+                        on (ui.`object_id` = uia_${index}.`object_id`
+                            and uia_${index}.`attribute_type_id` = #{item.attributeTypeId})
+                    left join `user_info_string_culture` uis_${index} on uia_${index}.`value_id` = uis_${index}.`id`
+                </if>
+            </foreach>
             <if test="sortAttributeTypeId != null">
-                left join `user_info_string_culture` uis_sort on (uia.`value_id` = uis_sort.`id`
-                    and uia.`attribute_type_id` = ${sortAttributeTypeId})
+                left join `user_info_attribute` uia_sort on ui.`object_id` = uia_sort.`object_id`
+                left join `user_info_string_culture` uis_sort on (uia_sort.`value_id` = uis_sort.`id`
+                    and uia_sort.`attribute_type_id` = ${sortAttributeTypeId})
             </if>
         <where>
             <if test="login != null">u.login like concat('%', #{login}, '%')</if>
-            <if test="groupName != null">and g.`group_name` = #{groupName}</if>                      
-            <if test="filterAttributes">
-                <foreach collection="attributeExamples" item="attributeExample" open="and (" separator="or" close=")">
-                    <if test="attributeExample.value != null">
-                        (uia.`attribute_type_id` = #{attributeExample.attributeTypeId}
-                            and uis.`value` like concat('%', #{attributeExample.value}, '%'))
-                    </if>
-                </foreach>
-            </if>
+            <if test="groupName != null">and g.`group_name` = #{groupName}</if>
+            <foreach collection="attributeExamples" item="item" index="index">
+                <if test="item.value != null">
+                     and uis_${index}.`value` like concat('%', #{item.value}, '%')
+                </if>
+            </foreach>
             <if test="sortAttributeTypeId != null">
-                and (uis_sort.`value` is not null or uia.`attribute_type_id` is null)
+                and (uis_sort.`value` is not null or uia_sort.`attribute_type_id` is null)
             </if>
-        </where>
-        
+        </where>         
         <if test="sortAttributeTypeId != null">
             order by uis_sort.`value` <choose><when test="ascending">asc</when><otherwise>desc</otherwise></choose>
         </if>
         <if test="sortProperty == 'login'">
             order by u.`login` <choose><when test="ascending">asc</when><otherwise>desc</otherwise></choose>
-        </if>
+        </if>        
     </sql>
 
     <select id="selectUsers" resultMap="userResultMap" parameterType="org.complitex.pspoffice.admin.service.UserFilter">
-        select <include refid="userColumns"/>
+        select
+            uc.*, gc.id as user_group_id, gc.login as user_group_login, gc.group_name as group_name
+        from
+        (select
+            distinct u.id as user_id,
+            u.login as login,
+            u.password as password,
+            u.user_info_object_id as user_info_object_id
         <include refid="userFilter"/>
         limit #{first}, #{count}
+        ) as uc left join `usergroup` gc on uc.`login` = gc.`login`
     </select>
 
     <select id="selectUsersCount" resultType="int" parameterType="org.complitex.pspoffice.admin.service.UserFilter">

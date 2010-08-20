@@ -3,6 +3,7 @@ package org.complitex.pspoffice.logging.web;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.datetime.markup.html.basic.DateLabel;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
@@ -13,22 +14,18 @@ import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.util.SetModel;
 import org.complitex.dictionaryfw.entity.Log;
-import org.complitex.dictionaryfw.entity.LogChange;
 import org.complitex.dictionaryfw.util.StringUtil;
 import org.complitex.dictionaryfw.web.component.DatePicker;
 import org.complitex.dictionaryfw.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionaryfw.web.component.paging.PagingNavigator;
+import org.complitex.pspoffice.commons.web.security.SecurityRole;
 import org.complitex.pspoffice.commons.web.template.TemplatePage;
 import org.complitex.pspoffice.logging.service.LogFilter;
 import org.complitex.pspoffice.logging.service.LogListBean;
@@ -42,9 +39,10 @@ import java.util.*;
  * @author Anatoly A. Ivanov java@inheaven.ru
  *         Date: 19.08.2010 13:08:10
  */
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class LogList extends TemplatePage{
     private final static String IMAGE_ARROW_TOP = "images/arrow1top.gif";
-    private final static String IMAGE_ARROW_BOTTON = "images/arrow1bot.gif";
+    private final static String IMAGE_ARROW_BOTTOM = "images/arrow1bot.gif";
 
     @EJB(name = "LogListBean")
     private LogListBean logListBean;
@@ -221,7 +219,7 @@ public class LogList extends TemplatePage{
                 item.add(logChangePanel);
 
                 Image expandImage = new Image("expand_image", new ResourceReference(
-                        expandModel.contains(log.getId()) ? IMAGE_ARROW_TOP : IMAGE_ARROW_BOTTON));
+                        expandModel.contains(log.getId()) ? IMAGE_ARROW_TOP : IMAGE_ARROW_BOTTOM));
 
                 AjaxSubmitLink expandLink = new AjaxSubmitLink("expand_link"){
                     @Override

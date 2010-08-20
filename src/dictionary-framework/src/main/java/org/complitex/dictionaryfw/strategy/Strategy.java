@@ -208,6 +208,7 @@ public abstract class Strategy {
         return object;
     }
 
+    //todo attributeId is not updated
     protected void insertAttribute(Attribute attribute) {
         List<StringCulture> strings = attribute.getLocalizedValues();
         if (strings == null) {

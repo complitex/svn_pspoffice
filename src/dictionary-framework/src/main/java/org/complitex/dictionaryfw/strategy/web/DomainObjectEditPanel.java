@@ -17,8 +17,11 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionaryfw.Module;
 import org.complitex.dictionaryfw.dao.StringCultureBean;
 import org.complitex.dictionaryfw.entity.DomainObject;
+import org.complitex.dictionaryfw.entity.Log;
+import org.complitex.dictionaryfw.service.LogBean;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
 import org.complitex.dictionaryfw.util.CloneUtil;
@@ -41,6 +44,9 @@ public class DomainObjectEditPanel extends Panel {
 
     @EJB(name = "StringCultureBean")
     private StringCultureBean stringBean;
+
+    @EJB(name = "LogBean")
+    private LogBean logBean;
 
     private String entity;
 
@@ -174,6 +180,13 @@ public class DomainObjectEditPanel extends Panel {
             } else {
                 getStrategy().update(oldObject, newObject);
             }
+
+            logBean.log(Log.STATUS.OK, Module.NAME, DomainObjectEditPanel.class,
+                    isNew() ? Log.EVENT.CREATE :  Log.EVENT.EDIT, getStrategy(),
+                    oldObject, newObject, getLocale(), null);
+
+            //todo: add catch database exception
+
             back();
         }
     }

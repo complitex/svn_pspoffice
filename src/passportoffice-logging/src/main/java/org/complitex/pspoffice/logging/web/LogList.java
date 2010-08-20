@@ -195,7 +195,7 @@ public class LogList extends TemplatePage{
                 return new Model<Log>(object);
             }
         };
-        dataProvider.setSort("date", true);
+        dataProvider.setSort("date", false);
 
         //Таблица журнала событий
         DataView<Log> dataView = new DataView<Log>("logs", dataProvider, 1) {

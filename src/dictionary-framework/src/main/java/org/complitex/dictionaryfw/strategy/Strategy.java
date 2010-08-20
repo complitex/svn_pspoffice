@@ -668,4 +668,8 @@ public abstract class Strategy {
     public abstract String[] getChildrenEntities();
 
     public abstract String[] getParents();
+
+    public String getDisplayValue(Attribute attribute, Locale locale){
+        return stringBean.displayValue(getEntity().getAttributeType(attribute.getAttributeTypeId()).getAttributeNames(), locale);               
+    }
 }

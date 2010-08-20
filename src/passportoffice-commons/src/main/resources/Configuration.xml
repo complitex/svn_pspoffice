@@ -44,6 +44,8 @@
         <mapper resource="org/complitex/pspoffice/information/strategy/street/Street.xml"/>
 
         <mapper resource="org/complitex/pspoffice/admin/service/UserBean.xml"/>
+        <mapper resource="org/complitex/dictionaryfw/service/LogBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/logging/service/LogListBean.xml"/>
     </mappers>
 
 </configuration>

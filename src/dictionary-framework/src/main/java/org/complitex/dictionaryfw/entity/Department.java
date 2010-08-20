@@ -1,4 +1,4 @@
-package org.complitex.pspoffice.commons.entity;
+package org.complitex.dictionaryfw.entity;
 
 /**
  * @author Anatoly A. Ivanov java@inheaven.ru

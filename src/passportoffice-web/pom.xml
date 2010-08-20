@@ -35,6 +35,10 @@
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-admin</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-logging</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.mybatis</groupId>

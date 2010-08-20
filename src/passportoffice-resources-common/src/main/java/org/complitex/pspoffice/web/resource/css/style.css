@@ -98,7 +98,8 @@ ul { margin: 0px; padding: 5px 0px 15px 30px; list-style-type: square; }
 .tbColor tr.subTitle2 th { background:url('../images/arrow2top.gif') no-repeat 8px 7px; color: #273540; border-bottom: 1px solid #C2CBD3; padding: 4px 8px 5px 22px; text-align:left; font-weight: bold; font-size: 11px;}
 .tbColor tr.subTitle2Off th { background:url('../images/arrow2bot.gif') no-repeat 8px 7px; color: #273540; border-bottom: 1px solid #C2CBD3; padding: 4px 8px 5px 22px; text-align:left; font-weight: bold; font-size: 11px;}
 .tbColor tr.subTitle2Off a, .tbColor tr.subTitle2Off a:visited, .tbColor tr.subTitle2Off a:hover,.tbColor tr.subTitle2 a, .tbColor tr.subTitle2 a:visited, .tbColor tr.subTitle2 a:hover { color: #273540; }
-.tbColor > tbody > tr > td, .tbColor > thead > tr > td { border-bottom: 1px solid #C2CBD3; padding: 3px 8px 4px 8px; text-align:left; font-size: 12px;}
+.tbColor > tbody > tr > td, .tbColor > thead > tr > td {border-bottom: 1px solid #C2CBD3; padding: 3px 8px 4px 8px; text-align:left; font-size: 12px;}
+.noBorder > td {border-bottom: none !important;  padding: 3px 8px 2px 8px !important;}
 
 .tbColor td.left, .tbColor th.left { text-align: left;}
 .tbColor td.right, .tbColor th.right { text-align: right;}

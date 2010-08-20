@@ -108,3 +108,4 @@ update sequence set sequence_value = 3 where sequence_name = 'country';
 -- Users
 insert into user value (1, 'admin', '21232f297a57a5a743894a0e4a801fc3', null);
 insert into usergroup value (1, 'admin', 'ADMINISTRATORS');
+insert into user value (2, 'ANONYMOUS', 'ANONYMOUS', null);

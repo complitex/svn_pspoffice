@@ -1,6 +1,4 @@
-package org.complitex.pspoffice.commons.entity;
-
-import org.complitex.dictionaryfw.entity.DomainObject;
+package org.complitex.dictionaryfw.entity;
 
 import java.io.Serializable;
 import java.util.List;

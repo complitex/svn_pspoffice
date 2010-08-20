@@ -1,4 +1,4 @@
-package org.complitex.pspoffice.commons.service;
+package org.complitex.dictionaryfw.service;
 
 import java.io.Serializable;
 

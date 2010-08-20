@@ -1,8 +1,8 @@
 package org.complitex.pspoffice.admin.service;
 
+import org.complitex.dictionaryfw.entity.UserGroup;
 import org.complitex.dictionaryfw.entity.example.AttributeExample;
-import org.complitex.pspoffice.commons.entity.UserGroup;
-import org.complitex.pspoffice.commons.service.AbstractFilter;
+import org.complitex.dictionaryfw.service.AbstractFilter;
 
 import java.util.ArrayList;
 import java.util.List;

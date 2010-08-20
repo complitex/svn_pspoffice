@@ -1,18 +1,20 @@
 package org.complitex.pspoffice.admin.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.complitex.dictionaryfw.entity.LogChange;
+import org.complitex.dictionaryfw.entity.User;
+import org.complitex.dictionaryfw.entity.UserGroup;
 import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
 import org.complitex.dictionaryfw.entity.example.AttributeExample;
 import org.complitex.dictionaryfw.service.AbstractBean;
 import org.complitex.dictionaryfw.strategy.Strategy;
 import org.complitex.dictionaryfw.strategy.StrategyFactory;
-import org.complitex.pspoffice.commons.entity.User;
-import org.complitex.pspoffice.commons.entity.UserGroup;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Anatoly A. Ivanov java@inheaven.ru
@@ -103,6 +105,7 @@ public class UserBean extends AbstractBean {
                 }
 
                 if (!contain){
+                    userGroup.setLogin(user.getLogin());
                     sqlSession.insert(STATEMENT_PREFIX + ".insertUserGroup", userGroup);
                 }
             }
@@ -111,6 +114,8 @@ public class UserBean extends AbstractBean {
             if(user.getNewPassword() != null){
                 user.setPassword(DigestUtils.md5Hex(user.getNewPassword())); //md5 password
                 sqlSession.update(STATEMENT_PREFIX + ".updateUser", user);
+            }else{
+                user.setPassword(null); //не обновлять пароль
             }
 
             //сохранение информации о пользователе

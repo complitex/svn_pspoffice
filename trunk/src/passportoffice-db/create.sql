@@ -659,6 +659,48 @@ CREATE TABLE  `usergroup` (
   CONSTRAINT `fk_user_login` FOREIGN KEY (`login`) REFERENCES `user` (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- log --
+
+DROP TABLE IF EXISTS `log`;
+
+CREATE TABLE  `log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `date` datetime DEFAULT NULL,
+  `login` varchar(45) DEFAULT NULL,
+  `module` varchar(100) DEFAULT NULL,
+  `object_id` bigint(20) DEFAULT NULL,  
+  `controller` varchar(100) DEFAULT NULL,
+  `model` varchar(100) DEFAULT NULL,
+  `event` varchar(100) DEFAULT NULL,
+  `status` varchar(100) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_login` (`login`),
+  KEY `index_date` (`date`),
+  KEY `index_controller` (`controller`),
+  KEY `index_model` (`model`),
+  KEY `index_event` (`event`),
+  KEY `index_module` (`module`),
+  KEY `index_status` (`status`),
+  KEY `index_description` (`description`),
+  CONSTRAINT `fk_login` FOREIGN KEY (`login`) REFERENCES `user` (`login`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `log_change`;
+
+CREATE TABLE `log_change` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `log_id` bigint(20) NOT NULL,
+    `attribute_id` bigint(20) DEFAULT NULL,
+    `collection` varchar(100) DEFAULT NULL,
+    `property` varchar(100) DEFAULT NULL,    
+    `old_value` varchar(500) DEFAULT NULL,
+    `new_value` varchar(500) DEFAULT NULL,
+    `locale` varchar(2) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `fk_log` (`log_id`),
+    CONSTRAINT `fk_log` FOREIGN KEY (`log_id`) REFERENCES `log` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

@@ -1,24 +1,32 @@
 package org.complitex.pspoffice.admin.web;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.*;
+import org.complitex.dictionaryfw.dao.StringCultureBean;
+import org.complitex.dictionaryfw.entity.*;
+import org.complitex.dictionaryfw.service.LogBean;
+import org.complitex.dictionaryfw.util.CloneUtil;
+import org.complitex.dictionaryfw.util.StringUtil;
 import org.complitex.dictionaryfw.web.component.DomainObjectInputPanel;
+import org.complitex.pspoffice.admin.Module;
 import org.complitex.pspoffice.admin.service.UserBean;
-import org.complitex.pspoffice.commons.entity.User;
-import org.complitex.pspoffice.commons.entity.UserGroup;
 import org.complitex.pspoffice.commons.web.security.SecurityRole;
 import org.complitex.pspoffice.commons.web.template.FormTemplatePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
-import static org.complitex.pspoffice.commons.entity.UserGroup.GROUP_NAME.*;
+import static org.complitex.dictionaryfw.entity.UserGroup.GROUP_NAME.*;
 
 /**
  * @author Anatoly A. Ivanov java@inheaven.ru
@@ -32,6 +40,12 @@ public class UserEdit extends FormTemplatePage{
 
     @EJB(name = "UserBean")
     private UserBean userBean;
+
+    @EJB(name = "StringCultureBean")
+    private StringCultureBean stringCultureBean;
+
+    @EJB(name = "LogBean")
+    private LogBean logBean;
 
     public UserEdit() {
         super();
@@ -51,6 +65,8 @@ public class UserEdit extends FormTemplatePage{
         //todo catch exception
         final IModel<User> userModel = new Model<User>(id != null ? userBean.getUser(id) : userBean.newUser());
 
+        final User oldUser = (id != null) ? CloneUtil.cloneObject(userModel.getObject()) : null;
+
         //Форма
         Form form = new Form<User>("form");
         add(form);
@@ -68,6 +84,9 @@ public class UserEdit extends FormTemplatePage{
                     }
 
                     userBean.save(user);
+
+                    logBean.info(Module.NAME, UserEdit.class, User.class, null, user.getId(),
+                            (id == null) ? Log.EVENT.CREATE : Log.EVENT.EDIT, getLogChanges(oldUser, user), null);
 
                     log.info("Пользователь сохранен: {}", user);
                     getSession().info(getString("info.saved"));
@@ -130,6 +149,66 @@ public class UserEdit extends FormTemplatePage{
         UserGroup userGroup = new UserGroup();
         userGroup.setGroupName(group_name);
         return new Model<UserGroup>(userGroup);
+    }
+
+    private List<LogChange> getLogChanges(User oldUser, User newUser){
+        List<LogChange> logChanges = new ArrayList<LogChange>();
+
+        //логин
+        if (newUser.getId() == null){
+            logChanges.add(new LogChange(getString("login"), null, newUser.getLogin()));
+        }
+
+        //пароль
+        if (newUser.getNewPassword() != null){
+            logChanges.add(new LogChange(getString("password"), oldUser.getPassword(),
+                    DigestUtils.md5Hex(newUser.getNewPassword())));
+        }
+
+        //информация о пользователе
+        List<LogChange> userInfoLogChanges = logBean.getLogChanges( userBean.getUserInfoStrategy(),
+                oldUser != null ? oldUser.getUserInfo() : null, newUser.getUserInfo(), getLocale());
+
+        logChanges.addAll(userInfoLogChanges);
+
+        //группы привилегий
+        if (oldUser == null){
+            for (UserGroup ng : newUser.getUserGroups()){
+                logChanges.add(new LogChange(getString("usergroup"), null, getString(ng.getGroupName().name())));
+            }
+        }else{
+            for (UserGroup og : oldUser.getUserGroups()){ //deleted group
+                boolean deleted = true;
+
+                for (UserGroup ng : newUser.getUserGroups()){
+                    if (ng.getGroupName().equals(og.getGroupName())){
+                        deleted = false;
+                        break;
+                    }
+                }
+
+                if (deleted){
+                    logChanges.add(new LogChange(getString("usergroup"), getString(og.getGroupName().name()), null));
+                }
+            }
+
+            for (UserGroup ng : newUser.getUserGroups()){ //added group
+                boolean added = true;
+
+                for (UserGroup og : oldUser.getUserGroups()){
+                    if (og.getGroupName().equals(ng.getGroupName())){
+                        added = false;
+                        break;
+                    }
+                }
+
+                if (added){
+                    logChanges.add(new LogChange(getString("usergroup"), null, getString(ng.getGroupName().name())));
+                }
+            }
+        }
+
+        return logChanges;
     }
 
 }

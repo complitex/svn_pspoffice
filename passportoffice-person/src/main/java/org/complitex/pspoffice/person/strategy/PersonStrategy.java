@@ -1,38 +1,33 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.apache.wicket.PageParameters;
+import org.apache.wicket.markup.html.WebPage;
+import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.description.EntityAttributeType;
+import org.complitex.dictionary.entity.example.AttributeExample;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
+import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.strategy.Strategy;
+import org.complitex.dictionary.web.component.search.ISearchCallback;
+import org.complitex.template.web.pages.DomainObjectEdit;
+import org.complitex.template.web.pages.HistoryPage;
+
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.markup.html.WebPage;
-import org.complitex.dictionaryfw.dao.StringCultureBean;
-import org.complitex.dictionaryfw.dao.aop.SqlSessionInterceptor;
-import org.complitex.dictionaryfw.entity.Attribute;
-import org.complitex.dictionaryfw.entity.DomainObject;
-import org.complitex.dictionaryfw.entity.description.EntityAttributeType;
-import org.complitex.dictionaryfw.entity.example.AttributeExample;
-import org.complitex.dictionaryfw.entity.example.DomainObjectExample;
-import org.complitex.dictionaryfw.strategy.Strategy;
-import org.complitex.dictionaryfw.web.component.search.ISearchCallback;
-import org.complitex.pspoffice.commons.web.pages.DomainObjectEdit;
-import org.complitex.pspoffice.commons.web.pages.HistoryPage;
 
 /**
  *
  * @author Artem
  */
 @Stateless
-@Interceptors({SqlSessionInterceptor.class})
 public class PersonStrategy extends Strategy {
 
     /**
@@ -72,6 +67,11 @@ public class PersonStrategy extends Strategy {
     @Override
     public List<String> getSearchFilters() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String[] getEditRoles() {
+        return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -165,11 +165,6 @@ public class PersonStrategy extends Strategy {
         params.put(HistoryPage.ENTITY, getEntityTable());
         params.put(HistoryPage.OBJECT_ID, objectId);
         return params;
-    }
-
-    @Override
-    public String[] getChildrenEntities() {
-        return null;
     }
 
     @Override

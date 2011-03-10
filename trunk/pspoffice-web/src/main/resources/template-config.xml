@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<template xmlns="http://www.complitex.org/web/template">
+    <sidebar>
+        <menu class="org.complitex.admin.web.AdminTemplateMenu"/>
+        <menu class="org.complitex.address.web.InformationTemplateMenu"/>
+        <menu class="org.complitex.organization.web.OrganizationTemplateMenu"/>
+        <menu class="org.complitex.address.web.InformationDescriptionTemplateMenu"/>
+    </sidebar>
+</template>

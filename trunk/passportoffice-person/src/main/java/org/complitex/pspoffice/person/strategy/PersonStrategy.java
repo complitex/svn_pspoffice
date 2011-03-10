@@ -12,6 +12,7 @@ import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
+import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.DomainObjectEdit;
 import org.complitex.template.web.pages.HistoryPage;
 
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import static org.complitex.template.strategy.TemplateStrategy.*;
 
 /**
  *
@@ -142,10 +145,10 @@ public class PersonStrategy extends Strategy {
     @Override
     public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
         PageParameters params = new PageParameters();
-        params.put(DomainObjectEdit.ENTITY, getEntityTable());
-        params.put(DomainObjectEdit.OBJECT_ID, objectId);
-        params.put(DomainObjectEdit.PARENT_ID, parentId);
-        params.put(DomainObjectEdit.PARENT_ENTITY, parentEntity);
+        params.put(ENTITY, getEntityTable());
+        params.put(OBJECT_ID, objectId);
+        params.put(PARENT_ID, parentId);
+        params.put(PARENT_ENTITY, parentEntity);
         return params;
     }
 

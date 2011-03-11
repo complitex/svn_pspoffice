@@ -6,9 +6,9 @@
          version="3.0">
     <context-param>
         <param-name>configuration</param-name>
-        <param-value>development</param-value>
+        <param-value>deployment</param-value>
     </context-param>
-
+    
     <filter>
         <filter-name>wicket</filter-name>
         <filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
@@ -21,11 +21,11 @@
         <filter-name>wicket</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
+    
     <security-role>
         <role-name>AUTHORIZED</role-name>
     </security-role>
-      <security-role>
+    <security-role>
         <role-name>ADMIN_MODULE_EDIT</role-name>
     </security-role>
     <security-role>
@@ -34,13 +34,17 @@
     <security-role>
         <role-name>ORGANIZATION_MODULE_EDIT</role-name>
     </security-role>
-
-     <login-config>
+    
+    <login-config>
         <auth-method>FORM</auth-method>
         <realm-name>pspofficeRealm</realm-name>
         <form-login-config>
-            <form-login-page>/?wicket:bookmarkablePage=:org.complitex.pspoffice.commons.web.pages.login.Login</form-login-page>
-            <form-error-page>/?wicket:bookmarkablePage=:org.complitex.pspoffice.commons.web.pages.login.Login&amp;error</form-error-page>
+            <form-login-page>/?wicket:bookmarkablePage=:org.complitex.template.web.pages.login.Login</form-login-page>
+            <form-error-page><![CDATA[/?wicket:bookmarkablePage=:org.complitex.template.web.pages.login.Login&amp;error]]></form-error-page>
         </form-login-config>
     </login-config>
+    
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
 </web-app>

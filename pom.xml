@@ -22,7 +22,7 @@
 
     <modules>
         <module>pspoffice-web</module>
-        <module>passportoffice-person</module>
+        <module>pspoffice-person</module>
 
         <module>../complitex/complitex-dictionary</module>
         <module>../complitex/complitex-template</module>

@@ -12,7 +12,6 @@ import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
-import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.DomainObjectEdit;
 import org.complitex.template.web.pages.HistoryPage;
 
@@ -74,7 +73,7 @@ public class PersonStrategy extends Strategy {
 
     @Override
     public String[] getEditRoles() {
-        return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return new String[0];
     }
 
     @Override

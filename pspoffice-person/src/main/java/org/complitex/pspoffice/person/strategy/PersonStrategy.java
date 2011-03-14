@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import org.complitex.template.strategy.TemplateStrategy;
 
 import static org.complitex.template.strategy.TemplateStrategy.*;
 
@@ -36,13 +37,9 @@ public class PersonStrategy extends Strategy {
      * Attribute type ids
      */
     public static final long REGISTRATION = 900;
-
     public static final long FIRST_NAME = 901;
-
     public static final long LAST_NAME = 902;
-
     public static final long MIDDLE_NAME = 903;
-
     @EJB
     private StringCultureBean stringBean;
 
@@ -164,8 +161,8 @@ public class PersonStrategy extends Strategy {
     @Override
     public PageParameters getHistoryPageParams(long objectId) {
         PageParameters params = new PageParameters();
-        params.put(HistoryPage.ENTITY, getEntityTable());
-        params.put(HistoryPage.OBJECT_ID, objectId);
+        params.put(TemplateStrategy.ENTITY, getEntityTable());
+        params.put(TemplateStrategy.OBJECT_ID, objectId);
         return params;
     }
 

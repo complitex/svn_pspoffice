@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.person.strategy.Person">
+
+    <resultMap id="Person" type="org.complitex.pspoffice.person.strategy.entity.Person" extends="org.complitex.dictionary.entity.DomainObject.DomainObject">
+        <result column="last_name" property="lastName"/>
+        <result column="first_name" property="firstName"/>
+        <result column="middle_name" property="middleName"/>
+    </resultMap>
+
+    <sql id="join">
+        JOIN `person_attribute` lna ON (lna.`status` = 'ACTIVE' AND lna.`object_id` = e.`object_id` AND lna.`attribute_type_id` = 2000)
+        JOIN `last_name` ln ON ln.`id` = lna.`value_id`
+        JOIN `person_attribute` fna ON (fna.`status` = 'ACTIVE' AND fna.`object_id` = e.`object_id` AND fna.`attribute_type_id` = 2001)
+        JOIN `first_name` fn ON fn.`id` = fna.`value_id`
+        JOIN `person_attribute` mna ON (mna.`status` = 'ACTIVE' AND mna.`object_id` = e.`object_id` AND mna.`attribute_type_id` = 2002)
+        JOIN `middle_name` mn ON mn.`id` = mna.`value_id`
+    </sql>
+
+    <sql id="filter">
+        <if test="id != null">
+            AND e.`object_id` = #{id}
+        </if>
+
+        <if test="additionalParams != null">
+            <if test="additionalParams['last_name'] != null">
+                AND ln.`name` LIKE CONCAT('%', #{additionalParams.last_name}, '%')
+            </if>
+            <if test="additionalParams['first_name'] != null">
+                AND fn.`name` LIKE CONCAT('%', #{additionalParams.first_name}, '%')
+            </if>
+            <if test="additionalParams['middle_name'] != null">
+                AND mn.`name` LIKE CONCAT('%', #{additionalParams.middle_name}, '%')
+            </if>
+        </if>
+    </sql>
+
+    <select id="find" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
+        SELECT DISTINCT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`, e.`parent_entity_id`, e.`entity_type_id`,
+                e.`permission_id`, ln.`name` last_name, fn.`name` first_name, mn.`name` middle_name
+        FROM `person` e
+            <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
+        WHERE
+        <include refid="org.complitex.dictionary.entity.DomainObject.statusFilter"/>
+        <include refid="org.complitex.dictionary.entity.DomainObject.permissionFilter"/>
+        <include refid="org.complitex.pspoffice.person.strategy.Person.filter"/>
+        <include refid="org.complitex.pspoffice.person.strategy.Person.orderBy"/>
+        <include refid="org.complitex.dictionary.entity.DomainObject.limit"/>
+    </select>
+
+    <select id="count" resultType="integer" parameterType="DomainObjectExample">
+        SELECT COUNT(*) FROM `person` e
+            <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
+        WHERE
+        <include refid="org.complitex.dictionary.entity.DomainObject.statusFilter"/>
+        <include refid="org.complitex.dictionary.entity.DomainObject.permissionFilter"/>
+        <include refid="org.complitex.pspoffice.person.strategy.Person.filter"/>
+    </select>
+
+    <sql id="orderBy">
+        <if test="orderByAttributeTypeId != null">
+            ORDER BY
+            <choose>
+                <when test="orderByAttributeTypeId == 2000">
+                    ln.`name`
+                </when>
+                <when test="orderByAttributeTypeId == 2001">
+                    fn.`name`
+                </when>
+                <when test="orderByAttributeTypeId == 2002">
+                    mn.`name`
+                </when>
+                <otherwise>
+                    1
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="asc">
+                    ASC
+                </when>
+                <otherwise>
+                    DESC
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <select id="findById" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
+        SELECT e.*
+        FROM `${table}` e WHERE (e.`status` IN ('ACTIVE', 'INACTIVE')) AND e.`object_id` = #{id}
+        <include refid="org.complitex.dictionary.entity.DomainObject.permissionFilter"/>
+    </select>
+
+</mapper>

@@ -34,6 +34,9 @@
     <security-role>
         <role-name>ORGANIZATION_MODULE_EDIT</role-name>
     </security-role>
+    <security-role>
+        <role-name>PERSON_MODULE_EDIT</role-name>
+    </security-role>
     
     <login-config>
         <auth-method>FORM</auth-method>

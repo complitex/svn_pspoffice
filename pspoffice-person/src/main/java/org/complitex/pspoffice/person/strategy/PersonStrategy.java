@@ -11,8 +11,11 @@ import org.complitex.dictionary.service.StringCultureBean;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
+import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
+import org.complitex.dictionary.strategy.web.validate.IValidator;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.web.edit.PersonEditComponent;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -112,5 +115,15 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public String getPluralEntityLabel(Locale locale) {
         return ResourceUtil.getString(PersonStrategy.class.getName(), getEntityTable(), locale);
+    }
+
+    @Override
+    public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelBeforeClass() {
+        return PersonEditComponent.class;
+    }
+
+    @Override
+    public IValidator getValidator() {
+        return null;
     }
 }

@@ -2,20 +2,21 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.complitex.pspoffice.person.strategy.entity;
 
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 
 /**
  *
  * @author Artem
  */
-public class Person extends DomainObject{
+public class Person extends DomainObject {
 
     private String lastName;
     private String firstName;
     private String middleName;
+    private DomainObject registration;
 
     public String getFirstName() {
         return firstName;
@@ -39,5 +40,17 @@ public class Person extends DomainObject{
 
     public void setMiddleName(String middleName) {
         this.middleName = middleName;
+    }
+
+    public DomainObject getRegistration() {
+        return registration;
+    }
+
+    public void setRegistration(DomainObject registration) {
+        this.registration = registration;
+    }
+
+    public void updateRegistrationAttribute() {
+        getAttribute(PersonStrategy.REGISTRATION).setValueId(getRegistration().getId());
     }
 }

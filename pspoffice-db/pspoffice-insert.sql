@@ -41,7 +41,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2104, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2103, 2100, 1, 2104, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2105, 1, UPPER('Отношение к остальным проживающим')), (2105, 2, UPPER('Отношение к остальным проживающим'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2104, 2100, 0, 2105, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2106, 1, UPPER('Документ права на жилпощадь')), (2106, 2, UPPER('Документ права на жилпощадь'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2106, 1, UPPER('Документ права на жилплощадь')), (2106, 2, UPPER('Документ права на жилплощадь'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2105, 2100, 0, 2106, 1);
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2100, 2100, 'room');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2101, 2100, 'apartment');

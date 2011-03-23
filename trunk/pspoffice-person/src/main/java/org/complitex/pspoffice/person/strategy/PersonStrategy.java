@@ -1,5 +1,7 @@
 package org.complitex.pspoffice.person.strategy;
 
+import com.google.common.collect.Sets;
+import java.util.Date;
 import java.util.List;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
@@ -11,11 +13,17 @@ import org.complitex.dictionary.service.StringCultureBean;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
+import java.util.Set;
+import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionary.strategy.web.validate.IValidator;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.web.edit.PersonEditComponent;
+import org.complitex.pspoffice.person.strategy.web.edit.PersonNameEditComponent;
+import org.complitex.pspoffice.person.strategy.web.edit.PersonRegistrationEditComponent;
+import org.complitex.pspoffice.person.strategy.web.edit.validate.PersonValidator;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -37,6 +45,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long FIRST_NAME = 2001;
     public static final long LAST_NAME = 2000;
     public static final long MIDDLE_NAME = 2002;
+    public static final long REGISTRATION = 2006;
 
     /**
      * Order by related constants
@@ -62,6 +71,8 @@ public class PersonStrategy extends TemplateStrategy {
     public static final String MIDDLE_NAME_FILTER = "middle_name";
     @EJB
     private StringCultureBean stringBean;
+    @EJB
+    private RegistrationStrategy registrationStrategy;
 
     @Override
     public String getEntityTable() {
@@ -119,11 +130,92 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Override
     public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelBeforeClass() {
-        return PersonEditComponent.class;
+        return PersonNameEditComponent.class;
+    }
+
+    @Override
+    public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelAfterClass() {
+        return PersonRegistrationEditComponent.class;
     }
 
     @Override
     public IValidator getValidator() {
-        return null;
+        return new PersonValidator();
+    }
+
+    @Override
+    public Person newInstance() {
+        Person person = new Person();
+        fillAttributes(person);
+        person.setRegistration(registrationStrategy.newInstance());
+
+        //set up subject ids to visible-by-all subject
+        Set<Long> defaultSubjectIds = Sets.newHashSet(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
+        person.setSubjectIds(defaultSubjectIds);
+        person.getRegistration().setSubjectIds(defaultSubjectIds);
+
+        return person;
+    }
+
+    @Transactional
+    @Override
+    protected void insertDomainObject(DomainObject object, Date startDate) {
+        Person person = (Person) object;
+        DomainObject registration = person.getRegistration();
+        registrationStrategy.insert(registration);
+        person.updateRegistrationAttribute();
+        super.insertDomainObject(person, startDate);
+    }
+
+    @Transactional
+    @Override
+    protected void insertUpdatedDomainObject(DomainObject object, Date updateDate) {
+        super.insertDomainObject(object, updateDate);
+    }
+
+    @Override
+    public void update(DomainObject oldObject, DomainObject newObject, Date updateDate) {
+        Person oldPerson = (Person) oldObject;
+        Person newPerson = (Person) newObject;
+
+        DomainObject oldRegistration = oldPerson.getRegistration();
+        DomainObject newRegistration = newPerson.getRegistration();
+        registrationStrategy.update(oldRegistration, newRegistration, updateDate);
+
+        super.update(oldObject, newObject, updateDate);
+    }
+
+    @Transactional
+    @Override
+    public Person findById(long id, boolean runAsAdmin) {
+        DomainObjectExample example = new DomainObjectExample(id);
+        example.setTable(getEntityTable());
+        if (!runAsAdmin) {
+            prepareExampleForPermissionCheck(example);
+        } else {
+            example.setAdmin(true);
+        }
+
+        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_BY_ID_OPERATION, example);
+        if (person != null) {
+            loadAttributes(person);
+            fillAttributes(person);
+            updateStringsForNewLocales(person);
+            //load registration object
+            loadRegistration(person);
+
+            //load subject ids
+            person.setSubjectIds(loadSubjects(person.getPermissionId()));
+        }
+
+        return person;
+    }
+
+    @Transactional
+    private void loadRegistration(Person person) {
+        Attribute registrationAttribute = person.getAttribute(REGISTRATION);
+        Long registrationId = registrationAttribute.getValueId();
+        DomainObject registration = registrationStrategy.findById(registrationId, true);
+        person.setRegistration(registration);
     }
 }

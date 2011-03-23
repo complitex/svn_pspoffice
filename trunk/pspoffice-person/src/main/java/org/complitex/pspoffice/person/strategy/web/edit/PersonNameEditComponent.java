@@ -16,9 +16,9 @@ import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
  *
  * @author Artem
  */
-public class PersonEditComponent extends AbstractComplexAttributesPanel {
+public class PersonNameEditComponent extends AbstractComplexAttributesPanel {
 
-    public PersonEditComponent(String id, boolean disabled) {
+    public PersonNameEditComponent(String id, boolean disabled) {
         super(id, disabled);
     }
 

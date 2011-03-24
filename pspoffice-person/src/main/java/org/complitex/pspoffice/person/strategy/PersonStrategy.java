@@ -153,7 +153,6 @@ public class PersonStrategy extends TemplateStrategy {
         //set up subject ids to visible-by-all subject
         Set<Long> defaultSubjectIds = Sets.newHashSet(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
         person.setSubjectIds(defaultSubjectIds);
-        person.getRegistration().setSubjectIds(defaultSubjectIds);
 
         return person;
     }
@@ -180,8 +179,17 @@ public class PersonStrategy extends TemplateStrategy {
         Person newPerson = (Person) newObject;
 
         DomainObject oldRegistration = oldPerson.getRegistration();
-        DomainObject newRegistration = newPerson.getRegistration();
-        registrationStrategy.update(oldRegistration, newRegistration, updateDate);
+        DomainObject updatedOldRegistration = newPerson.getRegistration();
+        updatedOldRegistration.setSubjectIds(newPerson.getSubjectIds());
+        registrationStrategy.update(oldRegistration, updatedOldRegistration, updateDate);
+
+        DomainObject newRegistration = newPerson.getNewRegistration();
+        if(newRegistration != null){
+            newRegistration.setSubjectIds(newPerson.getSubjectIds());
+            registrationStrategy.insert(newRegistration);
+            newPerson.getAttribute(REGISTRATION).setValueId(newRegistration.getId());
+            registrationStrategy.archive(updatedOldRegistration);
+        }
 
         super.update(oldObject, newObject, updateDate);
     }

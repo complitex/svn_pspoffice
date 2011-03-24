@@ -42,33 +42,35 @@
                         <span wicket:id="addressSearchPanel"></span>
                     </td>
                 </tr>
-                <tr>
-                    <th colspan="2" align="left">
-                        <span wicket:id="departureLabel"></span> :
-                    </th>
-                </tr>
-                <tr>
-                    <td>
-                        <div wicket:id="departurePicker">
-                            <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td>
-                                        <input type="radio" wicket:id="showDepartureTextField"/> <wicket:message key="showDepartureTextField"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input type="radio" wicket:id="showDepartureSearchComponent"/> <wicket:message key="showDepartureSearchPanel"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </td>
-                    <td style="padding-left: 15px;">
-                        <span wicket:id="departureSearchComponent"></span>
-                        <input type="text" wicket:id="departureTextField"/>
-                    </td>
-                </tr>
+                <wicket:container wicket:id="departureContainer">
+                    <tr>
+                        <th colspan="2" align="left">
+                            <span wicket:id="departureLabel"></span> :
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div wicket:id="departurePicker">
+                                <table border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td>
+                                            <input type="radio" wicket:id="showDepartureTextField"/> <wicket:message key="showDepartureTextField"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input type="radio" wicket:id="showDepartureSearchComponent"/> <wicket:message key="showDepartureSearchPanel"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                        <td style="padding-left: 15px;">
+                            <span wicket:id="departureSearchComponent"></span>
+                            <input type="text" wicket:id="departureTextField"/>
+                        </td>
+                    </tr>
+                </wicket:container>
             </table>
         </wicket:panel>
     </body>

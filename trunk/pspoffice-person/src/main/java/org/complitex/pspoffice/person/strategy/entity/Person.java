@@ -17,6 +17,7 @@ public class Person extends DomainObject {
     private String firstName;
     private String middleName;
     private DomainObject registration;
+    private DomainObject newRegistration;
 
     public String getFirstName() {
         return firstName;
@@ -48,6 +49,14 @@ public class Person extends DomainObject {
 
     public void setRegistration(DomainObject registration) {
         this.registration = registration;
+    }
+
+    public DomainObject getNewRegistration() {
+        return newRegistration;
+    }
+
+    public void setNewRegistration(DomainObject newRegistration) {
+        this.newRegistration = newRegistration;
     }
 
     public void updateRegistrationAttribute() {

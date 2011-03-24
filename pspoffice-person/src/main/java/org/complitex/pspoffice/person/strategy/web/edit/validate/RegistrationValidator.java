@@ -78,7 +78,6 @@ public class RegistrationValidator implements IValidator {
         } else {
             component.error(MessageFormat.format(editComponent.getString(key), formatArguments));
         }
-
     }
 
     private void findEditComponent(Component component) {

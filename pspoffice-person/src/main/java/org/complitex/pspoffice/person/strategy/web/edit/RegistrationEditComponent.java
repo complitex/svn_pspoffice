@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
@@ -133,6 +134,11 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
         add(addressSearchPanel);
 
         // departure address
+        departureAttribute = registration.getAttribute(RegistrationStrategy.DEPARTURE);
+        WebMarkupContainer departureContainer = new WebMarkupContainer("departureContainer");
+        departureContainer.setVisible(departureAttribute != null);
+        add(departureContainer);
+
         Label departureLabel = new Label("departureLabel", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -141,11 +147,10 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
                 return stringBean.displayValue(attributeType.getAttributeNames(), getLocale());
             }
         });
-        add(departureLabel);
-
-        departureAttribute = registration.getAttribute(RegistrationStrategy.DEPARTURE);
+        departureContainer.add(departureLabel);
+        
         boolean isSimpleDepartureAddress = false;
-        if (departureAttribute.getValueTypeId().equals(RegistrationStrategy.DEPARTURE_STRING)) {
+        if ((departureAttribute != null) && departureAttribute.getValueTypeId().equals(RegistrationStrategy.DEPARTURE_STRING)) {
             isSimpleDepartureAddress = true;
         }
         departureAddressPickerModel = new Model<Boolean>(isSimpleDepartureAddress);
@@ -156,16 +161,20 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
         }
         final TextField<String> departureTextField = new TextField<String>("departureTextField", departureTextModel);
         departureTextField.setOutputMarkupPlaceholderTag(true);
-        add(departureTextField);
+        departureContainer.add(departureTextField);
         departureTextField.setVisible(departureAddressPickerModel.getObject());
 
-        departureSearchComponentState = initDepartureSearchComponentState();
+        if(departureAttribute != null){
+            departureSearchComponentState = initDepartureSearchComponentState();
+        } else {
+            departureSearchComponentState = new SearchComponentState();
+        }
         final SearchComponent departureSearchComponent = new SearchComponent("departureSearchComponent", departureSearchComponentState,
                 ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
                 !isDisabled() && DomainObjectAccessUtil.canEdit(null, "registration", registration));
         departureSearchComponent.setOutputMarkupPlaceholderTag(true);
         departureSearchComponent.setVisible(!departureAddressPickerModel.getObject());
-        add(departureSearchComponent);
+        departureContainer.add(departureSearchComponent);
 
         RadioGroup<Boolean> departurePicker = new RadioGroup<Boolean>("departurePicker", departureAddressPickerModel);
         Radio<Boolean> showDepartureTextField = new Radio<Boolean>("showDepartureTextField", Model.of(true));
@@ -182,7 +191,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
                 target.addComponent(departureSearchComponent);
             }
         });
-        add(departurePicker);
+        departureContainer.add(departurePicker);
     }
 
     public SearchComponentState getArrivalSearchComponentState() {

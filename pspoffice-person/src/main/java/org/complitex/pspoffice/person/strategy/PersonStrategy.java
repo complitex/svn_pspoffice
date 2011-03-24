@@ -14,6 +14,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.PermissionBean;
@@ -202,7 +203,7 @@ public class PersonStrategy extends TemplateStrategy {
             fillAttributes(person);
             updateStringsForNewLocales(person);
             //load registration object
-            loadRegistration(person);
+            loadRegistration(person, null);
 
             //load subject ids
             person.setSubjectIds(loadSubjects(person.getPermissionId()));
@@ -212,10 +213,52 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    private void loadRegistration(Person person) {
+    private void loadRegistration(Person person, Date date) {
         Attribute registrationAttribute = person.getAttribute(REGISTRATION);
         Long registrationId = registrationAttribute.getValueId();
-        DomainObject registration = registrationStrategy.findById(registrationId, true);
+        DomainObject registration = null;
+        if (date == null) {
+            registration = registrationStrategy.findById(registrationId, true);
+        } else {
+            registration = registrationStrategy.findHistoryObject(registrationId, date);
+        }
         person.setRegistration(registration);
+    }
+
+    @Transactional
+    private Set<Long> findRegistrationIds(long personId) {
+        return Sets.newHashSet(sqlSession().selectList(PERSON_MAPPING + ".findRegistrationIds", personId));
+    }
+
+    @Transactional
+    @Override
+    public TreeSet<Date> getHistoryDates(long objectId) {
+        TreeSet<Date> historyDates = super.getHistoryDates(objectId);
+        Set<Long> addressIds = findRegistrationIds(objectId);
+        for (Long addressId : addressIds) {
+            TreeSet<Date> addressHistoryDates = registrationStrategy.getHistoryDates(addressId);
+            historyDates.addAll(addressHistoryDates);
+        }
+        return historyDates;
+    }
+
+    @Transactional
+    @Override
+    public Person findHistoryObject(long objectId, Date date) {
+        DomainObjectExample example = new DomainObjectExample(objectId);
+        example.setTable(getEntityTable());
+        example.setStartDate(date);
+
+        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_HISTORY_OBJECT_OPERATION, example);
+        if (person == null) {
+            return null;
+        }
+
+        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, date);
+        loadStringCultures(historyAttributes);
+        person.setAttributes(historyAttributes);
+        loadRegistration(person, date);
+        updateStringsForNewLocales(person);
+        return person;
     }
 }

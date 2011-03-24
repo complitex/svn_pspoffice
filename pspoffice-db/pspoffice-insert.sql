@@ -36,7 +36,7 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2102, 1, UPPER('Адрес прибытия')), (2102, 2, UPPER('Адрес прибытия'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2101, 2100, 1, 2102, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2103, 1, UPPER('Адрес убытия')), (2103, 2, UPPER('Адрес убытия'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2102, 2100, 1, 2103, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2102, 2100, 0, 2103, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2104, 1, UPPER('Отношение к владельцу')), (2104, 2, UPPER('Отношение к владельцу'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2103, 2100, 1, 2104, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2105, 1, UPPER('Отношение к остальным проживающим')), (2105, 2, UPPER('Отношение к остальным проживающим'));

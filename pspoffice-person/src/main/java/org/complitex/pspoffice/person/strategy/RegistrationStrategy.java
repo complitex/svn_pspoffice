@@ -45,9 +45,9 @@ public class RegistrationStrategy extends Strategy {
     public static final long DEPARTURE_ROOM = 2108;
     public static final long DEPARTURE_APARTMENT = 2109;
     public static final long DEPARTURE_BUILDING = 2110;
-    public static final long ADDRESS_ROOM = 2108;
-    public static final long ADDRESS_APARTMENT = 2109;
-    public static final long ADDRESS_BUILDING = 2110;
+    public static final long ADDRESS_ROOM = 2100;
+    public static final long ADDRESS_APARTMENT = 2101;
+    public static final long ADDRESS_BUILDING = 2102;
     @EJB
     private StringCultureBean stringBean;
 
@@ -111,6 +111,10 @@ public class RegistrationStrategy extends Strategy {
         for (Attribute attribute : attributes) {
             if (attribute.getAttributeTypeId().equals(ARRIVAL)) {
                 if (attribute.getValueTypeId().equals(ARRIVAL_STRING)) {
+                    loadStringCultures(attribute);
+                }
+            } else if (attribute.getAttributeTypeId().equals(DEPARTURE)) {
+                if (attribute.getValueTypeId().equals(DEPARTURE_STRING)) {
                     loadStringCultures(attribute);
                 }
             } else if (isSimpleAttribute(attribute)) {

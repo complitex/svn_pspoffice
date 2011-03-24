@@ -33,8 +33,12 @@ public class RegistrationValidator implements IValidator {
                 isValid = false;
             }
         } else {
-            isValid = validateArrivalBuildingPresence(editPanel);
+            isValid &= validateArrivalBuildingPresence(editPanel);
         }
+
+        //current address:
+        isValid &= validateCurrentBuildingPresence(editPanel);
+
         return isValid;
     }
 
@@ -43,6 +47,26 @@ public class RegistrationValidator implements IValidator {
         DomainObject building = arrivalAddressComponentState.get("building");
         if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error("arrival_address_failing", editPanel);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateCurrentBuildingPresence(DomainObjectEditPanel editPanel) {
+        SearchComponentState addressComponentState = editComponent.getAddressSearchComponentState();
+        DomainObject building = addressComponentState.get("building");
+        if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+            error("address_failing", editPanel);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateDepartureBuildingPresence(DomainObjectEditPanel editPanel) {
+        SearchComponentState departureAddressComponentState = editComponent.getDepartureSearchComponentState();
+        DomainObject building = departureAddressComponentState.get("building");
+        if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+            error("departure_address_failing", editPanel);
             return false;
         }
         return true;

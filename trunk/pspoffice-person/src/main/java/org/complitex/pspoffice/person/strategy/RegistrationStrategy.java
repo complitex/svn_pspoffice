@@ -16,7 +16,6 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
-import org.complitex.dictionary.strategy.web.validate.IValidator;
 import org.complitex.pspoffice.person.strategy.web.edit.RegistrationEditComponent;
 import org.complitex.pspoffice.person.strategy.web.edit.validate.RegistrationValidator;
 import org.complitex.template.web.security.SecurityRole;
@@ -97,7 +96,7 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Override
-    public IValidator getValidator() {
+    public RegistrationValidator getValidator() {
         return new RegistrationValidator();
     }
 

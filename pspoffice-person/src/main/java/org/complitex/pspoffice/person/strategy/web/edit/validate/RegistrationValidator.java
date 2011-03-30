@@ -9,6 +9,7 @@ import org.apache.wicket.Component;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionary.strategy.web.validate.IValidator;
+import org.complitex.dictionary.web.component.DomainObjectInputPanel;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.strategy.web.edit.RegistrationEditComponent;
@@ -23,7 +24,9 @@ public class RegistrationValidator implements IValidator {
 
     @Override
     public boolean validate(DomainObject registration, DomainObjectEditPanel editPanel) {
-        findEditComponent(editPanel);
+        if (editComponent == null) {
+            findEditComponent(editPanel);
+        }
 
         boolean isValid = true;
         //arrival address:
@@ -62,6 +65,23 @@ public class RegistrationValidator implements IValidator {
         return true;
     }
 
+    public boolean validateDepartureAddress(DomainObject registration, DomainObjectEditPanel editPanel) {
+        if (editComponent == null) {
+            findEditComponent(editPanel);
+        }
+
+        boolean isValid = true;
+        if (editComponent.isSimpleDepartureAddressText()) {
+            if (editComponent.isDepartureAddressTextEmpty()) {
+                error("departure_address_empty", editPanel);
+                isValid = false;
+            }
+        } else {
+            isValid &= validateDepartureBuildingPresence(editPanel);
+        }
+        return isValid;
+    }
+
     private boolean validateDepartureBuildingPresence(DomainObjectEditPanel editPanel) {
         SearchComponentState departureAddressComponentState = editComponent.getDepartureSearchComponentState();
         DomainObject building = departureAddressComponentState.get("building");
@@ -80,9 +100,9 @@ public class RegistrationValidator implements IValidator {
         }
     }
 
-    private void findEditComponent(Component component) {
+    private void findEditComponent(DomainObjectEditPanel editPanel) {
         if (editComponent == null) {
-            component.getPage().visitChildren(RegistrationEditComponent.class, new Component.IVisitor<RegistrationEditComponent>() {
+            editPanel.visitChildren(RegistrationEditComponent.class, new Component.IVisitor<RegistrationEditComponent>() {
 
                 @Override
                 public Object component(RegistrationEditComponent comp) {

@@ -20,6 +20,7 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionary.strategy.web.validate.IValidator;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.PersonNameEditComponent;
@@ -159,12 +160,12 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     @Override
-    protected void insertDomainObject(DomainObject object, Date startDate) {
+    protected void insertDomainObject(DomainObject object, Date insertDate) {
         Person person = (Person) object;
         DomainObject registration = person.getRegistration();
-        registrationStrategy.insert(registration);
+        registrationStrategy.insert(registration, insertDate);
         person.updateRegistrationAttribute();
-        super.insertDomainObject(person, startDate);
+        super.insertDomainObject(person, insertDate);
     }
 
     @Transactional
@@ -181,12 +182,17 @@ public class PersonStrategy extends TemplateStrategy {
         DomainObject oldRegistration = oldPerson.getRegistration();
         DomainObject updatedOldRegistration = newPerson.getRegistration();
         updatedOldRegistration.setSubjectIds(newPerson.getSubjectIds());
-        registrationStrategy.update(oldRegistration, updatedOldRegistration, updateDate);
 
         DomainObject newRegistration = newPerson.getNewRegistration();
-        if(newRegistration != null){
+        Date oldRegistrationUpdateDate = updateDate;
+        if (newRegistration != null) {
+            oldRegistrationUpdateDate = DateUtil.justBefore(updateDate);
+        }
+        registrationStrategy.update(oldRegistration, updatedOldRegistration, oldRegistrationUpdateDate);
+
+        if (newRegistration != null) {
             newRegistration.setSubjectIds(newPerson.getSubjectIds());
-            registrationStrategy.insert(newRegistration);
+            registrationStrategy.insert(newRegistration, updateDate);
             newPerson.getAttribute(REGISTRATION).setValueId(newRegistration.getId());
             registrationStrategy.archive(updatedOldRegistration);
         }

@@ -18,6 +18,7 @@ public class Person extends DomainObject {
     private String middleName;
     private DomainObject registration;
     private DomainObject newRegistration;
+    private boolean registrationValidated;
 
     public String getFirstName() {
         return firstName;
@@ -61,5 +62,13 @@ public class Person extends DomainObject {
 
     public void updateRegistrationAttribute() {
         getAttribute(PersonStrategy.REGISTRATION).setValueId(getRegistration().getId());
+    }
+
+    public boolean isRegistrationValidated() {
+        return registrationValidated;
+    }
+
+    public void setRegistrationValidated(boolean registrationValidated) {
+        this.registrationValidated = registrationValidated;
     }
 }

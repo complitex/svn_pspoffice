@@ -13,8 +13,12 @@ import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
+import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.Strategy;
+import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.pspoffice.person.strategy.web.edit.RegistrationEditComponent;
 import org.complitex.pspoffice.person.strategy.web.edit.validate.RegistrationValidator;
@@ -49,6 +53,8 @@ public class RegistrationStrategy extends Strategy {
     public static final long ADDRESS_BUILDING = 2102;
     @EJB
     private StringCultureBean stringBean;
+    @EJB
+    private StrategyFactory strategyFactory;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -105,6 +111,7 @@ public class RegistrationStrategy extends Strategy {
         return RegistrationEditComponent.class;
     }
 
+    @Transactional
     @Override
     protected void loadStringCultures(List<Attribute> attributes) {
         for (Attribute attribute : attributes) {
@@ -145,5 +152,25 @@ public class RegistrationStrategy extends Strategy {
         }
         attribute.setValueTypeId(attributeValueTypeId);
         return attribute;
+    }
+
+    @Transactional
+    public boolean validateOrphans(long addressObjectId, String addressEntity) {
+        boolean isOrphan = true;
+        IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
+        String[] children = addressStrategy.getLogicalChildren();
+        if (children != null && children.length > 0) {
+            DomainObjectExample example = new DomainObjectExample();
+            example.setParentId(addressObjectId);
+            example.setParentEntity(addressEntity);
+            for (String child : children) {
+                IStrategy childStrategy = strategyFactory.getStrategy(child);
+                int count = childStrategy.count(example);
+                if (count > 0) {
+                    isOrphan = false;
+                }
+            }
+        }
+        return isOrphan;
     }
 }

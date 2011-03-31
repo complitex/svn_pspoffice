@@ -114,6 +114,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
                 target.addComponent(arrivalSearchComponent);
             }
         });
+        arrivalPicker.setEnabled(!isDisabled() && DomainObjectAccessUtil.canEdit(null, "registration", registration));
         add(arrivalPicker);
 
         // current address
@@ -148,7 +149,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
             }
         });
         departureContainer.add(departureLabel);
-        
+
         boolean isSimpleDepartureAddress = false;
         if ((departureAttribute != null) && departureAttribute.getValueTypeId().equals(RegistrationStrategy.DEPARTURE_STRING)) {
             isSimpleDepartureAddress = true;
@@ -164,7 +165,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
         departureContainer.add(departureTextField);
         departureTextField.setVisible(departureAddressPickerModel.getObject());
 
-        if(departureAttribute != null){
+        if (departureAttribute != null) {
             departureSearchComponentState = initDepartureSearchComponentState();
         } else {
             departureSearchComponentState = new SearchComponentState();
@@ -191,6 +192,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
                 target.addComponent(departureSearchComponent);
             }
         });
+        departurePicker.setEnabled(!isDisabled() && DomainObjectAccessUtil.canEdit(null, "registration", registration));
         departureContainer.add(departurePicker);
     }
 

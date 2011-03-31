@@ -21,7 +21,7 @@ public class PersonValidator implements IValidator {
     public boolean validate(DomainObject object, DomainObjectEditPanel editPanel) {
         Person person = (Person) object;
         DomainObject registration = person.getRegistration();
-        boolean isRegistrationValid = getRegistrationValidator().validate(registration, editPanel);
+        boolean isRegistrationValid = person.isRegistrationValidated() || getRegistrationValidator().validate(registration, editPanel);
         DomainObject newRegistration = person.getNewRegistration();
         boolean isNewRegistrationValid = true;
         if (newRegistration != null) {

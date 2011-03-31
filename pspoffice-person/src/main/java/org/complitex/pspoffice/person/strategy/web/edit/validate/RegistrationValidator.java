@@ -4,14 +4,16 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.validate;
 
+import com.google.common.collect.ImmutableList;
 import java.text.MessageFormat;
 import org.apache.wicket.Component;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.web.DomainObjectEditPanel;
 import org.complitex.dictionary.strategy.web.validate.IValidator;
-import org.complitex.dictionary.web.component.DomainObjectInputPanel;
+import org.complitex.dictionary.util.EjbBeanLocator;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.web.edit.RegistrationEditComponent;
 
 /**
@@ -27,42 +29,91 @@ public class RegistrationValidator implements IValidator {
         if (editComponent == null) {
             findEditComponent(editPanel);
         }
+        return validateArrivalAddress(editPanel) && validateCurrentAddress(editPanel);
+    }
 
-        boolean isValid = true;
-        //arrival address:
+    private boolean validateArrivalAddress(DomainObjectEditPanel editPanel) {
         if (editComponent.isSimpleArrivalAddressText()) {
             if (editComponent.isArrivalAddressTextEmpty()) {
                 error("arrival_address_empty", editPanel);
-                isValid = false;
+                return false;
             }
         } else {
-            isValid &= validateArrivalBuildingPresence(editPanel);
+            return validateArrivalCompositeAddress(editPanel);
         }
-
-        //current address:
-        isValid &= validateCurrentBuildingPresence(editPanel);
-
-        return isValid;
+        return true;
     }
 
-    private boolean validateArrivalBuildingPresence(DomainObjectEditPanel editPanel) {
+    private boolean validateArrivalCompositeAddress(DomainObjectEditPanel editPanel) {
         SearchComponentState arrivalAddressComponentState = editComponent.getArrivalSearchComponentState();
         DomainObject building = arrivalAddressComponentState.get("building");
         if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error("arrival_address_failing", editPanel);
             return false;
+        } else {
+            DomainObject apartment = arrivalAddressComponentState.get("apartment");
+            if (apartment == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                return validateOrphanBuilding(building.getId(), "arrival_address_failing", editPanel);
+            } else {
+                DomainObject room = arrivalAddressComponentState.get("room");
+                if (room == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                    return validateOrphanApartment(apartment.getId(), "arrival_address_failing", editPanel);
+                }
+            }
         }
         return true;
     }
 
-    private boolean validateCurrentBuildingPresence(DomainObjectEditPanel editPanel) {
+    private boolean validateOrphanBuilding(long buildingId, String errorMessage, Component comp) {
+        if (!getStrategy().validateOrphans(buildingId, "building")) {
+            error(errorMessage, comp);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateOrphanApartment(long apartmentId, String errorMessage, Component comp) {
+        if (!getStrategy().validateOrphans(apartmentId, "apartment")) {
+            error(errorMessage, comp);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isTheSameAddress(SearchComponentState address1, SearchComponentState address2) {
+        return address1.isEqual(address2, ImmutableList.of("city", "building", "street", "apartment", "room"));
+    }
+
+    private boolean validateCurrentAddress(DomainObjectEditPanel editPanel) {
         SearchComponentState addressComponentState = editComponent.getAddressSearchComponentState();
         DomainObject building = addressComponentState.get("building");
         if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error("address_failing", editPanel);
             return false;
+        } else {
+            DomainObject apartment = addressComponentState.get("apartment");
+            if (apartment == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                if (!validateOrphanBuilding(building.getId(), "address_failing", editPanel)) {
+                    return false;
+                }
+            } else {
+                DomainObject room = addressComponentState.get("room");
+                if (room == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                    if (!validateOrphanApartment(apartment.getId(), "address_failing", editPanel)) {
+                        return false;
+                    }
+                }
+            }
         }
-        return true;
+        if (!editComponent.isSimpleArrivalAddressText()) {
+            SearchComponentState arrivalAddressComponentState = editComponent.getArrivalSearchComponentState();
+            if (isTheSameAddress(addressComponentState, arrivalAddressComponentState)) {
+                error("arrival_address_equal_current_address", editPanel);
+                return false;
+            } else {
+                return true;
+            }
+        } else return true;
     }
 
     public boolean validateDepartureAddress(DomainObject registration, DomainObjectEditPanel editPanel) {
@@ -70,23 +121,41 @@ public class RegistrationValidator implements IValidator {
             findEditComponent(editPanel);
         }
 
-        boolean isValid = true;
         if (editComponent.isSimpleDepartureAddressText()) {
             if (editComponent.isDepartureAddressTextEmpty()) {
                 error("departure_address_empty", editPanel);
-                isValid = false;
+                return false;
             }
         } else {
-            isValid &= validateDepartureBuildingPresence(editPanel);
+            return validateDepartureCompositeAddress(editPanel);
         }
-        return isValid;
+        return true;
     }
 
-    private boolean validateDepartureBuildingPresence(DomainObjectEditPanel editPanel) {
+    private boolean validateDepartureCompositeAddress(DomainObjectEditPanel editPanel) {
         SearchComponentState departureAddressComponentState = editComponent.getDepartureSearchComponentState();
         DomainObject building = departureAddressComponentState.get("building");
         if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error("departure_address_failing", editPanel);
+            return false;
+        } else {
+            DomainObject apartment = departureAddressComponentState.get("apartment");
+            if (apartment == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                if (!validateOrphanBuilding(building.getId(), "address_failing", editPanel)) {
+                    return false;
+                }
+            } else {
+                DomainObject room = departureAddressComponentState.get("room");
+                if (room == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                    if (!validateOrphanApartment(apartment.getId(), "address_failing", editPanel)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        SearchComponentState currentAddressComponentState = editComponent.getAddressSearchComponentState();
+        if (isTheSameAddress(departureAddressComponentState, currentAddressComponentState)) {
+            error("departure_address_equal_current_address", editPanel);
             return false;
         }
         return true;
@@ -111,5 +180,9 @@ public class RegistrationValidator implements IValidator {
                 }
             });
         }
+    }
+
+    private RegistrationStrategy getStrategy() {
+        return EjbBeanLocator.getBean(RegistrationStrategy.class);
     }
 }

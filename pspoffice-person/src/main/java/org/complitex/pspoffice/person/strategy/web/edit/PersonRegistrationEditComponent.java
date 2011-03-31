@@ -71,7 +71,7 @@ public final class PersonRegistrationEditComponent extends AbstractComplexAttrib
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (validateRegistration(person)) {
+                if (validateRegistration(person.getRegistration())) {
                     setVisible(false);
                     prepareForChangeRegistration(person);
                     registrationInputPanel.replaceWith(new DomainObjectInputPanel("registrationInputPanel",
@@ -97,6 +97,7 @@ public final class PersonRegistrationEditComponent extends AbstractComplexAttrib
     private void prepareForChangeRegistration(Person person) {
         DomainObject newRegistration = registrationStrategy.newInstance();
         person.setNewRegistration(newRegistration);
+        person.setRegistrationValidated(true);
 
         RegistrationEditComponent regEditComponent = getRegistrationEditComponent();
         regEditComponent.onUpdate();
@@ -140,8 +141,7 @@ public final class PersonRegistrationEditComponent extends AbstractComplexAttrib
         return registrationEditComponent;
     }
 
-    private boolean validateRegistration(Person person) {
-        DomainObject registration = person.getRegistration();
+    private boolean validateRegistration(DomainObject registration) {
         RegistrationValidator registrationValidator = registrationStrategy.getValidator();
         return registrationValidator.validate(registration, editPanel)
                 && registrationValidator.validateDepartureAddress(registration, editPanel);

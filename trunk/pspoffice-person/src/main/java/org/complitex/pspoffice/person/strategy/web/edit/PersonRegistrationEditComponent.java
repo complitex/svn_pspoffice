@@ -4,8 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit;
 
-import com.google.common.collect.Lists;
-import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -16,7 +14,6 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
@@ -103,25 +100,30 @@ public final class PersonRegistrationEditComponent extends AbstractComplexAttrib
         regEditComponent.onUpdate();
 
         DomainObject oldRegistration = person.getRegistration();
+        Attribute oldAddressAttribute = oldRegistration.getAttribute(RegistrationStrategy.ADDRESS);
         Attribute oldDepartureAttribute = oldRegistration.getAttribute(RegistrationStrategy.DEPARTURE);
         Attribute newArrivalAttribute = person.getNewRegistration().getAttribute(RegistrationStrategy.ARRIVAL);
-        long oldDepartureValueTypeId = oldDepartureAttribute.getValueTypeId();
-        if (oldDepartureValueTypeId == RegistrationStrategy.DEPARTURE_STRING) {
-            newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_STRING);
-            List<StringCulture> localizedValues = Lists.newArrayList();
-            for (StringCulture sc : oldDepartureAttribute.getLocalizedValues()) {
-                localizedValues.add(new StringCulture(sc.getLocaleId(), sc.getValue()));
-            }
-            newArrivalAttribute.setLocalizedValues(localizedValues);
-        } else {
-            newArrivalAttribute.setValueId(oldDepartureAttribute.getValueId());
+        Attribute newAddressAttribute = person.getNewRegistration().getAttribute(RegistrationStrategy.ADDRESS);
 
+        newArrivalAttribute.setValueId(oldAddressAttribute.getValueId());
+        long oldAddressValueTypeId = oldAddressAttribute.getValueTypeId();
+        if (oldAddressValueTypeId == RegistrationStrategy.ADDRESS_APARTMENT) {
+            newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_APARTMENT);
+        } else if (oldAddressValueTypeId == RegistrationStrategy.ADDRESS_BUILDING) {
+            newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_BUILDING);
+        } else if (oldAddressValueTypeId == RegistrationStrategy.ADDRESS_ROOM) {
+            newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_ROOM);
+        }
+
+        long oldDepartureValueTypeId = oldDepartureAttribute.getValueTypeId();
+        if (oldDepartureValueTypeId != RegistrationStrategy.DEPARTURE_STRING) {
+            newAddressAttribute.setValueId(oldDepartureAttribute.getValueId());
             if (oldDepartureValueTypeId == RegistrationStrategy.DEPARTURE_APARTMENT) {
-                newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_APARTMENT);
+                newAddressAttribute.setValueTypeId(RegistrationStrategy.ADDRESS_APARTMENT);
             } else if (oldDepartureValueTypeId == RegistrationStrategy.DEPARTURE_BUILDING) {
-                newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_BUILDING);
+                newAddressAttribute.setValueTypeId(RegistrationStrategy.ADDRESS_BUILDING);
             } else if (oldDepartureValueTypeId == RegistrationStrategy.DEPARTURE_ROOM) {
-                newArrivalAttribute.setValueTypeId(RegistrationStrategy.ARRIVAL_ROOM);
+                newAddressAttribute.setValueTypeId(RegistrationStrategy.ADDRESS_ROOM);
             }
         }
     }
@@ -143,8 +145,7 @@ public final class PersonRegistrationEditComponent extends AbstractComplexAttrib
 
     private boolean validateRegistration(DomainObject registration) {
         RegistrationValidator registrationValidator = registrationStrategy.getValidator();
-        return registrationValidator.validate(registration, editPanel)
-                && registrationValidator.validateDepartureAddress(registration, editPanel);
+        return registrationValidator.validate(registration, editPanel) && registrationValidator.validateDepartureAddress(registration, editPanel);
     }
 
     private void initEditPanel() {

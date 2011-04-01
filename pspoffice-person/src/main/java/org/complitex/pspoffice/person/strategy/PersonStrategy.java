@@ -18,6 +18,7 @@ import java.util.TreeSet;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.PermissionBean;
+import org.complitex.dictionary.strategy.DeleteException;
 import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
 import org.complitex.dictionary.strategy.web.validate.IValidator;
 import org.complitex.dictionary.util.DateUtil;
@@ -274,5 +275,22 @@ public class PersonStrategy extends TemplateStrategy {
         loadRegistration(person, date);
         updateStringsForNewLocales(person);
         return person;
+    }
+
+    @Override
+    public void delete(long objectId) throws DeleteException {
+        deleteChecks(objectId);
+
+        Set<Long> registrationIds = findRegistrationIds(objectId);
+
+        deleteStrings(objectId);
+        deleteAttribute(objectId);
+        deleteObject(objectId);
+
+        //delete registrations:
+        for (Long registrationId : registrationIds) {
+            registrationStrategy.delete(registrationId);
+        }
+
     }
 }

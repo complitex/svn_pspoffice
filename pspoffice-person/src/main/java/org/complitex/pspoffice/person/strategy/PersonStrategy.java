@@ -277,6 +277,7 @@ public class PersonStrategy extends TemplateStrategy {
         return person;
     }
 
+    @Transactional
     @Override
     public void delete(long objectId) throws DeleteException {
         deleteChecks(objectId);
@@ -291,6 +292,5 @@ public class PersonStrategy extends TemplateStrategy {
         for (Long registrationId : registrationIds) {
             registrationStrategy.delete(registrationId);
         }
-
     }
 }

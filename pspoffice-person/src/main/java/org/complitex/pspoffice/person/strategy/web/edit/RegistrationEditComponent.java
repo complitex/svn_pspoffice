@@ -89,6 +89,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
         final TextField<String> arrivalTextField = new TextField<String>("arrivalTextField", arrivalTextModel);
         arrivalTextField.setOutputMarkupPlaceholderTag(true);
         add(arrivalTextField);
+        arrivalTextField.setEnabled(!isDisabled() && DomainObjectAccessUtil.canEdit(null, "registration", registration));
         arrivalTextField.setVisible(arrivalAddressPickerModel.getObject());
 
         arrivalSearchComponentState = initArrivalSearchComponentState();
@@ -163,6 +164,7 @@ public final class RegistrationEditComponent extends AbstractComplexAttributesPa
         final TextField<String> departureTextField = new TextField<String>("departureTextField", departureTextModel);
         departureTextField.setOutputMarkupPlaceholderTag(true);
         departureContainer.add(departureTextField);
+        departureTextField.setEnabled(!isDisabled() && DomainObjectAccessUtil.canEdit(null, "registration", registration));
         departureTextField.setVisible(departureAddressPickerModel.getObject());
 
         if (departureAttribute != null) {

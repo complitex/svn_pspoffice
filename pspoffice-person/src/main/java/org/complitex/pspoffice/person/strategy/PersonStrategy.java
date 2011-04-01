@@ -1,5 +1,6 @@
 package org.complitex.pspoffice.person.strategy;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Date;
 import java.util.List;
@@ -13,9 +14,11 @@ import org.complitex.dictionary.service.StringCultureBean;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
@@ -291,6 +294,19 @@ public class PersonStrategy extends TemplateStrategy {
         //delete registrations:
         for (Long registrationId : registrationIds) {
             registrationStrategy.delete(registrationId);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void changeChildrenActivity(long personId, boolean enable) {
+        Set<Long> registrationIds = findRegistrationIds(personId);
+        if (!registrationIds.isEmpty()) {
+            Map<String, Object> params = Maps.newHashMap();
+            params.put("personId", personId);
+            params.put("enabled", !enable);
+            params.put("status", enable ? StatusType.ACTIVE : StatusType.INACTIVE);
+            sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
         }
     }
 }

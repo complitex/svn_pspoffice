@@ -12,8 +12,8 @@
         <result column="end_date" property="endDate"/>
     </resultMap>
 
-    <sql id="join">
-        JOIN (SELECT address.`start_date` start_date, address.`end_date` end_date  FROM `person_attribute` ra
+    <sql id="from">
+        FROM (SELECT ra.`object_id`, address.`start_date`, address.`end_date` FROM `person_attribute` ra
                       JOIN `registration` r ON ra.`value_id` = r.`object_id`
                       JOIN `registration_attribute` address ON (address.`object_id` = r.`object_id` AND address.`attribute_type_id` = 2100
                             AND address.`value_id` = #{addressId} AND address.`value_type_id`  =
@@ -24,7 +24,8 @@
                                         ELSE 0
                                     END
                             )
-              WHERE ra.`object_id` = p.`object_id` AND ra.`attribute_type_id` = 2006) adr
+              WHERE ra.`attribute_type_id` = 2006) adr
+        JOIN `person` p ON adr.`object_id` = p.`object_id`
         JOIN `person_attribute` lna ON (lna.`status` = 'ACTIVE' AND lna.`object_id` = p.`object_id` AND lna.`attribute_type_id` = 2000)
         JOIN `last_name` ln ON ln.`id` = lna.`value_id`
         JOIN `person_attribute` fna ON (fna.`status` = 'ACTIVE' AND fna.`object_id` = p.`object_id` AND fna.`attribute_type_id` = 2001)
@@ -52,21 +53,20 @@
     <select id="getReport" resultMap="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.RegistrationReport"
                 parameterType="org.complitex.pspoffice.person.registration.report.example.RegistrationReportExample">
         SELECT p.`object_id`, ln.`name` last_name, fn.`name` first_name, mn.`name` middle_name, adr.`start_date`, adr.`end_date`
-        FROM `person` p
-            <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.join"/>
+        <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.from"/>
         WHERE
-        p.`status` IN ('ACTIVE', 'INACTIVE')
-        <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.filter"/>
-        <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.orderBy"/>
-        <include refid="org.complitex.dictionary.entity.DomainObject.limit"/>
+            p.`status` IN ('ACTIVE', 'INACTIVE')
+            <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.filter"/>
+            <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.orderBy"/>
+            <include refid="org.complitex.dictionary.entity.DomainObject.limit"/>
     </select>
 
     <select id="count" resultType="integer" parameterType="org.complitex.pspoffice.person.registration.report.example.RegistrationReportExample">
-        SELECT COUNT(*) FROM `person` p
-            <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.join"/>
+        SELECT COUNT(*)
+        <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.from"/>
         WHERE
-        p.`status` IN ('ACTIVE', 'INACTIVE')
-        <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.filter"/>
+            p.`status` IN ('ACTIVE', 'INACTIVE')
+            <include refid="org.complitex.pspoffice.person.registration.report.service.RegistrationReportBean.filter"/>
     </select>
 
     <sql id="orderBy">

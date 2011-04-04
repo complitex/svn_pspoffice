@@ -2,7 +2,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:wicket="http://wicket.apache.org">
     <head>
-        <title wicket:id="title"></title>
+        <wicket:head>
+            <title wicket:id="title"></title>
+        </wicket:head>
     </head>
     <body>
         <wicket:extend>
@@ -87,6 +89,9 @@
                     </table>
                 </form>
                 <div wicket:id="navigator"></div>
+            </div>
+            <div>
+                <input type="button" wicket:id="changeAddress" class="btnBig" wicket:message="value:change_address"/>
             </div>
         </wicket:extend>
     </body>

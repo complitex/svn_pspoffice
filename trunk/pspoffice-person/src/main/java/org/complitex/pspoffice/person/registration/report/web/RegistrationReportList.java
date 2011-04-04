@@ -18,6 +18,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -58,16 +59,21 @@ public final class RegistrationReportList extends ListPage {
     }
 
     private void init() {
-        IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
+        add(new Label("title", new AbstractReadOnlyModel<String>() {
 
             @Override
             public String getObject() {
-                return MessageFormat.format(getString("label"), addressRendererBean.displayAddress(example.getAddressEntity(),
-                        example.getAddressId(), getLocale()));
+                return getString("title");
             }
-        };
-        add(new Label("title", labelModel));
-        add(new Label("label", labelModel));
+        }));
+        add(new Label("label", new AbstractReadOnlyModel<String>() {
+
+            @Override
+            public String getObject() {
+                return MessageFormat.format(getString("label"),
+                        addressRendererBean.displayAddress(example.getAddressEntity(), example.getAddressId(), getLocale()));
+            }
+        }));
 
         final WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
@@ -169,6 +175,15 @@ public final class RegistrationReportList extends ListPage {
 
         //Navigator
         content.add(new PagingNavigator("navigator", dataView, getClass().getName(), content));
+
+        //Change address parameter
+        add(new Link("changeAddress") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(RegistrationReportParamsPage.class);
+            }
+        });
     }
 }
 

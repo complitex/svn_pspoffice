@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>org.complitex</groupId>
-            <artifactId>complitex-template</artifactId>
+            <artifactId>complitex-address</artifactId>
         </dependency>
 
         <dependency>

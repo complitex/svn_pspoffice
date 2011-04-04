@@ -45,8 +45,6 @@ import org.complitex.template.web.component.toolbar.AddItemButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ScrollListPage;
 import org.complitex.template.web.security.SecurityRole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -55,11 +53,8 @@ import org.slf4j.LoggerFactory;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class PersonList extends ScrollListPage {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonList.class);
     private DomainObjectExample example;
-    private WebMarkupContainer content;
-    private DataView<Person> dataView;
-    private final String page = PersonList.class.getName();
+    private static final String PAGE = PersonList.class.getName();
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -103,16 +98,16 @@ public final class PersonList extends ScrollListPage {
         add(new Label("title", labelModel));
         add(new Label("label", labelModel));
 
-        content = new WebMarkupContainer("content");
+        final WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
         add(content);
 
         //Example
-        example = (DomainObjectExample) getTemplateSession().getPreferenceObject(page, PreferenceKey.FILTER_OBJECT, null);
+        example = (DomainObjectExample) getTemplateSession().getPreferenceObject(PAGE, PreferenceKey.FILTER_OBJECT, null);
 
         if (example == null) {
             example = new DomainObjectExample();
-            getTemplateSession().putPreferenceObject(page, PreferenceKey.FILTER_OBJECT, example);
+            getTemplateSession().putPreferenceObject(PAGE, PreferenceKey.FILTER_OBJECT, example);
         }
 
         //Form
@@ -134,9 +129,9 @@ public final class PersonList extends ScrollListPage {
 
                 //store preference
                 DictionaryFwSession session = getTemplateSession();
-                session.putPreference(page, PreferenceKey.SORT_PROPERTY, getSort().getProperty(), true);
-                session.putPreference(page, PreferenceKey.SORT_ORDER, getSort().isAscending(), true);
-                session.putPreferenceObject(page, PreferenceKey.FILTER_OBJECT, example);
+                session.putPreference(PAGE, PreferenceKey.SORT_PROPERTY, getSort().getProperty(), true);
+                session.putPreference(PAGE, PreferenceKey.SORT_ORDER, getSort().isAscending(), true);
+                session.putPreferenceObject(PAGE, PreferenceKey.FILTER_OBJECT, example);
 
                 if (!Strings.isEmpty(sortProperty)) {
                     example.setOrderByAttributeTypeId(Long.valueOf(sortProperty));
@@ -161,8 +156,8 @@ public final class PersonList extends ScrollListPage {
                 return new Model<Person>(object);
             }
         };
-        dataProvider.setSort(getTemplateSession().getPreferenceString(page, PreferenceKey.SORT_PROPERTY, ""),
-                getTemplateSession().getPreferenceBoolean(page, PreferenceKey.SORT_ORDER, true));
+        dataProvider.setSort(getTemplateSession().getPreferenceString(PAGE, PreferenceKey.SORT_PROPERTY, ""),
+                getTemplateSession().getPreferenceBoolean(PAGE, PreferenceKey.SORT_ORDER, true));
 
         //Filters
         filterForm.add(new TextField<Long>("id", new PropertyModel<Long>(example, "id")));
@@ -204,7 +199,7 @@ public final class PersonList extends ScrollListPage {
         }));
 
         //Data View
-        dataView = new DataView<Person>("data", dataProvider, 1) {
+        DataView<Person> dataView = new DataView<Person>("data", dataProvider, 1) {
 
             @Override
             protected void populateItem(Item<Person> item) {

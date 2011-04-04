@@ -5,7 +5,6 @@
         <menu class="org.complitex.address.menu.AddressMenu"/>
         <menu class="org.complitex.organization.web.OrganizationTemplateMenu"/>
         <menu class="org.complitex.address.menu.AddressDescriptionMenu"/>
-        <menu class="org.complitex.pspoffice.person.menu.PersonMenu"/>
-        <menu class="org.complitex.pspoffice.person.menu.PersonDescriptionMenu"/>
+        <menu class="org.complitex.pspoffice.person.menu.RegistrationMenu"/>
     </sidebar>
 </template>

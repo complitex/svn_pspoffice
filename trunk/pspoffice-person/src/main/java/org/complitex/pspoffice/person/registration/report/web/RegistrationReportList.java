@@ -110,7 +110,7 @@ public final class RegistrationReportList extends ListPage {
                 return new Model<RegistrationReport>(object);
             }
         };
-        dataProvider.setSort("", false);
+        dataProvider.setSort(RegistrationReportBean.OrderBy.END_DATE.getOrderByExpression(), true);
 
         //Filters
         filterForm.add(new TextField<Long>("id", new PropertyModel<Long>(example, "id")));

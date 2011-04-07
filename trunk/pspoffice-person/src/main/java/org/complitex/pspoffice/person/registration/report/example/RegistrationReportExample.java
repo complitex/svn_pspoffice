@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 public class RegistrationReportExample implements Serializable {
 
-    private Long id;
+    private String id;
     private String lastName;
     private String firstName;
     private String middleName;
@@ -22,12 +22,14 @@ public class RegistrationReportExample implements Serializable {
     private boolean asc;
     private int start;
     private int size;
+    private Integer month;
+    private Integer year;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -101,5 +103,30 @@ public class RegistrationReportExample implements Serializable {
 
     public void setAddressId(Long addressId) {
         this.addressId = addressId;
+    }
+
+    public Integer getMonth() {
+        return month;
+    }
+
+    public void setMonth(Integer month) {
+        this.month = month;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public void clear() {
+        id = null;
+        lastName = null;
+        firstName = null;
+        middleName = null;
+        month = null;
+        year = null;
     }
 }

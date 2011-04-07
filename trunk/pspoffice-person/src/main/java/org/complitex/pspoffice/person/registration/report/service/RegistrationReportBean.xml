@@ -38,7 +38,6 @@
         <if test="id != null">
             AND p.`object_id` = #{id}
         </if>
-
         <if test="lastName != null">
             AND ln.`name` LIKE CONCAT('%', #{lastName}, '%')
         </if>
@@ -47,6 +46,22 @@
         </if>
         <if test="middleName != null">
             AND mn.`name` LIKE CONCAT('%', #{middleName}, '%')
+        </if>
+        <if test="month != null">
+            AND MONTH(adr.`start_date`) <![CDATA[ <= ]]> #{month}
+            AND (
+                    ((adr.`end_date` IS NOT NULL) AND (MONTH(adr.`end_date`) <![CDATA[ >= ]]> #{month}))
+                    OR
+                    (adr.`end_date` IS NULL)
+                )
+        </if>
+        <if test="year != null">
+            AND YEAR(adr.`start_date`) <![CDATA[ <= ]]> #{year}
+            AND (
+                    ((adr.`end_date` IS NOT NULL) AND (YEAR(adr.`end_date`) <![CDATA[ >= ]]> #{year}))
+                    OR
+                    (adr.`end_date` IS NULL)
+                )
         </if>
     </sql>
 

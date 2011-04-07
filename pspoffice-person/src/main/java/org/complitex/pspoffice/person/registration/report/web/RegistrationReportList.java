@@ -10,6 +10,7 @@ import java.util.Iterator;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -19,6 +20,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -75,6 +77,10 @@ public final class RegistrationReportList extends ListPage {
             }
         }));
 
+        final FeedbackPanel messages = new FeedbackPanel("messages");
+        messages.setOutputMarkupId(true);
+        add(messages);
+
         final WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
         add(content);
@@ -113,10 +119,12 @@ public final class RegistrationReportList extends ListPage {
         dataProvider.setSort(RegistrationReportBean.OrderBy.END_DATE.getOrderByExpression(), true);
 
         //Filters
-        filterForm.add(new TextField<Long>("id", new PropertyModel<Long>(example, "id")));
+        filterForm.add(new TextField<String>("id", new PropertyModel<String>(example, "id")));
         filterForm.add(new TextField<String>("lastNameFilter", new PropertyModel<String>(example, "lastName")));
         filterForm.add(new TextField<String>("firstNameFilter", new PropertyModel<String>(example, "firstName")));
         filterForm.add(new TextField<String>("middleNameFilter", new PropertyModel<String>(example, "middleName")));
+        filterForm.add(new RegistrationReportDateFilter("dateFilter", new PropertyModel<Integer>(example, "month"),
+                new PropertyModel<Integer>(example, "year")));
 
         //Data View
         DataView<RegistrationReport> dataView = new DataView<RegistrationReport>("data", dataProvider, 1) {
@@ -154,10 +162,8 @@ public final class RegistrationReportList extends ListPage {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filterForm.clearInput();
-                example.setId(null);
-                example.setLastName(null);
-                example.setFirstName(null);
-                example.setMiddleName(null);
+                example.clear();
+                target.addComponent(messages);
                 target.addComponent(content);
             }
         };
@@ -168,7 +174,13 @@ public final class RegistrationReportList extends ListPage {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(messages);
                 target.addComponent(content);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(messages);
             }
         };
         filterForm.add(submit);

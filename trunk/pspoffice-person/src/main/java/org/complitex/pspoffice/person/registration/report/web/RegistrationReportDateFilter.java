@@ -35,7 +35,8 @@ public final class RegistrationReportDateFilter extends Panel {
         HintTextFieldPanel<Integer> year = new HintTextFieldPanel<Integer>("year", yearModel, Integer.class,
                 placeholderModel, RegistrationReportDateFilter.class.getSimpleName() + ".year");
         year.getTextField().add(new MinimumValidator<Integer>(1900));
-        year.getTextField().add(new SimpleAttributeModifier("size", String.valueOf(10)));
+        year.getTextField().add(new SimpleAttributeModifier("size", String.valueOf(4))).
+                add(new SimpleAttributeModifier("maxlength", String.valueOf(4)));
         add(year);
     }
 }

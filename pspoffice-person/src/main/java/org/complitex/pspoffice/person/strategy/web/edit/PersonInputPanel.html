@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:wicket>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <wicket:panel>
+            <div wicket:id="fullNamePanel"></div>
+
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <span wicket:id="registrationLabel"></span>
+                            </h3>
+                        </span>
+                    </legend>
+                    <div wicket:id="registrationPanel"></div>
+                </fieldset>
+            </div>
+
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <wicket:message key="birthLabel"/>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="birthRegionContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="birthDistrictContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="birthCityContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="birthVillageContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="birthDateContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <wicket:message key="passportLabel"/>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="passportSerialNumberContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="passportNumberContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="passportAcquisitionInfoContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+
+            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <wicket:container wicket:id="nationalityContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>                    
+                </tr>
+                <tr>
+                    <wicket:container wicket:id="jobInfoContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
+                </tr>
+                <tr>
+                    <wicket:container wicket:id="militaryServiceRelationContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
+                </tr>
+                <tr wicket:id="userAttributesView">
+                    <th>
+                        <wicket:container wicket:id="label"/>
+                        <wicket:container wicket:id="required">
+                            <b class="blue">*</b>
+                        </wicket:container>:
+                    </th>
+                    <td>
+                        <div wicket:id="input"></div>
+                    </td>
+                </tr>
+            </table>
+        </wicket:panel>
+    </body>
+</html>

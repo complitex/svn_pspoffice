@@ -96,7 +96,7 @@
 
     <select id="findRegistrationIds" parameterType="long" resultType="long">
         SELECT r.`object_id` FROM `registration` r WHERE
-            EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = 2006
+            EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = 2014
                     AND pa.`value_id` = r.`object_id`)
     </select>
 
@@ -107,7 +107,7 @@
     <!-- disable/enable functionality -->
     <update id="updateRegistrationActivity" parameterType="map">
         UPDATE `registration` r SET r.`status` = #{status} WHERE
-            EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = 2006
+            EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = 2014
                     AND pa.`value_id` = r.`object_id`)
             AND 
                 <choose>

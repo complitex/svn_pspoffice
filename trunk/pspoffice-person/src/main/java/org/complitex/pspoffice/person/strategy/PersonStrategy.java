@@ -22,14 +22,10 @@ import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
-import org.complitex.dictionary.strategy.web.AbstractComplexAttributesPanel;
-import org.complitex.dictionary.strategy.web.validate.IValidator;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.web.edit.PersonNameEditComponent;
-import org.complitex.pspoffice.person.strategy.web.edit.PersonRegistrationEditComponent;
-import org.complitex.pspoffice.person.strategy.web.edit.validate.PersonValidator;
+import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -48,10 +44,21 @@ public class PersonStrategy extends TemplateStrategy {
     /**
      * Attribute type ids
      */
-    public static final long FIRST_NAME = 2001;
     public static final long LAST_NAME = 2000;
+    public static final long FIRST_NAME = 2001;
     public static final long MIDDLE_NAME = 2002;
-    public static final long REGISTRATION = 2006;
+    public static final long NATIONALITY = 2003;
+    public static final long BIRTH_DATE = 2004;
+    public static final long BIRTH_REGION = 2005;
+    public static final long BIRTH_DISTRICT = 2006;
+    public static final long BIRTH_CITY = 2007;
+    public static final long BIRTH_VILLAGE = 2008;
+    public static final long PASSPORT_SERIAL_NUMBER = 2009;
+    public static final long PASSPORT_NUMBER = 2010;
+    public static final long PASSPORT_ACQUISITION_INFO = 2011;
+    public static final long JOB_INFO = 2012;
+    public static final long MILITARY_SERVISE_RELATION = 2013;
+    public static final long REGISTRATION = 2014;
 
     /**
      * Order by related constants
@@ -96,6 +103,18 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Override
+    public Class<? extends WebPage> getEditPage() {
+        return PersonEdit.class;
+    }
+
+    @Override
+    public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
+        PageParameters params = new PageParameters();
+        params.put(TemplateStrategy.OBJECT_ID, objectId);
+        return params;
+    }
+
+    @Override
     public String[] getEditRoles() {
         return new String[]{SecurityRole.PERSON_MODULE_EDIT};
     }
@@ -132,21 +151,6 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public String getPluralEntityLabel(Locale locale) {
         return ResourceUtil.getString(PersonStrategy.class.getName(), getEntityTable(), locale);
-    }
-
-    @Override
-    public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelBeforeClass() {
-        return PersonNameEditComponent.class;
-    }
-
-    @Override
-    public Class<? extends AbstractComplexAttributesPanel> getComplexAttributesPanelAfterClass() {
-        return PersonRegistrationEditComponent.class;
-    }
-
-    @Override
-    public IValidator getValidator() {
-        return new PersonValidator();
     }
 
     @Override

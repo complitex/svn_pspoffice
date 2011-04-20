@@ -204,6 +204,37 @@
                     </td>
                 </tr>
             </table>
+
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <span wicket:id="childrenLabel"></span>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tbody wicket:id="childrenContainer">
+                            <tr wicket:id="children">
+                                <wicket:container wicket:id="fakeContainer"/>
+                                <th>
+                                    <wicket:container wicket:id="label"/>:
+                                </th>
+                                <td>
+                                    <div wicket:id="searchChildComponent"></div>
+                                </td>
+                                <td>
+                                    <input type="button" class="btnMiddle" wicket:id="remove" wicket:message="value:removeChild"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div>
+                        <input type="button" class="btnMiddle" wicket:id="add" wicket:message="value:addChild"/>
+                    </div>
+                </fieldset>
+            </div>
         </wicket:panel>
     </body>
 </html>

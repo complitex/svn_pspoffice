@@ -152,8 +152,8 @@ public final class PersonList extends ScrollListPage {
             }
 
             @Override
-            public IModel<Person> model(Person object) {
-                return new Model<Person>(object);
+            public IModel<Person> model(Person person) {
+                return new Model<Person>(person);
             }
         };
         dataProvider.setSort(getTemplateSession().getPreferenceString(PAGE, PreferenceKey.SORT_PROPERTY, ""),
@@ -169,8 +169,8 @@ public final class PersonList extends ScrollListPage {
             }
 
             @Override
-            public void setObject(String number) {
-                example.addAdditionalParam(PersonStrategy.LAST_NAME_FILTER, number);
+            public void setObject(String lastName) {
+                example.addAdditionalParam(PersonStrategy.LAST_NAME_FILTER, lastName);
             }
         }));
         filterForm.add(new TextField<String>("firstNameFilter", new Model<String>() {
@@ -181,8 +181,8 @@ public final class PersonList extends ScrollListPage {
             }
 
             @Override
-            public void setObject(String corp) {
-                example.addAdditionalParam(PersonStrategy.FIRST_NAME_FILTER, corp);
+            public void setObject(String firstName) {
+                example.addAdditionalParam(PersonStrategy.FIRST_NAME_FILTER, firstName);
             }
         }));
         filterForm.add(new TextField<String>("middleNameFilter", new Model<String>() {
@@ -193,8 +193,8 @@ public final class PersonList extends ScrollListPage {
             }
 
             @Override
-            public void setObject(String structure) {
-                example.addAdditionalParam(PersonStrategy.MIDDLE_NAME_FILTER, structure);
+            public void setObject(String middleName) {
+                example.addAdditionalParam(PersonStrategy.MIDDLE_NAME_FILTER, middleName);
             }
         }));
 

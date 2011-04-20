@@ -65,7 +65,6 @@ public final class RegistrationInputPanel extends Panel {
     private RegistrationStrategy registrationStrategy;
     @EJB
     private StrategyFactory strategyFactory;
-
     private DomainObject registration;
     private Attribute addressAttribute;
     private SearchComponentState addressSearchComponentState;
@@ -78,6 +77,20 @@ public final class RegistrationInputPanel extends Panel {
 
     private void init() {
         final Entity entity = registrationStrategy.getEntity();
+
+        //current address
+        WebMarkupContainer currentAddressContainer = new WebMarkupContainer("currentAddressContainer");
+        add(currentAddressContainer);
+        currentAddressContainer.add(new Label("label", newLabelModel(entity.getAttributeType(ADDRESS).getAttributeNames())));
+        WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
+        requiredContainer.setVisible(entity.getAttributeType(ADDRESS).isMandatory());
+        currentAddressContainer.add(requiredContainer);
+        addressAttribute = registration.getAttribute(ADDRESS);
+        addressSearchComponentState = initAddressSearchComponentState();
+        SearchComponent addressSearchPanel = new SearchComponent("input", addressSearchComponentState,
+                ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
+                DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+        currentAddressContainer.add(addressSearchPanel);
 
         //system attributes:
         initSystemAttributeInput(this, "arrivalRegion", ARRIVAL_REGION);
@@ -94,23 +107,12 @@ public final class RegistrationInputPanel extends Panel {
         initSystemAttributeInput(this, "departureCity", DEPARTURE_CITY);
         initSystemAttributeInput(this, "departureVillage", DEPARTUREL_VILLAGE);
         initSystemAttributeInput(this, "departureDate", DEPARTURE_DATE);
+        initSystemAttributeInput(this, "departureReason", DEPARTURE_REASON);
         initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP);
         initSystemAttributeInput(this, "otherRelationship", OTHERS_RELATIONSHIP);
         initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS);
-
-        //current address
-        WebMarkupContainer currentAddressContainer = new WebMarkupContainer("currentAddressContainer");
-        add(currentAddressContainer);
-        currentAddressContainer.add(new Label("label", newLabelModel(entity.getAttributeType(ADDRESS).getAttributeNames())));
-        WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
-        requiredContainer.setVisible(entity.getAttributeType(ADDRESS).isMandatory());
-        currentAddressContainer.add(requiredContainer);
-        addressAttribute = registration.getAttribute(ADDRESS);
-        addressSearchComponentState = initAddressSearchComponentState();
-        SearchComponent addressSearchPanel = new SearchComponent("input", addressSearchComponentState,
-                ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
-                DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
-        currentAddressContainer.add(addressSearchPanel);
+        initSystemAttributeInput(this, "registrationDate", REGISTRATION_DATE);
+        initSystemAttributeInput(this, "registrationType", REGISTRATION_TYPE);
 
         //user attributes:
         List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
@@ -152,7 +154,7 @@ public final class RegistrationInputPanel extends Panel {
         initAttributeInput(container, attributeTypeId);
     }
 
-    private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames){
+    private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames) {
         return new AbstractReadOnlyModel<String>() {
 
             @Override

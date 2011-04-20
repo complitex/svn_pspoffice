@@ -71,6 +71,9 @@
                 <when test="orderByAttributeTypeId == 2002">
                     mn.`name`
                 </when>
+                <when test="orderByAttributeTypeId == -1">
+                    ln.`name`, fn.`name`, mn.`name`
+                </when>
                 <otherwise>
                     1
                 </otherwise>

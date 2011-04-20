@@ -11,7 +11,7 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2003, 1, UPPER('Отчество')), (2003, 2, UPPER('По батькові'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2002, 2000, 1, 2003, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2004, 1, UPPER('Национальность')), (2004, 2, UPPER('Національність'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2003, 2000, 1, 2004, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2003, 2000, 0, 2004, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2005, 1, UPPER('Дата рождения')), (2005, 2, UPPER('Дата нарождения'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2004, 2000, 0, 2005, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2006, 1, UPPER('Область(гос-во)')), (2006, 2, UPPER('Область(держава)'));
@@ -34,6 +34,8 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2014, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2013, 2000, 0, 2014, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2015, 1, UPPER('Регистрация')), (2015, 2, UPPER('Регистрация'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2014, 2000, 1, 2015, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2016, 1, UPPER('Дети до 16 лет')), (2016, 2, UPPER('Діти віком до 16 років'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2015, 2000, 0, 2016, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2000, 2000, UPPER('last_name'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2001, 2001, UPPER('first_name'));
@@ -50,6 +52,7 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2012, 2012, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2013, 2013, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2014, 2014, 'registration');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2015, 2015, 'person');
 
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration',1), ('registration_string_culture',1);
 
@@ -57,13 +60,13 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2100, 1, 'Ре�
 insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (2100, 'registration', 2100, '');
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2101, 1, UPPER('Адрес')), (2101, 2, UPPER('Адрес'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2100, 2100, 1, 2101, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2102, 1, UPPER('Область(гос-во)')), (2102, 2, UPPER('Область(гос-во)'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2102, 1, UPPER('Область(гос-во)')), (2102, 2, UPPER('Область(держава)'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2101, 2100, 0, 2102, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2103, 1, UPPER('Район')), (2103, 2, UPPER('Район'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2102, 2100, 0, 2103, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2104, 1, UPPER('Город(пгт)')), (2104, 2, UPPER('Город(пгт)'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2104, 1, UPPER('Город(пгт)')), (2104, 2, UPPER('Місто(смт)'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2103, 2100, 0, 2104, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2105, 1, UPPER('Село(поселок)')), (2105, 2, UPPER('Село(поселок)'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2105, 1, UPPER('Село(поселок)')), (2105, 2, UPPER('Село(селище)'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2104, 2100, 0, 2105, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2106, 1, UPPER('Улица')), (2106, 2, UPPER('Улица'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2105, 2100, 0, 2106, 1);
@@ -76,23 +79,30 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2110, 1, UPPER('Дата прибытия')), (2110, 2, UPPER('Дата прибытия'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2109, 2100, 0, 2110, 1);
 
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2111, 1, UPPER('Область(гос-во)')), (2111, 2, UPPER('Область(гос-во)'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2111, 1, UPPER('Область(гос-во)')), (2111, 2, UPPER('Область(держава)'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2110, 2100, 0, 2111, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2112, 1, UPPER(' Район')), (2112, 2, UPPER('Район'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2112, 1, UPPER('Район')), (2112, 2, UPPER('Район'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2111, 2100, 0, 2112, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2113, 1, UPPER('Город(пгт)')), (2113, 2, UPPER('Город(пгт)'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2113, 1, UPPER('Город(пгт)')), (2113, 2, UPPER('Місто(смт)'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2112, 2100, 0, 2113, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2114, 1, UPPER('Село(поселок)')), (2114, 2, UPPER('Село(поселок)'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2114, 1, UPPER('Село(поселок)')), (2114, 2, UPPER('Село(селище)'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2113, 2100, 0, 2114, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2115, 1, UPPER('Дата убытия')), (2115, 2, UPPER('Дата убытия'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2115, 1, UPPER('Дата выбытия')), (2115, 2, UPPER('Дата вибуття'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2114, 2100, 0, 2115, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2116, 1, UPPER('Причина выбытия')), (2116, 2, UPPER('Причина вибуття'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2115, 2100, 0, 2116, 1);
 
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2116, 1, UPPER('Отношение к владельцу')), (2116, 2, UPPER('Отношение к владельцу'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2115, 2100, 1, 2116, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2117, 1, UPPER('Отношение к остальным проживающим')), (2117, 2, UPPER('Отношение к остальным проживающим'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2117, 1, UPPER('Отношение к владельцу')), (2117, 2, UPPER('Отношение к владельцу'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2116, 2100, 0, 2117, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2118, 1, UPPER('Документ права на жилплощадь')), (2118, 2, UPPER('Документ права на жилплощадь'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2118, 1, UPPER('Отношение к остальным проживающим')), (2118, 2, UPPER('Отношение к остальным проживающим'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2117, 2100, 0, 2118, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2119, 1, UPPER('Документ права на жилплощадь')), (2119, 2, UPPER('Документ права на жилплощадь'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2118, 2100, 0, 2119, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2120, 1, UPPER('Дата прописки')), (2120, 2, UPPER('Дата прописки'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2119, 2100, 0, 2120, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2121, 1, UPPER('Тип прописки')), (2121, 2, UPPER('Тип прописки'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 0, 2121, 1);
+
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2100, 2100, 'room');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2101, 2100, 'apartment');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2102, 2100, 'building');
@@ -111,6 +121,9 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2115, 2113, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2116, 2114, UPPER('date2'));
 
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2117, 2115, UPPER('string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2118, 2116, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2117, 2115, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2118, 2116, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2119, 2117, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2120, 2118, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2121, 2119, UPPER('date'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2122, 2120, UPPER('string'));

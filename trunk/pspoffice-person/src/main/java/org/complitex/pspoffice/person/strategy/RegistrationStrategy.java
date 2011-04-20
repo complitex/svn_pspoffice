@@ -46,9 +46,12 @@ public class RegistrationStrategy extends Strategy {
     public static final long DEPARTURE_CITY = 2112;
     public static final long DEPARTUREL_VILLAGE = 2113;
     public static final long DEPARTURE_DATE = 2114;
-    public static final long OWNER_RELATIONSHIP = 2115;
-    public static final long OTHERS_RELATIONSHIP = 2116;
-    public static final long HOUSING_RIGHTS = 2117;
+    public static final long DEPARTURE_REASON = 2115;
+    public static final long OWNER_RELATIONSHIP = 2116;
+    public static final long OTHERS_RELATIONSHIP = 2117;
+    public static final long HOUSING_RIGHTS = 2118;
+    public static final long REGISTRATION_DATE = 2119;
+    public static final long REGISTRATION_TYPE = 2120;
 
     //    public static final long DEPARTURE = 2102;
     /**
@@ -65,8 +68,8 @@ public class RegistrationStrategy extends Strategy {
     public static final long ADDRESS_ROOM = 2100;
     public static final long ADDRESS_APARTMENT = 2101;
     public static final long ADDRESS_BUILDING = 2102;
-    @EJB
-    private StringCultureBean stringBean;
+//    @EJB
+//    private StringCultureBean stringBean;
     @EJB
     private StrategyFactory strategyFactory;
 

@@ -11,6 +11,73 @@
                     <legend>
                         <span>
                             <h3>
+                                <wicket:message key="current_address"/>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="currentAddressContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <wicket:message key="registration_note"/>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="registrationDateContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="registrationTypeContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
                                 <wicket:message key="arrival_address"/>
                             </h3>
                         </span>
@@ -127,34 +194,7 @@
                         </tr>
                     </table>
                 </fieldset>
-            </div>
-
-            <div>
-                <fieldset>
-                    <legend>
-                        <span>
-                            <h3>
-                                <wicket:message key="current_address"/>
-                            </h3>
-                        </span>
-                    </legend>
-                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <wicket:container wicket:id="currentAddressContainer">
-                                <th>
-                                    <wicket:container wicket:id="label"/>
-                                    <wicket:container wicket:id="required">
-                                        <b class="blue">*</b>
-                                    </wicket:container>:
-                                </th>
-                                <td>
-                                    <div wicket:id="input"></div>
-                                </td>
-                            </wicket:container>
-                        </tr>
-                    </table>
-                </fieldset>
-            </div>
+            </div>           
 
             <div>
                 <fieldset>
@@ -231,11 +271,24 @@
                                 </td>
                             </wicket:container>
                         </tr>
+                        <tr>
+                            <wicket:container wicket:id="departureReasonContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
                     </table>
                 </fieldset>
             </div>
 
-            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+            <table class="tbForm" cellpadding="0" cellspacing="0" border="0" style="margin-top: 20px;">
                 <tr>
                     <wicket:container wicket:id="ownerRelationshipContainer">
                         <th>

@@ -1,7 +1,8 @@
 package org.complitex.pspoffice.person.strategy;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Maps.*;
+import static com.google.common.collect.Sets.*;
 import java.util.Date;
 import java.util.List;
 import org.apache.wicket.PageParameters;
@@ -10,15 +11,15 @@ import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.StringCultureBean;
 
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StatusType;
+import org.complitex.dictionary.entity.description.EntityAttributeType;
+import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
@@ -27,10 +28,10 @@ import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
+import org.complitex.pspoffice.person.strategy.entity.FullName;
+import org.complitex.pspoffice.person.strategy.util.FullNameParser;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -39,7 +40,6 @@ import org.slf4j.LoggerFactory;
 @Stateless
 public class PersonStrategy extends TemplateStrategy {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonStrategy.class);
     private static final String PERSON_MAPPING = PersonStrategy.class.getPackage().getName() + ".Person";
     /**
      * Attribute type ids
@@ -59,6 +59,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long JOB_INFO = 2012;
     public static final long MILITARY_SERVISE_RELATION = 2013;
     public static final long REGISTRATION = 2014;
+    public static final long CHILDREN = 2015;
 
     /**
      * Order by related constants
@@ -82,6 +83,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final String LAST_NAME_FILTER = "last_name";
     public static final String FIRST_NAME_FILTER = "first_name";
     public static final String MIDDLE_NAME_FILTER = "middle_name";
+    public static final long DEFAULT_ORDER_BY_ID = -1;
     @EJB
     private StringCultureBean stringBean;
     @EJB
@@ -121,24 +123,40 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
-        String firstName = stringBean.displayValue(object.getAttribute(FIRST_NAME).getLocalizedValues(), locale);
-        String lastName = stringBean.displayValue(object.getAttribute(LAST_NAME).getLocalizedValues(), locale);
-        String middleName = stringBean.displayValue(object.getAttribute(MIDDLE_NAME).getLocalizedValues(), locale);
-
+        Person person = (Person) object;
         // return in format 'last_name fisrt_name middle_name'
-        return lastName + " " + firstName + " " + middleName;
+        return person.getLastName() + " " + person.getFirstName() + " " + person.getMiddleName();
     }
 
     @Override
     public List<Person> find(DomainObjectExample example) {
         example.setTable(getEntityTable());
-        prepareExampleForPermissionCheck(example);
+        if (!example.isAdmin()) {
+            prepareExampleForPermissionCheck(example);
+        }
 
-        List<Person> objects = sqlSession().selectList(PERSON_MAPPING + "." + FIND_OPERATION, example);
-        for (Person person : objects) {
+        List<Person> persons = sqlSession().selectList(PERSON_MAPPING + "." + FIND_OPERATION, example);
+        for (Person person : persons) {
             loadAttributes(person);
         }
-        return objects;
+        return persons;
+    }
+
+    @Override
+    public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
+        FullName fullName = FullNameParser.parse(searchTextInput);
+        if (fullName != null) {
+            example.addAdditionalParam(LAST_NAME_FILTER, fullName.getLastName());
+            if (fullName.getFirstName() != null) {
+                example.addAdditionalParam(FIRST_NAME_FILTER, fullName.getFirstName());
+            }
+            if (fullName.getMiddleName() != null) {
+                example.addAdditionalParam(MIDDLE_NAME_FILTER, fullName.getMiddleName());
+            }
+        } else {
+            //setup intentionally false condition
+            example.setId(-1L);
+        }
     }
 
     @Override
@@ -160,7 +178,7 @@ public class PersonStrategy extends TemplateStrategy {
         person.setRegistration(registrationStrategy.newInstance());
 
         //set up subject ids to visible-by-all subject
-        Set<Long> defaultSubjectIds = Sets.newHashSet(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
+        Set<Long> defaultSubjectIds = newHashSet(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
         person.setSubjectIds(defaultSubjectIds);
 
         return person;
@@ -173,6 +191,7 @@ public class PersonStrategy extends TemplateStrategy {
         DomainObject registration = person.getRegistration();
         registrationStrategy.insert(registration, insertDate);
         person.updateRegistrationAttribute();
+        person.updateChildrenAttributes();
         super.insertDomainObject(person, insertDate);
     }
 
@@ -205,6 +224,7 @@ public class PersonStrategy extends TemplateStrategy {
             registrationStrategy.archive(updatedOldRegistration);
         }
 
+        newPerson.updateChildrenAttributes();
         super.update(oldObject, newObject, updateDate);
     }
 
@@ -226,6 +246,7 @@ public class PersonStrategy extends TemplateStrategy {
             updateStringsForNewLocales(person);
             //load registration object
             loadRegistration(person, null);
+            loadChildren(person);
 
             //load subject ids
             person.setSubjectIds(loadSubjects(person.getPermissionId()));
@@ -248,42 +269,93 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
+    private void loadChildren(Person person) {
+        List<Attribute> childrenAttributes = person.getAttributes(CHILDREN);
+        if (childrenAttributes != null && !childrenAttributes.isEmpty()) {
+            for (Attribute childAttribute : childrenAttributes) {
+                Long childId = childAttribute.getValueId();
+                DomainObjectExample example = new DomainObjectExample(childId);
+                example.setAdmin(true);
+                List<Person> children = find(example);
+                if (children != null && children.size() == 1) {
+                    Person child = children.get(0);
+                    if (child != null) {
+                        person.addChild(child);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void fillAttributes(DomainObject object) {
+        List<Attribute> toAdd = newArrayList();
+
+        for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
+            if (!attributeType.isObsolete()) {
+                if (object.getAttributes(attributeType.getId()).isEmpty()) {
+                    if ((attributeType.getEntityAttributeValueTypes().size() == 1) && !attributeType.getId().equals(CHILDREN)) {
+                        Attribute attribute = new Attribute();
+                        EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
+                        attribute.setAttributeTypeId(attributeType.getId());
+                        attribute.setValueTypeId(attributeValueType.getId());
+                        attribute.setObjectId(object.getId());
+                        attribute.setAttributeId(1L);
+
+                        if (isSimpleAttributeType(attributeType)) {
+                            attribute.setLocalizedValues(stringBean.newStringCultures());
+                        }
+                        toAdd.add(attribute);
+                    }
+                }
+            }
+        }
+        if (!toAdd.isEmpty()) {
+            object.getAttributes().addAll(toAdd);
+        }
+    }
+
+    @Transactional
     private Set<Long> findRegistrationIds(long personId) {
-        return Sets.newHashSet(sqlSession().selectList(PERSON_MAPPING + ".findRegistrationIds", personId));
+        return newHashSet(sqlSession().selectList(PERSON_MAPPING + ".findRegistrationIds", personId));
     }
 
-    @Transactional
     @Override
-    public TreeSet<Date> getHistoryDates(long objectId) {
-        TreeSet<Date> historyDates = super.getHistoryDates(objectId);
-        Set<Long> addressIds = findRegistrationIds(objectId);
-        for (Long addressId : addressIds) {
-            TreeSet<Date> addressHistoryDates = registrationStrategy.getHistoryDates(addressId);
-            historyDates.addAll(addressHistoryDates);
-        }
-        return historyDates;
+    public long getDefaultOrderByAttributeId() {
+        return DEFAULT_ORDER_BY_ID;
     }
 
-    @Transactional
-    @Override
-    public Person findHistoryObject(long objectId, Date date) {
-        DomainObjectExample example = new DomainObjectExample(objectId);
-        example.setTable(getEntityTable());
-        example.setStartDate(date);
-
-        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_HISTORY_OBJECT_OPERATION, example);
-        if (person == null) {
-            return null;
-        }
-
-        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, date);
-        loadStringCultures(historyAttributes);
-        person.setAttributes(historyAttributes);
-        loadRegistration(person, date);
-        updateStringsForNewLocales(person);
-        return person;
-    }
-
+//    @Transactional
+//    @Override
+//    public TreeSet<Date> getHistoryDates(long objectId) {
+//        TreeSet<Date> historyDates = super.getHistoryDates(objectId);
+//        Set<Long> addressIds = findRegistrationIds(objectId);
+//        for (Long addressId : addressIds) {
+//            TreeSet<Date> addressHistoryDates = registrationStrategy.getHistoryDates(addressId);
+//            historyDates.addAll(addressHistoryDates);
+//        }
+//        return historyDates;
+//    }
+//
+//    @Transactional
+//    @Override
+//    public Person findHistoryObject(long objectId, Date date) {
+//        DomainObjectExample example = new DomainObjectExample(objectId);
+//        example.setTable(getEntityTable());
+//        example.setStartDate(date);
+//
+//        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_HISTORY_OBJECT_OPERATION, example);
+//        if (person == null) {
+//            return null;
+//        }
+//
+//        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, date);
+//        loadStringCultures(historyAttributes);
+//        person.setAttributes(historyAttributes);
+//        loadRegistration(person, date);
+//        updateStringsForNewLocales(person);
+//        return person;
+//    }
     @Transactional
     @Override
     public void delete(long objectId) throws DeleteException {
@@ -306,11 +378,16 @@ public class PersonStrategy extends TemplateStrategy {
     public void changeChildrenActivity(long personId, boolean enable) {
         Set<Long> registrationIds = findRegistrationIds(personId);
         if (!registrationIds.isEmpty()) {
-            Map<String, Object> params = Maps.newHashMap();
+            Map<String, Object> params = newHashMap();
             params.put("personId", personId);
             params.put("enabled", !enable);
             params.put("status", enable ? StatusType.ACTIVE : StatusType.INACTIVE);
             sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
         }
+    }
+
+    @Override
+    public int getSearchTextFieldSize() {
+        return 40;
     }
 }

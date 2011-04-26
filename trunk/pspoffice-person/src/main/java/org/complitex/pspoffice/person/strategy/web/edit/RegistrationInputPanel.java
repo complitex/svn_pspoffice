@@ -256,7 +256,7 @@ public final class RegistrationInputPanel extends Panel {
         addressStrategy = strategyFactory.getStrategy(addressEntity);
         if (addressObjectId != null) {
             addressObject = addressStrategy.findById(addressObjectId, true);
-            Strategy.RestrictedObjectInfo info = addressStrategy.findParentInSearchComponent(addressObjectId, null);
+            Strategy.SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressObjectId, null);
             if (info != null) {
                 searchComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
                 searchComponentState.put(addressEntity, addressObject);

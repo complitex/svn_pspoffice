@@ -35,7 +35,6 @@ import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
-import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeModel;
@@ -256,7 +255,7 @@ public final class RegistrationInputPanel extends Panel {
         addressStrategy = strategyFactory.getStrategy(addressEntity);
         if (addressObjectId != null) {
             addressObject = addressStrategy.findById(addressObjectId, true);
-            Strategy.SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressObjectId, null);
+            SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressObjectId, null);
             if (info != null) {
                 searchComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
                 searchComponentState.put(addressEntity, addressObject);

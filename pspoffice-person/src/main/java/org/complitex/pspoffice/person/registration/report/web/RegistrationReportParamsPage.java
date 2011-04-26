@@ -12,7 +12,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.strategy.IStrategy.RestrictedObjectInfo;
+import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
@@ -59,7 +59,7 @@ public final class RegistrationReportParamsPage extends FormTemplatePage {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                RestrictedObjectInfo addressInfo = getAddressObjectInfo(addressComponentState);
+                SimpleObjectInfo addressInfo = getAddressObjectInfo(addressComponentState);
                 if (addressInfo != null) {
                     PageParameters params = new PageParameters();
                     params.add(ADDRESS_ID, String.valueOf(addressInfo.getId()));
@@ -73,7 +73,7 @@ public final class RegistrationReportParamsPage extends FormTemplatePage {
         add(report);
     }
 
-    private RestrictedObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
+    private SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
         DomainObject building = addressComponentState.get("building");
         if (building == null || building.getId() == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error(getString("address_invalid"));
@@ -81,13 +81,13 @@ public final class RegistrationReportParamsPage extends FormTemplatePage {
         }
         DomainObject apartment = addressComponentState.get("apartment");
         if (apartment == null || apartment.getId() == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-            return new RestrictedObjectInfo("building", building.getId());
+            return new SimpleObjectInfo("building", building.getId());
         }
         DomainObject room = addressComponentState.get("room");
         if (room == null || room.getId() == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-            return new RestrictedObjectInfo("apartment", apartment.getId());
+            return new SimpleObjectInfo("apartment", apartment.getId());
         }
-        return new RestrictedObjectInfo("room", room.getId());
+        return new SimpleObjectInfo("room", room.getId());
     }
 }
 

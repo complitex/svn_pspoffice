@@ -32,6 +32,7 @@ import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
+import org.complitex.dictionary.strategy.web.model.DomainObjectIdModel;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.dictionary.web.component.ShowMode;
@@ -160,12 +161,12 @@ public final class PersonList extends ScrollListPage {
                 getTemplateSession().getPreferenceBoolean(PAGE, PreferenceKey.SORT_ORDER, true));
 
         //Filters
-        filterForm.add(new TextField<Long>("id", new PropertyModel<Long>(example, "id")));
+        filterForm.add(new TextField<String>("id", new DomainObjectIdModel(new PropertyModel<Long>(example, "id"))));
         filterForm.add(new TextField<String>("lastNameFilter", new Model<String>() {
 
             @Override
             public String getObject() {
-                return (String) example.getAdditionalParam(PersonStrategy.LAST_NAME_FILTER);
+                return example.getAdditionalParam(PersonStrategy.LAST_NAME_FILTER);
             }
 
             @Override
@@ -177,7 +178,7 @@ public final class PersonList extends ScrollListPage {
 
             @Override
             public String getObject() {
-                return (String) example.getAdditionalParam(PersonStrategy.FIRST_NAME_FILTER);
+                return example.getAdditionalParam(PersonStrategy.FIRST_NAME_FILTER);
             }
 
             @Override
@@ -189,7 +190,7 @@ public final class PersonList extends ScrollListPage {
 
             @Override
             public String getObject() {
-                return (String) example.getAdditionalParam(PersonStrategy.MIDDLE_NAME_FILTER);
+                return example.getAdditionalParam(PersonStrategy.MIDDLE_NAME_FILTER);
             }
 
             @Override

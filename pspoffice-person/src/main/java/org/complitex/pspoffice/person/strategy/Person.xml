@@ -22,7 +22,6 @@
         <if test="id != null">
             AND e.`object_id` = #{id}
         </if>
-
         <if test="additionalParams != null">
             <if test="additionalParams['last_name'] != null">
                 AND ln.`name` LIKE CONCAT('%', #{additionalParams.last_name}, '%')

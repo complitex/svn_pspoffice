@@ -1,5 +1,6 @@
 package org.complitex.pspoffice.person.strategy;
 
+import java.util.Collections;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.Sets.*;
@@ -130,6 +131,10 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Override
     public List<Person> find(DomainObjectExample example) {
+        if (example.getId() != null && example.getId() <= 0) {
+            return Collections.emptyList();
+        }
+
         example.setTable(getEntityTable());
         if (!example.isAdmin()) {
             prepareExampleForPermissionCheck(example);
@@ -161,6 +166,10 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Override
     public int count(DomainObjectExample example) {
+        if (example.getId() != null && example.getId() <= 0) {
+            return 0;
+        }
+
         example.setTable(getEntityTable());
         prepareExampleForPermissionCheck(example);
         return (Integer) sqlSession().selectOne(PERSON_MAPPING + "." + COUNT_OPERATION, example);

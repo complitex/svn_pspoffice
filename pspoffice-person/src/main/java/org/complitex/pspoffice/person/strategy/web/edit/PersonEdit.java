@@ -9,6 +9,7 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.Link;
@@ -24,9 +25,11 @@ import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.permission.DomainObjectPermissionsPanel;
 import org.complitex.dictionary.web.component.permission.PermissionPropagationDialogPanel;
+import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
@@ -48,13 +51,14 @@ public final class PersonEdit extends FormTemplatePage {
     private LogBean logBean;
     @EJB
     private PersonStrategy personStrategy;
-
     private Person oldPerson;
     private Person newPerson;
     private PersonInputPanel personInputPanel;
     private FeedbackPanel messages;
 
     public PersonEdit(PageParameters parameters) {
+        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+
         Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
         if (objectId == null) {
             //create new entity
@@ -79,7 +83,8 @@ public final class PersonEdit extends FormTemplatePage {
         };
         Label title = new Label("title", labelModel);
         add(title);
-        Label label = new Label("label", labelModel);
+        final Label label = new Label("label", labelModel);
+        label.setOutputMarkupId(true);
         add(label);
 
         messages = new FeedbackPanel("messages");
@@ -134,17 +139,24 @@ public final class PersonEdit extends FormTemplatePage {
                         }
                     } else {
                         target.addComponent(messages);
+                        scrollToMessages(target);
                     }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
                     target.addComponent(messages);
+                    scrollToMessages(target);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
                 target.addComponent(messages);
+                scrollToMessages(target);
+            }
+
+            private void scrollToMessages(AjaxRequestTarget target) {
+                target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
         submit.setVisible(DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), newPerson));
@@ -179,7 +191,6 @@ public final class PersonEdit extends FormTemplatePage {
     }
 
     private void save(boolean propagate) {
-        //permission related logic
         personInputPanel.beforePersist();
         if (isNew()) {
             personStrategy.insert(newPerson, DateUtil.getCurrentDate());

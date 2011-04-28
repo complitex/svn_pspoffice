@@ -8,10 +8,13 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import java.text.MessageFormat;
+import java.util.Collection;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Sets.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
@@ -307,13 +310,29 @@ public final class PersonInputPanel extends Panel {
 
     private boolean validateChildren() {
         boolean valid = true;
-        for (Person child : person.getChildren()) {
-            if (child == null || child.getId() == null) {
-                if (valid) {
-                    error(getString("children_error"));
-                }
-                valid = false;
+
+        Collection<Person> nonNullChildren = newArrayList(filter(person.getChildren(), new Predicate<Person>() {
+
+            @Override
+            public boolean apply(Person child) {
+                return child != null && child.getId() != null && child.getId() > 0;
             }
+        }));
+        if (nonNullChildren.size() != person.getChildren().size()) {
+            error(getString("children_error"));
+            valid = false;
+        }
+
+        Set<Long> childrenIds = newHashSet(transform(nonNullChildren, new Function<Person, Long>() {
+
+            @Override
+            public Long apply(Person child) {
+                return child.getId();
+            }
+        }));
+        if (childrenIds.size() != nonNullChildren.size()) {
+            error(getString("children_dublicate"));
+            valid = false;
         }
         return valid;
     }

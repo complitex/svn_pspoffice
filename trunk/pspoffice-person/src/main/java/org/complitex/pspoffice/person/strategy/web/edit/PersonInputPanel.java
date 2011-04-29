@@ -32,9 +32,11 @@ import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.converter.DoubleConverter;
+import org.complitex.dictionary.converter.GenderConverter;
 import org.complitex.dictionary.converter.IntegerConverter;
 import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.entity.SimpleTypes;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.Entity;
@@ -52,6 +54,7 @@ import org.complitex.dictionary.web.component.type.BooleanPanel;
 import org.complitex.dictionary.web.component.type.Date2Panel;
 import org.complitex.dictionary.web.component.type.DatePanel;
 import org.complitex.dictionary.web.component.type.DoublePanel;
+import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.dictionary.web.component.type.IntegerPanel;
 import org.complitex.dictionary.web.component.type.StringCulturePanel;
 import org.complitex.dictionary.web.component.type.StringPanel;
@@ -101,6 +104,7 @@ public final class PersonInputPanel extends Panel {
         initSystemAttributeInput(this, "passportSerialNumber", PASSPORT_SERIAL_NUMBER);
         initSystemAttributeInput(this, "passportNumber", PASSPORT_NUMBER);
         initSystemAttributeInput(this, "passportAcquisitionInfo", PASSPORT_ACQUISITION_INFO);
+        initSystemAttributeInput(this, "gender", GENDER);
         initSystemAttributeInput(this, "nationality", NATIONALITY);
         initSystemAttributeInput(this, "jobInfo", JOB_INFO);
         initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION);
@@ -291,6 +295,12 @@ public final class PersonInputPanel extends Panel {
             case DOUBLE: {
                 IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
                 input = new DoublePanel("input", model, attributeType.isMandatory(), labelModel,
+                        canEdit(null, personStrategy.getEntityTable(), person));
+            }
+            break;
+            case GENDER: {
+                IModel<Gender> model = new SimpleTypeModel<Gender>(systemLocaleStringCulture, new GenderConverter());
+                input = new GenderPanel("input", model, attributeType.isMandatory(), labelModel,
                         canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;

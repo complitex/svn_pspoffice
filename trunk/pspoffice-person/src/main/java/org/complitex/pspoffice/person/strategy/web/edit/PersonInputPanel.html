@@ -154,6 +154,19 @@
 
             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                 <tr>
+                    <wicket:container wicket:id="genderContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
+                </tr>
+                <tr>
                     <wicket:container wicket:id="nationalityContainer">
                         <th>
                             <wicket:container wicket:id="label"/>

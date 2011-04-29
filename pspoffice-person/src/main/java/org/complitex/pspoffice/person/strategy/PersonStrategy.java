@@ -61,6 +61,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long MILITARY_SERVISE_RELATION = 2013;
     public static final long REGISTRATION = 2014;
     public static final long CHILDREN = 2015;
+    public static final long GENDER = 2016;
 
     /**
      * Order by related constants

@@ -33,7 +33,7 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2014, 1, UPPER('Отношение к воинской службе')), (2014, 2, UPPER('Відношення до військової служби'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2013, 2000, 0, 2014, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2015, 1, UPPER('Регистрация')), (2015, 2, UPPER('Регистрация'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2014, 2000, 1, 2015, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2014, 2000, 0, 2015, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2016, 1, UPPER('Дети до 16 лет')), (2016, 2, UPPER('Діти віком до 16 років'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2015, 2000, 0, 2016, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2017, 1, UPPER('Пол')), (2017, 2, UPPER('Пол'));

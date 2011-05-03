@@ -47,6 +47,7 @@ import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeM
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.name.FullNamePanel;
+import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.type.BigStringPanel;
@@ -59,6 +60,7 @@ import org.complitex.dictionary.web.component.type.IntegerPanel;
 import org.complitex.dictionary.web.component.type.StringCulturePanel;
 import org.complitex.dictionary.web.component.type.StringPanel;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 
@@ -68,10 +70,14 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
  */
 public final class PersonInputPanel extends Panel {
 
+    private static final String REGISTRATION_PANEL_ID = "registrationPanel";
+    private static final String REGISTRATION_FOCUS_JS = "$('#" + REGISTRATION_PANEL_ID + " input[type=\"text\"]:enabled:first').focus()";
     @EJB
     private StringCultureBean stringBean;
     @EJB
     private PersonStrategy personStrategy;
+    @EJB
+    private RegistrationStrategy registrationStrategy;
     private Person person;
     private RegistrationInputPanel registrationInputPanel;
 
@@ -79,6 +85,10 @@ public final class PersonInputPanel extends Panel {
         super(id);
         this.person = person;
         init();
+    }
+
+    private boolean isNew(Person person) {
+        return person.getId() == null;
     }
 
     private void init() {
@@ -91,9 +101,60 @@ public final class PersonInputPanel extends Panel {
         Entity entity = personStrategy.getEntity();
 
         //registration panel:
-        add(new Label("registrationLabel", newLabelModel(entity.getAttributeType(REGISTRATION).getAttributeNames())));
-        registrationInputPanel = new RegistrationInputPanel("registrationPanel", person.getRegistration());
-        add(registrationInputPanel);
+        Label registrationLabel = new Label("registrationLabel", newLabelModel(entity.getAttributeType(REGISTRATION).getAttributeNames()));
+        registrationLabel.setOutputMarkupId(true);
+        final String registrationLabelMarkupId = registrationLabel.getMarkupId();
+        add(registrationLabel);
+        final WebMarkupContainer registrationContainer = new WebMarkupContainer("registrationContainer");
+        registrationContainer.setOutputMarkupId(true);
+        add(registrationContainer);
+        if (person.getRegistration() != null) {
+            registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration());
+            registrationContainer.add(registrationInputPanel);
+        } else {
+            registrationContainer.add(new NoRegistrationPanel(REGISTRATION_PANEL_ID));
+        }
+
+        final WebMarkupContainer registrationControlContainer = new WebMarkupContainer("registrationControlContainer");
+        registrationControlContainer.setOutputMarkupPlaceholderTag(true);
+        registrationContainer.add(registrationControlContainer);
+        AjaxLink<Void> addRegistration = new AjaxLink<Void>("addRegistration") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                person.setRegistration(registrationStrategy.newInstance());
+                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration());
+                updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
+                        target, registrationLabelMarkupId);
+            }
+        };
+        addRegistration.setVisible((person.getRegistration() == null) && canEdit(null, personStrategy.getEntityTable(), person));
+        registrationControlContainer.add(addRegistration);
+        AjaxLink<Void> changeRegistration = new AjaxLink<Void>("changeRegistration") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                person.setNewRegistration(registrationStrategy.newInstance());
+                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getNewRegistration());
+                updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
+                        target, registrationLabelMarkupId);
+            }
+        };
+        changeRegistration.setVisible((person.getRegistration() != null) && !isNew(person) && (person.getNewRegistration() == null)
+                && canEdit(null, personStrategy.getEntityTable(), person));
+        registrationControlContainer.add(changeRegistration);
+        AjaxLink<Void> closeRegistration = new AjaxLink<Void>("closeRegistration") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                person.setRegistrationClosed(true);
+                updateRegistrationContainer(registrationContainer, registrationControlContainer,
+                        new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);
+            }
+        };
+        closeRegistration.setVisible((person.getRegistration() != null) && !isNew(person) && (person.getNewRegistration() == null)
+                && !person.isRegistrationClosed() && canEdit(null, personStrategy.getEntityTable(), person));
+        registrationControlContainer.add(closeRegistration);
 
         //system attributes:
         initSystemAttributeInput(this, "birthRegion", BIRTH_REGION);
@@ -180,11 +241,11 @@ public final class PersonInputPanel extends Panel {
                         canEdit(null, personStrategy.getEntityTable(), person));
                 item.add(searchChildComponent);
 
-                addRemoveLink("remove", item, null, childrenContainer).
+                addRemoveLink("removeChild", item, null, childrenContainer).
                         setVisible(canEdit(null, personStrategy.getEntityTable(), person));
             }
         };
-        AjaxLink<Void> add = new AjaxLink<Void>("add") {
+        AjaxLink<Void> addChild = new AjaxLink<Void>("addChild") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -193,8 +254,8 @@ public final class PersonInputPanel extends Panel {
                 target.addComponent(childrenContainer);
             }
         };
-        add.setVisible(canEdit(null, personStrategy.getEntityTable(), person));
-        add(add);
+        addChild.setVisible(canEdit(null, personStrategy.getEntityTable(), person));
+        add(addChild);
         childrenContainer.add(children);
     }
 
@@ -211,6 +272,15 @@ public final class PersonInputPanel extends Panel {
                 person.getAttribute(attributeTypeId).setValueId(object);
             }
         };
+    }
+
+    private void updateRegistrationContainer(WebMarkupContainer registrationContainer,
+            WebMarkupContainer registrationControlContainer, Panel contentPanel, AjaxRequestTarget target, String scrollToElementId) {
+        registrationContainer.get(REGISTRATION_PANEL_ID).replaceWith(contentPanel);
+        registrationControlContainer.setVisible(false);
+        target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToElementId));
+        target.appendJavascript(REGISTRATION_FOCUS_JS);
+        target.addComponent(registrationContainer);
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId) {
@@ -309,12 +379,14 @@ public final class PersonInputPanel extends Panel {
     }
 
     public void beforePersist() {
-        registrationInputPanel.beforePersist();
+        if (registrationInputPanel != null) {
+            registrationInputPanel.beforePersist();
+        }
     }
 
     public boolean validate() {
         boolean childrenValid = validateChildren();
-        boolean registrationValid = registrationInputPanel.validate();
+        boolean registrationValid = registrationInputPanel != null ? registrationInputPanel.validate() : true;
         return childrenValid && registrationValid;
     }
 

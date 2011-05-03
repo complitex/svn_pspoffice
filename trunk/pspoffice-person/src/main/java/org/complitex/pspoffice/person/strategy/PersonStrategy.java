@@ -130,6 +130,7 @@ public class PersonStrategy extends TemplateStrategy {
         return person.getLastName() + " " + person.getFirstName() + " " + person.getMiddleName();
     }
 
+    @Transactional
     @Override
     public List<Person> find(DomainObjectExample example) {
         if (example.getId() != null && example.getId() <= 0) {
@@ -160,11 +161,12 @@ public class PersonStrategy extends TemplateStrategy {
                 example.addAdditionalParam(MIDDLE_NAME_FILTER, fullName.getMiddleName());
             }
         } else {
-            //setup intentionally false condition
+            //setup intentionally false criteria
             example.setId(-1L);
         }
     }
 
+    @Transactional
     @Override
     public int count(DomainObjectExample example) {
         if (example.getId() != null && example.getId() <= 0) {
@@ -200,7 +202,7 @@ public class PersonStrategy extends TemplateStrategy {
         Person person = (Person) object;
         DomainObject registration = person.getRegistration();
         registrationStrategy.insert(registration, insertDate);
-        person.updateRegistrationAttribute();
+        person.getAttribute(REGISTRATION).setValueId(registration.getId());
         person.updateChildrenAttributes();
         super.insertDomainObject(person, insertDate);
     }
@@ -211,27 +213,38 @@ public class PersonStrategy extends TemplateStrategy {
         super.insertDomainObject(object, updateDate);
     }
 
+    @Transactional
     @Override
     public void update(DomainObject oldObject, DomainObject newObject, Date updateDate) {
         Person oldPerson = (Person) oldObject;
         Person newPerson = (Person) newObject;
 
         DomainObject oldRegistration = oldPerson.getRegistration();
-        DomainObject updatedOldRegistration = newPerson.getRegistration();
-        updatedOldRegistration.setSubjectIds(newPerson.getSubjectIds());
+        DomainObject newRegistration = newPerson.getRegistration();
+        DomainObject changedRegistration = newPerson.getNewRegistration();
 
-        DomainObject newRegistration = newPerson.getNewRegistration();
-        Date oldRegistrationUpdateDate = updateDate;
-        if (newRegistration != null) {
-            oldRegistrationUpdateDate = DateUtil.justBefore(updateDate);
-        }
-        registrationStrategy.update(oldRegistration, updatedOldRegistration, oldRegistrationUpdateDate);
-
-        if (newRegistration != null) {
-            newRegistration.setSubjectIds(newPerson.getSubjectIds());
-            registrationStrategy.insert(newRegistration, updateDate);
-            newPerson.getAttribute(REGISTRATION).setValueId(newRegistration.getId());
-            registrationStrategy.archive(updatedOldRegistration);
+        if (oldRegistration == null) {
+            if (newRegistration != null) {
+                newRegistration.setSubjectIds(newPerson.getSubjectIds());
+                registrationStrategy.insert(newRegistration, updateDate);
+                newPerson.getAttribute(REGISTRATION).setValueId(newRegistration.getId());
+            } else {
+                // do nothing
+            }
+        } else {
+            if (changedRegistration == null) {
+                registrationStrategy.update(oldRegistration, newRegistration, updateDate);
+                if (newPerson.isRegistrationClosed()) {
+                    registrationStrategy.archive(newRegistration, updateDate);
+                    newPerson.getAttribute(REGISTRATION).setValueId(null);
+                }
+            } else {
+                registrationStrategy.update(oldRegistration, newRegistration, DateUtil.justBefore(updateDate));
+                changedRegistration.setSubjectIds(newPerson.getSubjectIds());
+                registrationStrategy.insert(changedRegistration, updateDate);
+                newPerson.getAttribute(REGISTRATION).setValueId(changedRegistration.getId());
+                registrationStrategy.archive(newRegistration, updateDate);
+            }
         }
 
         newPerson.updateChildrenAttributes();
@@ -269,13 +282,15 @@ public class PersonStrategy extends TemplateStrategy {
     private void loadRegistration(Person person, Date date) {
         Attribute registrationAttribute = person.getAttribute(REGISTRATION);
         Long registrationId = registrationAttribute.getValueId();
-        DomainObject registration = null;
-        if (date == null) {
-            registration = registrationStrategy.findById(registrationId, true);
-        } else {
-            registration = registrationStrategy.findHistoryObject(registrationId, date);
+        if (registrationId != null) {
+            DomainObject registration = null;
+            if (date == null) {
+                registration = registrationStrategy.findById(registrationId, true);
+            } else {
+                registration = registrationStrategy.findHistoryObject(registrationId, date);
+            }
+            person.setRegistration(registration);
         }
-        person.setRegistration(registration);
     }
 
     @Transactional

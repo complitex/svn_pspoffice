@@ -23,7 +23,7 @@ public class Person extends DomainObject {
     private String middleName;
     private DomainObject registration;
     private DomainObject newRegistration;
-    private boolean registrationValidated;
+    private boolean registrationClosed;
     private List<Person> children = newArrayList();
 
     public String getFirstName() {
@@ -66,17 +66,18 @@ public class Person extends DomainObject {
         this.newRegistration = newRegistration;
     }
 
-    public void updateRegistrationAttribute() {
-        getAttribute(REGISTRATION).setValueId(getRegistration().getId());
-    }
+//    public void updateRegistrationAttribute() {
+//        getAttribute(REGISTRATION).setValueId(getRegistration().getId());
+//    }
 
-    public boolean isRegistrationValidated() {
-        return registrationValidated;
-    }
-
-    public void setRegistrationValidated(boolean registrationValidated) {
-        this.registrationValidated = registrationValidated;
-    }
+//    public void insertRegistrationAttribute(long registrationId){
+//        Attribute registrationAttribute = new Attribute();
+//        registrationAttribute.setAttributeId(1L);
+//        registrationAttribute.setAttributeTypeId(REGISTRATION);
+//        registrationAttribute.setValueTypeId(REGISTRATION);
+//        registrationAttribute.setValueId(registrationId);
+//        addAttribute(registrationAttribute);
+//    }
 
     public List<Person> getChildren() {
         return children;
@@ -90,7 +91,7 @@ public class Person extends DomainObject {
         children.add(child);
     }
 
-    public void setChild(int index, Person child){
+    public void setChild(int index, Person child) {
         children.set(index, child);
     }
 
@@ -108,12 +109,20 @@ public class Person extends DomainObject {
         }
     }
 
-    private void addChildrenAttribute(long valueId, long attributeId){
+    private void addChildrenAttribute(long valueId, long attributeId) {
         Attribute childrenAttribute = new Attribute();
         childrenAttribute.setAttributeId(attributeId);
         childrenAttribute.setAttributeTypeId(CHILDREN);
         childrenAttribute.setValueTypeId(CHILDREN);
         childrenAttribute.setValueId(valueId);
         addAttribute(childrenAttribute);
+    }
+
+    public boolean isRegistrationClosed() {
+        return registrationClosed;
+    }
+
+    public void setRegistrationClosed(boolean registrationClosed) {
+        this.registrationClosed = registrationClosed;
     }
 }

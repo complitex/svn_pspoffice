@@ -95,7 +95,7 @@ public final class PersonEdit extends FormTemplatePage {
         Form form = new Form("form");
 
         //input panel
-        personInputPanel = new PersonInputPanel("personInputPanel", newPerson);
+        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages);
         form.add(personInputPanel);
 
         //history

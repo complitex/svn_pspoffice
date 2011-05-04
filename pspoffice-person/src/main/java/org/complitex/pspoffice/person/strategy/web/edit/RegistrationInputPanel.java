@@ -69,12 +69,6 @@ public final class RegistrationInputPanel extends Panel {
     private SearchComponentState addressSearchComponentState;
     private Date date;
 
-    public RegistrationInputPanel(String id, DomainObject registration) {
-        super(id);
-        this.registration = registration;
-        init();
-    }
-
     public RegistrationInputPanel(String id, DomainObject registration, Date date) {
         super(id);
         this.registration = registration;
@@ -272,7 +266,7 @@ public final class RegistrationInputPanel extends Panel {
         } else if (addressAttribute.getValueTypeId().equals(ADDRESS_BUILDING)) {
             addressEntity = "building";
         } else {
-            throw new RuntimeException("Registration address attribute has unknown value type id: " + addressAttribute.getValueTypeId());
+            throw new IllegalStateException("Registration address attribute has unknown value type id: " + addressAttribute.getValueTypeId());
         }
         addressStrategy = strategyFactory.getStrategy(addressEntity);
         if (addressObjectId != null) {

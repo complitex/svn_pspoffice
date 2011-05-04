@@ -17,14 +17,16 @@
                             </h3>
                         </span>
                     </legend>
-                    <div wicket:id="registrationContainer">
-                        <div wicket:id="registrationPanel" id="registrationPanel"></div>
-                        <div wicket:id="registrationControlContainer">
-                            <input type="button" class="btnMiddle" wicket:id="addRegistration" wicket:message="value:addRegistration"/>
-                            <input type="button" class="btnBig" wicket:id="changeRegistration" wicket:message="value:changeRegistration"/>
-                            <input type="button" class="btnMiddle" wicket:id="closeRegistration" wicket:message="value:closeRegistration"/>
+                    <form wicket:id="registrationForm">
+                        <div wicket:id="registrationContainer">
+                            <div wicket:id="registrationPanel" id="registrationPanel"></div>
+                            <div wicket:id="registrationControlContainer">
+                                <input type="button" class="btnMiddle" wicket:id="addRegistration" wicket:message="value:addRegistration"/>
+                                <input type="button" class="btnBig" wicket:id="changeRegistration" wicket:message="value:changeRegistration"/>
+                                <input type="button" class="btnMiddle" wicket:id="closeRegistration" wicket:message="value:closeRegistration"/>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </fieldset>
             </div>
 

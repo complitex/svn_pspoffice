@@ -80,6 +80,7 @@ public final class PersonInputPanel extends Panel {
     private RegistrationStrategy registrationStrategy;
     private Person person;
     private RegistrationInputPanel registrationInputPanel;
+    private Date date;
 
     public PersonInputPanel(String id, Person person) {
         super(id);
@@ -87,15 +88,26 @@ public final class PersonInputPanel extends Panel {
         init();
     }
 
-    private boolean isNew(Person person) {
+    public PersonInputPanel(String id, Person person, Date date) {
+        super(id);
+        this.person = person;
+        this.date = date;
+        init();
+    }
+
+    private boolean isNew() {
         return person.getId() == null;
+    }
+
+    private boolean isHistory() {
+        return date != null;
     }
 
     private void init() {
         //full name:
         FullNamePanel fullNamePanel = new FullNamePanel("fullNamePanel", newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME),
                 newNameModel(LAST_NAME));
-        fullNamePanel.setEnabled(canEdit(null, personStrategy.getEntityTable(), person));
+        fullNamePanel.setEnabled(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
         add(fullNamePanel);
 
         Entity entity = personStrategy.getEntity();
@@ -109,7 +121,7 @@ public final class PersonInputPanel extends Panel {
         registrationContainer.setOutputMarkupId(true);
         add(registrationContainer);
         if (person.getRegistration() != null) {
-            registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration());
+            registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
             registrationContainer.add(registrationInputPanel);
         } else {
             registrationContainer.add(new NoRegistrationPanel(REGISTRATION_PANEL_ID));
@@ -123,25 +135,26 @@ public final class PersonInputPanel extends Panel {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 person.setRegistration(registrationStrategy.newInstance());
-                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration());
+                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
                 updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
                         target, registrationLabelMarkupId);
             }
         };
-        addRegistration.setVisible((person.getRegistration() == null) && canEdit(null, personStrategy.getEntityTable(), person));
+        addRegistration.setVisible(!isHistory() && (person.getRegistration() == null)
+                && canEdit(null, personStrategy.getEntityTable(), person));
         registrationControlContainer.add(addRegistration);
         AjaxLink<Void> changeRegistration = new AjaxLink<Void>("changeRegistration") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
                 person.setNewRegistration(registrationStrategy.newInstance());
-                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getNewRegistration());
+                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getNewRegistration(), date);
                 updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
                         target, registrationLabelMarkupId);
             }
         };
-        changeRegistration.setVisible((person.getRegistration() != null) && !isNew(person) && (person.getNewRegistration() == null)
-                && canEdit(null, personStrategy.getEntityTable(), person));
+        changeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
+                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
         registrationControlContainer.add(changeRegistration);
         AjaxLink<Void> closeRegistration = new AjaxLink<Void>("closeRegistration") {
 
@@ -152,23 +165,29 @@ public final class PersonInputPanel extends Panel {
                         new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);
             }
         };
-        closeRegistration.setVisible((person.getRegistration() != null) && !isNew(person) && (person.getNewRegistration() == null)
-                && !person.isRegistrationClosed() && canEdit(null, personStrategy.getEntityTable(), person));
+        closeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
+                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
         registrationControlContainer.add(closeRegistration);
 
         //system attributes:
-        initSystemAttributeInput(this, "birthRegion", BIRTH_REGION);
-        initSystemAttributeInput(this, "birthDistrict", BIRTH_DISTRICT);
-        initSystemAttributeInput(this, "birthCity", BIRTH_CITY);
-        initSystemAttributeInput(this, "birthVillage", BIRTH_VILLAGE);
-        initSystemAttributeInput(this, "birthDate", BIRTH_DATE);
-        initSystemAttributeInput(this, "passportSerialNumber", PASSPORT_SERIAL_NUMBER);
-        initSystemAttributeInput(this, "passportNumber", PASSPORT_NUMBER);
-        initSystemAttributeInput(this, "passportAcquisitionInfo", PASSPORT_ACQUISITION_INFO);
-        initSystemAttributeInput(this, "gender", GENDER);
-        initSystemAttributeInput(this, "nationality", NATIONALITY);
-        initSystemAttributeInput(this, "jobInfo", JOB_INFO);
-        initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION);
+        initSystemAttributeInput(this, "birthRegion", BIRTH_REGION, true);
+        initSystemAttributeInput(this, "birthDistrict", BIRTH_DISTRICT, false);
+        initSystemAttributeInput(this, "birthCity", BIRTH_CITY, true);
+        initSystemAttributeInput(this, "birthVillage", BIRTH_VILLAGE, false);
+        initSystemAttributeInput(this, "birthDate", BIRTH_DATE, false);
+        WebMarkupContainer passportInfoContainer = new WebMarkupContainer("passportInfoContainer");
+        add(passportInfoContainer);
+        initSystemAttributeInput(passportInfoContainer, "passportSerialNumber", PASSPORT_SERIAL_NUMBER, false);
+        initSystemAttributeInput(passportInfoContainer, "passportNumber", PASSPORT_NUMBER, false);
+        initSystemAttributeInput(passportInfoContainer, "passportAcquisitionInfo", PASSPORT_ACQUISITION_INFO, false);
+        if (isHistory() && (person.getAttribute(PASSPORT_SERIAL_NUMBER) == null) && (person.getAttribute(PASSPORT_NUMBER) == null)
+                && (person.getAttribute(PASSPORT_ACQUISITION_INFO) == null)) {
+            passportInfoContainer.setVisible(false);
+        }
+        initSystemAttributeInput(this, "gender", GENDER, false);
+        initSystemAttributeInput(this, "nationality", NATIONALITY, false);
+        initSystemAttributeInput(this, "jobInfo", JOB_INFO, false);
+        initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION, false);
 
         //user attributes:
         List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
@@ -198,16 +217,18 @@ public final class PersonInputPanel extends Panel {
             @Override
             protected void populateItem(ListItem<Attribute> item) {
                 long userAttributeTypeId = item.getModelObject().getAttributeTypeId();
-                initAttributeInput(item, userAttributeTypeId);
+                initAttributeInput(item, userAttributeTypeId, false);
             }
         };
         add(userAttributesView);
 
         //children
-        add(new Label("childrenLabel", newLabelModel(entity.getAttributeType(CHILDREN).getAttributeNames())));
+        WebMarkupContainer childrenFieldsetContainer = new WebMarkupContainer("childrenFieldsetContainer");
+        add(childrenFieldsetContainer);
+        childrenFieldsetContainer.add(new Label("childrenLabel", newLabelModel(entity.getAttributeType(CHILDREN).getAttributeNames())));
         final WebMarkupContainer childrenContainer = new WebMarkupContainer("childrenContainer");
         childrenContainer.setOutputMarkupId(true);
-        add(childrenContainer);
+        childrenFieldsetContainer.add(childrenContainer);
         ListView<Person> children = new AjaxRemovableListView<Person>("children", person.getChildren()) {
 
             @Override
@@ -238,11 +259,11 @@ public final class PersonInputPanel extends Panel {
 
                 SearchComponent searchChildComponent = new SearchComponent("searchChildComponent", searchComponentState,
                         ImmutableList.of(personStrategy.getEntityTable()), null, ShowMode.ACTIVE,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
                 item.add(searchChildComponent);
 
                 addRemoveLink("removeChild", item, null, childrenContainer).
-                        setVisible(canEdit(null, personStrategy.getEntityTable(), person));
+                        setVisible(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
         };
         AjaxLink<Void> addChild = new AjaxLink<Void>("addChild") {
@@ -254,9 +275,12 @@ public final class PersonInputPanel extends Panel {
                 target.addComponent(childrenContainer);
             }
         };
-        addChild.setVisible(canEdit(null, personStrategy.getEntityTable(), person));
-        add(addChild);
+        addChild.setVisible(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        childrenFieldsetContainer.add(addChild);
         childrenContainer.add(children);
+        if (isHistory() && person.getChildren().isEmpty()) {
+            childrenFieldsetContainer.setVisible(false);
+        }
     }
 
     private IModel<Long> newNameModel(final long attributeTypeId) {
@@ -283,10 +307,10 @@ public final class PersonInputPanel extends Panel {
         target.addComponent(registrationContainer);
     }
 
-    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId) {
+    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
         WebMarkupContainer container = new WebMarkupContainer(id + "Container");
         parent.add(container);
-        initAttributeInput(container, attributeTypeId);
+        initAttributeInput(container, attributeTypeId, showIfMissing);
     }
 
     private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames) {
@@ -299,7 +323,7 @@ public final class PersonInputPanel extends Panel {
         };
     }
 
-    private void initAttributeInput(MarkupContainer parent, long attributeTypeId) {
+    private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
         final EntityAttributeType attributeType = personStrategy.getEntity().getAttributeType(attributeTypeId);
 
         //label
@@ -313,6 +337,11 @@ public final class PersonInputPanel extends Panel {
 
         //input component
         Attribute attribute = person.getAttribute(attributeTypeId);
+        if (attribute == null) {
+            attribute = new Attribute();
+            attribute.setLocalizedValues(stringBean.newStringCultures());
+            parent.setVisible(showIfMissing);
+        }
 
         String valueType = attributeType.getEntityAttributeValueTypes().get(0).getValueType();
         SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
@@ -323,55 +352,55 @@ public final class PersonInputPanel extends Panel {
             case STRING: {
                 IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
                 input = new StringPanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case BIG_STRING: {
                 IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
                 input = new BigStringPanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case STRING_CULTURE: {
                 IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attribute, "localizedValues");
                 input = new StringCulturePanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case INTEGER: {
                 IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
                 input = new IntegerPanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case DATE: {
                 IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
                 input = new DatePanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case DATE2: {
                 IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
                 input = new Date2Panel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case BOOLEAN: {
                 IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
                 input = new BooleanPanel("input", model, labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case DOUBLE: {
                 IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
                 input = new DoublePanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
             case GENDER: {
                 IModel<Gender> model = new SimpleTypeModel<Gender>(systemLocaleStringCulture, new GenderConverter());
                 input = new GenderPanel("input", model, attributeType.isMandatory(), labelModel,
-                        canEdit(null, personStrategy.getEntityTable(), person));
+                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
             }
             break;
         }

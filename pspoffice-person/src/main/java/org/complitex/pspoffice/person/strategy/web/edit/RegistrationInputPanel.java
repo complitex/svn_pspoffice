@@ -36,7 +36,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
-import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
+import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeModel;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponent;
@@ -67,11 +67,23 @@ public final class RegistrationInputPanel extends Panel {
     private DomainObject registration;
     private Attribute addressAttribute;
     private SearchComponentState addressSearchComponentState;
+    private Date date;
 
     public RegistrationInputPanel(String id, DomainObject registration) {
         super(id);
         this.registration = registration;
         init();
+    }
+
+    public RegistrationInputPanel(String id, DomainObject registration, Date date) {
+        super(id);
+        this.registration = registration;
+        this.date = date;
+        init();
+    }
+
+    private boolean isHistory() {
+        return date != null;
     }
 
     private void init() {
@@ -88,30 +100,35 @@ public final class RegistrationInputPanel extends Panel {
         addressSearchComponentState = initAddressSearchComponentState();
         SearchComponent addressSearchPanel = new SearchComponent("input", addressSearchComponentState,
                 ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
-                DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
         currentAddressContainer.add(addressSearchPanel);
 
         //system attributes:
-        initSystemAttributeInput(this, "arrivalRegion", ARRIVAL_REGION);
-        initSystemAttributeInput(this, "arrivalStreet", ARRIVAL_STREET);
-        initSystemAttributeInput(this, "arrivalDistrict", ARRIVAL_DISTRICT);
-        initSystemAttributeInput(this, "arrivalBuilding", ARRIVAL_BUILDING);
-        initSystemAttributeInput(this, "arrivalCity", ARRIVAL_CITY);
-        initSystemAttributeInput(this, "arrivalCorp", ARRIVAL_CORP);
-        initSystemAttributeInput(this, "arrivalVillage", ARRIVAL_VILLAGE);
-        initSystemAttributeInput(this, "arrivalApartment", ARRIVAL_APARTMENT);
-        initSystemAttributeInput(this, "arrivalDate", ARRIVAL_DATE);
-        initSystemAttributeInput(this, "departureRegion", DEPARTURE_REGION);
-        initSystemAttributeInput(this, "departureDistrict", DEPARTURE_DISTRICT);
-        initSystemAttributeInput(this, "departureCity", DEPARTURE_CITY);
-        initSystemAttributeInput(this, "departureVillage", DEPARTUREL_VILLAGE);
-        initSystemAttributeInput(this, "departureDate", DEPARTURE_DATE);
-        initSystemAttributeInput(this, "departureReason", DEPARTURE_REASON);
-        initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP);
-        initSystemAttributeInput(this, "otherRelationship", OTHERS_RELATIONSHIP);
-        initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS);
-        initSystemAttributeInput(this, "registrationDate", REGISTRATION_DATE);
-        initSystemAttributeInput(this, "registrationType", REGISTRATION_TYPE);
+        initSystemAttributeInput(this, "arrivalRegion", ARRIVAL_REGION, true);
+        initSystemAttributeInput(this, "arrivalStreet", ARRIVAL_STREET, true);
+        initSystemAttributeInput(this, "arrivalDistrict", ARRIVAL_DISTRICT, true);
+        initSystemAttributeInput(this, "arrivalBuilding", ARRIVAL_BUILDING, true);
+        initSystemAttributeInput(this, "arrivalCity", ARRIVAL_CITY, true);
+        initSystemAttributeInput(this, "arrivalCorp", ARRIVAL_CORP, true);
+        initSystemAttributeInput(this, "arrivalVillage", ARRIVAL_VILLAGE, true);
+        initSystemAttributeInput(this, "arrivalApartment", ARRIVAL_APARTMENT, true);
+        initSystemAttributeInput(this, "arrivalDate", ARRIVAL_DATE, false);
+        initSystemAttributeInput(this, "departureRegion", DEPARTURE_REGION, true);
+        initSystemAttributeInput(this, "departureDistrict", DEPARTURE_DISTRICT, false);
+        initSystemAttributeInput(this, "departureCity", DEPARTURE_CITY, true);
+        initSystemAttributeInput(this, "departureVillage", DEPARTUREL_VILLAGE, false);
+        initSystemAttributeInput(this, "departureDate", DEPARTURE_DATE, false);
+        initSystemAttributeInput(this, "departureReason", DEPARTURE_REASON, false);
+        initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP, false);
+        initSystemAttributeInput(this, "otherRelationship", OTHERS_RELATIONSHIP, false);
+        initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS, false);
+        WebMarkupContainer registrationNoteContainer = new WebMarkupContainer("registrationNoteContainer");
+        add(registrationNoteContainer);
+        initSystemAttributeInput(registrationNoteContainer, "registrationDate", REGISTRATION_DATE, false);
+        initSystemAttributeInput(registrationNoteContainer, "registrationType", REGISTRATION_TYPE, false);
+        if (isHistory() && (registration.getAttribute(REGISTRATION_DATE) == null) && (registration.getAttribute(REGISTRATION_TYPE) == null)) {
+            registrationNoteContainer.setVisible(false);
+        }
 
         //user attributes:
         List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
@@ -141,16 +158,16 @@ public final class RegistrationInputPanel extends Panel {
             @Override
             protected void populateItem(ListItem<Attribute> item) {
                 long userAttributeTypeId = item.getModelObject().getAttributeTypeId();
-                initAttributeInput(item, userAttributeTypeId);
+                initAttributeInput(item, userAttributeTypeId, false);
             }
         };
         add(userAttributesView);
     }
 
-    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId) {
+    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
         WebMarkupContainer container = new WebMarkupContainer(id + "Container");
         parent.add(container);
-        initAttributeInput(container, attributeTypeId);
+        initAttributeInput(container, attributeTypeId, showIfMissing);
     }
 
     private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames) {
@@ -163,7 +180,7 @@ public final class RegistrationInputPanel extends Panel {
         };
     }
 
-    private void initAttributeInput(MarkupContainer parent, long attributeTypeId) {
+    private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
         final EntityAttributeType attributeType = registrationStrategy.getEntity().getAttributeType(attributeTypeId);
 
         //label
@@ -177,6 +194,11 @@ public final class RegistrationInputPanel extends Panel {
 
         //input component
         Attribute attribute = registration.getAttribute(attributeTypeId);
+        if (attribute == null) {
+            attribute = new Attribute();
+            attribute.setLocalizedValues(stringBean.newStringCultures());
+            parent.setVisible(showIfMissing);
+        }
 
         String valueType = attributeType.getEntityAttributeValueTypes().get(0).getValueType();
         SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
@@ -187,49 +209,49 @@ public final class RegistrationInputPanel extends Panel {
             case STRING: {
                 IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
                 input = new StringPanel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case BIG_STRING: {
                 IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
                 input = new BigStringPanel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case STRING_CULTURE: {
                 IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attribute, "localizedValues");
                 input = new StringCulturePanel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case INTEGER: {
                 IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
                 input = new IntegerPanel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case DATE: {
                 IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
                 input = new DatePanel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case DATE2: {
                 IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
                 input = new Date2Panel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case BOOLEAN: {
                 IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
                 input = new BooleanPanel("input", model, labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case DOUBLE: {
                 IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
                 input = new DoublePanel("input", model, attributeType.isMandatory(), labelModel,
-                        DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), registration));
+                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
         }

@@ -13,6 +13,11 @@
             <form wicket:id="form" action="#">
                 <div wicket:id="personInputPanel"></div>
                 <div wicket:id="permissionsPanel" style="margin-top: 20px;"></div>
+                <div wicket:id="historyContainer" style="margin-top: 10px;">
+                    <a wicket:id="history" target="_blank">
+                        <wicket:message key="history"/>
+                    </a>
+                </div>
                 <div style="margin-top: 30px;">
                     <input type="button" wicket:message="value:save" wicket:id="submit" class="btnMiddle"/>
                     <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>

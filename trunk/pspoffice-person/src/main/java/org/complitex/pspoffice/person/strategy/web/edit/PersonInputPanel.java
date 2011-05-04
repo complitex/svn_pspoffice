@@ -473,6 +473,14 @@ public final class PersonInputPanel extends Panel {
                 return child.getId();
             }
         }));
+        
+        if(!isNew()){
+            if(childrenIds.contains(person.getId())){
+                error(getString("reference_themselves"));
+                valid = false;
+            }
+        }
+
         if (childrenIds.size() != nonNullChildren.size()) {
             error(getString("children_dublicate"));
             valid = false;

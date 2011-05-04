@@ -156,6 +156,7 @@ public final class PersonInputPanel extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (registrationInputPanel.validate()) {
+                    registrationInputPanel.beforePersist();
                     person.setNewRegistration(registrationStrategy.newInstance());
                     registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getNewRegistration(), date);
                     updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
@@ -180,6 +181,7 @@ public final class PersonInputPanel extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (registrationInputPanel.validate()) {
+                    registrationInputPanel.beforePersist();
                     person.setRegistrationClosed(true);
                     updateRegistrationContainer(registrationContainer, registrationControlContainer,
                             new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);

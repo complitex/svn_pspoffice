@@ -29,7 +29,6 @@ public class RegistrationStrategy extends Strategy {
     /**
      * Attribute type ids
      */
-//    public static final long ARRIVAL = 2101;
     public static final long ADDRESS = 2100;
     public static final long ARRIVAL_REGION = 2101;
     public static final long ARRIVAL_DISTRICT = 2102;
@@ -51,24 +50,9 @@ public class RegistrationStrategy extends Strategy {
     public static final long HOUSING_RIGHTS = 2118;
     public static final long REGISTRATION_DATE = 2119;
     public static final long REGISTRATION_TYPE = 2120;
-
-    //    public static final long DEPARTURE = 2102;
-    /**
-     * Attribute value type ids
-     */
-//    public static final long ARRIVAL_STRING = 2103;
-//    public static final long ARRIVAL_ROOM = 2104;
-//    public static final long ARRIVAL_APARTMENT = 2105;
-//    public static final long ARRIVAL_BUILDING = 2106;
-//    public static final long DEPARTURE_STRING = 2107;
-//    public static final long DEPARTURE_ROOM = 2108;
-//    public static final long DEPARTURE_APARTMENT = 2109;
-//    public static final long DEPARTURE_BUILDING = 2110;
     public static final long ADDRESS_ROOM = 2100;
     public static final long ADDRESS_APARTMENT = 2101;
     public static final long ADDRESS_BUILDING = 2102;
-//    @EJB
-//    private StringCultureBean stringBean;
     @EJB
     private StrategyFactory strategyFactory;
 
@@ -117,28 +101,6 @@ public class RegistrationStrategy extends Strategy {
         return new String[]{SecurityRole.PERSON_MODULE_EDIT};
     }
 
-//    @Transactional
-//    @Override
-//    protected void loadStringCultures(List<Attribute> attributes) {
-//        for (Attribute attribute : attributes) {
-//            if (attribute.getAttributeTypeId().equals(ARRIVAL)) {
-//                if (attribute.getValueTypeId().equals(ARRIVAL_STRING)) {
-//                    loadStringCultures(attribute);
-//                }
-//            } else if (attribute.getAttributeTypeId().equals(DEPARTURE)) {
-//                if (attribute.getValueTypeId().equals(DEPARTURE_STRING)) {
-//                    loadStringCultures(attribute);
-//                }
-//            } else if (isSimpleAttribute(attribute)) {
-//                if (attribute.getValueId() != null) {
-//                    loadStringCultures(attribute);
-//                } else {
-//                    attribute.setLocalizedValues(stringBean.newStringCultures());
-//                }
-//            }
-//        }
-//    }
-
     @Override
     protected Attribute fillManyValueTypesAttribute(EntityAttributeType attributeType, Long objectId) {
         Attribute attribute = new Attribute();
@@ -147,14 +109,7 @@ public class RegistrationStrategy extends Strategy {
         attribute.setAttributeId(1L);
 
         Long attributeValueTypeId = null;
-//        if (attributeType.getId().equals(ARRIVAL)) {
-//            attributeValueTypeId = ARRIVAL_STRING;
-//            attribute.setLocalizedValues(stringBean.newStringCultures());
-//        } else if (attributeType.getId().equals(DEPARTURE)) {
-//            attributeValueTypeId = DEPARTURE_STRING;
-//            attribute.setLocalizedValues(stringBean.newStringCultures());
-//        } else 
-            if (attributeType.getId().equals(ADDRESS)) {
+        if (attributeType.getId().equals(ADDRESS)) {
             attributeValueTypeId = ADDRESS_APARTMENT;
         }
         attribute.setValueTypeId(attributeValueTypeId);

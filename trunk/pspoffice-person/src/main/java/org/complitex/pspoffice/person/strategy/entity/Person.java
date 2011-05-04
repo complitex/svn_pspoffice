@@ -66,19 +66,6 @@ public class Person extends DomainObject {
         this.newRegistration = newRegistration;
     }
 
-//    public void updateRegistrationAttribute() {
-//        getAttribute(REGISTRATION).setValueId(getRegistration().getId());
-//    }
-
-//    public void insertRegistrationAttribute(long registrationId){
-//        Attribute registrationAttribute = new Attribute();
-//        registrationAttribute.setAttributeId(1L);
-//        registrationAttribute.setAttributeTypeId(REGISTRATION);
-//        registrationAttribute.setValueTypeId(REGISTRATION);
-//        registrationAttribute.setValueId(registrationId);
-//        addAttribute(registrationAttribute);
-//    }
-
     public List<Person> getChildren() {
         return children;
     }

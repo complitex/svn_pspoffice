@@ -17,6 +17,7 @@ import javax.ejb.Stateless;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
@@ -31,6 +32,7 @@ import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.pspoffice.person.strategy.entity.FullName;
 import org.complitex.pspoffice.person.strategy.util.FullNameParser;
+import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -281,15 +283,17 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     private void loadRegistration(Person person, Date date) {
         Attribute registrationAttribute = person.getAttribute(REGISTRATION);
-        Long registrationId = registrationAttribute.getValueId();
-        if (registrationId != null) {
-            DomainObject registration = null;
-            if (date == null) {
-                registration = registrationStrategy.findById(registrationId, true);
-            } else {
-                registration = registrationStrategy.findHistoryObject(registrationId, date);
+        if (registrationAttribute != null) {
+            Long registrationId = registrationAttribute.getValueId();
+            if (registrationId != null) {
+                DomainObject registration = null;
+                if (date == null) {
+                    registration = registrationStrategy.findById(registrationId, true);
+                } else {
+                    registration = registrationStrategy.findHistoryObject(registrationId, date);
+                }
+                person.setRegistration(registration);
             }
-            person.setRegistration(registration);
         }
     }
 
@@ -350,37 +354,39 @@ public class PersonStrategy extends TemplateStrategy {
         return DEFAULT_ORDER_BY_ID;
     }
 
-//    @Transactional
-//    @Override
-//    public TreeSet<Date> getHistoryDates(long objectId) {
-//        TreeSet<Date> historyDates = super.getHistoryDates(objectId);
-//        Set<Long> addressIds = findRegistrationIds(objectId);
-//        for (Long addressId : addressIds) {
-//            TreeSet<Date> addressHistoryDates = registrationStrategy.getHistoryDates(addressId);
-//            historyDates.addAll(addressHistoryDates);
-//        }
-//        return historyDates;
-//    }
-//
-//    @Transactional
-//    @Override
-//    public Person findHistoryObject(long objectId, Date date) {
-//        DomainObjectExample example = new DomainObjectExample(objectId);
-//        example.setTable(getEntityTable());
-//        example.setStartDate(date);
-//
-//        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_HISTORY_OBJECT_OPERATION, example);
-//        if (person == null) {
-//            return null;
-//        }
-//
-//        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, date);
-//        loadStringCultures(historyAttributes);
-//        person.setAttributes(historyAttributes);
-//        loadRegistration(person, date);
-//        updateStringsForNewLocales(person);
-//        return person;
-//    }
+    @Transactional
+    @Override
+    public TreeSet<Date> getHistoryDates(long objectId) {
+        TreeSet<Date> historyDates = super.getHistoryDates(objectId);
+        Set<Long> addressIds = findRegistrationIds(objectId);
+        for (Long addressId : addressIds) {
+            TreeSet<Date> addressHistoryDates = registrationStrategy.getHistoryDates(addressId);
+            historyDates.addAll(addressHistoryDates);
+        }
+        return historyDates;
+    }
+
+    @Transactional
+    @Override
+    public Person findHistoryObject(long objectId, Date date) {
+        DomainObjectExample example = new DomainObjectExample(objectId);
+        example.setTable(getEntityTable());
+        example.setStartDate(date);
+
+        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_HISTORY_OBJECT_OPERATION, example);
+        if (person == null) {
+            return null;
+        }
+
+        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, date);
+        loadStringCultures(historyAttributes);
+        person.setAttributes(historyAttributes);
+        loadRegistration(person, date);
+        loadChildren(person);
+        updateStringsForNewLocales(person);
+        return person;
+    }
+
     @Transactional
     @Override
     public void delete(long objectId) throws DeleteException {
@@ -414,5 +420,10 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public int getSearchTextFieldSize() {
         return 40;
+    }
+
+    @Override
+    public Class<? extends WebPage> getHistoryPage() {
+        return PersonHistoryPage.class;
     }
 }

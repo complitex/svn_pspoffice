@@ -10,6 +10,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.Link;
@@ -96,6 +97,19 @@ public final class PersonEdit extends FormTemplatePage {
         //input panel
         personInputPanel = new PersonInputPanel("personInputPanel", newPerson);
         form.add(personInputPanel);
+
+        //history
+        WebMarkupContainer historyContainer = new WebMarkupContainer("historyContainer");
+        Link history = new Link("history") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(personStrategy.getHistoryPage(), personStrategy.getHistoryPageParams(newPerson.getId()));
+            }
+        };
+        historyContainer.add(history);
+        historyContainer.setVisible(!isNew());
+        form.add(historyContainer);
 
         //permissions panel
         DomainObjectPermissionsPanel permissionsPanel = new DomainObjectPermissionsPanel("permissionsPanel", newPerson.getSubjectIds());

@@ -235,13 +235,15 @@ public class PersonStrategy extends TemplateStrategy {
             }
         } else {
             if (changedRegistration == null) {
-                registrationStrategy.update(oldRegistration, newRegistration, updateDate);
+                Date updateRegistrationDate = newPerson.isRegistrationClosed() ? DateUtil.justBefore(updateDate) : updateDate;
+                registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
                 if (newPerson.isRegistrationClosed()) {
                     registrationStrategy.archive(newRegistration, updateDate);
                     newPerson.getAttribute(REGISTRATION).setValueId(null);
                 }
             } else {
-                registrationStrategy.update(oldRegistration, newRegistration, DateUtil.justBefore(updateDate));
+                Date updateRegistrationDate = DateUtil.justBefore(updateDate);
+                registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
                 changedRegistration.setSubjectIds(newPerson.getSubjectIds());
                 registrationStrategy.insert(changedRegistration, updateDate);
                 newPerson.getAttribute(REGISTRATION).setValueId(changedRegistration.getId());

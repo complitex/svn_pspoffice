@@ -207,17 +207,27 @@ public final class PersonInputPanel extends Panel {
         initSystemAttributeInput(this, "birthCity", BIRTH_CITY, true);
         initSystemAttributeInput(this, "birthVillage", BIRTH_VILLAGE, false);
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, false);
-        WebMarkupContainer passportInfoContainer = new WebMarkupContainer("passportInfoContainer");
-        add(passportInfoContainer);
-        initSystemAttributeInput(passportInfoContainer, "passportSerialNumber", PASSPORT_SERIAL_NUMBER, false);
-        initSystemAttributeInput(passportInfoContainer, "passportNumber", PASSPORT_NUMBER, false);
-        initSystemAttributeInput(passportInfoContainer, "passportAcquisitionInfo", PASSPORT_ACQUISITION_INFO, false);
-        if (isHistory() && (person.getAttribute(PASSPORT_SERIAL_NUMBER) == null) && (person.getAttribute(PASSPORT_NUMBER) == null)
-                && (person.getAttribute(PASSPORT_ACQUISITION_INFO) == null)) {
-            passportInfoContainer.setVisible(false);
-        }
+
+        //passport info
+        WebMarkupContainer passportContainer = new WebMarkupContainer("passportContainer");
+        passportContainer.setVisible(isPassportContainerVisible());
+        add(passportContainer);
+        initSystemAttributeInput(passportContainer, "passportSerialNumber", PASSPORT_SERIAL_NUMBER, false);
+        initSystemAttributeInput(passportContainer, "passportNumber", PASSPORT_NUMBER, false);
+        initSystemAttributeInput(passportContainer, "passportAcquisitionDate", PASSPORT_ACQUISITION_DATE, false);
+        initSystemAttributeInput(passportContainer, "passportAcquisitionOrganization", PASSPORT_ACQUISITION_ORGANIZATION, false);
+
+        // birth certificate info
+        WebMarkupContainer birthCertificateContainer = new WebMarkupContainer("birthCertificateContainer");
+        birthCertificateContainer.setVisible(isBirthCertificateContainerVisible());
+        add(birthCertificateContainer);
+        initSystemAttributeInput(birthCertificateContainer, "birthCertificateInfo", BIRTH_CERTIFICATE_INFO, false);
+        initSystemAttributeInput(birthCertificateContainer, "birthCertificateAcquisitionDate", BIRTH_CERTIFICATE_ACQUISITION_DATE, false);
+        initSystemAttributeInput(birthCertificateContainer, "birthCertificateAcquisitionOrganization", BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION, false);
+
         initSystemAttributeInput(this, "gender", GENDER, false);
         initSystemAttributeInput(this, "nationality", NATIONALITY, false);
+        initSystemAttributeInput(this, "ukraineCitizenship", UKRAINE_CITIZENSHIP, false);
         initSystemAttributeInput(this, "jobInfo", JOB_INFO, false);
         initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION, false);
 
@@ -355,6 +365,18 @@ public final class PersonInputPanel extends Panel {
         };
     }
 
+    private boolean isPassportContainerVisible() {
+        return !(isHistory() && (person.getAttribute(PASSPORT_SERIAL_NUMBER) == null) && (person.getAttribute(PASSPORT_NUMBER) == null)
+                && (person.getAttribute(PASSPORT_ACQUISITION_ORGANIZATION) == null)
+                && (person.getAttribute(PASSPORT_ACQUISITION_DATE) == null));
+    }
+
+    private boolean isBirthCertificateContainerVisible() {
+        return !(isHistory() && (person.getAttribute(BIRTH_CERTIFICATE_INFO) == null)
+                && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_DATE) == null)
+                && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION) == null));
+    }
+
     private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
         final EntityAttributeType attributeType = personStrategy.getEntity().getAttributeType(attributeTypeId);
 
@@ -473,9 +495,9 @@ public final class PersonInputPanel extends Panel {
                 return child.getId();
             }
         }));
-        
-        if(!isNew()){
-            if(childrenIds.contains(person.getId())){
+
+        if (!isNew()) {
+            if (childrenIds.contains(person.getId())) {
                 error(getString("reference_themselves"));
                 valid = false;
             }

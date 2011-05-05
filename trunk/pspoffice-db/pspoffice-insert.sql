@@ -26,19 +26,28 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2010, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2009, 2000, 0, 2010, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2011, 1, UPPER('Номер')), (2011, 2, UPPER('Номер'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2010, 2000, 0, 2011, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2012, 1, UPPER('Каким органом внутренних дел и когда выдан')), (2012, 2, UPPER('Яким органом внутрішніх справ і коли виданий'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2012, 1, UPPER('Кем выдан')), (2012, 2, UPPER('Орган видачі'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2011, 2000, 0, 2012, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2013, 1, UPPER('Где и кем работает')), (2013, 2, UPPER('Де і ким працює'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2013, 1, UPPER('Дата выдачи')), (2013, 2, UPPER('Дата видачі'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2012, 2000, 0, 2013, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2014, 1, UPPER('Отношение к воинской службе')), (2014, 2, UPPER('Відношення до військової служби'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2014, 1, UPPER('Где и кем работает')), (2014, 2, UPPER('Де і ким працює'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2013, 2000, 0, 2014, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2015, 1, UPPER('Регистрация')), (2015, 2, UPPER('Регистрация'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2015, 1, UPPER('Отношение к воинской службе')), (2015, 2, UPPER('Відношення до військової служби'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2014, 2000, 0, 2015, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2016, 1, UPPER('Дети до 16 лет')), (2016, 2, UPPER('Діти віком до 16 років'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2016, 1, UPPER('Регистрация')), (2016, 2, UPPER('Регистрация'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2015, 2000, 0, 2016, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2017, 1, UPPER('Пол')), (2017, 2, UPPER('Стать'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2017, 1, UPPER('Дети до 16 лет')), (2017, 2, UPPER('Діти віком до 16 років'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2016, 2000, 0, 2017, 1);
-
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2018, 1, UPPER('Пол')), (2018, 2, UPPER('Стать'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2017, 2000, 0, 2018, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2019, 1, UPPER('Свидетельство о рождении')), (2019, 2, UPPER('Свідоцтво про нарождення'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2018, 2000, 0, 2019, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2020, 1, UPPER('Дата выдачи')), (2020, 2, UPPER('Дата видачі'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2019, 2000, 0, 2020, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2021, 1, UPPER('Кем выдан')), (2021, 2, UPPER('Орган видачі'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2020, 2000, 0, 2021, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2022, 1, UPPER('Является гражданином Украины')), (2022, 2, UPPER('Свідоцтво про належність до громадянства України'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2021, 2000, 1, 2022, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2000, 2000, UPPER('last_name'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2001, 2001, UPPER('first_name'));
@@ -52,11 +61,16 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2009, 2009, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2010, 2010, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2011, 2011, UPPER('big_string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2012, 2012, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2012, 2012, UPPER('date2'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2013, 2013, UPPER('big_string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2014, 2014, 'registration');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2015, 2015, 'person');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2016, 2016, UPPER('gender'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2014, 2014, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2015, 2015, 'registration');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2016, 2016, 'person');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2017, 2017, UPPER('gender'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2018, 2018, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2019, 2019, UPPER('date2'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2020, 2020, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2021, 2021, UPPER('boolean'));
 
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration',1), ('registration_string_culture',1);
 

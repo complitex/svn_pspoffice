@@ -108,7 +108,7 @@
                     </table>
                 </fieldset>
             </div>
-            <div wicket:id="passportInfoContainer">
+            <div wicket:id="passportContainer">
                 <fieldset>
                     <legend>
                         <span>
@@ -145,7 +145,72 @@
                             </wicket:container>
                         </tr>
                         <tr>
-                            <wicket:container wicket:id="passportAcquisitionInfoContainer">
+                            <wicket:container wicket:id="passportAcquisitionDateContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="passportAcquisitionOrganizationContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+            <div wicket:id="birthCertificateContainer">
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <wicket:message key="birthCertificateLabel"/>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="birthCertificateInfoContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="birthCertificateAcquisitionDateContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="birthCertificateAcquisitionOrganizationContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -187,6 +252,19 @@
                             <div wicket:id="input"></div>
                         </td>
                     </wicket:container>                    
+                </tr>
+                <tr>
+                    <wicket:container wicket:id="ukraineCitizenshipContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
                 </tr>
                 <tr>
                     <wicket:container wicket:id="jobInfoContainer">

@@ -18,8 +18,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StatusType;
+import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
@@ -58,12 +60,17 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long BIRTH_VILLAGE = 2008;
     public static final long PASSPORT_SERIAL_NUMBER = 2009;
     public static final long PASSPORT_NUMBER = 2010;
-    public static final long PASSPORT_ACQUISITION_INFO = 2011;
-    public static final long JOB_INFO = 2012;
-    public static final long MILITARY_SERVISE_RELATION = 2013;
-    public static final long REGISTRATION = 2014;
-    public static final long CHILDREN = 2015;
-    public static final long GENDER = 2016;
+    public static final long PASSPORT_ACQUISITION_ORGANIZATION = 2011;
+    public static final long PASSPORT_ACQUISITION_DATE = 2012;
+    public static final long JOB_INFO = 2013;
+    public static final long MILITARY_SERVISE_RELATION = 2014;
+    public static final long REGISTRATION = 2015;
+    public static final long CHILDREN = 2016;
+    public static final long GENDER = 2017;
+    public static final long BIRTH_CERTIFICATE_INFO = 2018;
+    public static final long BIRTH_CERTIFICATE_ACQUISITION_DATE = 2019;
+    public static final long BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION = 2020;
+    public static final long UKRAINE_CITIZENSHIP = 2021;
 
     /**
      * Order by related constants
@@ -337,6 +344,12 @@ public class PersonStrategy extends TemplateStrategy {
                             attribute.setLocalizedValues(stringBean.newStringCultures());
                         }
                         toAdd.add(attribute);
+
+                        //by default UKRAINE_CITIZENSHIP attribute set to TRUE.
+                        if (attributeType.getId().equals(UKRAINE_CITIZENSHIP)) {
+                            StringCulture systemLocaleStringCulture = stringBean.getSystemStringCulture(attribute.getLocalizedValues());
+                            systemLocaleStringCulture.setValue(new BooleanConverter().toString(Boolean.TRUE));
+                        }
                     }
                 }
             }
@@ -389,35 +402,35 @@ public class PersonStrategy extends TemplateStrategy {
         return person;
     }
 
-    @Transactional
-    @Override
-    public void delete(long objectId) throws DeleteException {
-        deleteChecks(objectId);
+//    @Transactional
+//    @Override
+//    public void delete(long objectId) throws DeleteException {
+//        deleteChecks(objectId);
+//
+//        Set<Long> registrationIds = findRegistrationIds(objectId);
+//
+//        deleteStrings(objectId);
+//        deleteAttribute(objectId);
+//        deleteObject(objectId);
+//
+//        //delete registrations:
+//        for (Long registrationId : registrationIds) {
+//            registrationStrategy.delete(registrationId);
+//        }
+//    }
 
-        Set<Long> registrationIds = findRegistrationIds(objectId);
-
-        deleteStrings(objectId);
-        deleteAttribute(objectId);
-        deleteObject(objectId);
-
-        //delete registrations:
-        for (Long registrationId : registrationIds) {
-            registrationStrategy.delete(registrationId);
-        }
-    }
-
-    @Transactional
-    @Override
-    public void changeChildrenActivity(long personId, boolean enable) {
-        Set<Long> registrationIds = findRegistrationIds(personId);
-        if (!registrationIds.isEmpty()) {
-            Map<String, Object> params = newHashMap();
-            params.put("personId", personId);
-            params.put("enabled", !enable);
-            params.put("status", enable ? StatusType.ACTIVE : StatusType.INACTIVE);
-            sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
-        }
-    }
+//    @Transactional
+//    @Override
+//    public void changeChildrenActivity(long personId, boolean enable) {
+//        Set<Long> registrationIds = findRegistrationIds(personId);
+//        if (!registrationIds.isEmpty()) {
+//            Map<String, Object> params = newHashMap();
+//            params.put("personId", personId);
+//            params.put("enabled", !enable);
+//            params.put("status", enable ? StatusType.ACTIVE : StatusType.INACTIVE);
+//            sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
+//        }
+//    }
 
     @Override
     public int getSearchTextFieldSize() {

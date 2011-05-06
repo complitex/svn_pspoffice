@@ -24,6 +24,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -62,6 +63,7 @@ import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.dictionary.web.component.type.IntegerPanel;
 import org.complitex.dictionary.web.component.type.StringCulturePanel;
 import org.complitex.dictionary.web.component.type.StringPanel;
+import org.complitex.pspoffice.person.registration.report.web.RegistrationStopCouponPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
@@ -128,6 +130,16 @@ public final class PersonInputPanel extends Panel {
         registrationContainer.setOutputMarkupId(true);
         registrationForm.add(registrationContainer);
 
+        final Link<Void> registrationStopCouponLink = new Link("registrationStopCouponLink") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new RegistrationStopCouponPage(person));
+            }
+        };
+        registrationStopCouponLink.setVisible(false);
+        registrationContainer.add(registrationStopCouponLink);
+
         if (person.getRegistration() != null) {
             registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
             registrationContainer.add(registrationInputPanel);
@@ -157,8 +169,9 @@ public final class PersonInputPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (registrationInputPanel.validate()) {
                     registrationInputPanel.beforePersist();
-                    person.setNewRegistration(registrationStrategy.newInstance());
-                    registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getNewRegistration(), date);
+                    person.setChangedRegistration(registrationStrategy.newInstance());
+                    registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getChangedRegistration(), date);
+                    registrationStopCouponLink.setVisible(true);
                     updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
                             target, registrationLabelMarkupId);
                 } else {
@@ -176,13 +189,14 @@ public final class PersonInputPanel extends Panel {
         changeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
                 && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
         registrationControlContainer.add(changeRegistration);
-        AjaxSubmitLink closeRegistration = new AjaxSubmitLink("closeRegistration", registrationForm) {
+        AjaxSubmitLink stopRegistration = new AjaxSubmitLink("stopRegistration", registrationForm) {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (registrationInputPanel.validate()) {
                     registrationInputPanel.beforePersist();
-                    person.setRegistrationClosed(true);
+                    person.setRegistrationStopped(true);
+                    registrationStopCouponLink.setVisible(true);
                     updateRegistrationContainer(registrationContainer, registrationControlContainer,
                             new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);
                 } else {
@@ -197,9 +211,9 @@ public final class PersonInputPanel extends Panel {
                 target.addComponent(messages);
             }
         };
-        closeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
+        stopRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
                 && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
-        registrationControlContainer.add(closeRegistration);
+        registrationControlContainer.add(stopRegistration);
 
         //system attributes:
         initSystemAttributeInput(this, "birthRegion", BIRTH_REGION, true);
@@ -340,9 +354,9 @@ public final class PersonInputPanel extends Panel {
         };
     }
 
-    private void updateRegistrationContainer(WebMarkupContainer registrationContainer,
-            WebMarkupContainer registrationControlContainer, Panel contentPanel, AjaxRequestTarget target, String scrollToElementId) {
-        registrationContainer.get(REGISTRATION_PANEL_ID).replaceWith(contentPanel);
+    private void updateRegistrationContainer(WebMarkupContainer registrationContainer, WebMarkupContainer registrationControlContainer,
+            Panel registrationPanel, AjaxRequestTarget target, String scrollToElementId) {
+        registrationContainer.get(REGISTRATION_PANEL_ID).replaceWith(registrationPanel);
         registrationControlContainer.setVisible(false);
         target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToElementId));
         target.appendJavascript(REGISTRATION_FOCUS_JS);

@@ -22,8 +22,8 @@ public class Person extends DomainObject {
     private String firstName;
     private String middleName;
     private DomainObject registration;
-    private DomainObject newRegistration;
-    private boolean registrationClosed;
+    private DomainObject changedRegistration;
+    private boolean registrationStopped;
     private List<Person> children = newArrayList();
 
     public String getFirstName() {
@@ -58,12 +58,12 @@ public class Person extends DomainObject {
         this.registration = registration;
     }
 
-    public DomainObject getNewRegistration() {
-        return newRegistration;
+    public DomainObject getChangedRegistration() {
+        return changedRegistration;
     }
 
-    public void setNewRegistration(DomainObject newRegistration) {
-        this.newRegistration = newRegistration;
+    public void setChangedRegistration(DomainObject newRegistration) {
+        this.changedRegistration = newRegistration;
     }
 
     public List<Person> getChildren() {
@@ -105,11 +105,11 @@ public class Person extends DomainObject {
         addAttribute(childrenAttribute);
     }
 
-    public boolean isRegistrationClosed() {
-        return registrationClosed;
+    public boolean isRegistrationStopped() {
+        return registrationStopped;
     }
 
-    public void setRegistrationClosed(boolean registrationClosed) {
-        this.registrationClosed = registrationClosed;
+    public void setRegistrationStopped(boolean registrationStopped) {
+        this.registrationStopped = registrationStopped;
     }
 }

@@ -50,6 +50,10 @@ public class RegistrationStrategy extends Strategy {
     public static final long HOUSING_RIGHTS = 2118;
     public static final long REGISTRATION_DATE = 2119;
     public static final long REGISTRATION_TYPE = 2120;
+
+    /**
+     * Attribute value type ids
+     */
     public static final long ADDRESS_ROOM = 2100;
     public static final long ADDRESS_APARTMENT = 2101;
     public static final long ADDRESS_BUILDING = 2102;

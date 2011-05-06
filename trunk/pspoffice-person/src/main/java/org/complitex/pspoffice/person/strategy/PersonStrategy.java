@@ -2,7 +2,6 @@ package org.complitex.pspoffice.person.strategy;
 
 import java.util.Collections;
 import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.Sets.*;
 import java.util.Date;
 import java.util.List;
@@ -20,13 +19,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
-import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.service.PermissionBean;
-import org.complitex.dictionary.strategy.DeleteException;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -99,6 +97,8 @@ public class PersonStrategy extends TemplateStrategy {
     private StringCultureBean stringBean;
     @EJB
     private RegistrationStrategy registrationStrategy;
+    @EJB
+    private NameBean nameBean;
 
     @Override
     public String getEntityTable() {
@@ -230,7 +230,7 @@ public class PersonStrategy extends TemplateStrategy {
 
         DomainObject oldRegistration = oldPerson.getRegistration();
         DomainObject newRegistration = newPerson.getRegistration();
-        DomainObject changedRegistration = newPerson.getNewRegistration();
+        DomainObject changedRegistration = newPerson.getChangedRegistration();
 
         if (oldRegistration == null) {
             if (newRegistration != null) {
@@ -242,9 +242,9 @@ public class PersonStrategy extends TemplateStrategy {
             }
         } else {
             if (changedRegistration == null) {
-                Date updateRegistrationDate = newPerson.isRegistrationClosed() ? DateUtil.justBefore(updateDate) : updateDate;
+                Date updateRegistrationDate = newPerson.isRegistrationStopped() ? DateUtil.justBefore(updateDate) : updateDate;
                 registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
-                if (newPerson.isRegistrationClosed()) {
+                if (newPerson.isRegistrationStopped()) {
                     registrationStrategy.archive(newRegistration, updateDate);
                     newPerson.getAttribute(REGISTRATION).setValueId(null);
                 }
@@ -304,6 +304,13 @@ public class PersonStrategy extends TemplateStrategy {
                 person.setRegistration(registration);
             }
         }
+    }
+
+    @Transactional
+    public void loadName(Person person){
+        person.setFirstName(nameBean.getFirstName(person.getAttribute(FIRST_NAME).getValueId()));
+        person.setMiddleName(nameBean.getMiddleName(person.getAttribute(MIDDLE_NAME).getValueId()));
+        person.setLastName(nameBean.getLastName(person.getAttribute(LAST_NAME).getValueId()));
     }
 
     @Transactional

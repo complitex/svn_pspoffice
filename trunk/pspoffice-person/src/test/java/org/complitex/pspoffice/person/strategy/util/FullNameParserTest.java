@@ -5,7 +5,6 @@
 
 package org.complitex.pspoffice.person.strategy.util;
 
-import org.complitex.pspoffice.person.strategy.util.FullNameParser;
 import org.complitex.pspoffice.person.strategy.entity.FullName;
 import org.testng.Assert;
 import org.testng.annotations.Test;

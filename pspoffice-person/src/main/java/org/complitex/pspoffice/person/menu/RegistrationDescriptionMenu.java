@@ -16,6 +16,7 @@ import org.complitex.template.web.template.ResourceTemplateMenu;
 
 import java.util.List;
 import java.util.Locale;
+import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.EjbBeanLocator;
 import org.complitex.template.web.security.SecurityRole;
@@ -25,11 +26,17 @@ import org.complitex.template.web.security.SecurityRole;
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
-public class PersonDescriptionMenu extends ResourceTemplateMenu {
+public class RegistrationDescriptionMenu extends ResourceTemplateMenu {
 
     @Override
     public String getTitle(Locale locale) {
-        return getString(MenuResources.class, locale, "person_description_menu");
+        return getString(MenuResources.class, locale, "registration_description_menu");
+    }
+
+    private String getEntityName(String entity, Locale locale) {
+        StringCultureBean stringBean = EjbBeanLocator.getBean(StringCultureBean.class);
+        IStrategy strategy = EjbBeanLocator.getBean(StrategyFactory.class).getStrategy(entity);
+        return stringBean.displayValue(strategy.getEntity().getEntityNames(), locale);
     }
 
     @Override
@@ -38,8 +45,7 @@ public class PersonDescriptionMenu extends ResourceTemplateMenu {
 
             @Override
             public String getLabel(Locale locale) {
-                return EjbBeanLocator.getBean(StringCultureBean.class).displayValue(
-                        EjbBeanLocator.getBean(StrategyFactory.class).getStrategy("person").getEntity().getEntityNames(), locale);
+                return getEntityName("person", locale);
             }
 
             @Override
@@ -55,6 +61,27 @@ public class PersonDescriptionMenu extends ResourceTemplateMenu {
             @Override
             public String getTagId() {
                 return "person_description_item";
+            }
+        }, new ITemplateLink() {
+
+            @Override
+            public String getLabel(Locale locale) {
+                return getEntityName("registration", locale);
+            }
+
+            @Override
+            public Class<? extends Page> getPage() {
+                return EntityDescription.class;
+            }
+
+            @Override
+            public PageParameters getParameters() {
+                return new PageParameters(ImmutableMap.of(EntityDescription.ENTITY, "registration"));
+            }
+
+            @Override
+            public String getTagId() {
+                return "registration_description_menu";
             }
         });
         return links;

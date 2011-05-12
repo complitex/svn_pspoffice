@@ -135,8 +135,12 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
         Person person = (Person) object;
+        return displayPerson(person.getFirstName(), person.getMiddleName(), person.getLastName());
+    }
+
+    public String displayPerson(String firstName, String middleName, String lastName) {
         // return in format 'last_name fisrt_name middle_name'
-        return person.getLastName() + " " + person.getFirstName() + " " + person.getMiddleName();
+        return lastName + " " + firstName + " " + middleName;
     }
 
     @Transactional
@@ -307,7 +311,7 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void loadName(Person person){
+    public void loadName(Person person) {
         person.setFirstName(nameBean.getFirstName(person.getAttribute(FIRST_NAME).getValueId()));
         person.setMiddleName(nameBean.getMiddleName(person.getAttribute(MIDDLE_NAME).getValueId()));
         person.setLastName(nameBean.getLastName(person.getAttribute(LAST_NAME).getValueId()));
@@ -425,7 +429,6 @@ public class PersonStrategy extends TemplateStrategy {
 //            registrationStrategy.delete(registrationId);
 //        }
 //    }
-
 //    @Transactional
 //    @Override
 //    public void changeChildrenActivity(long personId, boolean enable) {
@@ -438,7 +441,6 @@ public class PersonStrategy extends TemplateStrategy {
 //            sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
 //        }
 //    }
-
     @Override
     public int getSearchTextFieldSize() {
         return 40;

@@ -18,6 +18,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionary.entity.Gender;
+import org.complitex.dictionary.util.OSInfoUtil;
 import org.complitex.dictionary.web.component.type.BooleanPanel;
 import org.complitex.dictionary.web.component.type.Date2Panel;
 import org.complitex.dictionary.web.component.type.GenderPanel;
@@ -61,7 +62,8 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
     public RegistrationStopCouponPage(Person person) {
         RegistrationStopCoupon coupon = null;
         try {
-            coupon = couponBean.getRegistrationClosingCoupon(person, getLocale());
+            coupon = couponBean.getRegistrationClosingCoupon(person, getLocale(),
+                    OSInfoUtil.lineSeparator(getWebRequestCycle().getWebRequest()));
         } catch (PersonNotRegisteredException e) {
             error(getString("personRegistered"));
         } catch (Exception e) {

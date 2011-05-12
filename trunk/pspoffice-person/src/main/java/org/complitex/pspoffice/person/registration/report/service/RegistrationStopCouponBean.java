@@ -4,9 +4,16 @@
  */
 package org.complitex.pspoffice.person.registration.report.service;
 
+import com.google.common.base.Predicate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Sets.*;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.complitex.address.strategy.building.BuildingStrategy;
@@ -19,11 +26,14 @@ import org.complitex.dictionary.converter.IConverter;
 import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.registration.report.exception.PersonNotRegisteredException;
@@ -39,6 +49,9 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 @Stateless
 public class RegistrationStopCouponBean extends AbstractBean {
 
+    private static final String RESOURCE_BINDLE = RegistrationStopCouponBean.class.getName();
+    private static final String MAPPING_NAMESPACE = RegistrationStopCouponBean.class.getName();
+    private static final String DATE_PATTERN = "dd.MM.yyyy";
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -49,9 +62,12 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private StringCultureBean stringBean;
     @EJB
     private StreetStrategy streetStrategy;
+    @EJB
+    private NameBean nameBean;
 
     @Transactional
-    public RegistrationStopCoupon getRegistrationClosingCoupon(Person person, Locale locale) throws PersonNotRegisteredException {
+    public RegistrationStopCoupon getRegistrationClosingCoupon(Person person, Locale locale, String clientLineSeparator)
+            throws PersonNotRegisteredException {
         if (person == null) {
             throw new IllegalArgumentException("Person is null.");
         }
@@ -115,10 +131,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setFirstName(person.getFirstName());
         coupon.setLastName(person.getLastName());
         coupon.setMiddleName(person.getMiddleName());
-
-        //TODO: add support for previous names
-        coupon.setPreviousNames(null);
-
+        coupon.setPreviousNames(getPreviousNames(person.getId(), clientLineSeparator));
         coupon.setBirthDate(getDateValue(person, BIRTH_DATE));
         coupon.setBirthRegion(getStringValue(person, BIRTH_REGION));
         coupon.setBirthDistrict(getStringValue(person, BIRTH_DISTRICT));
@@ -144,7 +157,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setBirthCertificateInfo(null);
 
         coupon.setUkraineCitizenship(getAttributeValue(person, UKRAINE_CITIZENSHIP, new BooleanConverter()));
-        coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale));
+        coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale, clientLineSeparator));
         return coupon;
     }
 
@@ -162,12 +175,60 @@ public class RegistrationStopCouponBean extends AbstractBean {
         return getAttributeValue(object, attributeTypeId, new DateConverter());
     }
 
-    private String getChildrenInfo(Collection<Person> children, Locale locale) {
+    private String getChildrenInfo(Collection<Person> children, Locale locale, String lineSeparator) {
         StringBuilder childrenInfo = new StringBuilder();
         for (Person child : children) {
-            childrenInfo.append(personStrategy.displayDomainObject(child, locale)).append(" ");
-            //TODO: add child's birth date and place info.
+            String childFullName = personStrategy.displayDomainObject(child, locale);
+            Date birthDate = getDateValue(child, BIRTH_DATE);
+            DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
+            String birthDateAsString = dateFormat.format(birthDate);
+            String birthCity = getStringValue(child, BIRTH_CITY);
+            String birthDistrict = getStringValue(child, BIRTH_DISTRICT);
+
+            childrenInfo.append(childFullName).
+                    append(", ").append(ResourceUtil.getString(RESOURCE_BINDLE, "birth_info", locale)).
+                    append(birthDateAsString).append(", ").append(birthCity).append(", ").append(birthDistrict).
+                    append(lineSeparator != null ? lineSeparator : " ");
         }
         return childrenInfo.toString();
+    }
+
+    @Transactional
+    private String getPreviousNames(long personId, String lineSeparator) {
+        TreeSet<Date> previousNameStartDates = newTreeSet(sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNameStartDates", personId));
+        if (previousNameStartDates.isEmpty()) {
+            return null;
+        }
+        previousNameStartDates.remove(previousNameStartDates.last());
+        StringBuilder previousNamesBuilder = new StringBuilder();
+        for (Date startDate : previousNameStartDates) {
+            DomainObjectExample example = new DomainObjectExample(personId);
+            example.setStartDate(startDate);
+            List<Attribute> nameAttributes = sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNames", example);
+            String firstName = nameBean.getFirstName(find(nameAttributes, new Predicate<Attribute>() {
+
+                @Override
+                public boolean apply(Attribute input) {
+                    return input.getAttributeTypeId().equals(FIRST_NAME);
+                }
+            }).getValueId());
+            String middleName = nameBean.getMiddleName(find(nameAttributes, new Predicate<Attribute>() {
+
+                @Override
+                public boolean apply(Attribute input) {
+                    return input.getAttributeTypeId().equals(MIDDLE_NAME);
+                }
+            }).getValueId());
+            String lastName = nameBean.getLastName(find(nameAttributes, new Predicate<Attribute>() {
+
+                @Override
+                public boolean apply(Attribute input) {
+                    return input.getAttributeTypeId().equals(LAST_NAME);
+                }
+            }).getValueId());
+            previousNamesBuilder.append(personStrategy.displayPerson(firstName, middleName, lastName)).
+                    append(lineSeparator != null ? lineSeparator : " ");
+        }
+        return previousNamesBuilder.toString();
     }
 }

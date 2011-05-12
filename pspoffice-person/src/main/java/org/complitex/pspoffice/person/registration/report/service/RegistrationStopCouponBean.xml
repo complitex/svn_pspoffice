@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.person.registration.report.service.RegistrationStopCouponBean">
+
+    <select id="findPreviousNameStartDates" resultType="date" parameterType="long">
+        SELECT pa.`start_date` FROM `person_attribute` pa WHERE pa.`object_id`= #{personId}
+            AND pa.`attribute_type_id` IN (2000,2001,2002)
+    </select>
+
+    <select id="findPreviousNames" parameterType="DomainObjectExample" resultMap="org.complitex.dictionary.entity.Attribute.Attribute">
+        SELECT pa.* FROM `person_attribute` pa WHERE pa.`object_id` = #{id}
+        AND pa.`start_date` <![CDATA[ <= ]]> #{startDate} AND ((pa.`end_date` IS NULL ) OR (pa.`end_date` <![CDATA[ > ]]> #{startDate}))
+        AND pa.`attribute_type_id` IN (2000,2001,2002)
+    </select>
+
+</mapper>

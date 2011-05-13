@@ -96,9 +96,9 @@
 
     <!-- history -->
 
-    <select id="findRegistrationIds" parameterType="long" resultType="long">
+    <select id="findRegistrationIds" parameterType="map" resultType="long">
         SELECT r.`object_id` FROM `registration` r WHERE
-            EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = 2014
+            EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = #{registrationAttributeType}
                     AND pa.`value_id` = r.`object_id`)
     </select>
 

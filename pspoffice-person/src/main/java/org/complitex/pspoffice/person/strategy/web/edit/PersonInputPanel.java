@@ -265,7 +265,9 @@ public final class PersonInputPanel extends Panel {
         List<Attribute> userAttributes = newArrayList();
         for (Long attributeTypeId : userAttributeTypeIds) {
             Attribute userAttribute = person.getAttribute(attributeTypeId);
-            userAttributes.add(userAttribute);
+            if (userAttribute != null) {
+                userAttributes.add(userAttribute);
+            }
         }
 
         ListView<Attribute> userAttributesView = new ListView<Attribute>("userAttributesView", userAttributes) {

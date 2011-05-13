@@ -1,5 +1,6 @@
 package org.complitex.pspoffice.person.strategy;
 
+import static com.google.common.collect.ImmutableMap.*;
 import java.util.Collections;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Sets.*;
@@ -372,7 +373,8 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     private Set<Long> findRegistrationIds(long personId) {
-        return newHashSet(sqlSession().selectList(PERSON_MAPPING + ".findRegistrationIds", personId));
+        Map<String, Long> params = of("personId", personId, "registrationAttributeType", REGISTRATION);
+        return newHashSet(sqlSession().selectList(PERSON_MAPPING + ".findRegistrationIds", params));
     }
 
     @Override

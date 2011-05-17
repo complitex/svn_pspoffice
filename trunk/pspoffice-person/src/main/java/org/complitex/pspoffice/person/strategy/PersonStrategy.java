@@ -26,6 +26,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.service.PermissionBean;
+import org.complitex.dictionary.strategy.DeleteException;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -415,22 +416,20 @@ public class PersonStrategy extends TemplateStrategy {
         return person;
     }
 
-//    @Transactional
-//    @Override
-//    public void delete(long objectId) throws DeleteException {
-//        deleteChecks(objectId);
-//
-//        Set<Long> registrationIds = findRegistrationIds(objectId);
-//
-//        deleteStrings(objectId);
-//        deleteAttribute(objectId);
-//        deleteObject(objectId);
-//
-//        //delete registrations:
-//        for (Long registrationId : registrationIds) {
-//            registrationStrategy.delete(registrationId);
-//        }
-//    }
+    @Transactional
+    @Override
+    public void delete(long objectId) throws DeleteException {
+        deleteChecks(objectId);
+        Set<Long> registrationIds = findRegistrationIds(objectId);
+        deleteStrings(objectId);
+        deleteAttribute(objectId);
+        deleteObject(objectId);
+
+        //delete registrations:
+        for (Long registrationId : registrationIds) {
+            registrationStrategy.delete(registrationId);
+        }
+    }
 //    @Transactional
 //    @Override
 //    public void changeChildrenActivity(long personId, boolean enable) {
@@ -443,6 +442,7 @@ public class PersonStrategy extends TemplateStrategy {
 //            sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
 //        }
 //    }
+
     @Override
     public int getSearchTextFieldSize() {
         return 40;

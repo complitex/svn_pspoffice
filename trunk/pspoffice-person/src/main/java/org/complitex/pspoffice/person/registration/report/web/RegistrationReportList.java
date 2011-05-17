@@ -6,15 +6,12 @@ package org.complitex.pspoffice.person.registration.report.web;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -24,13 +21,12 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.datatable.ArrowOrderByBorder;
+import org.complitex.dictionary.web.component.datatable.DataProvider;
 import org.complitex.dictionary.web.component.paging.PagingNavigator;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationReport;
 import org.complitex.pspoffice.person.registration.report.example.RegistrationReportExample;
@@ -90,10 +86,10 @@ public final class RegistrationReportList extends ListPage {
         content.add(filterForm);
 
         //Data Provider
-        final SortableDataProvider<RegistrationReport> dataProvider = new SortableDataProvider<RegistrationReport>() {
+        final DataProvider<RegistrationReport> dataProvider = new DataProvider<RegistrationReport>() {
 
             @Override
-            public Iterator<RegistrationReport> iterator(int first, int count) {
+            protected Iterable<? extends RegistrationReport> getData(int first, int count) {
                 boolean asc = getSort().isAscending();
                 String sortProperty = getSort().getProperty();
 
@@ -103,17 +99,12 @@ public final class RegistrationReportList extends ListPage {
                 example.setAsc(asc);
                 example.setStart(first);
                 example.setSize(count);
-                return registrationReportBean.getReport(example).iterator();
+                return registrationReportBean.getReport(example);
             }
 
             @Override
-            public int size() {
+            protected int getSize() {
                 return registrationReportBean.count(example);
-            }
-
-            @Override
-            public IModel<RegistrationReport> model(RegistrationReport object) {
-                return new Model<RegistrationReport>(object);
             }
         };
         dataProvider.setSort(RegistrationReportBean.OrderBy.END_DATE.getOrderByExpression(), true);

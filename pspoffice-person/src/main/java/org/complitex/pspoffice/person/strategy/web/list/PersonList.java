@@ -5,7 +5,6 @@
 package org.complitex.pspoffice.person.strategy.web.list;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
@@ -13,7 +12,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -38,6 +36,7 @@ import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.ShowModePanel;
 import org.complitex.dictionary.web.component.datatable.ArrowOrderByBorder;
+import org.complitex.dictionary.web.component.datatable.DataProvider;
 import org.complitex.dictionary.web.component.paging.PagingNavigator;
 import org.complitex.dictionary.web.component.scroll.ScrollBookmarkablePageLink;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -46,6 +45,8 @@ import org.complitex.template.web.component.toolbar.AddItemButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ScrollListPage;
 import org.complitex.template.web.security.SecurityRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -54,6 +55,7 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class PersonList extends ScrollListPage {
 
+    private static final Logger log = LoggerFactory.getLogger(PersonList.class);
     private DomainObjectExample example;
     private static final String PAGE = PersonList.class.getName();
     @EJB
@@ -121,10 +123,10 @@ public final class PersonList extends ScrollListPage {
         filterForm.add(showModePanel);
 
         //Data Provider
-        final SortableDataProvider<Person> dataProvider = new SortableDataProvider<Person>() {
+        final DataProvider<Person> dataProvider = new DataProvider<Person>() {
 
             @Override
-            public Iterator<Person> iterator(int first, int count) {
+            protected Iterable<Person> getData(int first, int count) {
                 boolean asc = getSort().isAscending();
                 String sortProperty = getSort().getProperty();
 
@@ -142,19 +144,14 @@ public final class PersonList extends ScrollListPage {
                 example.setAsc(asc);
                 example.setStart(first);
                 example.setSize(count);
-                return personStrategy.find(example).iterator();
+                return personStrategy.find(example);
             }
 
             @Override
-            public int size() {
+            protected int getSize() {
                 example.setStatus(showModeModel.getObject().name());
                 example.setLocaleId(localeBean.convert(getLocale()).getId());
                 return personStrategy.count(example);
-            }
-
-            @Override
-            public IModel<Person> model(Person person) {
-                return new Model<Person>(person);
             }
         };
         dataProvider.setSort(getTemplateSession().getPreferenceString(PAGE, PreferenceKey.SORT_PROPERTY, ""),

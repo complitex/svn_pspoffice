@@ -4,6 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -32,6 +34,8 @@ import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
+import org.complitex.template.web.component.toolbar.DeleteItemButton;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -215,9 +219,7 @@ public final class PersonEdit extends FormTemplatePage {
                 personStrategy.updateAndPropagate(oldPerson, newPerson, DateUtil.getCurrentDate());
             }
         }
-
-        logBean.log(Log.STATUS.OK, Module.NAME, PersonEdit.class,
-                isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, personStrategy,
+        logBean.log(Log.STATUS.OK, Module.NAME, PersonEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, personStrategy,
                 oldPerson, newPerson, getLocale(), null);
         back();
     }
@@ -228,27 +230,26 @@ public final class PersonEdit extends FormTemplatePage {
         setResponsePage(personStrategy.getListPage(), listPageParams);
     }
 
-    public void disable() {
-        try {
-            personStrategy.disable(newPerson);
-            back();
-        } catch (Exception e) {
-            log.error("", e);
-            error(getString("db_error"));
-        }
-    }
-
-    public void enable() {
-        try {
-            personStrategy.enable(newPerson);
-            back();
-        } catch (Exception e) {
-            log.error("", e);
-            error(getString("db_error"));
-        }
-    }
-
-    public void delete() {
+//    private void disable() {
+//        try {
+//            personStrategy.disable(newPerson);
+//            back();
+//        } catch (Exception e) {
+//            log.error("", e);
+//            error(getString("db_error"));
+//        }
+//    }
+//
+//    private void enable() {
+//        try {
+//            personStrategy.enable(newPerson);
+//            back();
+//        } catch (Exception e) {
+//            log.error("", e);
+//            error(getString("db_error"));
+//        }
+//    }
+    private void delete() {
         try {
             personStrategy.delete(newPerson.getId());
             back();
@@ -258,6 +259,25 @@ public final class PersonEdit extends FormTemplatePage {
             log.error("", e);
             error(getString("db_error"));
         }
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return ImmutableList.of(new DeleteItemButton(id) {
+
+            @Override
+            protected void onClick() {
+                delete();
+            }
+
+            @Override
+            protected void onBeforeRender() {
+                if (!DomainObjectAccessUtil.canDelete(null, "person", newPerson)) {
+                    setVisible(false);
+                }
+                super.onBeforeRender();
+            }
+        });
     }
 }
 

@@ -216,11 +216,11 @@ public final class PersonInputPanel extends Panel {
         registrationControlContainer.add(stopRegistration);
 
         //system attributes:
+        initSystemAttributeInput(this, "birthCountry", BIRTH_COUNTRY, true);
         initSystemAttributeInput(this, "birthRegion", BIRTH_REGION, true);
         initSystemAttributeInput(this, "birthDistrict", BIRTH_DISTRICT, false);
         initSystemAttributeInput(this, "birthCity", BIRTH_CITY, true);
-        initSystemAttributeInput(this, "birthVillage", BIRTH_VILLAGE, false);
-        initSystemAttributeInput(this, "birthDate", BIRTH_DATE, false);
+        initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
 
         //passport info
         WebMarkupContainer passportContainer = new WebMarkupContainer("passportContainer");

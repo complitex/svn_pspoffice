@@ -106,26 +106,28 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
         form.add(new TextField("middleName"));
         form.add(new FieldLabel("previousNames"));
         form.add(new TextArea("previousNames"));
+        form.add(new FieldLabel("birthCountry"));
+        form.add(new TextField("birthCountry"));
         form.add(new FieldLabel("birthRegion"));
         form.add(new TextField("birthRegion"));
         form.add(new FieldLabel("birthDistrict"));
         form.add(new TextField("birthDistrict"));
         form.add(new FieldLabel("birthCity"));
         form.add(new TextField("birthCity"));
-        form.add(new FieldLabel("birthVillage"));
-        form.add(new TextField("birthVillage"));
         FieldLabel birthDateLabel = new FieldLabel("birthDate");
         form.add(birthDateLabel);
         form.add(new Date2Panel("birthDate", new PropertyModel<Date>(model, "birthDate"), false, birthDateLabel.getModel(), true));
         FieldLabel genderLabel = new FieldLabel("gender");
         form.add(genderLabel);
         form.add(new GenderPanel("gender", new PropertyModel<Gender>(model, "gender"), false, genderLabel.getModel(), true));
+        form.add(new FieldLabel("addressCountry"));
+        form.add(new TextField("addressCountry"));
+        form.add(new FieldLabel("addressRegion"));
+        form.add(new TextField("addressRegion"));
         form.add(new FieldLabel("addressDistrict"));
         form.add(new TextField("addressDistrict"));
         form.add(new FieldLabel("addressCity"));
         form.add(new TextField("addressCity"));
-        form.add(new FieldLabel("addressVillage"));
-        form.add(new TextField("addressVillage"));
         form.add(new FieldLabel("addressStreet"));
         form.add(new TextField("addressStreet"));
         form.add(new FieldLabel("addressBuildingNumber"));
@@ -136,14 +138,22 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
         form.add(new TextField("addressApartment"));
         form.add(new FieldLabel("registrationOrganization"));
         form.add(new TextField("registrationOrganization"));
+        form.add(new FieldLabel("departureCountry"));
+        form.add(new TextField("departureCountry"));
         form.add(new FieldLabel("departureRegion"));
         form.add(new TextField("departureRegion"));
         form.add(new FieldLabel("departureDistrict"));
         form.add(new TextField("departureDistrict"));
         form.add(new FieldLabel("departureCity"));
         form.add(new TextField("departureCity"));
-        form.add(new FieldLabel("departureVillage"));
-        form.add(new TextField("departureVillage"));
+        form.add(new FieldLabel("departureStreet"));
+        form.add(new TextField("departureStreet"));
+        form.add(new FieldLabel("departureBuildingNumber"));
+        form.add(new TextField("departureBuildingNumber"));
+        form.add(new FieldLabel("departureBuildingCorp"));
+        form.add(new TextField("departureBuildingCorp"));
+        form.add(new FieldLabel("departureApartment"));
+        form.add(new TextField("departureApartment"));
         FieldLabel departureDateLabel = new FieldLabel("departureDate");
         form.add(departureDateLabel);
         form.add(new Date2Panel("departureDate", new PropertyModel<Date>(model, "departureDate"), false, departureDateLabel.getModel(), true));
@@ -165,8 +175,6 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
         form.add(new TextArea("childrenInfo"));
         form.add(new FieldLabel("additionalInfo"));
         form.add(new TextArea("additionalInfo"));
-
-
     }
 }
 

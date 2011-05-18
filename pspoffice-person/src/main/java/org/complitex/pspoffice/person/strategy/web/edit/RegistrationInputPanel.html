@@ -84,7 +84,7 @@
                     </legend>
                     <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                         <tr>
-                            <wicket:container wicket:id="arrivalRegionContainer">
+                            <wicket:container wicket:id="arrivalCountryContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -108,7 +108,7 @@
                             </wicket:container>
                         </tr>
                         <tr>
-                            <wicket:container wicket:id="arrivalDistrictContainer">
+                            <wicket:container wicket:id="arrivalRegionContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -132,7 +132,7 @@
                             </wicket:container>
                         </tr>
                         <tr>
-                            <wicket:container wicket:id="arrivalCityContainer">
+                            <wicket:container wicket:id="arrivalDistrictContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -156,7 +156,7 @@
                             </wicket:container>
                         </tr>
                         <tr>
-                            <wicket:container wicket:id="arrivalVillageContainer">
+                            <wicket:container wicket:id="arrivalCityContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -207,7 +207,42 @@
                     </legend>
                     <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                         <tr>
+                            <wicket:container wicket:id="departureCountryContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="departureStreetContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
                             <wicket:container wicket:id="departureRegionContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="departureBuildingNumberContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -231,6 +266,17 @@
                                     <div wicket:id="input"></div>
                                 </td>
                             </wicket:container>
+                            <wicket:container wicket:id="departureBuildingCorpContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
                         </tr>
                         <tr>
                             <wicket:container wicket:id="departureCityContainer">
@@ -244,9 +290,7 @@
                                     <div wicket:id="input"></div>
                                 </td>
                             </wicket:container>
-                        </tr>
-                        <tr>
-                            <wicket:container wicket:id="departureVillageContainer">
+                            <wicket:container wicket:id="departureApartmentContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -269,7 +313,9 @@
                                 <td>
                                     <div wicket:id="input"></div>
                                 </td>
+                                <th></th><td></td>
                             </wicket:container>
+                            
                         </tr>
                         <tr>
                             <wicket:container wicket:id="departureReasonContainer">
@@ -282,6 +328,7 @@
                                 <td>
                                     <div wicket:id="input"></div>
                                 </td>
+                                <th></th><td></td>
                             </wicket:container>
                         </tr>
                     </table>

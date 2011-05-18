@@ -19,23 +19,24 @@ public class RegistrationStopCoupon implements Serializable {
     private String lastName;
     private String previousNames;
     private Date birthDate;
+    private String birthCountry;
     private String birthRegion;
     private String birthDistrict;
     private String birthCity;
-    private String birthVillage;
     private Gender gender;
+    private String addressCountry;
+    private String addressRegion;
     private String addressDistrict;
     private String addressCity;
-    private String addressVillage;
     private String addressStreet;
     private String addressBuildingNumber;
     private String addressBuildingCorp;
     private String addressApartment;
     private String registrationOrganization;
+    private String departureCountry;
     private String departureRegion;
     private String departureDistrict;
     private String departureCity;
-    private String departureVillage;
     private String departureStreet;
     private String departureBuildingNumber;
     private String departureBuildingCorp;
@@ -114,14 +115,6 @@ public class RegistrationStopCoupon implements Serializable {
         this.addressStreet = addressStreet;
     }
 
-    public String getAddressVillage() {
-        return addressVillage;
-    }
-
-    public void setAddressVillage(String addressVillage) {
-        this.addressVillage = addressVillage;
-    }
-
     public String getBirthCertificateInfo() {
         return birthCertificateInfo;
     }
@@ -162,12 +155,12 @@ public class RegistrationStopCoupon implements Serializable {
         this.birthDistrict = birthDistrict;
     }
 
-    public String getBirthVillage() {
-        return birthVillage;
+    public String getBirthCountry() {
+        return birthCountry;
     }
 
-    public void setBirthVillage(String birthVillage) {
-        this.birthVillage = birthVillage;
+    public void setBirthCountry(String birthCountry) {
+        this.birthCountry = birthCountry;
     }
 
     public String getChildrenInfo() {
@@ -234,12 +227,28 @@ public class RegistrationStopCoupon implements Serializable {
         this.departureStreet = departureStreet;
     }
 
-    public String getDepartureVillage() {
-        return departureVillage;
+    public String getDepartureCountry() {
+        return departureCountry;
     }
 
-    public void setDepartureVillage(String departureVillage) {
-        this.departureVillage = departureVillage;
+    public void setDepartureCountry(String departureCountry) {
+        this.departureCountry = departureCountry;
+    }
+
+    public String getAddressCountry() {
+        return addressCountry;
+    }
+
+    public void setAddressCountry(String addressCountry) {
+        this.addressCountry = addressCountry;
+    }
+
+    public String getAddressRegion() {
+        return addressRegion;
+    }
+
+    public void setAddressRegion(String addressRegion) {
+        this.addressRegion = addressRegion;
     }
 
     public String getFirstName() {

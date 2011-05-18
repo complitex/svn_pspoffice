@@ -54,10 +54,10 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long MIDDLE_NAME = 2002;
     public static final long NATIONALITY = 2003;
     public static final long BIRTH_DATE = 2004;
-    public static final long BIRTH_REGION = 2005;
-    public static final long BIRTH_DISTRICT = 2006;
-    public static final long BIRTH_CITY = 2007;
-    public static final long BIRTH_VILLAGE = 2008;
+    public static final long BIRTH_COUNTRY = 2005;
+    public static final long BIRTH_REGION = 2006;
+    public static final long BIRTH_DISTRICT = 2007;
+    public static final long BIRTH_CITY = 2008;
     public static final long PASSPORT_SERIAL_NUMBER = 2009;
     public static final long PASSPORT_NUMBER = 2010;
     public static final long PASSPORT_ACQUISITION_ORGANIZATION = 2011;

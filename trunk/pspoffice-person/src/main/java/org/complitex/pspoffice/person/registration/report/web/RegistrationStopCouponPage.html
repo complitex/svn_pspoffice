@@ -64,6 +64,14 @@
                             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
                                     <th>
+                                        <span wicket:id="birthCountryLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="birthCountry"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
                                         <span wicket:id="birthRegionLabel"></span> :
                                     </th>
                                     <td>
@@ -84,14 +92,6 @@
                                     </th>
                                     <td>
                                         <input type="text" wicket:id="birthCity"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="birthVillageLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="birthVillage"/>
                                     </td>
                                 </tr>
                                 <tr>
@@ -129,46 +129,38 @@
                             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
                                     <th>
-                                        <span wicket:id="addressDistrictLabel"></span> :
+                                        <span wicket:id="addressCountryLabel"></span> :
                                     </th>
                                     <td>
-                                        <input type="text" wicket:id="addressDistrict"/>
+                                        <input type="text" wicket:id="addressCountry"/>
                                     </td>
-                                    <th></th><td></td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="addressCityLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressCity"/>
-                                    </td>
-                                    <th></th><td></td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="addressVillageLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressVillage"/>
-                                    </td>
-                                    <th></th><td></td>
-                                </tr>
-                                <tr>
                                     <th>
                                         <span wicket:id="addressStreetLabel"></span> :
                                     </th>
                                     <td>
                                         <input type="text" wicket:id="addressStreet"/>
                                     </td>
-                                    <th></th><td></td>
                                 </tr>
                                 <tr>
+                                    <th>
+                                        <span wicket:id="addressRegionLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="addressRegion"/>
+                                    </td>
                                     <th>
                                         <span wicket:id="addressBuildingNumberLabel"></span> :
                                     </th>
                                     <td>
                                         <input type="text" wicket:id="addressBuildingNumber"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <span wicket:id="addressDistrictLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="addressDistrict"/>
                                     </td>
                                     <th>
                                         <span wicket:id="addressBuildingCorpLabel"></span> :
@@ -179,12 +171,17 @@
                                 </tr>
                                 <tr>
                                     <th>
+                                        <span wicket:id="addressCityLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="addressCity"/>
+                                    </td>
+                                    <th>
                                         <span wicket:id="addressApartmentLabel"></span> :
                                     </th>
                                     <td>
                                         <input type="text" wicket:id="addressApartment"/>
                                     </td>
-                                    <th></th><td></td>
                                 </tr>
                             </table>
                         </fieldset>
@@ -195,7 +192,7 @@
                                 <span wicket:id="registrationOrganizationLabel"></span> :
                             </th>
                             <td>
-                                <input type="text" wicket:id="registrationOrganization"/>
+                                <input type="text" wicket:id="registrationOrganization" size="50"/>
                             </td>
                         </tr>
                     </table>
@@ -211,12 +208,31 @@
                             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
                                     <th>
+                                        <span wicket:id="departureCountryLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="departureCountry"/>
+                                    </td>
+                                    <th>
+                                        <span wicket:id="departureStreetLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="departureStreet"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
                                         <span wicket:id="departureRegionLabel"></span> :
                                     </th>
                                     <td>
                                         <input type="text" wicket:id="departureRegion"/>
                                     </td>
-                                    <th></th><td></td>
+                                    <th>
+                                        <span wicket:id="departureBuildingNumberLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="departureBuildingNumber"/>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th>
@@ -224,6 +240,12 @@
                                     </th>
                                     <td>
                                         <input type="text" wicket:id="departureDistrict"/>
+                                    </td>
+                                    <th>
+                                        <span wicket:id="departureBuildingCorpLabel"></span> :
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="departureBuildingCorp"/>
                                     </td>
                                 </tr>
                                 <tr>
@@ -233,13 +255,11 @@
                                     <td>
                                         <input type="text" wicket:id="departureCity"/>
                                     </td>
-                                </tr>
-                                <tr>
                                     <th>
-                                        <span wicket:id="departureVillageLabel"></span> :
+                                        <span wicket:id="departureApartmentLabel"></span> :
                                     </th>
                                     <td>
-                                        <input type="text" wicket:id="departureVillage"/>
+                                        <input type="text" wicket:id="departureApartment"/>
                                     </td>
                                 </tr>
                                 <tr>
@@ -249,6 +269,7 @@
                                     <td>
                                         <div wicket:id="departureDate"></div>
                                     </td>
+                                    <th></th><td></td>
                                 </tr>
                             </table>
                         </fieldset>

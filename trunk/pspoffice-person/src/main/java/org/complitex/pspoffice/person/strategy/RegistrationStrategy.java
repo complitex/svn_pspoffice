@@ -30,26 +30,30 @@ public class RegistrationStrategy extends Strategy {
      * Attribute type ids
      */
     public static final long ADDRESS = 2100;
-    public static final long ARRIVAL_REGION = 2101;
-    public static final long ARRIVAL_DISTRICT = 2102;
-    public static final long ARRIVAL_CITY = 2103;
-    public static final long ARRIVAL_VILLAGE = 2104;
+    public static final long ARRIVAL_COUNTRY = 2101;
+    public static final long ARRIVAL_REGION = 2102;
+    public static final long ARRIVAL_DISTRICT = 2103;
+    public static final long ARRIVAL_CITY = 2104;
     public static final long ARRIVAL_STREET = 2105;
     public static final long ARRIVAL_BUILDING = 2106;
     public static final long ARRIVAL_CORP = 2107;
     public static final long ARRIVAL_APARTMENT = 2108;
     public static final long ARRIVAL_DATE = 2109;
-    public static final long DEPARTURE_REGION = 2110;
-    public static final long DEPARTURE_DISTRICT = 2111;
-    public static final long DEPARTURE_CITY = 2112;
-    public static final long DEPARTUREL_VILLAGE = 2113;
-    public static final long DEPARTURE_DATE = 2114;
-    public static final long DEPARTURE_REASON = 2115;
-    public static final long OWNER_RELATIONSHIP = 2116;
-    public static final long OTHERS_RELATIONSHIP = 2117;
-    public static final long HOUSING_RIGHTS = 2118;
-    public static final long REGISTRATION_DATE = 2119;
-    public static final long REGISTRATION_TYPE = 2120;
+    public static final long DEPARTURE_COUNTRY = 2110;
+    public static final long DEPARTURE_REGION = 2111;
+    public static final long DEPARTURE_DISTRICT = 2112;
+    public static final long DEPARTURE_CITY = 2113;
+    public static final long DEPARTURE_STREET = 2114;
+    public static final long DEPARTURE_BUILDING_NUMBER = 2115;
+    public static final long DEPARTURE_BUILDING_CORP = 2116;
+    public static final long DEPARTURE_APARTMENT = 2117;
+    public static final long DEPARTURE_DATE = 2118;
+    public static final long DEPARTURE_REASON = 2119;
+    public static final long OWNER_RELATIONSHIP = 2120;
+    public static final long OTHERS_RELATIONSHIP = 2121;
+    public static final long HOUSING_RIGHTS = 2122;
+    public static final long REGISTRATION_DATE = 2123;
+    public static final long REGISTRATION_TYPE = 2124;
 
     /**
      * Attribute value type ids

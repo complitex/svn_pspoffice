@@ -126,6 +126,10 @@ public class RegistrationStopCouponBean extends AbstractBean {
         String street = streetStrategy.getName(streetObject, locale);
         DomainObject cityObject = addressComponentState.get("city");
         String city = strategyFactory.getStrategy("city").displayDomainObject(cityObject, locale);
+        DomainObject regionObject = addressComponentState.get("region");
+        String region = strategyFactory.getStrategy("region").displayDomainObject(regionObject, locale);
+        DomainObject countryObject = addressComponentState.get("country");
+        String country = strategyFactory.getStrategy("country").displayDomainObject(countryObject, locale);
 
         RegistrationStopCoupon coupon = new RegistrationStopCoupon();
         coupon.setFirstName(person.getFirstName());
@@ -133,20 +137,27 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setMiddleName(person.getMiddleName());
         coupon.setPreviousNames(getPreviousNames(person.getId(), clientLineSeparator));
         coupon.setBirthDate(getDateValue(person, BIRTH_DATE));
+        coupon.setBirthCountry(getStringValue(person, BIRTH_COUNTRY));
         coupon.setBirthRegion(getStringValue(person, BIRTH_REGION));
         coupon.setBirthDistrict(getStringValue(person, BIRTH_DISTRICT));
         coupon.setBirthCity(getStringValue(person, BIRTH_CITY));
-        coupon.setBirthVillage(getStringValue(person, BIRTH_VILLAGE));
         coupon.setGender(getAttributeValue(person, GENDER, new GenderConverter()));
+        coupon.setAddressCountry(country);
+        coupon.setAddressRegion(region);
         coupon.setAddressDistrict(district);
         coupon.setAddressCity(city);
         coupon.setAddressStreet(street);
         coupon.setAddressBuildingNumber(buildingNumber);
         coupon.setAddressBuildingCorp(buildingCorp);
         coupon.setAddressApartment(apartment);
+        coupon.setDepartureCountry(getStringValue(registration, DEPARTURE_COUNTRY));
         coupon.setDepartureRegion(getStringValue(registration, DEPARTURE_REGION));
         coupon.setDepartureDistrict(getStringValue(registration, DEPARTURE_DISTRICT));
         coupon.setDepartureCity(getStringValue(registration, DEPARTURE_CITY));
+        coupon.setDepartureStreet(getStringValue(registration, DEPARTURE_STREET));
+        coupon.setDepartureBuildingNumber(getStringValue(registration, DEPARTURE_BUILDING_NUMBER));
+        coupon.setDepartureBuildingCorp(getStringValue(registration, DEPARTURE_BUILDING_CORP));
+        coupon.setDepartureApartment(getStringValue(registration, DEPARTURE_APARTMENT));
         coupon.setDepartureDate(getDateValue(registration, DEPARTURE_DATE));
         coupon.setPassportSerialNumber(getStringValue(person, PASSPORT_SERIAL_NUMBER));
         coupon.setPassportNumber(getStringValue(person, PASSPORT_NUMBER));
@@ -163,8 +174,12 @@ public class RegistrationStopCouponBean extends AbstractBean {
 
     private <T> T getAttributeValue(DomainObject object, long attributeTypeId, IConverter<T> converter) {
         Attribute attribute = object.getAttribute(attributeTypeId);
-        String attributeValue = stringBean.getSystemStringCulture(attribute.getLocalizedValues()).getValue();
-        return attributeValue != null ? converter.toObject(attributeValue) : null;
+        T value = null;
+        if (attribute != null) {
+            String attributeValue = stringBean.getSystemStringCulture(attribute.getLocalizedValues()).getValue();
+            value = attributeValue != null ? converter.toObject(attributeValue) : null;
+        }
+        return value;
     }
 
     private String getStringValue(DomainObject object, long attributeTypeId) {
@@ -180,15 +195,19 @@ public class RegistrationStopCouponBean extends AbstractBean {
         for (Person child : children) {
             String childFullName = personStrategy.displayDomainObject(child, locale);
             Date birthDate = getDateValue(child, BIRTH_DATE);
-            DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
-            String birthDateAsString = dateFormat.format(birthDate);
+            String birthDateAsString = null;
+            if (birthDate != null) {
+                DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
+                birthDateAsString = dateFormat.format(birthDate);
+            }
             String birthCity = getStringValue(child, BIRTH_CITY);
             String birthDistrict = getStringValue(child, BIRTH_DISTRICT);
-
-            childrenInfo.append(childFullName).
-                    append(", ").append(ResourceUtil.getString(RESOURCE_BINDLE, "birth_info", locale)).
-                    append(birthDateAsString).append(", ").append(birthCity).append(", ").append(birthDistrict).
-                    append(lineSeparator != null ? lineSeparator : " ");
+            childrenInfo.append(childFullName);
+            if (birthDateAsString != null && birthCity != null && birthDistrict != null) {
+                childrenInfo.append(", ").append(ResourceUtil.getString(RESOURCE_BINDLE, "birth_info", locale)).
+                        append(birthDateAsString).append(", ").append(birthCity).append(", ").append(birthDistrict);
+            }
+            childrenInfo.append(lineSeparator != null ? lineSeparator : " ");
         }
         return childrenInfo.toString();
     }

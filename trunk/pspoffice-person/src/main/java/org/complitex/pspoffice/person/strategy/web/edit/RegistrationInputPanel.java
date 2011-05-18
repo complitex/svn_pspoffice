@@ -98,19 +98,23 @@ public final class RegistrationInputPanel extends Panel {
         currentAddressContainer.add(addressSearchPanel);
 
         //system attributes:
+        initSystemAttributeInput(this, "arrivalCountry", ARRIVAL_COUNTRY, true);
         initSystemAttributeInput(this, "arrivalRegion", ARRIVAL_REGION, true);
         initSystemAttributeInput(this, "arrivalStreet", ARRIVAL_STREET, true);
         initSystemAttributeInput(this, "arrivalDistrict", ARRIVAL_DISTRICT, true);
         initSystemAttributeInput(this, "arrivalBuilding", ARRIVAL_BUILDING, true);
         initSystemAttributeInput(this, "arrivalCity", ARRIVAL_CITY, true);
         initSystemAttributeInput(this, "arrivalCorp", ARRIVAL_CORP, true);
-        initSystemAttributeInput(this, "arrivalVillage", ARRIVAL_VILLAGE, true);
         initSystemAttributeInput(this, "arrivalApartment", ARRIVAL_APARTMENT, true);
         initSystemAttributeInput(this, "arrivalDate", ARRIVAL_DATE, false);
+        initSystemAttributeInput(this, "departureCountry", DEPARTURE_COUNTRY, true);
         initSystemAttributeInput(this, "departureRegion", DEPARTURE_REGION, true);
-        initSystemAttributeInput(this, "departureDistrict", DEPARTURE_DISTRICT, false);
+        initSystemAttributeInput(this, "departureDistrict", DEPARTURE_DISTRICT, true);
         initSystemAttributeInput(this, "departureCity", DEPARTURE_CITY, true);
-        initSystemAttributeInput(this, "departureVillage", DEPARTUREL_VILLAGE, false);
+        initSystemAttributeInput(this, "departureStreet", DEPARTURE_STREET, true);
+        initSystemAttributeInput(this, "departureBuildingNumber", DEPARTURE_BUILDING_NUMBER, true);
+        initSystemAttributeInput(this, "departureBuildingCorp", DEPARTURE_BUILDING_CORP, true);
+        initSystemAttributeInput(this, "departureApartment", DEPARTURE_APARTMENT, true);
         initSystemAttributeInput(this, "departureDate", DEPARTURE_DATE, false);
         initSystemAttributeInput(this, "departureReason", DEPARTURE_REASON, false);
         initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP, false);

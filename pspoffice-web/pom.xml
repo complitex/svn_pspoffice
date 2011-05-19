@@ -10,7 +10,7 @@
     <groupId>org.complitex.pspoffice</groupId>
     <artifactId>pspoffice-web</artifactId>
     <packaging>war</packaging>
-    <name>PspOffice Web</name>
+    <name>Pspoffice - Web</name>
 
     <dependencies>
         <dependency>

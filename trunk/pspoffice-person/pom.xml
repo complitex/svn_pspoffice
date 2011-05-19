@@ -10,7 +10,7 @@
 
     <groupId>org.complitex.pspoffice</groupId>
     <artifactId>pspoffice-person</artifactId>
-    <name>Person</name>
+    <name>Pspoffice - Person</name>
 
     <properties>
         <!-- do not skip test-->

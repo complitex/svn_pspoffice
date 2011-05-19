@@ -18,11 +18,12 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>PspOffice</name>
+    <name>Pspoffice</name>
 
     <modules>
         <module>pspoffice-web</module>
         <module>pspoffice-person</module>
+        <module>pspoffice-report</module>
 
         <module>../complitex/complitex-dictionary</module>
         <module>../complitex/complitex-template</module>

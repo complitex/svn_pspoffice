@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.complitex.dictionary.converter.BooleanConverter;
+import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
@@ -296,6 +297,11 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
+    public void loadRegistration(Person person) {
+        loadRegistration(person, null);
+    }
+
+    @Transactional
     private void loadRegistration(Person person, Date date) {
         Attribute registrationAttribute = person.getAttribute(REGISTRATION);
         if (registrationAttribute != null) {
@@ -451,5 +457,15 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public Class<? extends WebPage> getHistoryPage() {
         return PersonHistoryPage.class;
+    }
+
+    public Date getBirthDate(Person person) {
+        Attribute birthDateAttribute = person.getAttribute(BIRTH_DATE);
+        Date birthDate = null;
+        if (birthDateAttribute != null) {
+            String value = stringBean.getSystemStringCulture(birthDateAttribute.getLocalizedValues()).getValue();
+            birthDate = value != null ? new DateConverter().toObject(value) : null;
+        }
+        return birthDate;
     }
 }

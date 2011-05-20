@@ -38,6 +38,7 @@ import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.registration.report.exception.PersonNotRegisteredException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -64,6 +65,8 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private StreetStrategy streetStrategy;
     @EJB
     private NameBean nameBean;
+    @EJB
+    private RegistrationStrategy registrationStrategy;
 
     @Transactional
     public RegistrationStopCoupon getRegistrationClosingCoupon(Person person, Locale locale, String clientLineSeparator)
@@ -80,26 +83,9 @@ public class RegistrationStopCouponBean extends AbstractBean {
         //address
         DomainObject registration = person.getRegistration();
 
-        Attribute registrationAddressAttribute = registration.getAttribute(ADDRESS);
-        if (registrationAddressAttribute == null) {
-            throw new IllegalStateException("Registration address attribute is null.");
-        }
-        long addressId = registrationAddressAttribute.getValueId();
-        long addressTypeId = registrationAddressAttribute.getValueTypeId();
-
-        IStrategy addressStrategy = null;
-        String addressEntity = null;
-        if (addressTypeId == ADDRESS_APARTMENT) {
-            addressEntity = "apartment";
-        } else if (addressTypeId == ADDRESS_BUILDING) {
-            addressEntity = "building";
-        } else if (addressTypeId == ADDRESS_ROOM) {
-            addressEntity = "room";
-        } else {
-            throw new IllegalStateException("Address type is not resolved.");
-        }
-        addressStrategy = strategyFactory.getStrategy(addressEntity);
-
+        String addressEntity = registrationStrategy.getAddressEntity(registration);
+        IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
+        long addressId = registrationStrategy.getAddressId(registration);
         DomainObject addressObject = addressStrategy.findById(addressId, true);
         SearchComponentState addressComponentState = new SearchComponentState();
         IStrategy.SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressId, null);
@@ -136,7 +122,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setLastName(person.getLastName());
         coupon.setMiddleName(person.getMiddleName());
         coupon.setPreviousNames(getPreviousNames(person.getId(), clientLineSeparator));
-        coupon.setBirthDate(getDateValue(person, BIRTH_DATE));
+        coupon.setBirthDate(personStrategy.getBirthDate(person));
         coupon.setBirthCountry(getStringValue(person, BIRTH_COUNTRY));
         coupon.setBirthRegion(getStringValue(person, BIRTH_REGION));
         coupon.setBirthDistrict(getStringValue(person, BIRTH_DISTRICT));
@@ -194,7 +180,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         StringBuilder childrenInfo = new StringBuilder();
         for (Person child : children) {
             String childFullName = personStrategy.displayDomainObject(child, locale);
-            Date birthDate = getDateValue(child, BIRTH_DATE);
+            Date birthDate = personStrategy.getBirthDate(child);
             String birthDateAsString = null;
             if (birthDate != null) {
                 DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);

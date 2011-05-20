@@ -30,6 +30,7 @@ import org.complitex.dictionary.web.component.permission.DomainObjectPermissions
 import org.complitex.dictionary.web.component.permission.PermissionPropagationDialogPanel;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.Module;
+import org.complitex.pspoffice.person.registration.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.resources.WebCommonResourceInitializer;
@@ -263,21 +264,29 @@ public final class PersonEdit extends FormTemplatePage {
 
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-        return ImmutableList.of(new DeleteItemButton(id) {
+        return ImmutableList.of(
+                new F3ReferenceButton(id) {
 
-            @Override
-            protected void onClick() {
-                delete();
-            }
+                    @Override
+                    protected void onClick() {
+                        setResponsePage(new F3ReferencePage(newPerson));
+                    }
+                },
+                new DeleteItemButton(id) {
 
-            @Override
-            protected void onBeforeRender() {
-                if (!DomainObjectAccessUtil.canDelete(null, "person", newPerson)) {
-                    setVisible(false);
-                }
-                super.onBeforeRender();
-            }
-        });
+                    @Override
+                    protected void onClick() {
+                        delete();
+                    }
+
+                    @Override
+                    protected void onBeforeRender() {
+                        if (!DomainObjectAccessUtil.canDelete(null, "person", newPerson)) {
+                            setVisible(false);
+                        }
+                        super.onBeforeRender();
+                    }
+                });
     }
 }
 

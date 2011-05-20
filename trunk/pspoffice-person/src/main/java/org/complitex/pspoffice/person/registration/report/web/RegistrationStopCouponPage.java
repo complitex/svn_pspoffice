@@ -65,7 +65,7 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
             coupon = couponBean.getRegistrationClosingCoupon(person, getLocale(),
                     OSInfoUtil.lineSeparator(getWebRequestCycle().getWebRequest()));
         } catch (PersonNotRegisteredException e) {
-            error(getString("personRegistered"));
+            error(getString("personNotRegistered"));
         } catch (Exception e) {
             error(getString("db_error"));
             log.error("", e);

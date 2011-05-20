@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:wicket="http://wicket.apache.org">
+    <head>
+        <wicket:head>
+            <title wicket:id="title"></title>
+        </wicket:head>
+    </head>
+    <body>
+        <wicket:extend>
+            <div wicket:id="errorContainer">
+                <h3>
+                    <span wicket:id="errorMessages"></span>
+                </h3>
+            </div>
+            <div wicket:id="formContainer">
+                <div wicket:id="messages"></div>
+                <h2 wicket:id="label"></h2>
+                <div>
+                    <span wicket:id="personName"></span>
+                    <span wicket:id="personAddress"></span>
+                    <span wicket:id="personArea"></span>
+                    <span wicket:id="apartmentArea"></span>
+                    <span wicket:id="apartmentInfo"></span>
+                    <span wicket:id="floorInfo"></span>
+                    <span wicket:id="balance"></span>
+                    <span wicket:id="privateAccountOwner"></span>
+                    <div wicket:id="personOwnership"></div>
+                    <div wicket:id="facilities"></div>
+                    <div wicket:id="technicalState"></div>
+                </div>
+                <form wicket:id="form" style="margin-top: 17px;">
+                    <div wicket:id="familyInfo" style="margin-bottom: 4px;"></div>
+                    <div wicket:id="familyContainer">
+                        <table class="tbColor" cellpadding="0" cellspacing="0" border="0">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <wicket:message key="familyMemberNumberHeader"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="familyMemberLastNameHeader"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="familyMemberFirstNameHeader"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="familyMemberMiddleNameHeader"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="familyMemberBirthDateHeader"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="familyMemberRelationHeader"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="familyMemberRegistrationDateHeader"/>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr wicket:id="familyMembers">
+                                    <td>
+                                        <span wicket:id="familyMemberNumber"></span>
+                                    </td>
+                                    <td>
+                                        <input type="text" wicket:id="familyMemberLastName"/>
+                                    </td>
+                                    <td>
+                                        <input type="text" wicket:id="familyMemberFirstName"/>
+                                    </td>
+                                    <td>
+                                        <input type="text" wicket:id="familyMemberMiddleName"/>
+                                    </td>
+                                    <td>
+                                        <span wicket:id="familyMemberBirthDate"></span>
+                                    </td>
+                                    <td>
+                                        <input type="text" wicket:id="familyMemberRelation" size="10"/>
+                                    </td>
+                                    <td nowrap="nowrap">
+                                        <span wicket:id="familyMemberRegistrationDate"></span>
+                                    </td>
+                                    <td>
+                                        <a wicket:id="removeFamilyMember">
+                                            <wicket:message key="removeFamilyMember"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <input type="button" class="btnSmall" wicket:id="addFamilyMember" wicket:message="value:addFamilyMember"/>
+                    </div>
+
+                    <div wicket:id="neighboursInfo" style="margin-bottom: 4px; margin-top: 17px;"></div>
+                    <div wicket:id="neighboursContainer">
+                        <table class="tbColor" cellpadding="0" cellspacing="0" border="0" style="width: 900px;">
+                            <tbody>
+                                <tr wicket:id="neighbourFamilies">
+                                    <td>
+                                        <span wicket:id="neighbourFamilyNumber"></span>
+                                    </td>
+                                    <td nowrap="nowrap">
+                                        <input type="text" wicket:id="neighbourFamilyName" size="25"/>
+                                        <wicket:message key="family"/>
+                                    </td>
+                                    <td nowrap="nowrap">
+                                        <input type="text" wicket:id="neighbourFamilyAmount" size="6"/>
+                                        <wicket:message key="neighboursAmount"/>
+                                    </td>
+                                    <td nowrap="nowrap">
+                                        <input type="text" wicket:id="neighbourFamilyTakesRooms" size="6"/>
+                                        <wicket:message key="neighbourApartments"/>
+                                    </td>
+                                    <td nowrap="nowrap">
+                                        <input type="text" wicket:id="neighbourFamilyTakesArea" size="10"/>
+                                        <wicket:message key="neighboursArea"/>
+                                    </td>
+                                    <td>
+                                        <a wicket:id="removeNeighbourFamily">
+                                            <wicket:message key="removeNeighbourFamily"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <input type="button" class="btnSmall" wicket:id="addNeighbourFamily" wicket:message="value:addNeighbourFamily"/>
+                    </div>
+                </form>
+            </div>
+        </wicket:extend>
+    </body>
+</html>

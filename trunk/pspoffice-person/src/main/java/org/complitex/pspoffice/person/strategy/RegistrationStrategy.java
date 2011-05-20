@@ -4,16 +4,19 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import java.util.Date;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
+import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
@@ -54,7 +57,6 @@ public class RegistrationStrategy extends Strategy {
     public static final long HOUSING_RIGHTS = 2122;
     public static final long REGISTRATION_DATE = 2123;
     public static final long REGISTRATION_TYPE = 2124;
-
     /**
      * Attribute value type ids
      */
@@ -63,6 +65,8 @@ public class RegistrationStrategy extends Strategy {
     public static final long ADDRESS_BUILDING = 2102;
     @EJB
     private StrategyFactory strategyFactory;
+    @EJB
+    private StringCultureBean stringBean;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -142,5 +146,42 @@ public class RegistrationStrategy extends Strategy {
             }
         }
         return isOrphan;
+    }
+
+    public String getAddressEntity(DomainObject registration) {
+        Attribute registrationAddressAttribute = getAddressAttribute(registration);
+        long addressTypeId = registrationAddressAttribute.getValueTypeId();
+        if (addressTypeId == ADDRESS_APARTMENT) {
+            return "apartment";
+        } else if (addressTypeId == ADDRESS_BUILDING) {
+            return "building";
+        } else if (addressTypeId == ADDRESS_ROOM) {
+            return "room";
+        } else {
+            throw new IllegalStateException("Address type is not resolved.");
+        }
+    }
+
+    private Attribute getAddressAttribute(DomainObject registration){
+        Attribute addressAttribute = registration.getAttribute(ADDRESS);
+        if (addressAttribute == null) {
+            throw new IllegalStateException("Registration address attribute is null.");
+        }
+        return addressAttribute;
+    }
+
+    public long getAddressId(DomainObject registration){
+        Attribute registrationAddressAttribute = getAddressAttribute(registration);
+        return registrationAddressAttribute.getValueId();
+    }
+
+    public Date getRegistrationDate(DomainObject registration) {
+        Attribute registrationDateAttribute = registration.getAttribute(REGISTRATION_DATE);
+        Date registrationDate = null;
+        if (registrationDateAttribute != null) {
+            String value = stringBean.getSystemStringCulture(registrationDateAttribute.getLocalizedValues()).getValue();
+            registrationDate = value != null ? new DateConverter().toObject(value) : null;
+        }
+        return registrationDate;
     }
 }

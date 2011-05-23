@@ -271,6 +271,14 @@ public final class PersonEdit extends FormTemplatePage {
                     protected void onClick() {
                         setResponsePage(new F3ReferencePage(newPerson));
                     }
+
+                    @Override
+                    protected void onBeforeRender() {
+                        if (isNew() || newPerson.getRegistration() == null) {
+                            setVisible(false);
+                        }
+                        super.onBeforeRender();
+                    }
                 },
                 new DeleteItemButton(id) {
 

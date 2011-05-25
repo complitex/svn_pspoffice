@@ -106,6 +106,14 @@
         <include refid="org.complitex.dictionary.entity.DomainObject.findHistoryObject"/>
     </select>
 
+    <select id="getPersonIdsByAddress" parameterType="map" resultType="long">
+        SELECT DISTINCT p.`object_id` FROM `person` p
+            JOIN `person_attribute` pa ON (pa.`status` = 'ACTIVE' AND pa.`attribute_type_id` = #{registrationAttributeType} AND pa.`object_id` = p.`object_id`)
+            JOIN `registration` reg ON (reg.`status` = 'ACTIVE' AND reg.`object_id` = pa.`value_id`)
+            JOIN `registration_attribute` address ON (address.`status` = 'ACTIVE' AND address.`object_id` = reg.`object_id` AND address.`attribute_type_id` = #{addressAttributeType})
+            WHERE p.`status` = 'ACTIVE' AND address.`value_id` = #{addressId} AND address.`value_type_id` = #{addressTypeId}
+    </select>
+
     <!-- disable/enable functionality -->
     <!--<update id="updateRegistrationActivity" parameterType="map">
         UPDATE `registration` r SET r.`status` = #{status} WHERE

@@ -13,6 +13,7 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
+import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.registration.report.exception.PersonNotRegisteredException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -60,7 +61,7 @@ public class F3ReferenceBean extends AbstractBean {
             DomainObject childRegistration = child.getRegistration();
             if (childRegistration != null && (registrationStrategy.getAddressId(childRegistration) == addressId)
                     && addressEntity.equals(registrationStrategy.getAddressEntity(childRegistration))) {
-                F3Reference.FamilyMember member = f3.new FamilyMember();
+                FamilyMember member = new FamilyMember();
                 member.setFirstName(child.getFirstName());
                 member.setMiddleName(child.getMiddleName());
                 member.setLastName(child.getLastName());

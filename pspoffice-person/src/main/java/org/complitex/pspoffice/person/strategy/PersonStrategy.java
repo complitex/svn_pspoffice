@@ -273,6 +273,11 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
+        return findById(id, runAsAdmin, true, true);
+    }
+
+    @Transactional
+    protected Person findById(long id, boolean runAsAdmin, boolean loadChildren, boolean loadRegistration) {
         DomainObjectExample example = new DomainObjectExample(id);
         example.setTable(getEntityTable());
         if (!runAsAdmin) {
@@ -286,14 +291,16 @@ public class PersonStrategy extends TemplateStrategy {
             loadAttributes(person);
             fillAttributes(person);
             updateStringsForNewLocales(person);
-            //load registration object
-            loadRegistration(person, null);
-            loadChildren(person);
+            if (loadRegistration) {
+                loadRegistration(person);
+            }
+            if (loadChildren) {
+                loadChildren(person);
+            }
 
             //load subject ids
             person.setSubjectIds(loadSubjects(person.getPermissionId()));
         }
-
         return person;
     }
 
@@ -479,7 +486,7 @@ public class PersonStrategy extends TemplateStrategy {
         List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".getPersonIdsByAddress", params);
         Collection<Person> persons = newArrayList();
         for (Long personId : personIds) {
-            Person person = findById(personId, true);
+            Person person = findById(personId, true, false, true);
             loadName(person);
             persons.add(person);
         }

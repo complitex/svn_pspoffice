@@ -25,8 +25,8 @@ import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.type.Date2Panel;
 import org.complitex.dictionary.web.component.type.DatePanel;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
-import org.complitex.pspoffice.person.registration.report.entity.F3Reference.FamilyMember;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference.NeighbourFamily;
+import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.registration.report.exception.PersonNotRegisteredException;
 import org.complitex.pspoffice.person.registration.report.service.F3ReferenceBean;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -132,7 +132,7 @@ public final class F3ReferencePage extends TemplatePage {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                FamilyMember member = f3.new FamilyMember();
+                FamilyMember member = new FamilyMember();
                 f3.addFamilyMember(member);
                 target.addComponent(familyContainer);
                 target.addComponent(messages);

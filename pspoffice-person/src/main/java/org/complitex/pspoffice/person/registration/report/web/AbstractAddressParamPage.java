@@ -5,7 +5,6 @@
 package org.complitex.pspoffice.person.registration.report.web;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
@@ -22,12 +21,12 @@ import org.complitex.template.web.template.FormTemplatePage;
  *
  * @author Artem
  */
-public final class RegistrationReportParamsPage extends FormTemplatePage {
+public abstract class AbstractAddressParamPage extends FormTemplatePage {
 
     static final String ADDRESS_ID = "address_id";
     static final String ADDRESS_ENTITY = "address_entity";
 
-    public RegistrationReportParamsPage() {
+    public AbstractAddressParamPage() {
         init();
     }
 
@@ -55,23 +54,21 @@ public final class RegistrationReportParamsPage extends FormTemplatePage {
                 ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ALL, true);
         add(searchComponent);
 
-        AjaxLink<Void> report = new AjaxLink<Void>("report") {
+        AjaxLink<Void> report = new AjaxLink<Void>("submit") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
                 SimpleObjectInfo addressInfo = getAddressObjectInfo(addressComponentState);
                 if (addressInfo != null) {
-                    PageParameters params = new PageParameters();
-                    params.add(ADDRESS_ID, String.valueOf(addressInfo.getId()));
-                    params.add(ADDRESS_ENTITY, addressInfo.getEntityTable());
-                    setResponsePage(RegistrationReportList.class, params);
+                    toReferencePage(addressInfo.getEntityTable(), addressInfo.getId());
                 }
-
                 target.addComponent(messages);
             }
         };
         add(report);
     }
+
+    protected abstract void toReferencePage(String addressEntity, long addressId);
 
     private SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
         DomainObject building = addressComponentState.get("building");

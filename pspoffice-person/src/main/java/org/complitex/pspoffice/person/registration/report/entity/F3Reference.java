@@ -6,7 +6,6 @@ package org.complitex.pspoffice.person.registration.report.entity;
 
 import static com.google.common.collect.Lists.*;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,64 +13,6 @@ import java.util.List;
  * @author Artem
  */
 public class F3Reference implements Serializable {
-
-    public class FamilyMember implements Serializable {
-
-        private String firstName;
-        private String middleName;
-        private String lastName;
-        private Date birthDate;
-        private String relation;
-        private Date registrationDate;
-
-        public Date getBirthDate() {
-            return birthDate;
-        }
-
-        public void setBirthDate(Date birthDate) {
-            this.birthDate = birthDate;
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
-
-        public String getMiddleName() {
-            return middleName;
-        }
-
-        public void setMiddleName(String middleName) {
-            this.middleName = middleName;
-        }
-
-        public Date getRegistrationDate() {
-            return registrationDate;
-        }
-
-        public void setRegistrationDate(Date registrationDate) {
-            this.registrationDate = registrationDate;
-        }
-
-        public String getRelation() {
-            return relation;
-        }
-
-        public void setRelation(String relation) {
-            this.relation = relation;
-        }
-    }
 
     public class NeighbourFamily implements Serializable {
 

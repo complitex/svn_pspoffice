@@ -162,7 +162,7 @@ public class RegistrationStrategy extends Strategy {
         }
     }
 
-    private Attribute getAddressAttribute(DomainObject registration){
+    private Attribute getAddressAttribute(DomainObject registration) {
         Attribute addressAttribute = registration.getAttribute(ADDRESS);
         if (addressAttribute == null) {
             throw new IllegalStateException("Registration address attribute is null.");
@@ -170,7 +170,7 @@ public class RegistrationStrategy extends Strategy {
         return addressAttribute;
     }
 
-    public long getAddressId(DomainObject registration){
+    public long getAddressId(DomainObject registration) {
         Attribute registrationAddressAttribute = getAddressAttribute(registration);
         return registrationAddressAttribute.getValueId();
     }
@@ -183,5 +183,16 @@ public class RegistrationStrategy extends Strategy {
             registrationDate = value != null ? new DateConverter().toObject(value) : null;
         }
         return registrationDate;
+    }
+
+    public long getAddressTypeId(String addressEntity) {
+        if ("apartment".equals(addressEntity)) {
+            return ADDRESS_APARTMENT;
+        } else if ("room".equals(addressEntity)) {
+            return ADDRESS_ROOM;
+        } else if ("building".equals(addressEntity)) {
+            return ADDRESS_BUILDING;
+        }
+        throw new IllegalStateException("Address entity is not resolved.");
     }
 }

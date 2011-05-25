@@ -1,5 +1,6 @@
 package org.complitex.pspoffice.person.strategy;
 
+import java.util.Collection;
 import static com.google.common.collect.ImmutableMap.*;
 import java.util.Collections;
 import static com.google.common.collect.Lists.*;
@@ -467,5 +468,21 @@ public class PersonStrategy extends TemplateStrategy {
             birthDate = value != null ? new DateConverter().toObject(value) : null;
         }
         return birthDate;
+    }
+
+    public Collection<Person> getPersonsByAddress(String addressEntity, long addressId) {
+        long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
+        Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
+                "addressAttributeType", RegistrationStrategy.ADDRESS,
+                "addressId", addressId,
+                "addressTypeId", addressTypeId);
+        List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".getPersonIdsByAddress", params);
+        Collection<Person> persons = newArrayList();
+        for (Long personId : personIds) {
+            Person person = findById(personId, true);
+            loadName(person);
+            persons.add(person);
+        }
+        return persons;
     }
 }

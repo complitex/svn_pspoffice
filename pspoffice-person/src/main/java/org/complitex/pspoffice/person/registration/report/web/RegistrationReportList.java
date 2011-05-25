@@ -51,8 +51,8 @@ public final class RegistrationReportList extends ListPage {
     public RegistrationReportList(PageParameters params) {
         super(params);
         example = new RegistrationReportExample();
-        example.setAddressId(params.getAsLong(RegistrationReportParamsPage.ADDRESS_ID));
-        example.setAddressEntity(params.getString(RegistrationReportParamsPage.ADDRESS_ENTITY));
+        example.setAddressId(params.getAsLong(AbstractAddressParamPage.ADDRESS_ID));
+        example.setAddressEntity(params.getString(AbstractAddressParamPage.ADDRESS_ENTITY));
         init();
     }
 
@@ -184,7 +184,7 @@ public final class RegistrationReportList extends ListPage {
 
             @Override
             public void onClick() {
-                setResponsePage(RegistrationReportParamsPage.class);
+                setResponsePage(AbstractAddressParamPage.class);
             }
         });
     }

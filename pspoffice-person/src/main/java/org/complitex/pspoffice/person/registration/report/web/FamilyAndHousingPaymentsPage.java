@@ -10,7 +10,6 @@ import java.util.Date;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.feedback.FeedbackMessage;
 import static org.apache.wicket.feedback.FeedbackMessage.*;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -29,12 +28,9 @@ import org.apache.wicket.model.StringResourceModel;
 import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.type.Date2Panel;
-import org.complitex.dictionary.web.component.type.DatePanel;
-import org.complitex.pspoffice.person.registration.report.entity.FamilyAndApartmentInfo;
+import org.complitex.pspoffice.person.registration.report.entity.FamilyAndHousingPayments;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
-import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
-import org.complitex.pspoffice.person.registration.report.service.FamilyAndApartmentInfoBean;
-import org.complitex.template.web.security.SecurityRole;
+import org.complitex.pspoffice.person.registration.report.service.FamilyAndHousingPaymentsBean;
 import org.complitex.template.web.template.TemplatePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,19 +39,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public final class FamilyAndApartmentInfoPage extends TemplatePage {
+public final class FamilyAndHousingPaymentsPage extends TemplatePage {
 
-    private static final Logger log = LoggerFactory.getLogger(FamilyAndApartmentInfoPage.class);
+    private static final Logger log = LoggerFactory.getLogger(FamilyAndHousingPaymentsPage.class);
     @EJB
-    private FamilyAndApartmentInfoBean familyAndApartmentInfoBean;
+    private FamilyAndHousingPaymentsBean familyAndHousingPaymentsBean;
 
     private class MessagesFragment extends Fragment {
 
         private Collection<FeedbackMessage> messages;
 
         public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
-            super(id, "messages", FamilyAndApartmentInfoPage.this);
+            super(id, "messages", FamilyAndHousingPaymentsPage.this);
             this.messages = messages;
             add(new FeedbackPanel("messages"));
         }
@@ -71,21 +66,23 @@ public final class FamilyAndApartmentInfoPage extends TemplatePage {
 
     private class ReportFragment extends Fragment {
 
-        public ReportFragment(String id, final FamilyAndApartmentInfo info) {
-            super(id, "report", FamilyAndApartmentInfoPage.this);
+        public ReportFragment(String id, final FamilyAndHousingPayments payments) {
+            super(id, "report", FamilyAndHousingPaymentsPage.this);
             final FeedbackPanel messages = new FeedbackPanel("messages");
             messages.setOutputMarkupId(true);
             add(messages);
             add(new Label("label", new ResourceModel("label")));
             add(new Label("labelDetails", new ResourceModel("labelDetails")));
-            add(new Label("addressInfo", new StringResourceModel("addressInfo", null, new Object[]{info.getAddress()})));
+            add(new Label("nameInfo", new StringResourceModel("nameInfo", null, new Object[]{payments.getName()})));
+            add(new Label("account", new StringResourceModel("account", null, new Object[]{valueOf(payments.getAccount())})));
+            add(new Label("addressInfo", new StringResourceModel("addressInfo", null, new Object[]{payments.getAddress()})));
             final Form form = new Form("form");
             add(form);
             final WebMarkupContainer familyContainer = new WebMarkupContainer("familyContainer");
             familyContainer.setOutputMarkupId(true);
             form.add(familyContainer);
             AjaxRemovableListView<FamilyMember> familyMembers =
-                    new AjaxRemovableListView<FamilyMember>("familyMembers", info.getFamilyMembers()) {
+                    new AjaxRemovableListView<FamilyMember>("familyMembers", payments.getFamilyMembers()) {
 
                         @Override
                         protected void populateItem(ListItem<FamilyMember> item) {
@@ -101,21 +98,30 @@ public final class FamilyAndApartmentInfoPage extends TemplatePage {
                             item.add(familyMemberNumber);
                             final FamilyMember member = item.getModelObject();
                             item.add(new TextField<String>("familyMemberName", new PropertyModel<String>(member, "name")));
-                            item.add(new TextField<String>("familyMemberRelation", new PropertyModel<String>(member, "relation")));
-                            item.add(new Date2Panel("familyMemberBirthDate", new PropertyModel<Date>(member, "birthDate"), false,
+                            item.add(new TextField<String>("familyMemberRelation",
+                                    new PropertyModel<String>(member, "relation")));
+                            item.add(new Date2Panel("familyMemberBirthDate",
+                                    new PropertyModel<Date>(member, "birthDate"), false,
                                     new ResourceModel("familyMemberBirthDateHeader"), true));
-                            item.add(new DatePanel("familyMemberRegistrationDate", new PropertyModel<Date>(member, "registrationDate"),
-                                    false, new ResourceModel("familyMemberRegistrationDateHeader"), true));
+                            item.add(new TextField<String>("familyMemberPassport",
+                                    new PropertyModel<String>(member, "passport")));
                             addRemoveSubmitLink("removeFamilyMember", form, item, null, familyContainer);
                         }
                     };
             familyContainer.add(familyMembers);
+            familyContainer.add(new Label("total", new AbstractReadOnlyModel<String>() {
+
+                @Override
+                public String getObject() {
+                    return getStringFormat("total", payments.getFamilyMembers().size());
+                }
+            }));
             form.add(new AjaxSubmitLink("addFamilyMember", form) {
 
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     FamilyMember member = new FamilyMember();
-                    info.addFamilyMember(member);
+                    payments.addFamilyMember(member);
                     target.addComponent(familyContainer);
                     target.addComponent(messages);
                 }
@@ -126,48 +132,50 @@ public final class FamilyAndApartmentInfoPage extends TemplatePage {
                 }
             });
 
-            add(new Label("apartmentPartsInfo", new StringResourceModel("apartmentPartsInfo", null, new Object[]{
-                        valueOf(info.getRooms()), valueOf(info.getRoomsArea()), valueOf(info.getKitchenArea()),
-                        valueOf(info.getBathroomArea()), valueOf(info.getToiletArea()), valueOf(info.getHallArea()),
-                        valueOf(info.getVerandaArea()), valueOf(info.getEmbeddedArae()), valueOf(info.getBalconyArea()),
-                        valueOf(info.getLoggiaArea())
+            add(new Label("ownership", new StringResourceModel("ownership", null, new Object[]{
+                        valueOf(payments.getOwnership())
                     })));
-            add(new Label("fullApartmentArea", new StringResourceModel("fullApartmentArea", null, new Object[]{
-                        valueOf(info.getFullApartmentArea())
+            add(new Label("stoveType", new StringResourceModel("stoveType", null, new Object[]{
+                        valueOf(payments.getStoveType())
                     })));
-            add(new Label("apartmentStoreroomInfo", new StringResourceModel("apartmentStoreroomInfo", null, new Object[]{
-                        valueOf(info.getStoreroomArea()), valueOf(info.getBarnArea())
+            add(new Label("areaInfo", new StringResourceModel("areaInfo", null, new Object[]{
+                        valueOf(payments.getApartmentArea()), valueOf(payments.getHeatedArea()),
+                        valueOf(payments.getNormativeArea()), valueOf(payments.getRooms())
                     })));
-            add(new Label("anotherBuildingsInfo", new StringResourceModel("anotherBuildingsInfo", null, new Object[]{
-                        valueOf(info.getAnotherBuildingsInfo())
+            add(new Label("benefits", new StringResourceModel("benefits", null, new Object[]{
+                        valueOf(payments.getBenefits())
                     })));
-            add(new Label("additionalInformation", new StringResourceModel("additionalInformation", null, new Object[]{
-                        valueOf(info.getAdditionalInformation())
+            add(new Label("paymentsAdjustedForBenefits",
+                    new StringResourceModel("paymentsAdjustedForBenefits", null, new Object[]{
+                        valueOf(payments.getPaymentsAdjustedForBenefits())
                     })));
-            add(new Label("maintenanceInfo", new StringResourceModel("maintenanceInfo", null, new Object[]{
-                        valueOf(info.getMaintenanceYear())
+            add(new Label("paymentsInfo", new StringResourceModel("paymentsInfo", null, new Object[]{
+                        valueOf(payments.getNormativePayments()), valueOf(payments.getApartmentPayments()),
+                        valueOf(payments.getHeatPayments()), valueOf(payments.getGasPayments()),
+                        valueOf(payments.getColdWaterPayments()), valueOf(payments.getHotWaterPayments())
+                    })));
+            add(new Label("debt", new StringResourceModel("debt", null, new Object[]{
+                        valueOf(payments.getDebt()), valueOf(payments.getDebtMonth())
                     })));
         }
     }
 
-    public FamilyAndApartmentInfoPage(String addressEntity, long addressId) {
+    public FamilyAndHousingPaymentsPage(String addressEntity, long addressId) {
         add(new Label("title", new ResourceModel("title")));
         Collection<FeedbackMessage> messages = newArrayList();
-        FamilyAndApartmentInfo info = null;
+        FamilyAndHousingPayments payments = null;
         try {
-            info = familyAndApartmentInfoBean.get(addressEntity, addressId, getLocale());
-        } catch (UnregisteredPersonException e) {
-            messages.add(new FeedbackMessage(this, getStringFormat("unregistered", e.getAddress()), INFO));
+            payments = familyAndHousingPaymentsBean.get(addressEntity, addressId, getLocale());
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);
         }
-        add(info == null ? new MessagesFragment("content", messages) : new ReportFragment("content", info));
+        add(payments == null ? new MessagesFragment("content", messages) : new ReportFragment("content", payments));
         add(new Link<Void>("back") {
 
             @Override
             public void onClick() {
-                setResponsePage(FamilyAndApartmentInfoAddressParamPage.class);
+                setResponsePage(FamilyAndHousingPaymentsAddressParamPage.class);
             }
         });
     }

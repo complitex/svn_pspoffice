@@ -8,12 +8,13 @@
     </head>
     <body>
         <wicket:extend>
-            <div wicket:id="errorContainer">
+            <wicket:fragment wicket:id="messages">
                 <h3>
-                    <span wicket:id="errorMessages"></span>
+                    <div wicket:id="messages"></div>
                 </h3>
-            </div>
-            <div wicket:id="formContainer">
+            </wicket:fragment>
+
+            <wicket:fragment wicket:id="report">
                 <h2 wicket:id="label" style="margin-bottom: 20px;"></h2>
                 <div wicket:id="messages"></div>
                 <form wicket:id="form">
@@ -347,7 +348,8 @@
                         </tr>
                     </table>
                 </form>
-            </div>
+            </wicket:fragment>
+            <div wicket:id="content"></div>
         </wicket:extend>
     </body>
 </html>

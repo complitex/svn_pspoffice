@@ -11,9 +11,8 @@ import javax.ejb.Stateless;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
-import org.complitex.pspoffice.person.registration.report.entity.FamilyAndApartmentInfo;
+import org.complitex.pspoffice.person.registration.report.entity.FamilyAndHousingPayments;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
-import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 
@@ -22,7 +21,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
  * @author Artem
  */
 @Stateless
-public class FamilyAndApartmentInfoBean extends AbstractBean {
+public class FamilyAndHousingPaymentsBean extends AbstractBean {
 
     @EJB
     private PersonStrategy personStrategy;
@@ -30,21 +29,20 @@ public class FamilyAndApartmentInfoBean extends AbstractBean {
     private AddressRendererBean addressRendererBean;
 
     @Transactional
-    public FamilyAndApartmentInfo get(String addressEntity, long addressId, Locale locale) throws UnregisteredPersonException {
+    public FamilyAndHousingPayments get(String addressEntity, long addressId, Locale locale) {
         Collection<Person> persons = personStrategy.getPersonsByAddress(addressEntity, addressId);
+        FamilyAndHousingPayments payments = new FamilyAndHousingPayments();
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
-        if(persons == null || persons.isEmpty()){
-            throw new UnregisteredPersonException(address);
-        }
-        FamilyAndApartmentInfo info = new FamilyAndApartmentInfo();
-        info.setAddress(address);
+        payments.setAddress(address);
+
         for (Person person : persons) {
             FamilyMember member = new FamilyMember();
             member.setName(personStrategy.displayDomainObject(person, locale));
             member.setBirthDate(person.getBirthDate());
-            member.setRegistrationDate(person.getRegistration().getRegistrationDate());
-            info.addFamilyMember(member);
+            member.setPassport(person.getPassportData());
+            member.setRelation(person.getRegistration().getOwnerRelationship());
+            payments.addFamilyMember(member);
         }
-        return info;
+        return payments;
     }
 }

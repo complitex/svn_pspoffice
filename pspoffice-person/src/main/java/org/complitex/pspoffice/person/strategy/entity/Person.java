@@ -6,10 +6,15 @@ package org.complitex.pspoffice.person.strategy.entity;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import java.util.Date;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
+import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.util.EjbBeanLocator;
+import org.complitex.dictionary.util.StringUtil;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 
 /**
@@ -21,8 +26,8 @@ public class Person extends DomainObject {
     private String lastName;
     private String firstName;
     private String middleName;
-    private DomainObject registration;
-    private DomainObject changedRegistration;
+    private Registration registration;
+    private Registration changedRegistration;
     private boolean registrationStopped;
     private List<Person> children = newArrayList();
 
@@ -50,19 +55,19 @@ public class Person extends DomainObject {
         this.middleName = middleName;
     }
 
-    public DomainObject getRegistration() {
+    public Registration getRegistration() {
         return registration;
     }
 
-    public void setRegistration(DomainObject registration) {
+    public void setRegistration(Registration registration) {
         this.registration = registration;
     }
 
-    public DomainObject getChangedRegistration() {
+    public Registration getChangedRegistration() {
         return changedRegistration;
     }
 
-    public void setChangedRegistration(DomainObject newRegistration) {
+    public void setChangedRegistration(Registration newRegistration) {
         this.changedRegistration = newRegistration;
     }
 
@@ -111,5 +116,27 @@ public class Person extends DomainObject {
 
     public void setRegistrationStopped(boolean registrationStopped) {
         this.registrationStopped = registrationStopped;
+    }
+
+    public Date getBirthDate() {
+        Attribute birthDateAttribute = getAttribute(BIRTH_DATE);
+        String value = stringBean().getSystemStringCulture(birthDateAttribute.getLocalizedValues()).getValue();
+        return value != null ? new DateConverter().toObject(value) : null;
+    }
+
+    public String getPassportData() {
+        Attribute passportSerialNumberAttribute = getAttribute(PASSPORT_SERIAL_NUMBER);
+        Attribute passportNumberAttribute = getAttribute(PASSPORT_NUMBER);
+        String passportSerialNumber = stringBean().getSystemStringCulture(passportSerialNumberAttribute.getLocalizedValues()).getValue();
+        String passportNumber = stringBean().getSystemStringCulture(passportNumberAttribute.getLocalizedValues()).getValue();
+        if (passportSerialNumber != null && passportNumber != null) {
+            return StringUtil.valueOf(passportSerialNumber) + " " + StringUtil.valueOf(passportNumber);
+        } else {
+            return null;
+        }
+    }
+
+    private StringCultureBean stringBean() {
+        return EjbBeanLocator.getBean(StringCultureBean.class);
     }
 }

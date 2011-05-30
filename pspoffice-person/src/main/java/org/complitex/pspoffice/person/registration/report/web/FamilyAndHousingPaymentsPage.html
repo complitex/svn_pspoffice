@@ -18,10 +18,13 @@
                 <div wicket:id="messages"></div>
                 <h2 wicket:id="label"></h2>
                 <h3 wicket:id="labelDetails" style="margin-top: 0px;"></h3>
-                <div>
-                    <span wicket:id="addressInfo"></span>
-                </div>
+                <div wicket:id="nameInfo"></div>
+                <div wicket:id="account"></div>
+                <div wicket:id="addressInfo"></div>
                 <form wicket:id="form" style="margin-top: 17px;">
+                    <div>
+                        <wicket:message key="familyLabel"/>
+                    </div>
                     <div wicket:id="familyContainer">
                         <table class="tbColor" cellpadding="0" cellspacing="0" border="0">
                             <thead>
@@ -39,7 +42,7 @@
                                         <wicket:message key="familyMemberBirthDateHeader"/>
                                     </th>
                                     <th class="center">
-                                        <wicket:message key="familyMemberRegistrationDateHeader"/>
+                                        <wicket:message key="familyMemberPassportHeader"/>
                                     </th>
                                     <th></th>
                                 </tr>
@@ -58,8 +61,8 @@
                                     <td>
                                         <span wicket:id="familyMemberBirthDate"></span>
                                     </td>
-                                    <td nowrap="nowrap">
-                                        <span wicket:id="familyMemberRegistrationDate"></span>
+                                    <td>
+                                        <input wicket:id="familyMemberPassport"/>
                                     </td>
                                     <td>
                                         <a wicket:id="removeFamilyMember">
@@ -69,22 +72,26 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <div>
+                            <span wicket:id="total"></span>
+                        </div>
                     </div>
-                    <div>
+                    <div style="margin-top: 10px;">
                         <input type="button" class="btnSmall" wicket:id="addFamilyMember" wicket:message="value:addFamilyMember"/>
                     </div>
                 </form>
 
                 <div style="margin-top: 17px;">
-                    <div wicket:id="apartmentPartsInfo"></div>
-                    <div wicket:id="fullApartmentArea"></div>
-                    <div wicket:id="apartmentStoreroomInfo"></div>
-                    <div wicket:id="anotherBuildingsInfo"></div>
-                    <div wicket:id="additionalInformation"></div>
-                    <div wicket:id="maintenanceInfo"></div>
+                    <div wicket:id="ownership"></div>
+                    <div wicket:id="stoveType"></div>
+                    <div wicket:id="areaInfo"></div>
+                    <div wicket:id="benefits"></div>
+                    <div wicket:id="paymentsAdjustedForBenefits"></div>
+                    <div wicket:id="paymentsInfo"></div>
+                    <div wicket:id="debt"></div>
                 </div>
             </wicket:fragment>
-
+            
             <div wicket:id="content"></div>
             <input type="button" class="btnSmall" style="margin-top: 17px;" wicket:id="back" wicket:message="value:back"/>
         </wicket:extend>

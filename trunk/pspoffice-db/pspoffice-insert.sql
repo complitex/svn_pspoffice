@@ -152,8 +152,8 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2120, 2118, UPPER('date2'));
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2121, 2119, UPPER('big_string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2122, 2120, UPPER('big_string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2123, 2121, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2122, 2120, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2123, 2121, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2124, 2122, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2125, 2123, UPPER('date'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2126, 2124, UPPER('string'));

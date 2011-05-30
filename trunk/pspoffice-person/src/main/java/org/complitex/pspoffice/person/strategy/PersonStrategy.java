@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.complitex.dictionary.converter.BooleanConverter;
-import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
@@ -35,6 +34,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.pspoffice.person.strategy.entity.FullName;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.util.FullNameParser;
 import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
 import org.complitex.template.strategy.TemplateStrategy;
@@ -315,7 +315,7 @@ public class PersonStrategy extends TemplateStrategy {
         if (registrationAttribute != null) {
             Long registrationId = registrationAttribute.getValueId();
             if (registrationId != null) {
-                DomainObject registration = null;
+                Registration registration = null;
                 if (date == null) {
                     registration = registrationStrategy.findById(registrationId, true);
                 } else {
@@ -465,16 +465,6 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public Class<? extends WebPage> getHistoryPage() {
         return PersonHistoryPage.class;
-    }
-
-    public Date getBirthDate(Person person) {
-        Attribute birthDateAttribute = person.getAttribute(BIRTH_DATE);
-        Date birthDate = null;
-        if (birthDateAttribute != null) {
-            String value = stringBean.getSystemStringCulture(birthDateAttribute.getLocalizedValues()).getValue();
-            birthDate = value != null ? new DateConverter().toObject(value) : null;
-        }
-        return birthDate;
     }
 
     public Collection<Person> getPersonsByAddress(String addressEntity, long addressId) {

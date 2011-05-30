@@ -20,6 +20,7 @@ public class FamilyMember implements Serializable {
     private String relation;
     private Date registrationDate;
     private String name;
+    private String passport;
 
     public Date getBirthDate() {
         return birthDate;
@@ -75,5 +76,13 @@ public class FamilyMember implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPassport() {
+        return passport;
+    }
+
+    public void setPassport(String passport) {
+        this.passport = passport;
     }
 }

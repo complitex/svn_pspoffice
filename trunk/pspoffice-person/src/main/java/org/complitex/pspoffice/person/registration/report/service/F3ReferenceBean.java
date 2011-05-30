@@ -8,16 +8,15 @@ import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.complitex.address.service.AddressRendererBean;
-import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
-import org.complitex.pspoffice.person.registration.report.exception.PersonNotRegisteredException;
+import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 /**
  *
@@ -26,21 +25,19 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 @Stateless
 public class F3ReferenceBean extends AbstractBean {
 
-    private static final String RESOURCE_BINDLE = F3ReferenceBean.class.getName();
+    private static final String RESOURCE_BUNDLE = F3ReferenceBean.class.getName();
     @EJB
     private PersonStrategy personStrategy;
     @EJB
     private AddressRendererBean addressRendererBean;
-    @EJB
-    private RegistrationStrategy registrationStrategy;
 
     @Transactional
-    public F3Reference getReference(Person person, Locale locale) throws PersonNotRegisteredException {
+    public F3Reference get(Person person, Locale locale) throws UnregisteredPersonException {
         if (person == null) {
             throw new IllegalArgumentException("Person is null.");
         }
         if (person.getRegistration() == null) {
-            throw new PersonNotRegisteredException();
+            throw new UnregisteredPersonException();
         }
 
         F3Reference f3 = new F3Reference();
@@ -50,24 +47,24 @@ public class F3ReferenceBean extends AbstractBean {
         f3.setPersonName(personStrategy.displayDomainObject(person, locale));
 
         //address
-        DomainObject registration = person.getRegistration();
-        long addressId = registrationStrategy.getAddressId(registration);
-        String addressEntity = registrationStrategy.getAddressEntity(registration);
+        Registration registration = person.getRegistration();
+        long addressId = registration.getAddressId();
+        String addressEntity = registration.getAddressEntity();
         f3.setPersonAddress(addressRendererBean.displayAddress(addressEntity, addressId, locale));
 
         //children
         for (Person child : person.getChildren()) {
             personStrategy.loadRegistration(child);
-            DomainObject childRegistration = child.getRegistration();
-            if (childRegistration != null && (registrationStrategy.getAddressId(childRegistration) == addressId)
-                    && addressEntity.equals(registrationStrategy.getAddressEntity(childRegistration))) {
+            Registration childRegistration = child.getRegistration();
+            if (childRegistration != null && (childRegistration.getAddressId() == addressId)
+                    && addressEntity.equals(childRegistration.getAddressEntity())) {
                 FamilyMember member = new FamilyMember();
                 member.setFirstName(child.getFirstName());
                 member.setMiddleName(child.getMiddleName());
                 member.setLastName(child.getLastName());
-                member.setBirthDate(personStrategy.getBirthDate(child));
-                member.setRelation(ResourceUtil.getString(RESOURCE_BINDLE, "children_relationship", locale));
-                member.setRegistrationDate(registrationStrategy.getRegistrationDate(childRegistration));
+                member.setBirthDate(child.getBirthDate());
+                member.setRelation(ResourceUtil.getString(RESOURCE_BUNDLE, "children_relationship", locale));
+                member.setRegistrationDate(childRegistration.getRegistrationDate());
                 f3.addFamilyMember(member);
             }
         }

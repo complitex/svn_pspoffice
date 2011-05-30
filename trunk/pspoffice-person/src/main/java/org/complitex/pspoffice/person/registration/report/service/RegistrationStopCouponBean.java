@@ -36,12 +36,12 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
-import org.complitex.pspoffice.person.registration.report.exception.PersonNotRegisteredException;
+import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 /**
  *
@@ -50,7 +50,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 @Stateless
 public class RegistrationStopCouponBean extends AbstractBean {
 
-    private static final String RESOURCE_BINDLE = RegistrationStopCouponBean.class.getName();
+    private static final String RESOURCE_BUNDLE = RegistrationStopCouponBean.class.getName();
     private static final String MAPPING_NAMESPACE = RegistrationStopCouponBean.class.getName();
     private static final String DATE_PATTERN = "dd.MM.yyyy";
     @EJB
@@ -65,27 +65,24 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private StreetStrategy streetStrategy;
     @EJB
     private NameBean nameBean;
-    @EJB
-    private RegistrationStrategy registrationStrategy;
 
     @Transactional
-    public RegistrationStopCoupon getRegistrationClosingCoupon(Person person, Locale locale, String clientLineSeparator)
-            throws PersonNotRegisteredException {
+    public RegistrationStopCoupon get(Person person, Locale locale, String clientLineSeparator)
+            throws UnregisteredPersonException {
         if (person == null) {
             throw new IllegalArgumentException("Person is null.");
         }
         if (person.getRegistration() == null) {
-            throw new PersonNotRegisteredException();
+            throw new UnregisteredPersonException();
         }
         //name
         personStrategy.loadName(person);
 
         //address
-        DomainObject registration = person.getRegistration();
-
-        String addressEntity = registrationStrategy.getAddressEntity(registration);
+        Registration registration = person.getRegistration();
+        String addressEntity = registration.getAddressEntity();
         IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
-        long addressId = registrationStrategy.getAddressId(registration);
+        long addressId = registration.getAddressId();
         DomainObject addressObject = addressStrategy.findById(addressId, true);
         SearchComponentState addressComponentState = new SearchComponentState();
         IStrategy.SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressId, null);
@@ -122,7 +119,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setLastName(person.getLastName());
         coupon.setMiddleName(person.getMiddleName());
         coupon.setPreviousNames(getPreviousNames(person.getId(), clientLineSeparator));
-        coupon.setBirthDate(personStrategy.getBirthDate(person));
+        coupon.setBirthDate(person.getBirthDate());
         coupon.setBirthCountry(getStringValue(person, BIRTH_COUNTRY));
         coupon.setBirthRegion(getStringValue(person, BIRTH_REGION));
         coupon.setBirthDistrict(getStringValue(person, BIRTH_DISTRICT));
@@ -180,7 +177,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         StringBuilder childrenInfo = new StringBuilder();
         for (Person child : children) {
             String childFullName = personStrategy.displayDomainObject(child, locale);
-            Date birthDate = personStrategy.getBirthDate(child);
+            Date birthDate = child.getBirthDate();
             String birthDateAsString = null;
             if (birthDate != null) {
                 DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
@@ -190,7 +187,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
             String birthDistrict = getStringValue(child, BIRTH_DISTRICT);
             childrenInfo.append(childFullName);
             if (birthDateAsString != null && birthCity != null && birthDistrict != null) {
-                childrenInfo.append(", ").append(ResourceUtil.getString(RESOURCE_BINDLE, "birth_info", locale)).
+                childrenInfo.append(", ").append(ResourceUtil.getString(RESOURCE_BUNDLE, "birth_info", locale)).
                         append(birthDateAsString).append(", ").append(birthCity).append(", ").append(birthDistrict);
             }
             childrenInfo.append(lineSeparator != null ? lineSeparator : " ");

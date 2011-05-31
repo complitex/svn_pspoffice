@@ -1,10 +1,13 @@
 package org.complitex.pspoffice.report.service;
 
+import org.odftoolkit.odfdom.dom.element.draw.DrawControlElement;
 import org.odftoolkit.odfdom.dom.element.form.FormTextElement;
+import org.odftoolkit.odfdom.dom.element.office.OfficeTextElement;
+import org.odftoolkit.odfdom.pkg.OdfElement;
 import org.odftoolkit.simple.TextDocument;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.ejb.Stateless;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
@@ -13,20 +16,39 @@ import java.util.Map;
  * @author Anatoly A. Ivanov java@inheaven.ru
  *         Date: 19.05.11 14:58
  */
+@Stateless
 public class OdfReportService implements IReportService{
     private final static String TEMPLATE_PATH = "/org/complitex/pspoffice/report/template";
 
     @Override
-    public void createReport(String templateName, Map<String, String> parameters, OutputStream out) throws CreateReportException {
+    public void createReport(String templateName, Map<String, String> values, OutputStream out) throws CreateReportException {
         try {
             TextDocument textDocument = TextDocument.loadDocument(getTemplateInputStream(templateName));
+            OfficeTextElement contentRoot = textDocument.getContentRoot();
 
-            NodeList nodeList = textDocument.getContentRoot().getElementsByTagName("form:text");
+            NodeList formTexts = contentRoot.getElementsByTagName("form:text");
 
-            for (int i=0; i < nodeList.getLength(); ++i){
-                FormTextElement formTextElement = (FormTextElement) nodeList.item(i);
+            for (int i=0; i < formTexts.getLength(); ++i){
+                FormTextElement formTextElement = (FormTextElement) formTexts.item(i);
 
-                formTextElement.setFormCurrentValueAttribute(parameters.get(formTextElement.getFormNameAttribute()));
+                String formId  = formTextElement.getFormIdAttribute();
+                String name = formTextElement.getFormNameAttribute();
+
+                NodeList drawControls = contentRoot.getElementsByTagName("draw:control");
+
+                for (int j=0; j < drawControls.getLength(); ++j){
+                    DrawControlElement drawControlElement = (DrawControlElement) drawControls.item(j);
+
+                    if (drawControlElement != null && drawControlElement.getDrawControlAttribute().equals(formId)) {
+                        String value = values.get(name);
+
+                        OdfElement parent = (OdfElement) drawControlElement.getParentNode();
+                        parent.removeChild(drawControlElement);
+                        parent.setTextContent(value != null ? value : "");
+
+                        break;
+                    }
+                }
             }
 
             textDocument.save(out);

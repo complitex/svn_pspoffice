@@ -30,7 +30,7 @@ public class FamilyAndHousingPaymentsBean extends AbstractBean {
 
     @Transactional
     public FamilyAndHousingPayments get(String addressEntity, long addressId, Locale locale) {
-        Collection<Person> persons = personStrategy.getPersonsByAddress(addressEntity, addressId);
+        Collection<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
         FamilyAndHousingPayments payments = new FamilyAndHousingPayments();
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
         payments.setAddress(address);

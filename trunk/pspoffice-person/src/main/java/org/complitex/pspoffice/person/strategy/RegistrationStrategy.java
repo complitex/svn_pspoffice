@@ -56,6 +56,9 @@ public class RegistrationStrategy extends Strategy {
     public static final long HOUSING_RIGHTS = 2122;
     public static final long REGISTRATION_DATE = 2123;
     public static final long REGISTRATION_TYPE = 2124;
+    public static final long IS_OWNER = 2125;
+    public static final long IS_RESPONSIBLE = 2126;
+    public static final long OWNER_NAME = 2127;
     /**
      * Attribute value type ids
      */
@@ -138,13 +141,13 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
-    public boolean validateOrphans(long addressObjectId, String addressEntity) {
+    public boolean validateOrphans(long addressId, String addressEntity) {
         boolean isOrphan = true;
         IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
         String[] children = addressStrategy.getLogicalChildren();
         if (children != null && children.length > 0) {
             DomainObjectExample example = new DomainObjectExample();
-            example.setParentId(addressObjectId);
+            example.setParentId(addressId);
             example.setParentEntity(addressEntity);
             for (String child : children) {
                 IStrategy childStrategy = strategyFactory.getStrategy(child);

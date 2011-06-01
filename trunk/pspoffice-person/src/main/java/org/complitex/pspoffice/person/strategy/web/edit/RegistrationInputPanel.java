@@ -6,7 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.edit;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
+import static com.google.common.collect.ImmutableList.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 import java.util.Date;
@@ -14,13 +14,18 @@ import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.EnumChoiceRenderer;
+import org.apache.wicket.markup.html.form.RadioChoice;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.converter.DateConverter;
@@ -36,6 +41,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.dictionary.util.ResourceUtil;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeModel;
 import org.complitex.dictionary.web.component.ShowMode;
@@ -49,8 +55,11 @@ import org.complitex.dictionary.web.component.type.DoublePanel;
 import org.complitex.dictionary.web.component.type.IntegerPanel;
 import org.complitex.dictionary.web.component.type.StringCulturePanel;
 import org.complitex.dictionary.web.component.type.StringPanel;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
+import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 /**
  *
@@ -63,13 +72,16 @@ public final class RegistrationInputPanel extends Panel {
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB
+    private PersonStrategy personStrategy;
+    @EJB
     private StrategyFactory strategyFactory;
-    private DomainObject registration;
+    private Registration registration;
     private Attribute addressAttribute;
     private SearchComponentState addressSearchComponentState;
     private Date date;
+    private IModel<ResidentStatus> residentStatusModel;
 
-    public RegistrationInputPanel(String id, DomainObject registration, Date date) {
+    public RegistrationInputPanel(String id, Registration registration, Date date) {
         super(id);
         this.registration = registration;
         this.date = date;
@@ -93,7 +105,7 @@ public final class RegistrationInputPanel extends Panel {
         addressAttribute = registration.getAttribute(ADDRESS);
         addressSearchComponentState = initAddressSearchComponentState();
         SearchComponent addressSearchPanel = new SearchComponent("input", addressSearchComponentState,
-                ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
+                of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
                 !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
         currentAddressContainer.add(addressSearchPanel);
 
@@ -117,7 +129,10 @@ public final class RegistrationInputPanel extends Panel {
         initSystemAttributeInput(this, "departureApartment", DEPARTURE_APARTMENT, true);
         initSystemAttributeInput(this, "departureDate", DEPARTURE_DATE, false);
         initSystemAttributeInput(this, "departureReason", DEPARTURE_REASON, false);
-        initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP, false);
+
+        //owner attributes:
+        initOwnerAttributes();
+
         initSystemAttributeInput(this, "otherRelationship", OTHERS_RELATIONSHIP, false);
         initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS, false);
         WebMarkupContainer registrationNoteContainer = new WebMarkupContainer("registrationNoteContainer");
@@ -162,6 +177,62 @@ public final class RegistrationInputPanel extends Panel {
             }
         };
         add(userAttributesView);
+    }
+
+    enum ResidentStatus {
+
+        OWNER, RESPONSIBLE, OTHER;
+    }
+
+    private void initOwnerAttributes() {
+        initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP, true);
+        initSystemAttributeInput(this, "ownerName", OWNER_NAME, true);
+        final Component ownerRelationshipContainer = get("ownerRelationshipContainer");
+        ownerRelationshipContainer.setOutputMarkupPlaceholderTag(true);
+        final Component ownerNameContainer = get("ownerNameContainer");
+        ownerNameContainer.setOutputMarkupPlaceholderTag(true);
+
+        residentStatusModel = new Model<ResidentStatus>();
+        if (registration.isOwner()) {
+            residentStatusModel.setObject(ResidentStatus.OWNER);
+            ownerRelationshipContainer.setVisible(false);
+            ownerNameContainer.setVisible(false);
+        } else if (registration.isResponsible()) {
+            residentStatusModel.setObject(ResidentStatus.RESPONSIBLE);
+            ownerRelationshipContainer.setVisible(false);
+        } else {
+            ownerNameContainer.setVisible(false);
+            residentStatusModel.setObject(ResidentStatus.OTHER);
+        }
+
+        RadioChoice<ResidentStatus> ownerResponsibleChoice = new RadioChoice<ResidentStatus>("ownerResponsibleChoice",
+                residentStatusModel, of(ResidentStatus.values()), new EnumChoiceRenderer<ResidentStatus>(this));
+        ownerResponsibleChoice.setSuffix("");
+        ownerResponsibleChoice.setRequired(true);
+        ownerResponsibleChoice.setEnabled(!isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
+        ownerResponsibleChoice.add(new AjaxFormChoiceComponentUpdatingBehavior() {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                switch (residentStatusModel.getObject()) {
+                    case OWNER:
+                        ownerNameContainer.setVisible(false);
+                        ownerRelationshipContainer.setVisible(false);
+                        break;
+                    case RESPONSIBLE:
+                        ownerNameContainer.setVisible(true);
+                        ownerRelationshipContainer.setVisible(false);
+                        break;
+                    case OTHER:
+                        ownerNameContainer.setVisible(false);
+                        ownerRelationshipContainer.setVisible(true);
+                        break;
+                }
+                target.addComponent(ownerNameContainer);
+                target.addComponent(ownerRelationshipContainer);
+            }
+        });
+        add(ownerResponsibleChoice);
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
@@ -312,29 +383,96 @@ public final class RegistrationInputPanel extends Panel {
         } else {
             throw new IllegalStateException("All building, apartment and room parts of current address have not been filled in.");
         }
+
+        //owner
+        switch (residentStatusModel.getObject()) {
+            case OWNER:
+                stringBean.getSystemStringCulture(registration.getAttribute(IS_OWNER).getLocalizedValues()).
+                        setValue(new BooleanConverter().toString(Boolean.TRUE));
+                registration.removeAttribute(IS_RESPONSIBLE);
+                registration.removeAttribute(OWNER_NAME);
+                break;
+            case RESPONSIBLE:
+                stringBean.getSystemStringCulture(registration.getAttribute(IS_RESPONSIBLE).getLocalizedValues()).
+                        setValue(new BooleanConverter().toString(Boolean.TRUE));
+                registration.removeAttribute(IS_OWNER);
+                break;
+            case OTHER:
+                registration.removeAttribute(IS_OWNER);
+                registration.removeAttribute(IS_RESPONSIBLE);
+                registration.removeAttribute(OWNER_NAME);
+                break;
+        }
     }
 
     public boolean validate() {
+        //address validity
+        String addressEntity = null;
+        Long addressId = null;
         DomainObject building = addressSearchComponentState.get("building");
         if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error(getString("address_failing"));
-            return false;
         } else {
             DomainObject apartment = addressSearchComponentState.get("apartment");
             if (apartment == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-                if (!validateOrphanBuilding(building.getId())) {
-                    return false;
+                if (validateOrphanBuilding(building.getId())) {
+                    addressEntity = "building";
+                    addressId = building.getId();
                 }
             } else {
                 DomainObject room = addressSearchComponentState.get("room");
                 if (room == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-                    if (!validateOrphanApartment(apartment.getId())) {
-                        return false;
+                    if (validateOrphanApartment(apartment.getId())) {
+                        addressEntity = "apartment";
+                        addressId = apartment.getId();
                     }
+                } else {
+                    addressEntity = "room";
+                    addressId = room.getId();
                 }
             }
         }
-        return true;
+        if (addressEntity == null || addressId == null) {
+            return false;
+        }
+
+        //owner validation
+        switch (residentStatusModel.getObject()) {
+            case OWNER: {
+                Person responsible = personStrategy.findResponsibleByAddress(addressEntity, addressId);
+                if (responsible != null) {
+                    error(ResourceUtil.getFormatString(this, "responsible_exists",
+                            personStrategy.displayDomainObject(responsible, getLocale())));
+                }
+            }
+            break;
+            case RESPONSIBLE: {
+                List<Person> owners = personStrategy.findOwnersByAddress(addressEntity, addressId);
+                if (owners != null && !owners.isEmpty()) {
+                    if (owners.size() == 1) {
+                        error(ResourceUtil.getFormatString(this, "owner_exists",
+                                personStrategy.displayDomainObject(owners.get(0), getLocale())));
+                    } else {
+                        StringBuilder ownersParam = new StringBuilder();
+                        for (int i = 0; i < owners.size(); i++) {
+                            ownersParam.append(personStrategy.displayDomainObject(owners.get(i), getLocale()));
+                            if (i < owners.size() - 1) {
+                                ownersParam.append(", ");
+                            }
+                        }
+                        error(ResourceUtil.getFormatString(this, "owners_exists", ownersParam));
+                    }
+                }
+                Person responsible = personStrategy.findResponsibleByAddress(addressEntity, addressId);
+                if (responsible != null) {
+                    error(ResourceUtil.getFormatString(this, "responsible_exists",
+                            personStrategy.displayDomainObject(responsible, getLocale())));
+                }
+            }
+            break;
+
+        }
+        return getSession().getFeedbackMessages().isEmpty();
     }
 
     private boolean validateOrphanBuilding(long buildingId) {

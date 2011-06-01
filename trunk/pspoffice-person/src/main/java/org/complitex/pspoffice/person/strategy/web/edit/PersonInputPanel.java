@@ -514,13 +514,13 @@ public final class PersonInputPanel extends Panel {
 
         if (!isNew()) {
             if (childrenIds.contains(person.getId())) {
-                error(getString("reference_themselves"));
+                error(getString("references_themselves"));
                 valid = false;
             }
         }
 
         if (childrenIds.size() != nonNullChildren.size()) {
-            error(getString("children_dublicate"));
+            error(getString("children_duplicate"));
             valid = false;
         }
         return valid;

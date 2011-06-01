@@ -106,12 +106,31 @@
         <include refid="org.complitex.dictionary.entity.DomainObject.findHistoryObject"/>
     </select>
 
-    <select id="getPersonIdsByAddress" parameterType="map" resultType="long">
+    <select id="findPersonIdsByAddress" parameterType="map" resultType="long">
         SELECT DISTINCT p.`object_id` FROM `person` p
             JOIN `person_attribute` pa ON (pa.`status` = 'ACTIVE' AND pa.`attribute_type_id` = #{registrationAttributeType} AND pa.`object_id` = p.`object_id`)
             JOIN `registration` reg ON (reg.`status` = 'ACTIVE' AND reg.`object_id` = pa.`value_id`)
             JOIN `registration_attribute` address ON (address.`status` = 'ACTIVE' AND address.`object_id` = reg.`object_id` AND address.`attribute_type_id` = #{addressAttributeType})
             WHERE p.`status` = 'ACTIVE' AND address.`value_id` = #{addressId} AND address.`value_type_id` = #{addressTypeId}
+    </select>
+
+    <select id="findOwnersByAddress" parameterType="map" resultType="long">
+        SELECT DISTINCT p.`object_id` FROM `person` p
+            JOIN `person_attribute` pa ON (pa.`status` = 'ACTIVE' AND pa.`attribute_type_id` = #{registrationAttributeType} AND pa.`object_id` = p.`object_id`)
+            JOIN `registration` reg ON (reg.`status` = 'ACTIVE' AND reg.`object_id` = pa.`value_id`)
+            JOIN `registration_attribute` address ON (address.`status` = 'ACTIVE' AND address.`object_id` = reg.`object_id` AND address.`attribute_type_id` = #{addressAttributeType})
+            JOIN `registration_attribute` isOwner ON (isOwner.`status` = 'ACTIVE' AND isOwner.`object_id` = reg.`object_id` AND isOwner.`attribute_type_id` = #{isOwnerAttributeType})
+            WHERE p.`status` = 'ACTIVE' AND address.`value_id` = #{addressId} AND address.`value_type_id` = #{addressTypeId}
+    </select>
+
+    <select id="findResponsibleByAddress" parameterType="map" resultType="long">
+        SELECT DISTINCT p.`object_id` FROM `person` p
+            JOIN `person_attribute` pa ON (pa.`status` = 'ACTIVE' AND pa.`attribute_type_id` = #{registrationAttributeType} AND pa.`object_id` = p.`object_id`)
+            JOIN `registration` reg ON (reg.`status` = 'ACTIVE' AND reg.`object_id` = pa.`value_id`)
+            JOIN `registration_attribute` address ON (address.`status` = 'ACTIVE' AND address.`object_id` = reg.`object_id` AND address.`attribute_type_id` = #{addressAttributeType})
+            JOIN `registration_attribute` isResponsible ON (isResponsible.`status` = 'ACTIVE' AND isResponsible.`object_id` = reg.`object_id` AND isResponsible.`attribute_type_id` = #{isResponsibleAttributeType})
+            WHERE p.`status` = 'ACTIVE' AND address.`value_id` = #{addressId} AND address.`value_type_id` = #{addressTypeId}
+            LIMIT 0,1
     </select>
 
     <!-- disable/enable functionality -->

@@ -47,7 +47,6 @@
         <mapper resource="org/complitex/logging/service/LogListBean.xml"/>
 
         <mapper resource="org/complitex/pspoffice/person/strategy/Person.xml"/>
-        <mapper resource="org/complitex/pspoffice/person/registration/report/service/RegistrationReportBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/registration/report/service/RegistrationStopCouponBean.xml"/>
     </mappers>
 </configuration>

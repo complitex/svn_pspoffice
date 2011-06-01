@@ -387,15 +387,27 @@ public final class RegistrationInputPanel extends Panel {
         //owner
         switch (residentStatusModel.getObject()) {
             case OWNER:
-                stringBean.getSystemStringCulture(registration.getAttribute(IS_OWNER).getLocalizedValues()).
-                        setValue(new BooleanConverter().toString(Boolean.TRUE));
-                registration.removeAttribute(IS_RESPONSIBLE);
-                registration.removeAttribute(OWNER_NAME);
+                boolean wasOwner = new BooleanConverter().toObject(stringBean.getSystemStringCulture(
+                        registration.getAttribute(IS_OWNER).getLocalizedValues()).getValue());
+                if (!wasOwner) {
+                    stringBean.getSystemStringCulture(registration.getAttribute(IS_OWNER).getLocalizedValues()).
+                            setValue(new BooleanConverter().toString(Boolean.TRUE));
+                    registration.removeAttribute(IS_RESPONSIBLE);
+                    registration.removeAttribute(OWNER_NAME);
+                    stringBean.getSystemStringCulture(registration.getAttribute(OWNER_RELATIONSHIP).getLocalizedValues()).
+                            setValue(getString("ResidentStatus.OWNER"));
+                }
                 break;
             case RESPONSIBLE:
-                stringBean.getSystemStringCulture(registration.getAttribute(IS_RESPONSIBLE).getLocalizedValues()).
-                        setValue(new BooleanConverter().toString(Boolean.TRUE));
-                registration.removeAttribute(IS_OWNER);
+                boolean wasResponsible = new BooleanConverter().toObject(stringBean.getSystemStringCulture(
+                        registration.getAttribute(IS_RESPONSIBLE).getLocalizedValues()).getValue());
+                if (!wasResponsible) {
+                    stringBean.getSystemStringCulture(registration.getAttribute(IS_RESPONSIBLE).getLocalizedValues()).
+                            setValue(new BooleanConverter().toString(Boolean.TRUE));
+                    registration.removeAttribute(IS_OWNER);
+                    stringBean.getSystemStringCulture(registration.getAttribute(OWNER_RELATIONSHIP).getLocalizedValues()).
+                            setValue(getString("ResidentStatus.RESPONSIBLE"));
+                }
                 break;
             case OTHER:
                 registration.removeAttribute(IS_OWNER);

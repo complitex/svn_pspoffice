@@ -5,6 +5,8 @@
 package org.complitex.pspoffice.person.registration.report.web;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
+import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -12,7 +14,10 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
+import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
+import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
@@ -28,6 +33,8 @@ public abstract class AbstractAddressParamPage extends FormTemplatePage {
 
     public static final String ADDRESS_ID = "address_id";
     public static final String ADDRESS_ENTITY = "address_entity";
+    @EJB
+    private StrategyFactory strategyFactory;
 
     public AbstractAddressParamPage() {
         init();
@@ -42,7 +49,7 @@ public abstract class AbstractAddressParamPage extends FormTemplatePage {
 
         final SearchComponentState addressComponentState = new SearchComponentState();
         SearchComponent searchComponent = new SearchComponent("searchComponent", addressComponentState,
-                ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ALL, true);
+                ImmutableList.of("city", "street", "building", "apartment"), null, ShowMode.ACTIVE, true);
         add(searchComponent);
 
         AjaxLink<Void> report = new AjaxLink<Void>("submit") {
@@ -51,7 +58,16 @@ public abstract class AbstractAddressParamPage extends FormTemplatePage {
             public void onClick(AjaxRequestTarget target) {
                 SimpleObjectInfo addressInfo = getAddressObjectInfo(addressComponentState);
                 if (addressInfo != null) {
-                    toReferencePage(addressInfo.getEntityTable(), addressInfo.getId());
+                    if (addressInfo.getEntityTable().equals("apartment")) {
+                        boolean isCommunalApartment = isCommunalApartment(addressInfo.getId());
+                        if (forCommunalApartments() && !isCommunalApartment) {
+                            error(getString("communal_apartment"));
+                        } else if (!forCommunalApartments() && isCommunalApartment) {
+                            error(getString("not_communal_apartment"));
+                        } else {
+                            toReferencePage(addressInfo.getEntityTable(), addressInfo.getId());
+                        }
+                    }
                 }
                 target.addComponent(messages);
             }
@@ -61,7 +77,9 @@ public abstract class AbstractAddressParamPage extends FormTemplatePage {
 
     protected abstract void toReferencePage(String addressEntity, long addressId);
 
-    private SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
+    protected abstract boolean forCommunalApartments();
+
+    protected final SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
         DomainObject building = addressComponentState.get("building");
         if (building == null || building.getId() == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
             error(getString("address_invalid"));
@@ -69,13 +87,23 @@ public abstract class AbstractAddressParamPage extends FormTemplatePage {
         }
         DomainObject apartment = addressComponentState.get("apartment");
         if (apartment == null || apartment.getId() == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-            return new SimpleObjectInfo("building", building.getId());
+            //TODO: add building selection
+            error(getString("address_invalid"));
+            return null;
+//            return new SimpleObjectInfo("building", building.getId());
         }
-        DomainObject room = addressComponentState.get("room");
-        if (room == null || room.getId() == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-            return new SimpleObjectInfo("apartment", apartment.getId());
-        }
-        return new SimpleObjectInfo("room", room.getId());
+        return new SimpleObjectInfo("apartment", apartment.getId());
+    }
+
+    protected boolean isCommunalApartment(long apartmentId) {
+        IStrategy roomStrategy = strategyFactory.getStrategy("room");
+        DomainObjectExample example = new DomainObjectExample();
+        example.setAdmin(true);
+        example.setParentEntity("apartment");
+        example.setStatus(ShowMode.ACTIVE.name());
+        example.setParentId(apartmentId);
+        List<? extends DomainObject> rooms = roomStrategy.find(example);
+        return rooms != null && !rooms.isEmpty();
     }
 }
 

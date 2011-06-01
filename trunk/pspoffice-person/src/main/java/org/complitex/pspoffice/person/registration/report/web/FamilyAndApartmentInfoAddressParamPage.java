@@ -14,5 +14,10 @@ public final class FamilyAndApartmentInfoAddressParamPage extends AbstractAddres
     protected void toReferencePage(String addressEntity, long addressId) {
         setResponsePage(new FamilyAndApartmentInfoPage(addressEntity, addressId));
     }
+
+    @Override
+    protected boolean forCommunalApartments() {
+        return false;
+    }
 }
 

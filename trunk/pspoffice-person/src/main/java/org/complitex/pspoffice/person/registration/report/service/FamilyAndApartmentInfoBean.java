@@ -4,7 +4,7 @@
  */
 package org.complitex.pspoffice.person.registration.report.service;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -31,7 +31,7 @@ public class FamilyAndApartmentInfoBean extends AbstractBean {
 
     @Transactional
     public FamilyAndApartmentInfo get(String addressEntity, long addressId, Locale locale) throws UnregisteredPersonException {
-        Collection<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
+        List<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
         if (persons == null || persons.isEmpty()) {
             throw new UnregisteredPersonException(address);
@@ -41,6 +41,7 @@ public class FamilyAndApartmentInfoBean extends AbstractBean {
         for (Person person : persons) {
             FamilyMember member = new FamilyMember();
             member.setName(personStrategy.displayDomainObject(person, locale));
+            member.setRelation(person.getRegistration().getOwnerRelationship());
             member.setBirthDate(person.getBirthDate());
             member.setRegistrationDate(person.getRegistration().getRegistrationDate());
             info.addFamilyMember(member);

@@ -4,7 +4,7 @@
  */
 package org.complitex.pspoffice.person.registration.report.service;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -30,10 +30,11 @@ public class FamilyAndHousingPaymentsBean extends AbstractBean {
 
     @Transactional
     public FamilyAndHousingPayments get(String addressEntity, long addressId, Locale locale) {
-        Collection<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
+        List<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
         FamilyAndHousingPayments payments = new FamilyAndHousingPayments();
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
         payments.setAddress(address);
+        payments.setName(personStrategy.getOwnerOrResponsibleName(persons, locale));
 
         for (Person person : persons) {
             FamilyMember member = new FamilyMember();

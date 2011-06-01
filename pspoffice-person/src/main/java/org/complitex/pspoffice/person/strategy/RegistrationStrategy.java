@@ -168,7 +168,7 @@ public class RegistrationStrategy extends Strategy {
         } else if ("building".equals(addressEntity)) {
             return ADDRESS_BUILDING;
         }
-        throw new IllegalStateException("Address entity is not resolved.");
+        throw new IllegalStateException("Address entity `"+addressEntity+"` is not resolved.");
     }
 
     @Override

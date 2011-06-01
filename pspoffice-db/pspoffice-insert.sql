@@ -119,7 +119,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2120, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2119, 2100, 0, 2120, 1);
 
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2121, 1, UPPER('Отношение к владельцу/ответственному')), (2121, 2, UPPER('Отношение к владельцу/ответственному'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 0, 2121, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 1, 2121, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2122, 1, UPPER('Отношение к остальным проживающим')), (2122, 2, UPPER('Отношение к остальным проживающим'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2121, 2100, 0, 2122, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2123, 1, UPPER('Документ права на жилплощадь')), (2123, 2, UPPER('Документ права на жилплощадь'));

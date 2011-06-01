@@ -1,6 +1,5 @@
 package org.complitex.pspoffice.person.strategy;
 
-import java.util.Collection;
 import static com.google.common.collect.ImmutableMap.*;
 import java.util.Collections;
 import static com.google.common.collect.Lists.*;
@@ -19,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StringCulture;
@@ -28,8 +28,12 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
+import org.complitex.dictionary.strategy.IStrategy;
+import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
+import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
@@ -48,6 +52,7 @@ import org.complitex.template.web.security.SecurityRole;
 public class PersonStrategy extends TemplateStrategy {
 
     private static final String PERSON_MAPPING = PersonStrategy.class.getPackage().getName() + ".Person";
+    private static final String RESOURCE_BUNDLE = PersonStrategy.class.getName();
     /**
      * Attribute type ids
      */
@@ -103,6 +108,8 @@ public class PersonStrategy extends TemplateStrategy {
     private RegistrationStrategy registrationStrategy;
     @EJB
     private NameBean nameBean;
+    @EJB
+    private StrategyFactory strategyFactory;
 
     @Override
     public String getEntityTable() {
@@ -292,7 +299,7 @@ public class PersonStrategy extends TemplateStrategy {
             fillAttributes(person);
             updateStringsForNewLocales(person);
             if (loadRegistration) {
-                loadRegistration(person);
+                loadRegistration(person, null);
             }
             if (loadChildren) {
                 loadChildren(person);
@@ -302,11 +309,6 @@ public class PersonStrategy extends TemplateStrategy {
             person.setSubjectIds(loadSubjects(person.getPermissionId()));
         }
         return person;
-    }
-
-    @Transactional
-    public void loadRegistration(Person person) {
-        loadRegistration(person, null);
     }
 
     @Transactional
@@ -468,14 +470,14 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public Collection<Person> findPersonsByAddress(String addressEntity, long addressId) {
+    public List<Person> findPersonsByAddress(String addressEntity, long addressId) {
         long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
         Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
                 "addressAttributeType", RegistrationStrategy.ADDRESS,
                 "addressId", addressId,
                 "addressTypeId", addressTypeId);
         List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findPersonIdsByAddress", params);
-        Collection<Person> persons = newArrayList();
+        List<Person> persons = newArrayList();
         for (Long personId : personIds) {
             Person person = findById(personId, true, false, true);
             loadName(person);
@@ -511,10 +513,97 @@ public class PersonStrategy extends TemplateStrategy {
                 "addressTypeId", addressTypeId,
                 "isResponsibleAttributeType", RegistrationStrategy.IS_RESPONSIBLE);
         Long personId = (Long) sqlSession().selectOne(PERSON_MAPPING + ".findResponsibleByAddress", params);
-        Person person = personId != null ? findById(personId, true, false, false) : null;
+        Person person = personId != null ? findById(personId, true, false, true) : null;
         if (person != null) {
             loadName(person);
         }
         return person;
+    }
+
+    /**
+     * Finds only first owner/responsible man.
+     */
+    @Transactional
+    public List<NeighbourFamily> findNeighbourFamilies(String addressEntity, long addressId, Locale locale) {
+        if (addressEntity.equals("building")) {
+            return null;
+        } else if (addressEntity.equals("apartment")) {
+            return null;
+        } else if (addressEntity.equals("room")) {
+            IStrategy roomStrategy = strategyFactory.getStrategy("room");
+            DomainObject room = roomStrategy.findById(addressId, true);
+            if (room == null) {
+                throw new IllegalArgumentException("Room object with id = " + addressId + " doesn't exist.");
+            }
+            if (!room.getParentEntityId().equals(100L)) {
+                return null;
+            }
+            DomainObjectExample example = new DomainObjectExample();
+            example.setAdmin(true);
+            example.setStatus(ShowMode.ACTIVE.name());
+            example.setParentEntity("apartment");
+            example.setParentId(room.getParentId());
+            List<? extends DomainObject> rooms = roomStrategy.find(example);
+            if (rooms == null || rooms.isEmpty()) {
+                return null;
+            }
+            List<NeighbourFamily> neighbourFamilies = newArrayList();
+            for (DomainObject currentRoom : rooms) {
+                if (!currentRoom.getId().equals(room.getId())) {
+                    List<Person> persons = findPersonsByAddress("room", currentRoom.getId());
+                    if (persons == null || persons.isEmpty()) {
+                        continue;
+                    }
+                    NeighbourFamily neighbourFamily = new NeighbourFamily();
+                    neighbourFamily.setAmount(persons.size());
+                    //TODO: set first owner, might all owners should be set?
+                    for (Person person : persons) {
+                        Registration registration = person.getRegistration();
+                        if (registration.isOwner() || registration.isResponsible()) {
+                            neighbourFamily.setName(displayDomainObject(person, locale));
+                            break;
+                        }
+                    }
+                    if (Strings.isEmpty(neighbourFamily.getName())) {
+                        neighbourFamily.setName(ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale));
+                    }
+                    neighbourFamilies.add(neighbourFamily);
+                }
+            }
+            return neighbourFamilies;
+        } else {
+            throw new IllegalArgumentException("Address entity " + addressEntity + " must be only the one of `building`, `apartment` or `room`.");
+        }
+    }
+
+    @Transactional
+    public String getOwnerName(String addressEntity, long addressId, Locale locale) {
+        String ownerName = null;
+        List<Person> owners = findOwnersByAddress(addressEntity, addressId);
+        if (owners != null && !owners.isEmpty()) {
+            //TODO: take first owner, might all owners should be taken into account?
+            ownerName = displayDomainObject(owners.get(0), locale);
+        } else {
+            Person responsible = findResponsibleByAddress(addressEntity, addressId);
+            if (responsible != null) {
+                ownerName = responsible.getRegistration().getOwnerName();
+            }
+        }
+        return !Strings.isEmpty(ownerName) ? ownerName : ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_name", locale);
+    }
+
+    @Transactional
+    public String getOwnerOrResponsibleName(List<Person> members, Locale locale) {
+        String name = null;
+        if (members != null) {
+            for (Person person : members) {
+                if (person.getRegistration().isOwner() || person.getRegistration().isResponsible()) {
+                    //TODO: take first owner, might all owners should be taken into account?
+                    name = displayDomainObject(person, locale);
+                    break;
+                }
+            }
+        }
+        return !Strings.isEmpty(name) ? name : ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_name", locale);
     }
 }

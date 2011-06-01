@@ -14,5 +14,10 @@ public final class FamilyAndHousingPaymentsAddressParamPage extends AbstractAddr
     protected void toReferencePage(String addressEntity, long addressId) {
         setResponsePage(new FamilyAndHousingPaymentsPage(addressEntity, addressId));
     }
+
+    @Override
+    protected boolean forCommunalApartments() {
+        return false;
+    }
 }
 

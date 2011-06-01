@@ -467,13 +467,14 @@ public class PersonStrategy extends TemplateStrategy {
         return PersonHistoryPage.class;
     }
 
-    public Collection<Person> getPersonsByAddress(String addressEntity, long addressId) {
+    @Transactional
+    public Collection<Person> findPersonsByAddress(String addressEntity, long addressId) {
         long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
         Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
                 "addressAttributeType", RegistrationStrategy.ADDRESS,
                 "addressId", addressId,
                 "addressTypeId", addressTypeId);
-        List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".getPersonIdsByAddress", params);
+        List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findPersonIdsByAddress", params);
         Collection<Person> persons = newArrayList();
         for (Long personId : personIds) {
             Person person = findById(personId, true, false, true);
@@ -481,5 +482,39 @@ public class PersonStrategy extends TemplateStrategy {
             persons.add(person);
         }
         return persons;
+    }
+
+    @Transactional
+    public List<Person> findOwnersByAddress(String addressEntity, long addressId) {
+        long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
+        Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
+                "addressAttributeType", RegistrationStrategy.ADDRESS,
+                "addressId", addressId,
+                "addressTypeId", addressTypeId,
+                "isOwnerAttributeType", RegistrationStrategy.IS_OWNER);
+        List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findOwnersByAddress", params);
+        List<Person> persons = newArrayList();
+        for (Long personId : personIds) {
+            Person person = findById(personId, true, false, false);
+            loadName(person);
+            persons.add(person);
+        }
+        return persons;
+    }
+
+    @Transactional
+    public Person findResponsibleByAddress(String addressEntity, long addressId) {
+        long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
+        Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
+                "addressAttributeType", RegistrationStrategy.ADDRESS,
+                "addressId", addressId,
+                "addressTypeId", addressTypeId,
+                "isResponsibleAttributeType", RegistrationStrategy.IS_RESPONSIBLE);
+        Long personId = (Long) sqlSession().selectOne(PERSON_MAPPING + ".findResponsibleByAddress", params);
+        Person person = personId != null ? findById(personId, true, false, false) : null;
+        if (person != null) {
+            loadName(person);
+        }
+        return person;
     }
 }

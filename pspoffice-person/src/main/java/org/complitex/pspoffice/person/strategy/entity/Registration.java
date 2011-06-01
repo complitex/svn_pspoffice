@@ -5,6 +5,7 @@
 package org.complitex.pspoffice.person.strategy.entity;
 
 import java.util.Date;
+import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
@@ -61,6 +62,24 @@ public class Registration extends DomainObject {
     public String getOwnerRelationship() {
         Attribute ownerRelationshipAttribute = getAttribute(OWNER_RELATIONSHIP);
         return stringBean().getSystemStringCulture(ownerRelationshipAttribute.getLocalizedValues()).getValue();
+    }
+
+    public boolean isOwner() {
+        Attribute isOwnerAttribute = getAttribute(IS_OWNER);
+        return (isOwnerAttribute != null) && new BooleanConverter().toObject(
+                stringBean().getSystemStringCulture(isOwnerAttribute.getLocalizedValues()).getValue());
+    }
+
+    public boolean isResponsible() {
+        Attribute isResponsibleAttribute = getAttribute(IS_RESPONSIBLE);
+        return (isResponsibleAttribute != null) && new BooleanConverter().toObject(
+                stringBean().getSystemStringCulture(isResponsibleAttribute.getLocalizedValues()).getValue());
+    }
+
+    public String getOwnerName() {
+        Attribute ownerNameAttribute = getAttribute(OWNER_NAME);
+        return ownerNameAttribute == null ? null
+                : stringBean().getSystemStringCulture(ownerNameAttribute.getLocalizedValues()).getValue();
     }
 
     private StringCultureBean stringBean() {

@@ -335,20 +335,50 @@
                 </fieldset>
             </div>
 
+            <div>
+                <fieldset>
+                    <legend>
+                        <span>
+                            <h3>
+                                <wicket:message key="owner_info"/>
+                            </h3>
+                        </span>
+                    </legend>
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td colspan="2">
+                                <div wicket:id="ownerResponsibleChoice" style="margin-bottom: 15px;">
+                                    <input type="radio"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr wicket:id="ownerRelationshipContainer">
+                            <th>
+                                <wicket:container wicket:id="label"/>
+                                <wicket:container wicket:id="required">
+                                    <b class="blue">*</b>
+                                </wicket:container>:
+                            </th>
+                            <td>
+                                <div wicket:id="input"></div>
+                            </td>
+                        </tr>
+                        <tr wicket:id="ownerNameContainer">
+                            <th>
+                                <wicket:container wicket:id="label"/>
+                                <wicket:container wicket:id="required">
+                                    <b class="blue">*</b>
+                                </wicket:container>:
+                            </th>
+                            <td>
+                                <div wicket:id="input"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+
             <table class="tbForm" cellpadding="0" cellspacing="0" border="0" style="margin-top: 20px;">
-                <tr>
-                    <wicket:container wicket:id="ownerRelationshipContainer">
-                        <th>
-                            <wicket:container wicket:id="label"/>
-                            <wicket:container wicket:id="required">
-                                <b class="blue">*</b>
-                            </wicket:container>:
-                        </th>
-                        <td>
-                            <div wicket:id="input"></div>
-                        </td>
-                    </wicket:container>
-                </tr>
                 <tr>
                     <wicket:container wicket:id="otherRelationshipContainer">
                         <th>

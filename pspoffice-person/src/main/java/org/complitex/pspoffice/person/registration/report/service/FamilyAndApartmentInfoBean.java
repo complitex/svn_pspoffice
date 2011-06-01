@@ -31,9 +31,9 @@ public class FamilyAndApartmentInfoBean extends AbstractBean {
 
     @Transactional
     public FamilyAndApartmentInfo get(String addressEntity, long addressId, Locale locale) throws UnregisteredPersonException {
-        Collection<Person> persons = personStrategy.getPersonsByAddress(addressEntity, addressId);
+        Collection<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
-        if(persons == null || persons.isEmpty()){
+        if (persons == null || persons.isEmpty()) {
             throw new UnregisteredPersonException(address);
         }
         FamilyAndApartmentInfo info = new FamilyAndApartmentInfo();

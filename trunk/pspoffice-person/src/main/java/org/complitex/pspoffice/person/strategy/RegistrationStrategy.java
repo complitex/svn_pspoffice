@@ -37,8 +37,8 @@ public class RegistrationStrategy extends Strategy {
     public static final long ARRIVAL_DISTRICT = 2103;
     public static final long ARRIVAL_CITY = 2104;
     public static final long ARRIVAL_STREET = 2105;
-    public static final long ARRIVAL_BUILDING = 2106;
-    public static final long ARRIVAL_CORP = 2107;
+    public static final long ARRIVAL_BUILDING_NUMBER = 2106;
+    public static final long ARRIVAL_BUILDING_CORP = 2107;
     public static final long ARRIVAL_APARTMENT = 2108;
     public static final long ARRIVAL_DATE = 2109;
     public static final long DEPARTURE_COUNTRY = 2110;

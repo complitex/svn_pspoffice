@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
@@ -27,8 +26,6 @@ public class F3ReferenceBean extends AbstractBean {
 
     @EJB
     private PersonStrategy personStrategy;
-    @EJB
-    private AddressRendererBean addressRendererBean;
     @EJB
     private CommunalApartmentService communalApartmentService;
 
@@ -51,7 +48,7 @@ public class F3ReferenceBean extends AbstractBean {
         Registration registration = person.getRegistration();
         long addressId = registration.getAddressId();
         String addressEntity = registration.getAddressEntity();
-        f3.setPersonAddress(addressRendererBean.displayAddress(addressEntity, addressId, locale));
+        f3.setPersonAddress(registration.displayAddress(locale));
         f3.setPrivateAccountOwnerName(personStrategy.getOwnerName(addressEntity, addressId, locale));
 
         List<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);

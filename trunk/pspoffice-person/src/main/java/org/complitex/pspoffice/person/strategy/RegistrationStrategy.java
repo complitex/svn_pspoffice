@@ -18,6 +18,7 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -141,23 +142,26 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
-    public boolean validateOrphans(long addressId, String addressEntity) {
-        boolean isOrphan = true;
+    public boolean isLeafAddress(long addressId, String addressEntity) {
+        boolean isLeaf = true;
         IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
         String[] children = addressStrategy.getLogicalChildren();
         if (children != null && children.length > 0) {
             DomainObjectExample example = new DomainObjectExample();
             example.setParentId(addressId);
             example.setParentEntity(addressEntity);
+            example.setAdmin(true);
+            example.setStatus(ShowMode.ACTIVE.name());
             for (String child : children) {
                 IStrategy childStrategy = strategyFactory.getStrategy(child);
                 int count = childStrategy.count(example);
                 if (count > 0) {
-                    isOrphan = false;
+                    isLeaf = false;
+                    break;
                 }
             }
         }
-        return isOrphan;
+        return isLeaf;
     }
 
     public long getAddressTypeId(String addressEntity) {

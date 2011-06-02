@@ -426,14 +426,14 @@ public final class RegistrationInputPanel extends Panel {
         } else {
             DomainObject apartment = addressSearchComponentState.get("apartment");
             if (apartment == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-                if (validateOrphanBuilding(building.getId())) {
+                if (isLeafBuilding(building.getId())) {
                     addressEntity = "building";
                     addressId = building.getId();
                 }
             } else {
                 DomainObject room = addressSearchComponentState.get("room");
                 if (room == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
-                    if (validateOrphanApartment(apartment.getId())) {
+                    if (isLeafApartment(apartment.getId())) {
                         addressEntity = "apartment";
                         addressId = apartment.getId();
                     }
@@ -486,16 +486,16 @@ public final class RegistrationInputPanel extends Panel {
         return getSession().getFeedbackMessages().isEmpty();
     }
 
-    private boolean validateOrphanBuilding(long buildingId) {
-        if (!registrationStrategy.validateOrphans(buildingId, "building")) {
+    private boolean isLeafBuilding(long buildingId) {
+        if (!registrationStrategy.isLeafAddress(buildingId, "building")) {
             error(getString("address_failing"));
             return false;
         }
         return true;
     }
 
-    private boolean validateOrphanApartment(long apartmentId) {
-        if (!registrationStrategy.validateOrphans(apartmentId, "apartment")) {
+    private boolean isLeafApartment(long apartmentId) {
+        if (!registrationStrategy.isLeafAddress(apartmentId, "apartment")) {
             error(getString("address_failing"));
             return false;
         }

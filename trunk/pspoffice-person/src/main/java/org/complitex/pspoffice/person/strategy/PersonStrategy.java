@@ -28,7 +28,6 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
-import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -49,7 +48,7 @@ import org.complitex.template.web.security.SecurityRole;
 public class PersonStrategy extends TemplateStrategy {
 
     private static final String PERSON_MAPPING = PersonStrategy.class.getPackage().getName() + ".Person";
-    private static final String RESOURCE_BUNDLE = PersonStrategy.class.getName();
+    public static final String RESOURCE_BUNDLE = PersonStrategy.class.getName();
     /**
      * Attribute type ids
      */
@@ -105,8 +104,6 @@ public class PersonStrategy extends TemplateStrategy {
     private RegistrationStrategy registrationStrategy;
     @EJB
     private NameBean nameBean;
-    @EJB
-    private StrategyFactory strategyFactory;
 
     @Override
     public String getEntityTable() {
@@ -545,6 +542,6 @@ public class PersonStrategy extends TemplateStrategy {
                 }
             }
         }
-        return !Strings.isEmpty(name) ? name : ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_name", locale);
+        return !Strings.isEmpty(name) ? name : ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale);
     }
 }

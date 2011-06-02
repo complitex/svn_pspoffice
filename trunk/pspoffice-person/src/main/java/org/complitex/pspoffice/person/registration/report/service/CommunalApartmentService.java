@@ -23,6 +23,7 @@ import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 
@@ -33,22 +34,16 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 @Stateless
 public class CommunalApartmentService extends AbstractBean {
 
-    private static final String RESOURCE_BUNDLE = CommunalApartmentService.class.getName();
     @EJB
     private StrategyFactory strategyFactory;
     @EJB
     private PersonStrategy personStrategy;
+    @EJB
+    private RegistrationStrategy registrationStrategy;
 
     @Transactional
     public boolean isCommunalApartment(long apartmentId) {
-        IStrategy roomStrategy = strategyFactory.getStrategy("room");
-        DomainObjectExample example = new DomainObjectExample();
-        example.setAdmin(true);
-        example.setParentEntity("apartment");
-        example.setStatus(ShowMode.ACTIVE.name());
-        example.setParentId(apartmentId);
-        List<? extends DomainObject> rooms = roomStrategy.find(example);
-        return rooms != null && !rooms.isEmpty();
+        return !registrationStrategy.isLeafAddress(apartmentId, "apartment");
     }
 
     @Transactional
@@ -97,7 +92,7 @@ public class CommunalApartmentService extends AbstractBean {
                     }
                 }
                 if (Strings.isEmpty(neighbourFamily.getName())) {
-                    neighbourFamily.setName(ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale));
+                    neighbourFamily.setName(ResourceUtil.getString(PersonStrategy.RESOURCE_BUNDLE, "no_owner_or_responsible", locale));
                 }
                 neighbourFamilies.add(neighbourFamily);
             }

@@ -16,12 +16,11 @@ import java.util.Map;
  *         Date: 17.05.11 18:07
  */
 @Stateless
-public class PdfReportService implements IReportService {
+public class PdfReportService extends AbstractReportService{
     private final static String FONT = "org/complitex/pspoffice/report/font/times.ttf";
-    private final static String TEMPLATE_PATH = "org/complitex/pspoffice/report/template";
 
     @Override
-    public void createReport(String templateName, Map<String, String> parameters, OutputStream out) throws CreateReportException {
+    public void createReport(String templateName, Map<String, String> values, OutputStream out) throws CreateReportException {
         try {
             PdfStamper stamper = new PdfStamper(new PdfReader(getTemplateInputStream(templateName)), out);
             stamper.setFormFlattening(true);
@@ -30,18 +29,14 @@ public class PdfReportService implements IReportService {
 
             acroFields.addSubstitutionFont(BaseFont.createFont(getFontURLPath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED));
 
-            for (String key : parameters.keySet()){
-                acroFields.setField(key.toLowerCase(), parameters.get(key));
+            for (String key : values.keySet()){
+                acroFields.setField(key.toLowerCase(), values.get(key));
             }
 
             stamper.close();
         } catch (Exception e) {
             throw new CreateReportException(e);
         }
-    }
-
-    private InputStream getTemplateInputStream(String templateName){
-        return getClass().getClassLoader().getResourceAsStream(TEMPLATE_PATH + "/" + templateName);
     }
 
     private String getFontURLPath(){

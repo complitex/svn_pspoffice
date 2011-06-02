@@ -45,9 +45,13 @@
             <groupId>org.complitex</groupId>
             <artifactId>complitex-organization</artifactId>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-person</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-report</artifactId>
         </dependency>
 
         <dependency>

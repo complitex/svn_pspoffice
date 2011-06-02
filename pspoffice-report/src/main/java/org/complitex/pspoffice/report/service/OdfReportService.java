@@ -17,8 +17,7 @@ import java.util.Map;
  *         Date: 19.05.11 14:58
  */
 @Stateless
-public class OdfReportService implements IReportService{
-    private final static String TEMPLATE_PATH = "/org/complitex/pspoffice/report/template";
+public class OdfReportService extends AbstractReportService{
 
     @Override
     public void createReport(String templateName, Map<String, String> values, OutputStream out) throws CreateReportException {
@@ -52,14 +51,8 @@ public class OdfReportService implements IReportService{
             }
 
             textDocument.save(out);
-
-
         } catch (Exception e) {
             throw new CreateReportException(e);
         }
-    }
-
-    private InputStream getTemplateInputStream(String templateName){
-        return getClass().getResourceAsStream(TEMPLATE_PATH + "/" + templateName);
     }
 }

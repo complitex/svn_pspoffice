@@ -8,5 +8,5 @@ import java.util.Map;
  *         Date: 19.05.11 14:58
  */
 public interface IReportService {
-    void createReport(String templateName, Map<String, String> parameters, OutputStream out) throws CreateReportException;
+    void createReport(String templateName, Map<String, String> values, OutputStream out) throws CreateReportException;
 }

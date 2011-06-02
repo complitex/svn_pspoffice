@@ -17,6 +17,7 @@ import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.EjbBeanLocator;
 import org.complitex.pspoffice.person.registration.report.web.FamilyAndApartmentInfoAddressParamPage;
+import org.complitex.pspoffice.person.registration.report.web.FamilyAndCommunalApartmentInfoParamPage;
 import org.complitex.pspoffice.person.registration.report.web.FamilyAndHousingPaymentsAddressParamPage;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -103,6 +104,28 @@ public class RegistrationMenu extends ResourceTemplateMenu {
                     @Override
                     public String getTagId() {
                         return "family_and_housing_payments_item";
+                    }
+                },
+                new ITemplateLink() {
+
+                    @Override
+                    public String getLabel(Locale locale) {
+                        return getString(MenuResources.class, locale, "family_and_communal_apartment_info");
+                    }
+
+                    @Override
+                    public Class<? extends Page> getPage() {
+                        return FamilyAndCommunalApartmentInfoParamPage.class;
+                    }
+
+                    @Override
+                    public PageParameters getParameters() {
+                        return PageParameters.NULL;
+                    }
+
+                    @Override
+                    public String getTagId() {
+                        return "family_and_communal_apartment_info_item";
                     }
                 }
                 //        ,

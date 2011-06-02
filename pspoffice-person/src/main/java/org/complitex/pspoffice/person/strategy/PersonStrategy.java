@@ -28,12 +28,9 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
-import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
-import org.complitex.dictionary.web.component.ShowMode;
-import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
@@ -518,62 +515,6 @@ public class PersonStrategy extends TemplateStrategy {
             loadName(person);
         }
         return person;
-    }
-
-    /**
-     * Finds only first owner/responsible man.
-     */
-    @Transactional
-    public List<NeighbourFamily> findNeighbourFamilies(String addressEntity, long addressId, Locale locale) {
-        if (addressEntity.equals("building")) {
-            return null;
-        } else if (addressEntity.equals("apartment")) {
-            return null;
-        } else if (addressEntity.equals("room")) {
-            IStrategy roomStrategy = strategyFactory.getStrategy("room");
-            DomainObject room = roomStrategy.findById(addressId, true);
-            if (room == null) {
-                throw new IllegalArgumentException("Room object with id = " + addressId + " doesn't exist.");
-            }
-            if (!room.getParentEntityId().equals(100L)) {
-                return null;
-            }
-            DomainObjectExample example = new DomainObjectExample();
-            example.setAdmin(true);
-            example.setStatus(ShowMode.ACTIVE.name());
-            example.setParentEntity("apartment");
-            example.setParentId(room.getParentId());
-            List<? extends DomainObject> rooms = roomStrategy.find(example);
-            if (rooms == null || rooms.isEmpty()) {
-                return null;
-            }
-            List<NeighbourFamily> neighbourFamilies = newArrayList();
-            for (DomainObject currentRoom : rooms) {
-                if (!currentRoom.getId().equals(room.getId())) {
-                    List<Person> persons = findPersonsByAddress("room", currentRoom.getId());
-                    if (persons == null || persons.isEmpty()) {
-                        continue;
-                    }
-                    NeighbourFamily neighbourFamily = new NeighbourFamily();
-                    neighbourFamily.setAmount(persons.size());
-                    //TODO: set first owner, might all owners should be set?
-                    for (Person person : persons) {
-                        Registration registration = person.getRegistration();
-                        if (registration.isOwner() || registration.isResponsible()) {
-                            neighbourFamily.setName(displayDomainObject(person, locale));
-                            break;
-                        }
-                    }
-                    if (Strings.isEmpty(neighbourFamily.getName())) {
-                        neighbourFamily.setName(ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale));
-                    }
-                    neighbourFamilies.add(neighbourFamily);
-                }
-            }
-            return neighbourFamilies;
-        } else {
-            throw new IllegalArgumentException("Address entity " + addressEntity + " must be only the one of `building`, `apartment` or `room`.");
-        }
     }
 
     @Transactional

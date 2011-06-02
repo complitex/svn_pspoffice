@@ -36,7 +36,7 @@
 
     <dependencyManagement>
         <dependencies>
-             <!-- Complitex Modules -->
+            <!-- Complitex Modules -->
             <dependency>
                 <groupId>org.complitex</groupId>
                 <artifactId>complitex-dictionary</artifactId>
@@ -62,7 +62,7 @@
                 <artifactId>complitex-logging</artifactId>
                 <version>${complitex.version}</version>
             </dependency>
-             <dependency>
+            <dependency>
                 <groupId>org.complitex</groupId>
                 <artifactId>complitex-organization</artifactId>
                 <version>${complitex.version}</version>
@@ -85,9 +85,15 @@
                 <version>${project.version}</version>
             </dependency>
 
-             <dependency>
+            <dependency>
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-person</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-report</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

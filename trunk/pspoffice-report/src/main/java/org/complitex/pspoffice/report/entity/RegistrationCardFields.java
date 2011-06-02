@@ -4,7 +4,7 @@ package org.complitex.pspoffice.report.entity;
  * @author Anatoly A. Ivanov java@inheaven.ru
  *         Date: 17.05.11 17:00
  */
-public enum RegistrationCard implements IReportFields{
+public enum RegistrationCardFields implements IReportFields{
     FIRST_NAME, LAST_NAME, MIDDLE_NAME, NATIONALITY,
     BIRTH_DATE, BIRTH_REGION, BIRTH_DISTRICT, BIRTH_CITY, BIRTH_VILLAGE,
     ARRIVAL_REGION, ARRIVAL_DISTRICT, ARRIVAL_CITY, ARRIVAL_VILLAGE, ARRIVAL_DATE,

@@ -79,7 +79,7 @@ public final class RegistrationInputPanel extends Panel {
     private Attribute addressAttribute;
     private SearchComponentState addressSearchComponentState;
     private Date date;
-    private IModel<ResidentStatus> residentStatusModel;
+    private final IModel<ResidentStatus> residentStatusModel = new Model<ResidentStatus>();
 
     public RegistrationInputPanel(String id, Registration registration, Date date) {
         super(id);
@@ -114,9 +114,9 @@ public final class RegistrationInputPanel extends Panel {
         initSystemAttributeInput(this, "arrivalRegion", ARRIVAL_REGION, true);
         initSystemAttributeInput(this, "arrivalStreet", ARRIVAL_STREET, true);
         initSystemAttributeInput(this, "arrivalDistrict", ARRIVAL_DISTRICT, true);
-        initSystemAttributeInput(this, "arrivalBuilding", ARRIVAL_BUILDING, true);
+        initSystemAttributeInput(this, "arrivalBuildingNumber", ARRIVAL_BUILDING_NUMBER, true);
         initSystemAttributeInput(this, "arrivalCity", ARRIVAL_CITY, true);
-        initSystemAttributeInput(this, "arrivalCorp", ARRIVAL_CORP, true);
+        initSystemAttributeInput(this, "arrivalBuildingCorp", ARRIVAL_BUILDING_CORP, true);
         initSystemAttributeInput(this, "arrivalApartment", ARRIVAL_APARTMENT, true);
         initSystemAttributeInput(this, "arrivalDate", ARRIVAL_DATE, false);
         initSystemAttributeInput(this, "departureCountry", DEPARTURE_COUNTRY, true);
@@ -192,7 +192,6 @@ public final class RegistrationInputPanel extends Panel {
         final Component ownerNameContainer = get("ownerNameContainer");
         ownerNameContainer.setOutputMarkupPlaceholderTag(true);
 
-        residentStatusModel = new Model<ResidentStatus>();
         if (registration.isOwner()) {
             residentStatusModel.setObject(ResidentStatus.OWNER);
             ownerRelationshipContainer.setVisible(false);

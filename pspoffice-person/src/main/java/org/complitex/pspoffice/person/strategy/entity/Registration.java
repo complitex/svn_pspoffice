@@ -5,13 +5,13 @@
 package org.complitex.pspoffice.person.strategy.entity;
 
 import java.util.Date;
-import org.complitex.dictionary.converter.BooleanConverter;
-import org.complitex.dictionary.converter.DateConverter;
+import java.util.Locale;
+import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.EjbBeanLocator;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
+import static org.complitex.dictionary.util.AttributeUtil.*;
 
 /**
  *
@@ -19,11 +19,30 @@ import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
  */
 public class Registration extends DomainObject {
 
+    private String address;
+
     public Registration() {
     }
 
     public Registration(DomainObject object) {
         super(object);
+    }
+
+    private AddressRendererBean addressRenderer() {
+        return EjbBeanLocator.getBean(AddressRendererBean.class);
+    }
+
+    /**
+     * Displays address as string value.
+     * Caches the displayed value.
+     * @param locale
+     * @return
+     */
+    public String displayAddress(Locale locale) {
+        if (address == null) {
+            address = addressRenderer().displayAddress(getAddressEntity(), getAddressId(), locale);
+        }
+        return address;
     }
 
     public String getAddressEntity() {
@@ -53,36 +72,111 @@ public class Registration extends DomainObject {
         return registrationAddressAttribute.getValueId();
     }
 
-    public Date getRegistrationDate() {
-        Attribute registrationDateAttribute = getAttribute(REGISTRATION_DATE);
-        String value = stringBean().getSystemStringCulture(registrationDateAttribute.getLocalizedValues()).getValue();
-        return value != null ? new DateConverter().toObject(value) : null;
+    public String getArrivalCountry() {
+        return getStringValue(this, ARRIVAL_COUNTRY);
+    }
+
+    public String getArrivalRegion() {
+        return getStringValue(this, ARRIVAL_REGION);
+    }
+
+    public String getArrivalDistrict() {
+        return getStringValue(this, ARRIVAL_DISTRICT);
+    }
+
+    public String getArrivalCity() {
+        return getStringValue(this, ARRIVAL_CITY);
+    }
+
+    public String getArrivalStreet() {
+        return getStringValue(this, ARRIVAL_STREET);
+    }
+
+    public String getArrivalBuildingNumber() {
+        return getStringValue(this, ARRIVAL_BUILDING_NUMBER);
+    }
+
+    public String getArrivalBuildingCorp() {
+        return getStringValue(this, ARRIVAL_BUILDING_CORP);
+    }
+
+    public String getArrivalApartment() {
+        return getStringValue(this, ARRIVAL_APARTMENT);
+    }
+
+    public Date getArrivalDate() {
+        return getDateValue(this, ARRIVAL_DATE);
+    }
+
+    public String getDepartureCountry() {
+        return getStringValue(this, DEPARTURE_COUNTRY);
+    }
+
+    public String getDepartureRegion() {
+        return getStringValue(this, DEPARTURE_REGION);
+    }
+
+    public String getDepartureDistrict() {
+        return getStringValue(this, DEPARTURE_DISTRICT);
+    }
+
+    public String getDepartureCity() {
+        return getStringValue(this, DEPARTURE_CITY);
+    }
+
+    public String getDepartureStreet() {
+        return getStringValue(this, DEPARTURE_STREET);
+    }
+
+    public String getDepartureBuildingNumber() {
+        return getStringValue(this, DEPARTURE_BUILDING_NUMBER);
+    }
+
+    public String getDepartureBuildingCorp() {
+        return getStringValue(this, DEPARTURE_BUILDING_CORP);
+    }
+
+    public String getDepartureApartment() {
+        return getStringValue(this, DEPARTURE_APARTMENT);
+    }
+
+    public Date getDepartureDate() {
+        return getDateValue(this, DEPARTURE_DATE);
+    }
+
+    public String getDepartureReason() {
+        return getStringValue(this, DEPARTURE_REASON);
     }
 
     public String getOwnerRelationship() {
-        Attribute ownerRelationshipAttribute = getAttribute(OWNER_RELATIONSHIP);
-        return stringBean().getSystemStringCulture(ownerRelationshipAttribute.getLocalizedValues()).getValue();
+        return getStringValue(this, OWNER_RELATIONSHIP);
+    }
+
+    public String getOtherRelationship() {
+        return getStringValue(this, OTHERS_RELATIONSHIP);
+    }
+
+    public String getHousingRights() {
+        return getStringValue(this, HOUSING_RIGHTS);
+    }
+
+    public Date getRegistrationDate() {
+        return getDateValue(this, REGISTRATION_DATE);
+    }
+
+    public String getRegistrationType() {
+        return getStringValue(this, REGISTRATION_TYPE);
     }
 
     public boolean isOwner() {
-        Attribute isOwnerAttribute = getAttribute(IS_OWNER);
-        return (isOwnerAttribute != null) && new BooleanConverter().toObject(
-                stringBean().getSystemStringCulture(isOwnerAttribute.getLocalizedValues()).getValue());
+        return getBooleanValue(this, IS_OWNER);
     }
 
     public boolean isResponsible() {
-        Attribute isResponsibleAttribute = getAttribute(IS_RESPONSIBLE);
-        return (isResponsibleAttribute != null) && new BooleanConverter().toObject(
-                stringBean().getSystemStringCulture(isResponsibleAttribute.getLocalizedValues()).getValue());
+        return getBooleanValue(this, IS_RESPONSIBLE);
     }
 
     public String getOwnerName() {
-        Attribute ownerNameAttribute = getAttribute(OWNER_NAME);
-        return ownerNameAttribute == null ? null
-                : stringBean().getSystemStringCulture(ownerNameAttribute.getLocalizedValues()).getValue();
-    }
-
-    private StringCultureBean stringBean() {
-        return EjbBeanLocator.getBean(StringCultureBean.class);
+        return getStringValue(this, OWNER_NAME);
     }
 }

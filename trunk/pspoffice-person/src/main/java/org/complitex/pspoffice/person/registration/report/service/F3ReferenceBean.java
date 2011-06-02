@@ -29,6 +29,8 @@ public class F3ReferenceBean extends AbstractBean {
     private PersonStrategy personStrategy;
     @EJB
     private AddressRendererBean addressRendererBean;
+    @EJB
+    private CommunalApartmentService communalApartmentService;
 
     @Transactional
     public F3Reference get(Person person, Locale locale) throws UnregisteredPersonException {
@@ -63,7 +65,7 @@ public class F3ReferenceBean extends AbstractBean {
             member.setRegistrationDate(p.getRegistration().getRegistrationDate());
             f3.addFamilyMember(member);
         }
-        f3.setNeighbourFamilies(personStrategy.findNeighbourFamilies(addressEntity, addressId, locale));
+        f3.setNeighbourFamilies(communalApartmentService.findNeighbourFamilies(addressEntity, addressId, locale));
         return f3;
     }
 }

@@ -8,16 +8,11 @@ package org.complitex.pspoffice.person.registration.report.web;
  *
  * @author Artem
  */
-public final class FamilyAndApartmentInfoAddressParamPage extends AbstractAddressParamPage {
+public final class FamilyAndApartmentInfoAddressParamPage extends AddressParamPage {
 
     @Override
     protected void toReferencePage(String addressEntity, long addressId) {
         setResponsePage(new FamilyAndApartmentInfoPage(addressEntity, addressId));
-    }
-
-    @Override
-    protected boolean forCommunalApartments() {
-        return false;
     }
 }
 

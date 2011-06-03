@@ -16,19 +16,12 @@ import java.util.Locale;
 import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import org.complitex.address.strategy.building.BuildingStrategy;
-import org.complitex.address.strategy.building.entity.Building;
-import org.complitex.address.strategy.street.StreetStrategy;
 import org.complitex.dictionary.entity.Attribute;
-import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.service.NameBean;
-import org.complitex.dictionary.strategy.IStrategy;
-import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.ResourceUtil;
-import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -50,12 +43,6 @@ public class RegistrationStopCouponBean extends AbstractBean {
     @EJB
     private PersonStrategy personStrategy;
     @EJB
-    private StrategyFactory strategyFactory;
-    @EJB
-    private BuildingStrategy buildingStrategy;
-    @EJB
-    private StreetStrategy streetStrategy;
-    @EJB
     private NameBean nameBean;
 
     @Transactional
@@ -67,46 +54,13 @@ public class RegistrationStopCouponBean extends AbstractBean {
         if (person.getRegistration() == null) {
             throw new UnregisteredPersonException();
         }
+        RegistrationStopCoupon coupon = new RegistrationStopCoupon();
+
         //name
         personStrategy.loadName(person);
 
         //address
         Registration registration = person.getRegistration();
-        String addressEntity = registration.getAddressEntity();
-        IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
-        long addressId = registration.getAddressId();
-        DomainObject addressObject = addressStrategy.findById(addressId, true);
-        SearchComponentState addressComponentState = new SearchComponentState();
-        IStrategy.SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressId, null);
-        if (info != null) {
-            addressComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
-            addressComponentState.put(addressEntity, addressObject);
-        }
-        String apartment = null;
-        DomainObject apartmentObject = addressComponentState.get("apartment");
-        if (apartmentObject != null && apartmentObject.getId() != null && apartmentObject.getId() > 0) {
-            apartment = strategyFactory.getStrategy("apartment").displayDomainObject(apartmentObject, locale);
-        }
-        Building buildingObject = (Building) addressComponentState.get("building");
-        String buildingNumber = buildingObject.getAccompaniedNumber(locale);
-        String buildingCorp = buildingObject.getAccompaniedCorp(locale);
-        Long districtId = buildingStrategy.getDistrictId(buildingObject);
-        String district = null;
-        if (districtId != null) {
-            IStrategy districtStrategy = strategyFactory.getStrategy("district");
-            DomainObject districtObject = districtStrategy.findById(districtId, true);
-            district = districtStrategy.displayDomainObject(districtObject, locale);
-        }
-        DomainObject streetObject = addressComponentState.get("street");
-        String street = streetStrategy.getName(streetObject, locale);
-        DomainObject cityObject = addressComponentState.get("city");
-        String city = strategyFactory.getStrategy("city").displayDomainObject(cityObject, locale);
-        DomainObject regionObject = addressComponentState.get("region");
-        String region = strategyFactory.getStrategy("region").displayDomainObject(regionObject, locale);
-        DomainObject countryObject = addressComponentState.get("country");
-        String country = strategyFactory.getStrategy("country").displayDomainObject(countryObject, locale);
-
-        RegistrationStopCoupon coupon = new RegistrationStopCoupon();
         coupon.setFirstName(person.getFirstName());
         coupon.setLastName(person.getLastName());
         coupon.setMiddleName(person.getMiddleName());
@@ -117,14 +71,14 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setBirthDistrict(person.getBirthDistrict());
         coupon.setBirthCity(person.getBirthCity());
         coupon.setGender(person.getGender());
-        coupon.setAddressCountry(country);
-        coupon.setAddressRegion(region);
-        coupon.setAddressDistrict(district);
-        coupon.setAddressCity(city);
-        coupon.setAddressStreet(street);
-        coupon.setAddressBuildingNumber(buildingNumber);
-        coupon.setAddressBuildingCorp(buildingCorp);
-        coupon.setAddressApartment(apartment);
+        coupon.setAddressCountry(registration.getCountry(locale));
+        coupon.setAddressRegion(registration.getRegion(locale));
+        coupon.setAddressDistrict(registration.getDistrict(locale));
+        coupon.setAddressCity(registration.getCity(locale));
+        coupon.setAddressStreet(registration.getStreet(locale));
+        coupon.setAddressBuildingNumber(registration.getBuildingNumber(locale));
+        coupon.setAddressBuildingCorp(registration.getBuildingCorp(locale));
+        coupon.setAddressApartment(registration.getApartment(locale));
         coupon.setDepartureCountry(registration.getDepartureCountry());
         coupon.setDepartureRegion(registration.getDepartureRegion());
         coupon.setDepartureDistrict(registration.getDepartureDistrict());

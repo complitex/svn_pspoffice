@@ -10,6 +10,9 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
+import org.complitex.address.strategy.building.BuildingStrategy;
+import org.complitex.address.strategy.building.entity.Building;
+import org.complitex.address.strategy.street.StreetStrategy;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
@@ -19,6 +22,7 @@ import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -69,6 +73,10 @@ public class RegistrationStrategy extends Strategy {
     public static final long ADDRESS_BUILDING = 2102;
     @EJB
     private StrategyFactory strategyFactory;
+    @EJB
+    private BuildingStrategy buildingStrategy;
+    @EJB
+    private StreetStrategy streetStrategy;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -179,5 +187,41 @@ public class RegistrationStrategy extends Strategy {
     @Override
     public Registration newInstance() {
         return new Registration(super.newInstance());
+    }
+
+    @Transactional
+    public Registration.Address loadAddress(String addressEntity, long addressId, Locale locale) {
+        IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
+        DomainObject addressObject = addressStrategy.findById(addressId, true);
+        SearchComponentState addressComponentState = new SearchComponentState();
+        IStrategy.SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressId, null);
+        if (info != null) {
+            addressComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
+            addressComponentState.put(addressEntity, addressObject);
+        }
+        String apartment = null;
+        DomainObject apartmentObject = addressComponentState.get("apartment");
+        if (apartmentObject != null && apartmentObject.getId() != null && apartmentObject.getId() > 0) {
+            apartment = strategyFactory.getStrategy("apartment").displayDomainObject(apartmentObject, locale);
+        }
+        Building buildingObject = (Building) addressComponentState.get("building");
+        String buildingNumber = buildingObject.getAccompaniedNumber(locale);
+        String buildingCorp = buildingObject.getAccompaniedCorp(locale);
+        Long districtId = buildingStrategy.getDistrictId(buildingObject);
+        String district = null;
+        if (districtId != null) {
+            IStrategy districtStrategy = strategyFactory.getStrategy("district");
+            DomainObject districtObject = districtStrategy.findById(districtId, true);
+            district = districtStrategy.displayDomainObject(districtObject, locale);
+        }
+        DomainObject streetObject = addressComponentState.get("street");
+        String street = streetStrategy.getName(streetObject, locale);
+        DomainObject cityObject = addressComponentState.get("city");
+        String city = strategyFactory.getStrategy("city").displayDomainObject(cityObject, locale);
+        DomainObject regionObject = addressComponentState.get("region");
+        String region = strategyFactory.getStrategy("region").displayDomainObject(regionObject, locale);
+        DomainObject countryObject = addressComponentState.get("country");
+        String country = strategyFactory.getStrategy("country").displayDomainObject(countryObject, locale);
+        return new Registration.Address(country, region, district, city, street, buildingNumber, buildingCorp, apartment);
     }
 }

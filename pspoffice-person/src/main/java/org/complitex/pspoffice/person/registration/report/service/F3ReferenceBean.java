@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
@@ -28,6 +29,8 @@ public class F3ReferenceBean extends AbstractBean {
     private PersonStrategy personStrategy;
     @EJB
     private CommunalApartmentService communalApartmentService;
+    @EJB
+    private AddressRendererBean addressRendererBean;
 
     @Transactional
     public F3Reference get(Person person, Locale locale) throws UnregisteredPersonException {
@@ -48,7 +51,7 @@ public class F3ReferenceBean extends AbstractBean {
         Registration registration = person.getRegistration();
         long addressId = registration.getAddressId();
         String addressEntity = registration.getAddressEntity();
-        f3.setAddress(registration.displayAddress(locale));
+        f3.setAddress(addressRendererBean.displayAddress(addressEntity, addressId, locale));
         f3.setPersonalAccountOwnerName(personStrategy.getOwnerName(addressEntity, addressId, locale));
         List<Person> members = personStrategy.findPersonsByAddress(addressEntity, addressId);
         f3.setFormOfOwnership(personStrategy.getFormOfOwnership(members, locale));

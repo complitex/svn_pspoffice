@@ -4,12 +4,15 @@
  */
 package org.complitex.pspoffice.person.strategy.entity;
 
+import java.io.Serializable;
+import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import java.util.Locale;
-import org.complitex.address.service.AddressRendererBean;
+import java.util.Map;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.util.EjbBeanLocator;
+import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 
@@ -19,7 +22,30 @@ import static org.complitex.dictionary.util.AttributeUtil.*;
  */
 public class Registration extends DomainObject {
 
-    private String address;
+    public static class Address implements Serializable {
+
+        private String country;
+        private String region;
+        private String district;
+        private String city;
+        private String street;
+        private String buildingNumber;
+        private String buildingCorp;
+        private String apartment;
+
+        public Address(String country, String region, String district, String city, String street, String buildingNumber,
+                String buildingCorp, String apartment) {
+            this.country = country;
+            this.region = region;
+            this.district = district;
+            this.city = city;
+            this.street = street;
+            this.buildingNumber = buildingNumber;
+            this.buildingCorp = buildingCorp;
+            this.apartment = apartment;
+        }
+    }
+    private Map<Locale, Address> addressComponentMap = newHashMap();
 
     public Registration() {
     }
@@ -28,21 +54,59 @@ public class Registration extends DomainObject {
         super(object);
     }
 
-    private AddressRendererBean addressRenderer() {
-        return EjbBeanLocator.getBean(AddressRendererBean.class);
+    /**
+     * Displays address components as string values.
+     * Caches the displayed values.
+     */
+    public String getCountry(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).country;
     }
 
-    /**
-     * Displays address as string value.
-     * Caches the displayed value.
-     * @param locale
-     * @return
-     */
-    public String displayAddress(Locale locale) {
-        if (address == null) {
-            address = addressRenderer().displayAddress(getAddressEntity(), getAddressId(), locale);
+    public String getRegion(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).region;
+    }
+
+    public String getDistrict(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).district;
+    }
+
+    public String getCity(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).city;
+    }
+
+    public String getStreet(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).street;
+    }
+
+    public String getBuildingNumber(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).buildingNumber;
+    }
+
+    public String getBuildingCorp(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).buildingCorp;
+    }
+
+    public String getApartment(Locale locale) {
+        loadAddressComponentsIfNecessary(locale);
+        return addressComponentMap.get(locale).apartment;
+    }
+
+    private void loadAddressComponentsIfNecessary(Locale locale) {
+        if (addressComponentMap.get(locale) == null) {
+            Address address = registrationStrategy().loadAddress(getAddressEntity(), getAddressId(), locale);
+            addressComponentMap.put(locale, address);
         }
-        return address;
+    }
+
+    private RegistrationStrategy registrationStrategy() {
+        return EjbBeanLocator.getBean(RegistrationStrategy.class);
     }
 
     public String getAddressEntity() {

@@ -52,14 +52,15 @@ public class RegistrationStrategy extends Strategy {
     public static final long DEPARTURE_APARTMENT = 2117;
     public static final long DEPARTURE_DATE = 2118;
     public static final long DEPARTURE_REASON = 2119;
-    public static final long OWNER_RELATIONSHIP = 2120;
-    public static final long OTHERS_RELATIONSHIP = 2121;
-    public static final long HOUSING_RIGHTS = 2122;
-    public static final long REGISTRATION_DATE = 2123;
-    public static final long REGISTRATION_TYPE = 2124;
+    public static final long REGISTRATION_DATE = 2120;
+    public static final long REGISTRATION_TYPE = 2121;
+    public static final long OWNER_RELATIONSHIP = 2122;
+    public static final long FORM_OF_OWNERSHIP = 2123;
+    public static final long HOUSING_RIGHTS = 2124;
     public static final long IS_OWNER = 2125;
     public static final long IS_RESPONSIBLE = 2126;
     public static final long OWNER_NAME = 2127;
+    public static final long PERSONAL_ACCOUNT = 2128;
     /**
      * Attribute value type ids
      */
@@ -172,7 +173,7 @@ public class RegistrationStrategy extends Strategy {
         } else if ("building".equals(addressEntity)) {
             return ADDRESS_BUILDING;
         }
-        throw new IllegalStateException("Address entity `"+addressEntity+"` is not resolved.");
+        throw new IllegalStateException("Address entity `" + addressEntity + "` is not resolved.");
     }
 
     @Override

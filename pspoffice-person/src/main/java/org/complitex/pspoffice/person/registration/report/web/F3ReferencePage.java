@@ -78,19 +78,19 @@ public final class F3ReferencePage extends TemplatePage {
             messages.setOutputMarkupId(true);
             add(messages);
             add(new Label("label", new ResourceModel("label")));
-            add(new Label("personName", new StringResourceModel("personName", null, new Object[]{valueOf(f3.getPersonName())})));
-            add(new Label("personAddress", new StringResourceModel("personAddress", null, new Object[]{valueOf(f3.getPersonAddress())})));
-            add(new Label("personArea", new StringResourceModel("personArea", null, new Object[]{valueOf(f3.getPersonArea())})));
+            add(new Label("name", new StringResourceModel("name", null, new Object[]{valueOf(f3.getName())})));
+            add(new Label("address", new StringResourceModel("address", null, new Object[]{valueOf(f3.getAddress())})));
+            add(new Label("livingArea", new StringResourceModel("livingArea", null, new Object[]{valueOf(f3.getLivingArea())})));
             add(new Label("apartmentArea", new StringResourceModel("apartmentArea", null, new Object[]{valueOf(f3.getApartmentArea())})));
-            add(new Label("apartmentInfo", new StringResourceModel("apartmentInfo", null,
-                    new Object[]{valueOf(f3.getPersonRooms()), valueOf(f3.getRooms())})));
+            add(new Label("roomsInfo", new StringResourceModel("roomsInfo", null,
+                    new Object[]{valueOf(f3.getTakesRooms()), valueOf(f3.getRooms())})));
             add(new Label("floorInfo", new StringResourceModel("floorInfo", null,
-                    new Object[]{valueOf(f3.getFloor()), valueOf(f3.getNumberOfStoreys())})));
+                    new Object[]{valueOf(f3.getFloor()), valueOf(f3.getFloors())})));
             add(new Label("balance", new ResourceModel("balance")));
-            add(new Label("privateAccountOwner", new StringResourceModel("privateAccountOwner", null,
-                    new Object[]{valueOf(f3.getPrivateAccountOwnerName())})));
-            add(new Label("personOwnership", new StringResourceModel("personOwnership", null,
-                    new Object[]{valueOf(f3.getPersonOwnership())})));
+            add(new Label("personalAccountOwner", new StringResourceModel("personalAccountOwner", null,
+                    new Object[]{valueOf(f3.getPersonalAccountOwnerName())})));
+            add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null,
+                    new Object[]{valueOf(f3.getFormOfOwnership())})));
             add(new Label("facilities", new StringResourceModel("facilities", null, new Object[]{valueOf(f3.getFacilities())})));
             add(new Label("technicalState", new StringResourceModel("technicalState", null, new Object[]{valueOf(f3.getTechnicalState())})));
             final Form form = new Form("form");

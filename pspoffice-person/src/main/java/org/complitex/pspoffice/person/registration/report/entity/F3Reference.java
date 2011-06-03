@@ -14,20 +14,28 @@ import java.util.List;
  */
 public class F3Reference implements Serializable {
 
-    private String personName;
-    private String personAddress;
-    private String personArea;
+    private String name;
+    private String address;
+    private String livingArea;
     private String apartmentArea;
+    private Integer takesRooms;
     private Integer rooms;
-    private Integer personRooms;
     private Integer floor;
-    private Integer numberOfStoreys;
-    private String privateAccountOwnerName;
-    private String personOwnership;
+    private Integer floors;
+    private String personalAccountOwnerName;
+    private String formOfOwnership;
     private String facilities;
     private String technicalState;
     private List<FamilyMember> familyMembers = newArrayList();
     private List<NeighbourFamily> neighbourFamilies = newArrayList();
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public String getApartmentArea() {
         return apartmentArea;
@@ -65,6 +73,38 @@ public class F3Reference implements Serializable {
         this.floor = floor;
     }
 
+    public Integer getFloors() {
+        return floors;
+    }
+
+    public void setFloors(Integer floors) {
+        this.floors = floors;
+    }
+
+    public String getFormOfOwnership() {
+        return formOfOwnership;
+    }
+
+    public void setFormOfOwnership(String formOfOwnership) {
+        this.formOfOwnership = formOfOwnership;
+    }
+
+    public String getLivingArea() {
+        return livingArea;
+    }
+
+    public void setLivingArea(String livingArea) {
+        this.livingArea = livingArea;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public List<NeighbourFamily> getNeighbourFamilies() {
         return neighbourFamilies;
     }
@@ -77,60 +117,12 @@ public class F3Reference implements Serializable {
         neighbourFamilies.add(neighbourFamily);
     }
 
-    public Integer getNumberOfStoreys() {
-        return numberOfStoreys;
+    public String getPersonalAccountOwnerName() {
+        return personalAccountOwnerName;
     }
 
-    public void setNumberOfStoreys(Integer numberOfStoreys) {
-        this.numberOfStoreys = numberOfStoreys;
-    }
-
-    public String getPersonAddress() {
-        return personAddress;
-    }
-
-    public void setPersonAddress(String personAddress) {
-        this.personAddress = personAddress;
-    }
-
-    public String getPersonArea() {
-        return personArea;
-    }
-
-    public void setPersonArea(String personArea) {
-        this.personArea = personArea;
-    }
-
-    public String getPersonName() {
-        return personName;
-    }
-
-    public void setPersonName(String personName) {
-        this.personName = personName;
-    }
-
-    public String getPersonOwnership() {
-        return personOwnership;
-    }
-
-    public void setPersonOwnership(String personOwnership) {
-        this.personOwnership = personOwnership;
-    }
-
-    public Integer getPersonRooms() {
-        return personRooms;
-    }
-
-    public void setPersonRooms(Integer personRooms) {
-        this.personRooms = personRooms;
-    }
-
-    public String getPrivateAccountOwnerName() {
-        return privateAccountOwnerName;
-    }
-
-    public void setPrivateAccountOwnerName(String privateAccountOwnerName) {
-        this.privateAccountOwnerName = privateAccountOwnerName;
+    public void setPersonalAccountOwnerName(String personalAccountOwnerName) {
+        this.personalAccountOwnerName = personalAccountOwnerName;
     }
 
     public Integer getRooms() {
@@ -139,6 +131,14 @@ public class F3Reference implements Serializable {
 
     public void setRooms(Integer rooms) {
         this.rooms = rooms;
+    }
+
+    public Integer getTakesRooms() {
+        return takesRooms;
+    }
+
+    public void setTakesRooms(Integer takesRooms) {
+        this.takesRooms = takesRooms;
     }
 
     public String getTechnicalState() {

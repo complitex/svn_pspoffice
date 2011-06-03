@@ -31,19 +31,19 @@ public class FamilyAndApartmentInfoBean extends AbstractBean {
 
     @Transactional
     public FamilyAndApartmentInfo get(String addressEntity, long addressId, Locale locale) throws UnregisteredPersonException {
-        List<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
+        List<Person> members = personStrategy.findPersonsByAddress(addressEntity, addressId);
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
-        if (persons == null || persons.isEmpty()) {
+        if (members == null || members.isEmpty()) {
             throw new UnregisteredPersonException(address);
         }
         FamilyAndApartmentInfo info = new FamilyAndApartmentInfo();
         info.setAddress(address);
-        for (Person person : persons) {
+        for (Person p : members) {
             FamilyMember member = new FamilyMember();
-            member.setName(personStrategy.displayDomainObject(person, locale));
-            member.setRelation(person.getRegistration().getOwnerRelationship());
-            member.setBirthDate(person.getBirthDate());
-            member.setRegistrationDate(person.getRegistration().getRegistrationDate());
+            member.setName(personStrategy.displayDomainObject(p, locale));
+            member.setRelation(p.getRegistration().getOwnerRelationship());
+            member.setBirthDate(p.getBirthDate());
+            member.setRegistrationDate(p.getRegistration().getRegistrationDate());
             info.addFamilyMember(member);
         }
         return info;

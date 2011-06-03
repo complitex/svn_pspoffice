@@ -74,7 +74,8 @@ public final class FamilyAndHousingPaymentsPage extends TemplatePage {
             add(new Label("label", new ResourceModel("label")));
             add(new Label("labelDetails", new ResourceModel("labelDetails")));
             add(new Label("nameInfo", new StringResourceModel("nameInfo", null, new Object[]{payments.getName()})));
-            add(new Label("account", new StringResourceModel("account", null, new Object[]{valueOf(payments.getAccount())})));
+            add(new Label("personalAccount", new StringResourceModel("personalAccount", null,
+                    new Object[]{valueOf(payments.getPersonalAccount())})));
             add(new Label("addressInfo", new StringResourceModel("addressInfo", null, new Object[]{payments.getAddress()})));
             final Form form = new Form("form");
             add(form);
@@ -132,8 +133,8 @@ public final class FamilyAndHousingPaymentsPage extends TemplatePage {
                 }
             });
 
-            add(new Label("ownership", new StringResourceModel("ownership", null, new Object[]{
-                        valueOf(payments.getOwnership())
+            add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null, new Object[]{
+                        valueOf(payments.getFormOfOwnership())
                     })));
             add(new Label("stoveType", new StringResourceModel("stoveType", null, new Object[]{
                         valueOf(payments.getStoveType())

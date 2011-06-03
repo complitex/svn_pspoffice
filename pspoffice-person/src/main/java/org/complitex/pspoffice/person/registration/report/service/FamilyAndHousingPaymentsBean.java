@@ -30,13 +30,15 @@ public class FamilyAndHousingPaymentsBean extends AbstractBean {
 
     @Transactional
     public FamilyAndHousingPayments get(String addressEntity, long addressId, Locale locale) {
-        List<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
+        List<Person> members = personStrategy.findPersonsByAddress(addressEntity, addressId);
         FamilyAndHousingPayments payments = new FamilyAndHousingPayments();
         String address = addressRendererBean.displayAddress(addressEntity, addressId, locale);
         payments.setAddress(address);
-        payments.setName(personStrategy.getOwnerOrResponsibleName(persons, locale));
+        payments.setName(personStrategy.getOwnerOrResponsibleName(members, locale));
+        payments.setPersonalAccount(personStrategy.getPersonalAccount(members, locale));
+        payments.setFormOfOwnership(personStrategy.getFormOfOwnership(members, locale));
 
-        for (Person person : persons) {
+        for (Person person : members) {
             FamilyMember member = new FamilyMember();
             member.setName(personStrategy.displayDomainObject(person, locale));
             member.setBirthDate(person.getBirthDate());

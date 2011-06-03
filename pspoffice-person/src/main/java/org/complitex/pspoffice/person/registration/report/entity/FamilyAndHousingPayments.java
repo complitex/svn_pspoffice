@@ -15,9 +15,9 @@ import java.util.List;
 public class FamilyAndHousingPayments implements Serializable {
 
     private String name;
-    private String account;
+    private String personalAccount;
     private String address;
-    private String ownership;
+    private String formOfOwnership;
     private String stoveType;
     private String apartmentArea;
     private String heatedArea;
@@ -47,12 +47,12 @@ public class FamilyAndHousingPayments implements Serializable {
         familyMembers.add(familyMember);
     }
 
-    public String getAccount() {
-        return account;
+    public String getPersonalAccount() {
+        return personalAccount;
     }
 
-    public void setAccount(String account) {
-        this.account = account;
+    public void setPersonalAccount(String personalAccount) {
+        this.personalAccount = personalAccount;
     }
 
     public String getAddress() {
@@ -167,12 +167,12 @@ public class FamilyAndHousingPayments implements Serializable {
         this.normativePayments = normativePayments;
     }
 
-    public String getOwnership() {
-        return ownership;
+    public String getFormOfOwnership() {
+        return formOfOwnership;
     }
 
-    public void setOwnership(String ownership) {
-        this.ownership = ownership;
+    public void setFormOfOwnership(String formOfOwnership) {
+        this.formOfOwnership = formOfOwnership;
     }
 
     public String getPaymentsAdjustedForBenefits() {

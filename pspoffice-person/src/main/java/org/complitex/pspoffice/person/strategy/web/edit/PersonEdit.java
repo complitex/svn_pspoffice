@@ -33,9 +33,12 @@ import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.registration.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.report.web.RegistrationCard;
+import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.DeleteItemButton;
+import org.complitex.template.web.component.toolbar.SaveButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
@@ -61,6 +64,7 @@ public final class PersonEdit extends FormTemplatePage {
     private Person newPerson;
     private PersonInputPanel personInputPanel;
     private FeedbackPanel messages;
+    private ReportDownloadPanel reportDownloadPanel;
 
     public PersonEdit(PageParameters parameters) {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
@@ -199,6 +203,10 @@ public final class PersonEdit extends FormTemplatePage {
         back.setVisible(!DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(back);
         add(form);
+
+        //Загрузка отчетов
+        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCard.class, newPerson.getId(), getString("report_download"));
+        add(reportDownloadPanel);
     }
 
     private boolean validate() {
@@ -293,6 +301,18 @@ public final class PersonEdit extends FormTemplatePage {
                             setVisible(false);
                         }
                         super.onBeforeRender();
+                    }
+                },
+                new SaveButton(id, true){
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        reportDownloadPanel.open(target);
+                    }
+
+                    @Override
+                    public boolean isVisible() {
+                        return newPerson.getId() != null;
                     }
                 });
     }

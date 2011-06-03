@@ -110,6 +110,10 @@ public class Person extends DomainObject {
         addAttribute(childrenAttribute);
     }
 
+    public String getFullName(){
+        return lastName + " " + firstName + " " + middleName;
+    }
+
     public boolean isRegistrationStopped() {
         return registrationStopped;
     }

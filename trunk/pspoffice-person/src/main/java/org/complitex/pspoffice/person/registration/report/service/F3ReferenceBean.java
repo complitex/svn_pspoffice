@@ -42,17 +42,17 @@ public class F3ReferenceBean extends AbstractBean {
 
         //name
         personStrategy.loadName(person);
-        f3.setPersonName(personStrategy.displayDomainObject(person, locale));
+        f3.setName(personStrategy.displayDomainObject(person, locale));
 
         //address
         Registration registration = person.getRegistration();
         long addressId = registration.getAddressId();
         String addressEntity = registration.getAddressEntity();
-        f3.setPersonAddress(registration.displayAddress(locale));
-        f3.setPrivateAccountOwnerName(personStrategy.getOwnerName(addressEntity, addressId, locale));
-
-        List<Person> persons = personStrategy.findPersonsByAddress(addressEntity, addressId);
-        for (Person p : persons) {
+        f3.setAddress(registration.displayAddress(locale));
+        f3.setPersonalAccountOwnerName(personStrategy.getOwnerName(addressEntity, addressId, locale));
+        List<Person> members = personStrategy.findPersonsByAddress(addressEntity, addressId);
+        f3.setFormOfOwnership(personStrategy.getFormOfOwnership(members, locale));
+        for (Person p : members) {
             FamilyMember member = new FamilyMember();
             member.setFirstName(p.getFirstName());
             member.setMiddleName(p.getMiddleName());

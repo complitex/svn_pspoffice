@@ -152,8 +152,8 @@ public class Registration extends DomainObject {
         return getStringValue(this, OWNER_RELATIONSHIP);
     }
 
-    public String getOtherRelationship() {
-        return getStringValue(this, OTHERS_RELATIONSHIP);
+    public String getFormOfOwnership() {
+        return getStringValue(this, FORM_OF_OWNERSHIP);
     }
 
     public String getHousingRights() {
@@ -178,5 +178,9 @@ public class Registration extends DomainObject {
 
     public String getOwnerName() {
         return getStringValue(this, OWNER_NAME);
+    }
+
+    public String getPersonalAccount() {
+        return getStringValue(this, PERSONAL_ACCOUNT);
     }
 }

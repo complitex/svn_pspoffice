@@ -43,19 +43,19 @@ public class FamilyAndCommunalApartmentInfoBean extends AbstractBean {
             throw new IllegalArgumentException("Invalid room (id = " + selectedFamily.getInternalRoomId()
                     + "). Room must be inside of communal apartment.");
         }
-        List<Person> persons = personStrategy.findPersonsByAddress("room", roomId);
+        List<Person> members = personStrategy.findPersonsByAddress("room", roomId);
         FamilyAndCommunalApartmentInfo info = new FamilyAndCommunalApartmentInfo();
         info.setAddress(addressRendererBean.displayAddress("apartment", room.getParentId(), locale));
         for (NeighbourFamily neighbourFamily : families) {
             info.addNeighbourFamily(neighbourFamily);
         }
         info.setName(selectedFamily.getName());
-        for (Person person : persons) {
+        for (Person p : members) {
             FamilyMember member = new FamilyMember();
-            member.setName(personStrategy.displayDomainObject(person, locale));
-            member.setRelation(person.getRegistration().getOwnerRelationship());
-            member.setBirthDate(person.getBirthDate());
-            member.setRegistrationDate(person.getRegistration().getRegistrationDate());
+            member.setName(personStrategy.displayDomainObject(p, locale));
+            member.setRelation(p.getRegistration().getOwnerRelationship());
+            member.setBirthDate(p.getBirthDate());
+            member.setRegistrationDate(p.getRegistration().getRegistrationDate());
             info.addFamilyMember(member);
         }
         return info;

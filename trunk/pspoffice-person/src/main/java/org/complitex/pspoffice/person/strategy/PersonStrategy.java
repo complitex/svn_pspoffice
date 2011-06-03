@@ -532,16 +532,38 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     public String getOwnerOrResponsibleName(List<Person> members, Locale locale) {
-        String name = null;
-        if (members != null) {
+        if (members != null && !members.isEmpty()) {
             for (Person person : members) {
                 if (person.getRegistration().isOwner() || person.getRegistration().isResponsible()) {
                     //TODO: take first owner, might all owners should be taken into account?
-                    name = displayDomainObject(person, locale);
-                    break;
+                    return displayDomainObject(person, locale);
                 }
             }
         }
-        return !Strings.isEmpty(name) ? name : ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale);
+        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale);
+    }
+
+    public String getPersonalAccount(List<Person> members, Locale locale) {
+        if (members != null && !members.isEmpty()) {
+            for (Person person : members) {
+                String personalAccount = person.getRegistration().getPersonalAccount();
+                if (!Strings.isEmpty(personalAccount)) {
+                    return personalAccount;
+                }
+            }
+        }
+        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_personal_account", locale);
+    }
+
+    public String getFormOfOwnership(List<Person> members, Locale locale) {
+        if (members != null && !members.isEmpty()) {
+            for (Person person : members) {
+                String formOfOwnership = person.getRegistration().getFormOfOwnership();
+                if (!Strings.isEmpty(formOfOwnership)) {
+                    return formOfOwnership;
+                }
+            }
+        }
+        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_form_of_ownership", locale);
     }
 }

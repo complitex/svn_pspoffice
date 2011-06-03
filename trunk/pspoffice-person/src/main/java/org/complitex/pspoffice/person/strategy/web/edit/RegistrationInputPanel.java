@@ -133,8 +133,6 @@ public final class RegistrationInputPanel extends Panel {
         //owner attributes:
         initOwnerAttributes();
 
-        initSystemAttributeInput(this, "otherRelationship", OTHERS_RELATIONSHIP, false);
-        initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS, false);
         WebMarkupContainer registrationNoteContainer = new WebMarkupContainer("registrationNoteContainer");
         add(registrationNoteContainer);
         initSystemAttributeInput(registrationNoteContainer, "registrationDate", REGISTRATION_DATE, false);
@@ -173,7 +171,7 @@ public final class RegistrationInputPanel extends Panel {
             @Override
             protected void populateItem(ListItem<Attribute> item) {
                 long userAttributeTypeId = item.getModelObject().getAttributeTypeId();
-                initAttributeInput(item, userAttributeTypeId, false);
+                initAttributeInput(item, userAttributeTypeId, false, null);
             }
         };
         add(userAttributesView);
@@ -186,11 +184,22 @@ public final class RegistrationInputPanel extends Panel {
 
     private void initOwnerAttributes() {
         initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP, true);
-        initSystemAttributeInput(this, "ownerName", OWNER_NAME, true);
+        initSystemAttributeInput(this, "ownerName", OWNER_NAME, false, true);
+        initSystemAttributeInput(this, "personalAccount", PERSONAL_ACCOUNT, false, true);
+        initSystemAttributeInput(this, "formOfOwnership", FORM_OF_OWNERSHIP, false, true);
+        //TODO: make housing rights mandatory afterwards
+        initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS, false, false);
+
         final Component ownerRelationshipContainer = get("ownerRelationshipContainer");
         ownerRelationshipContainer.setOutputMarkupPlaceholderTag(true);
         final Component ownerNameContainer = get("ownerNameContainer");
         ownerNameContainer.setOutputMarkupPlaceholderTag(true);
+        final Component personalAccountContainer = get("personalAccountContainer");
+        personalAccountContainer.setOutputMarkupPlaceholderTag(true);
+        final Component formOfOwnershipContainer = get("formOfOwnershipContainer");
+        formOfOwnershipContainer.setOutputMarkupPlaceholderTag(true);
+        final Component housingRightsContainer = get("housingRightsContainer");
+        housingRightsContainer.setOutputMarkupPlaceholderTag(true);
 
         if (registration.isOwner()) {
             residentStatusModel.setObject(ResidentStatus.OWNER);
@@ -201,6 +210,9 @@ public final class RegistrationInputPanel extends Panel {
             ownerRelationshipContainer.setVisible(false);
         } else {
             ownerNameContainer.setVisible(false);
+            personalAccountContainer.setVisible(false);
+            housingRightsContainer.setVisible(false);
+            formOfOwnershipContainer.setVisible(false);
             residentStatusModel.setObject(ResidentStatus.OTHER);
         }
 
@@ -217,18 +229,30 @@ public final class RegistrationInputPanel extends Panel {
                     case OWNER:
                         ownerNameContainer.setVisible(false);
                         ownerRelationshipContainer.setVisible(false);
+                        personalAccountContainer.setVisible(true);
+                        formOfOwnershipContainer.setVisible(true);
+                        housingRightsContainer.setVisible(true);
                         break;
                     case RESPONSIBLE:
                         ownerNameContainer.setVisible(true);
                         ownerRelationshipContainer.setVisible(false);
+                        personalAccountContainer.setVisible(true);
+                        formOfOwnershipContainer.setVisible(true);
+                        housingRightsContainer.setVisible(true);
                         break;
                     case OTHER:
                         ownerNameContainer.setVisible(false);
                         ownerRelationshipContainer.setVisible(true);
+                        personalAccountContainer.setVisible(false);
+                        formOfOwnershipContainer.setVisible(false);
+                        housingRightsContainer.setVisible(false);
                         break;
                 }
                 target.addComponent(ownerNameContainer);
                 target.addComponent(ownerRelationshipContainer);
+                target.addComponent(personalAccountContainer);
+                target.addComponent(formOfOwnershipContainer);
+                target.addComponent(housingRightsContainer);
             }
         });
         add(ownerResponsibleChoice);
@@ -237,7 +261,14 @@ public final class RegistrationInputPanel extends Panel {
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
         WebMarkupContainer container = new WebMarkupContainer(id + "Container");
         parent.add(container);
-        initAttributeInput(container, attributeTypeId, showIfMissing);
+        initAttributeInput(container, attributeTypeId, showIfMissing, null);
+    }
+
+    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing,
+            boolean mandatory) {
+        WebMarkupContainer container = new WebMarkupContainer(id + "Container");
+        parent.add(container);
+        initAttributeInput(container, attributeTypeId, showIfMissing, mandatory);
     }
 
     private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames) {
@@ -250,7 +281,7 @@ public final class RegistrationInputPanel extends Panel {
         };
     }
 
-    private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
+    private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing, Boolean mandatory) {
         final EntityAttributeType attributeType = registrationStrategy.getEntity().getAttributeType(attributeTypeId);
 
         //label
@@ -258,8 +289,9 @@ public final class RegistrationInputPanel extends Panel {
         parent.add(new Label("label", labelModel));
 
         //required container
+        boolean isRequired = mandatory == null ? attributeType.isMandatory() : mandatory;
         WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
-        requiredContainer.setVisible(attributeType.isMandatory());
+        requiredContainer.setVisible(isRequired);
         parent.add(requiredContainer);
 
         //input component
@@ -278,37 +310,37 @@ public final class RegistrationInputPanel extends Panel {
         switch (type) {
             case STRING: {
                 IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
-                input = new StringPanel("input", model, attributeType.isMandatory(), labelModel,
+                input = new StringPanel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case BIG_STRING: {
                 IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
-                input = new BigStringPanel("input", model, attributeType.isMandatory(), labelModel,
+                input = new BigStringPanel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case STRING_CULTURE: {
                 IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attribute, "localizedValues");
-                input = new StringCulturePanel("input", model, attributeType.isMandatory(), labelModel,
+                input = new StringCulturePanel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case INTEGER: {
                 IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
-                input = new IntegerPanel("input", model, attributeType.isMandatory(), labelModel,
+                input = new IntegerPanel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case DATE: {
                 IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                input = new DatePanel("input", model, attributeType.isMandatory(), labelModel,
+                input = new DatePanel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
             case DATE2: {
                 IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                input = new Date2Panel("input", model, attributeType.isMandatory(), labelModel,
+                input = new Date2Panel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
@@ -320,7 +352,7 @@ public final class RegistrationInputPanel extends Panel {
             break;
             case DOUBLE: {
                 IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
-                input = new DoublePanel("input", model, attributeType.isMandatory(), labelModel,
+                input = new DoublePanel("input", model, isRequired, labelModel,
                         !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
             }
             break;
@@ -412,6 +444,8 @@ public final class RegistrationInputPanel extends Panel {
                 registration.removeAttribute(IS_OWNER);
                 registration.removeAttribute(IS_RESPONSIBLE);
                 registration.removeAttribute(OWNER_NAME);
+                registration.removeAttribute(PERSONAL_ACCOUNT);
+                registration.removeAttribute(HOUSING_RIGHTS);
                 break;
         }
     }

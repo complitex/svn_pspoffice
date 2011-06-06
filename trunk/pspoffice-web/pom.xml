@@ -52,6 +52,17 @@
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-report</artifactId>
+            <!--todo xerces bug-->
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

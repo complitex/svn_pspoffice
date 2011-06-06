@@ -1,4 +1,4 @@
-package org.complitex.pspoffice.report.web;
+package org.complitex.pspoffice.person.download;
 
 import org.apache.wicket.PageParameters;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -6,6 +6,7 @@ import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.report.entity.RegistrationCardField;
+import org.complitex.pspoffice.report.web.AbstractReportDownload;
 
 import javax.ejb.EJB;
 import java.text.SimpleDateFormat;

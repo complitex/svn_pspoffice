@@ -67,11 +67,13 @@ public abstract class AbstractReportDownload extends Page {
 
                     return null;
                 }
-            }, reportName + locale  + "-" + FILE_POSTFIX_FORMAT.format(DateUtil.getCurrentDate()) + "." + type));
+            }, getFileName(parameters) + "." + type));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     protected abstract Map<String, String> getValues(PageParameters parameters);
+
+    protected abstract String getFileName(PageParameters parameters);
 }

@@ -1,6 +1,7 @@
 package org.complitex.pspoffice.person.download;
 
 import org.apache.wicket.PageParameters;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -9,6 +10,8 @@ import org.complitex.pspoffice.report.entity.RegistrationCardField;
 import org.complitex.pspoffice.report.web.AbstractReportDownload;
 
 import javax.ejb.EJB;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +46,8 @@ public class RegistrationCard extends AbstractReportDownload {
         }
 
         Person person = personStrategy.findById(objectId, true);
+        personStrategy.loadName(person);
+
         Registration registration = person.getRegistration();
 
         map.put(FIRST_NAME.getFieldName(), person.getFirstName());
@@ -105,8 +110,23 @@ public class RegistrationCard extends AbstractReportDownload {
         return map;
     }
 
+    @Override
+    protected String getFileName(PageParameters parameters) {
+        Person person = personStrategy.findById(parameters.getLong("object_id"), true);
+        personStrategy.loadName(person);
+
+        try {
+            String name = "Карточка-" + person.getLastName() + "-" + getString(DateUtil.getCurrentDate());
+
+            return URLEncoder.encode(name, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            //oops
+        }
+
+        return "RegistrationCard";
+    }
+
     private  String getString(Date date){
         return REPORT_DATE_FORMAT.format(date);
-
     }
 }

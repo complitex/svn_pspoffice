@@ -33,7 +33,7 @@ import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.registration.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.report.web.RegistrationCard;
+import org.complitex.pspoffice.person.download.RegistrationCard;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;

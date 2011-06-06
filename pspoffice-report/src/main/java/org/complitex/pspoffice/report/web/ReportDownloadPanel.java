@@ -32,7 +32,6 @@ public class ReportDownloadPanel extends Panel {
         dialog.setOutputMarkupId(true);
         dialog.setOutputMarkupPlaceholderTag(true);
         dialog.setTitle(title);
-//        dialog.setAutoOpen(false);
         add(dialog);
 
         Form form = new Form("form");

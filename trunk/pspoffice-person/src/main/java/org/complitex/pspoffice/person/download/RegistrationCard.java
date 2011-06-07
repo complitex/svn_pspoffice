@@ -2,6 +2,7 @@ package org.complitex.pspoffice.person.download;
 
 import org.apache.wicket.PageParameters;
 import org.complitex.dictionary.util.DateUtil;
+import org.complitex.dictionary.util.StringUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -41,28 +42,22 @@ public class RegistrationCard extends AbstractReportDownload {
 
         final Map<String, String> map = new HashMap<String, String>();
 
-        for(RegistrationCardField field : RegistrationCardField.values()){
-            map.put(field.getFieldName(), "");
-        }
-
         Person person = personStrategy.findById(objectId, true);
         personStrategy.loadName(person);
 
         Registration registration = person.getRegistration();
 
-        map.put(FIRST_NAME.getFieldName(), person.getFirstName());
-        map.put(LAST_NAME.getFieldName(), person.getLastName());
-        map.put(MIDDLE_NAME.getFieldName(), person.getMiddleName());
+        map.put(FIRST_NAME.getFieldName(), person.getFirstName().toUpperCase());
+        map.put(LAST_NAME.getFieldName(), person.getLastName().toUpperCase());
+        map.put(MIDDLE_NAME.getFieldName(), person.getMiddleName().toUpperCase());
         map.put(NATIONALITY.getFieldName(), person.getNationality());
         map.put(BIRTH_DATE.getFieldName(), getString(person.getBirthDate()));
         map.put(BIRTH_REGION.getFieldName(), person.getBirthRegion());
         map.put(BIRTH_DISTRICT.getFieldName(), person.getBirthDistrict());
         map.put(BIRTH_CITY.getFieldName(), person.getBirthCity());
-        map.put(BIRTH_VILLAGE.getFieldName(), "");
         map.put(ARRIVAL_REGION.getFieldName(), registration.getArrivalRegion());
         map.put(ARRIVAL_DISTRICT.getFieldName(), registration.getArrivalDistrict());
         map.put(ARRIVAL_CITY.getFieldName(), registration.getArrivalCity());
-        map.put(ARRIVAL_VILLAGE.getFieldName(), "");
         map.put(ARRIVAL_DATE.getFieldName(), getString(registration.getArrivalDate()));
         map.put(ARRIVAL_STREET.getFieldName(), registration.getArrivalStreet());
         map.put(ARRIVAL_BUILDING.getFieldName(), registration.getArrivalBuildingNumber());
@@ -77,8 +72,20 @@ public class RegistrationCard extends AbstractReportDownload {
         map.put(RESIDENCE_BUILDING.getFieldName(), registration.getBuildingNumber(getLocale()));
         map.put(RESIDENCE_CORP.getFieldName(), registration.getBuildingCorp(getLocale()));
         map.put(RESIDENCE_APARTMENT.getFieldName(), registration.getApartment(getLocale()));
-        map.put(WORKS0.getFieldName(), person.getJobInfo());
 
+        //Где и кем работает
+        if (person.getJobInfo() != null){
+            String[] workWrap = StringUtil.wrap(person.getJobInfo(), 50, "\n", true).split("\n", 3);
+
+            if (workWrap.length > 0){
+                map.put(WORKS0.getFieldName(), workWrap[0]);
+            }
+            if (workWrap.length > 1){
+                map.put(WORKS1.getFieldName(), workWrap[1]);
+            }
+        }
+
+        //Дети до 16 лет
         if (person.getChildren() != null) {
             int size = person.getChildren().size();
 
@@ -96,16 +103,35 @@ public class RegistrationCard extends AbstractReportDownload {
             }
         }
 
-        map.put(MILITARY0.getFieldName(), person.getMilitaryServiceRelation());
-        map.put(REGISTRATION_NOTE.getFieldName(), "");
+        //Отношение к воинской службе
+        if (person.getMilitaryServiceRelation() != null){
+            String[] militaryWrap = StringUtil.wrap(person.getMilitaryServiceRelation(), 50, "\n", true).split("\n", 4);
+
+            if (militaryWrap.length > 0) {
+                map.put(MILITARY0.getFieldName(), militaryWrap[0]);
+            }
+            if (militaryWrap.length > 1) {
+                map.put(MILITARY1.getFieldName(), militaryWrap[1]);
+            }
+            if (militaryWrap.length > 2) {
+                map.put(MILITARY2.getFieldName(), militaryWrap[2]);
+            }
+        }
+
         map.put(REGISTRATION_DATE.getFieldName(), getString(registration.getRegistrationDate()));
         map.put(REGISTRATION_TYPE.getFieldName(), registration.getRegistrationType());
         map.put(DEPARTURE_REGION.getFieldName(), registration.getDepartureRegion());
         map.put(DEPARTURE_DISTRICT.getFieldName(), registration.getDepartureDistrict());
         map.put(DEPARTURE_CITY.getFieldName(), registration.getDepartureCity());
-        map.put(DEPARTURE_VILLAGE.getFieldName(), "");
         map.put(DEPARTURE_DATE.getFieldName(), getString(registration.getDepartureDate()));
         map.put(DEPARTURE_REASON.getFieldName(), registration.getDepartureReason());
+
+        //Заполнение пустых значений
+        for(RegistrationCardField field : RegistrationCardField.values()){
+            if (map.get(field.getFieldName()) == null) {
+                map.put(field.getFieldName(), "");
+            }
+        }
 
         return map;
     }

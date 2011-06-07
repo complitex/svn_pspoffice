@@ -31,6 +31,13 @@ public class Person extends DomainObject {
     private boolean registrationStopped;
     private List<Person> children = newArrayList();
 
+    public Person(DomainObject copy) {
+        super(copy);
+    }
+
+    public Person() {
+    }
+
     public String getFirstName() {
         return firstName;
     }
@@ -110,7 +117,7 @@ public class Person extends DomainObject {
         addAttribute(childrenAttribute);
     }
 
-    public String getFullName(){
+    public String getFullName() {
         return lastName + " " + firstName + " " + middleName;
     }
 

@@ -23,7 +23,7 @@ import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.DeleteException;
-import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
+import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.permission.DomainObjectPermissionsPanel;
@@ -122,7 +122,7 @@ public final class PersonEdit extends FormTemplatePage {
 
         //permissions panel
         DomainObjectPermissionsPanel permissionsPanel = new DomainObjectPermissionsPanel("permissionsPanel", newPerson.getSubjectIds());
-        permissionsPanel.setEnabled(DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), newPerson));
+        permissionsPanel.setEnabled(canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(permissionsPanel);
 
         //permissionPropagationDialogPanel
@@ -182,7 +182,7 @@ public final class PersonEdit extends FormTemplatePage {
                 target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
-        submit.setVisible(DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), newPerson));
+        submit.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(submit);
         Link cancel = new Link("cancel") {
 
@@ -191,7 +191,7 @@ public final class PersonEdit extends FormTemplatePage {
                 back();
             }
         };
-        cancel.setVisible(DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), newPerson));
+        cancel.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(cancel);
         Link back = new Link("back") {
 
@@ -200,7 +200,7 @@ public final class PersonEdit extends FormTemplatePage {
                 back();
             }
         };
-        back.setVisible(!DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), newPerson));
+        back.setVisible(!canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(back);
         add(form);
 
@@ -283,7 +283,7 @@ public final class PersonEdit extends FormTemplatePage {
                     @Override
                     protected void onBeforeRender() {
                         if (isNew() || newPerson.getRegistration() == null) {
-                            setVisible(false);
+                            setVisibilityAllowed(false);
                         }
                         super.onBeforeRender();
                     }
@@ -297,13 +297,13 @@ public final class PersonEdit extends FormTemplatePage {
 
                     @Override
                     protected void onBeforeRender() {
-                        if (!DomainObjectAccessUtil.canDelete(null, "person", newPerson)) {
-                            setVisible(false);
+                        if (!canDelete(null, "person", newPerson)) {
+                            setVisibilityAllowed(false);
                         }
                         super.onBeforeRender();
                     }
                 },
-                new SaveButton(id, true){
+                new SaveButton(id, true) {
 
                     @Override
                     protected void onClick(AjaxRequestTarget target) {

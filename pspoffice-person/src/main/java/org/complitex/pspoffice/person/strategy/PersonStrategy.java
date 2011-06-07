@@ -495,21 +495,19 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     public String getOwnerName(String addressEntity, long addressId, Locale locale) {
-        String ownerName = null;
         List<Person> owners = findOwnersByAddress(addressEntity, addressId);
         if (owners != null && !owners.isEmpty()) {
             //TODO: take first owner, might all owners should be taken into account?
-            ownerName = displayDomainObject(owners.get(0), locale);
+            return displayDomainObject(owners.get(0), locale);
         } else {
             Person responsible = findResponsibleByAddress(addressEntity, addressId);
             if (responsible != null) {
-                ownerName = responsible.getRegistration().getOwnerName();
+                return responsible.getRegistration().getOwnerName();
             }
         }
-        return !Strings.isEmpty(ownerName) ? ownerName : ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_name", locale);
+        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_name", locale);
     }
 
-    @Transactional
     public String getOwnerOrResponsibleName(List<Person> members, Locale locale) {
         if (members != null && !members.isEmpty()) {
             for (Person person : members) {

@@ -86,13 +86,21 @@ public class RegistrationStrategy extends Strategy {
     @Transactional
     @Override
     public Registration findById(long id, boolean runAsAdmin) {
-        return new Registration(super.findById(id, runAsAdmin));
+        DomainObject registrationObject = super.findById(id, runAsAdmin);
+        if (registrationObject == null) {
+            return null;
+        }
+        return new Registration(registrationObject);
     }
 
     @Transactional
     @Override
     public Registration findHistoryObject(long objectId, Date date) {
-        return new Registration(super.findHistoryObject(objectId, date));
+        DomainObject registrationObject = super.findHistoryObject(objectId, date);
+        if (registrationObject == null) {
+            return null;
+        }
+        return new Registration(registrationObject);
     }
 
     @Override

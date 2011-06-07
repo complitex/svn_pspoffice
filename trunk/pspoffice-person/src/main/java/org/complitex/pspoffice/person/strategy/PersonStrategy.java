@@ -279,28 +279,16 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     protected Person findById(long id, boolean runAsAdmin, boolean loadChildren, boolean loadRegistration) {
-        DomainObjectExample example = new DomainObjectExample(id);
-        example.setTable(getEntityTable());
-        if (!runAsAdmin) {
-            prepareExampleForPermissionCheck(example);
-        } else {
-            example.setAdmin(true);
+        DomainObject personObject = super.findById(id, runAsAdmin);
+        if (personObject == null) {
+            return null;
         }
-
-        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_BY_ID_OPERATION, example);
-        if (person != null) {
-            loadAttributes(person);
-            fillAttributes(person);
-            updateStringsForNewLocales(person);
-            if (loadRegistration) {
-                loadRegistration(person, null);
-            }
-            if (loadChildren) {
-                loadChildren(person);
-            }
-
-            //load subject ids
-            person.setSubjectIds(loadSubjects(person.getPermissionId()));
+        Person person = new Person(personObject);
+        if (loadRegistration) {
+            loadRegistration(person, null);
+        }
+        if (loadChildren) {
+            loadChildren(person);
         }
         return person;
     }
@@ -351,7 +339,6 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     protected void fillAttributes(DomainObject object) {
         List<Attribute> toAdd = newArrayList();
-
         for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
             if (!attributeType.isObsolete()) {
                 if (object.getAttributes(attributeType.getId()).isEmpty()) {
@@ -408,21 +395,13 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     @Override
     public Person findHistoryObject(long objectId, Date date) {
-        DomainObjectExample example = new DomainObjectExample(objectId);
-        example.setTable(getEntityTable());
-        example.setStartDate(date);
-
-        Person person = (Person) sqlSession().selectOne(PERSON_MAPPING + "." + FIND_HISTORY_OBJECT_OPERATION, example);
-        if (person == null) {
+        DomainObject personObject = super.findHistoryObject(objectId, date);
+        if (personObject == null) {
             return null;
         }
-
-        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, date);
-        loadStringCultures(historyAttributes);
-        person.setAttributes(historyAttributes);
+        Person person = new Person(personObject);
         loadRegistration(person, date);
         loadChildren(person);
-        updateStringsForNewLocales(person);
         return person;
     }
 

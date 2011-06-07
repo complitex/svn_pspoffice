@@ -88,22 +88,10 @@
         </if>
     </sql>
 
-    <select id="findById" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
-        SELECT e.*
-        FROM `${table}` e WHERE (e.`status` IN ('ACTIVE', 'INACTIVE')) AND e.`object_id` = #{id}
-        <include refid="org.complitex.dictionary.entity.DomainObject.permissionFilter"/>
-    </select>
-
-    <!-- history -->
-
     <select id="findRegistrationIds" parameterType="map" resultType="long">
         SELECT r.`object_id` FROM `registration` r WHERE
             EXISTS(SELECT 1 FROM `person_attribute` pa WHERE pa.`object_id` = #{personId} AND pa.`attribute_type_id` = #{registrationAttributeType}
                     AND pa.`value_id` = r.`object_id`)
-    </select>
-
-    <select id="findHistoryObject" parameterType="DomainObjectExample" resultMap="org.complitex.pspoffice.person.strategy.Person.Person">
-        <include refid="org.complitex.dictionary.entity.DomainObject.findHistoryObject"/>
     </select>
 
     <select id="findPersonIdsByAddress" parameterType="map" resultType="long">

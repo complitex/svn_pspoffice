@@ -33,7 +33,7 @@ import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.registration.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.download.RegistrationCard;
+import org.complitex.pspoffice.person.download.RegistrationCardDownload;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
@@ -205,7 +205,7 @@ public final class PersonEdit extends FormTemplatePage {
         add(form);
 
         //Загрузка отчетов
-        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCard.class, newPerson.getId(), getString("report_download"));
+        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCardDownload.class, newPerson.getId(), getString("report_download"));
         add(reportDownloadPanel);
     }
 

@@ -7,7 +7,11 @@ package org.complitex.pspoffice.person.registration.report.web;
 import static com.google.common.collect.Lists.*;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.EJB;
+
+import com.google.common.collect.ImmutableList;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.feedback.FeedbackMessage;
 import static org.apache.wicket.feedback.FeedbackMessage.*;
@@ -27,10 +31,15 @@ import org.complitex.dictionary.util.OSInfoUtil;
 import org.complitex.dictionary.web.component.type.BooleanPanel;
 import org.complitex.dictionary.web.component.type.Date2Panel;
 import org.complitex.dictionary.web.component.type.GenderPanel;
+import org.complitex.pspoffice.person.download.RegistrationCardDownload;
+import org.complitex.pspoffice.person.download.RegistrationStopCouponDownload;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.registration.report.service.RegistrationStopCouponBean;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.report.web.ReportDownloadPanel;
+import org.complitex.template.web.component.toolbar.SaveButton;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
 import org.slf4j.Logger;
@@ -46,6 +55,8 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
     private static final Logger log = LoggerFactory.getLogger(RegistrationStopCouponPage.class);
     @EJB
     private RegistrationStopCouponBean couponBean;
+
+    private ReportDownloadPanel reportDownloadPanel;
 
     private class FieldLabel extends Label {
 
@@ -187,6 +198,24 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
             log.error("", e);
         }
         add(coupon == null ? new MessagesFragment("content", messages) : new ReportFragment("content", coupon));
+
+        //Загрузка отчетов
+        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationStopCouponDownload.class, person.getId(),
+                getString("report_download"));
+        add(reportDownloadPanel);
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return ImmutableList.of(
+                new SaveButton(id, true) {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        reportDownloadPanel.open(target);
+                    }
+                }
+        );
     }
 }
 

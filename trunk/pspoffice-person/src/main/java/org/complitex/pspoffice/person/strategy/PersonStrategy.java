@@ -407,16 +407,16 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     @Override
-    public void delete(long objectId) throws DeleteException {
-        deleteChecks(objectId);
+    public void delete(long objectId, Locale locale) throws DeleteException {
+        deleteChecks(objectId, locale);
         Set<Long> registrationIds = findRegistrationIds(objectId);
         deleteStrings(objectId);
         deleteAttribute(objectId);
-        deleteObject(objectId);
+        deleteObject(objectId, locale);
 
         //delete registrations:
         for (Long registrationId : registrationIds) {
-            registrationStrategy.delete(registrationId);
+            registrationStrategy.delete(registrationId, locale);
         }
     }
 //    @Transactional

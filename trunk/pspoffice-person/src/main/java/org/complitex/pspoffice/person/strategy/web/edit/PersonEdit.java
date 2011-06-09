@@ -19,6 +19,7 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.StringCultureBean;
@@ -260,10 +261,14 @@ public final class PersonEdit extends FormTemplatePage {
 //    }
     private void delete() {
         try {
-            personStrategy.delete(newPerson.getId());
+            personStrategy.delete(newPerson.getId(), getLocale());
             back();
         } catch (DeleteException e) {
-            error(getString("delete_error"));
+            if (!Strings.isEmpty(e.getMessage())) {
+                error(e.getMessage());
+            } else {
+                error(getString("delete_error"));
+            }
         } catch (Exception e) {
             log.error("", e);
             error(getString("db_error"));

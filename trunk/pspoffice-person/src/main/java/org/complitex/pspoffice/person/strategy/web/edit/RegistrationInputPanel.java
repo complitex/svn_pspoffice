@@ -42,6 +42,8 @@ import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.ResourceUtil;
+import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
+import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeModel;
 import org.complitex.dictionary.web.component.ShowMode;
@@ -55,6 +57,7 @@ import org.complitex.dictionary.web.component.type.DoublePanel;
 import org.complitex.dictionary.web.component.type.IntegerPanel;
 import org.complitex.dictionary.web.component.type.StringCulturePanel;
 import org.complitex.dictionary.web.component.type.StringPanel;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -75,6 +78,8 @@ public final class RegistrationInputPanel extends Panel {
     private PersonStrategy personStrategy;
     @EJB
     private StrategyFactory strategyFactory;
+    @EJB(name = "Owner_relationshipStrategy")
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
     private Registration registration;
     private Attribute addressAttribute;
     private SearchComponentState addressSearchComponentState;
@@ -182,16 +187,62 @@ public final class RegistrationInputPanel extends Panel {
         OWNER, RESPONSIBLE, OTHER;
     }
 
+    private Component initOwnerRelationship() {
+        final EntityAttributeType attributeType = registrationStrategy.getEntity().getAttributeType(OWNER_RELATIONSHIP);
+
+        WebMarkupContainer ownerRelationshipContainer = new WebMarkupContainer("ownerRelationshipContainer");
+        ownerRelationshipContainer.setOutputMarkupPlaceholderTag(true);
+        this.add(ownerRelationshipContainer);
+
+        //label
+        IModel<String> labelModel = newLabelModel(attributeType.getAttributeNames());
+        ownerRelationshipContainer.add(new Label("label", labelModel));
+
+        //select
+        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAllWithoutOwnerAndResponsible();
+        final Attribute ownerRelationshipAttribute = registration.getAttribute(OWNER_RELATIONSHIP);
+        IModel<DomainObject> ownerRelationshipModel = new Model<DomainObject>() {
+
+            @Override
+            public void setObject(DomainObject object) {
+                ownerRelationshipAttribute.setValueId(object != null ? object.getId() : null);
+            }
+
+            @Override
+            public DomainObject getObject() {
+                final Long ownerRelationshipId = ownerRelationshipAttribute.getValueId();
+                for (DomainObject ownerRelationship : allOwnerRelationships) {
+                    if (ownerRelationship.getId().equals(ownerRelationshipId)) {
+                        return ownerRelationship;
+                    }
+                }
+                return null;
+            }
+        };
+
+        DisableAwareDropDownChoice<DomainObject> ownerRelationship = new DisableAwareDropDownChoice<DomainObject>("ownerRelationship",
+                ownerRelationshipModel, allOwnerRelationships, new DomainObjectDisableAwareRenderer() {
+
+            @Override
+            public Object getDisplayValue(DomainObject object) {
+                return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
+            }
+        });
+        ownerRelationship.setRequired(true);
+        ownerRelationship.setLabel(labelModel);
+        ownerRelationship.setEnabled(!isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
+        ownerRelationshipContainer.add(ownerRelationship);
+        return ownerRelationshipContainer;
+    }
+
     private void initOwnerAttributes() {
-        initSystemAttributeInput(this, "ownerRelationship", OWNER_RELATIONSHIP, true);
+        final Component ownerRelationshipContainer = initOwnerRelationship();
         initSystemAttributeInput(this, "ownerName", OWNER_NAME, false, true);
         initSystemAttributeInput(this, "personalAccount", PERSONAL_ACCOUNT, false, true);
         initSystemAttributeInput(this, "formOfOwnership", FORM_OF_OWNERSHIP, false, true);
         //TODO: make housing rights mandatory afterwards
         initSystemAttributeInput(this, "housingRights", HOUSING_RIGHTS, false, false);
 
-        final Component ownerRelationshipContainer = get("ownerRelationshipContainer");
-        ownerRelationshipContainer.setOutputMarkupPlaceholderTag(true);
         final Component ownerNameContainer = get("ownerNameContainer");
         ownerNameContainer.setOutputMarkupPlaceholderTag(true);
         final Component personalAccountContainer = get("personalAccountContainer");
@@ -425,8 +476,7 @@ public final class RegistrationInputPanel extends Panel {
                             setValue(new BooleanConverter().toString(Boolean.TRUE));
                     registration.removeAttribute(IS_RESPONSIBLE);
                     registration.removeAttribute(OWNER_NAME);
-                    stringBean.getSystemStringCulture(registration.getAttribute(OWNER_RELATIONSHIP).getLocalizedValues()).
-                            setValue(getString("ResidentStatus.OWNER"));
+                    registration.getAttribute(OWNER_RELATIONSHIP).setValueId(OwnerRelationshipStrategy.OWNER);
                 }
                 break;
             case RESPONSIBLE:
@@ -436,8 +486,7 @@ public final class RegistrationInputPanel extends Panel {
                     stringBean.getSystemStringCulture(registration.getAttribute(IS_RESPONSIBLE).getLocalizedValues()).
                             setValue(new BooleanConverter().toString(Boolean.TRUE));
                     registration.removeAttribute(IS_OWNER);
-                    stringBean.getSystemStringCulture(registration.getAttribute(OWNER_RELATIONSHIP).getLocalizedValues()).
-                            setValue(getString("ResidentStatus.RESPONSIBLE"));
+                    registration.getAttribute(OWNER_RELATIONSHIP).setValueId(OwnerRelationshipStrategy.RESPONSIBLE);
                 }
                 break;
             case OTHER:

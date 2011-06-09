@@ -12,6 +12,7 @@ import java.util.Map;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.util.EjbBeanLocator;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import static org.complitex.dictionary.util.AttributeUtil.*;
@@ -46,6 +47,7 @@ public class Registration extends DomainObject {
         }
     }
     private Map<Locale, Address> addressComponentMap = newHashMap();
+    private DomainObject ownerRelationshipObject;
 
     public Registration() {
     }
@@ -107,6 +109,10 @@ public class Registration extends DomainObject {
 
     private RegistrationStrategy registrationStrategy() {
         return EjbBeanLocator.getBean(RegistrationStrategy.class);
+    }
+
+    private OwnerRelationshipStrategy ownerRelationshipStrategy() {
+        return EjbBeanLocator.getBean("Owner_relationshipStrategy");
     }
 
     public String getAddressEntity() {
@@ -212,8 +218,22 @@ public class Registration extends DomainObject {
         return getStringValue(this, DEPARTURE_REASON);
     }
 
-    public String getOwnerRelationship() {
-        return getStringValue(this, OWNER_RELATIONSHIP);
+    /**
+     * Displays owner relationship as string values.
+     * Caches the displayed values.
+     */
+    public String getOwnerRelationship(Locale locale) {
+        if (ownerRelationshipObject == null) {
+            Attribute ownerRelationshipAttribute = getAttribute(OWNER_RELATIONSHIP);
+            if (ownerRelationshipAttribute != null) {
+                Long ownerRelationshipId = ownerRelationshipAttribute.getValueId();
+                if (ownerRelationshipId != null) {
+                    ownerRelationshipObject = registrationStrategy().loadOwnerRelationship(ownerRelationshipId);
+                    return ownerRelationshipStrategy().displayDomainObject(ownerRelationshipObject, locale);
+                }
+            }
+        }
+        return null;
     }
 
     public String getFormOfOwnership() {
@@ -246,5 +266,9 @@ public class Registration extends DomainObject {
 
     public String getPersonalAccount() {
         return getStringValue(this, PERSONAL_ACCOUNT);
+    }
+
+    public DomainObject getOwnerRelationshipObject() {
+        return ownerRelationshipObject;
     }
 }

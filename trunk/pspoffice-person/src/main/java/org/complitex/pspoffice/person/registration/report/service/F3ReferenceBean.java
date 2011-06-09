@@ -61,7 +61,7 @@ public class F3ReferenceBean extends AbstractBean {
             member.setMiddleName(p.getMiddleName());
             member.setLastName(p.getLastName());
             member.setBirthDate(p.getBirthDate());
-            member.setRelation(p.getRegistration().getOwnerRelationship());
+            member.setRelation(p.getRegistration().getOwnerRelationship(locale));
             member.setRegistrationDate(p.getRegistration().getRegistrationDate());
             f3.addFamilyMember(member);
         }

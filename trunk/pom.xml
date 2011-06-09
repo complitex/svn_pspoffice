@@ -24,6 +24,7 @@
         <module>pspoffice-web</module>
         <module>pspoffice-person</module>
         <module>pspoffice-report</module>
+        <module>pspoffice-owner-relationship</module>
 
         <module>../complitex/complitex-dictionary</module>
         <module>../complitex/complitex-template</module>
@@ -94,6 +95,12 @@
             <dependency>
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-report</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-owner-relationship</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

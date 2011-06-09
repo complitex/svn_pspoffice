@@ -355,12 +355,14 @@
                         <tr wicket:id="ownerRelationshipContainer">
                             <th>
                                 <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
+                                <span>
                                     <b class="blue">*</b>
-                                </wicket:container>:
+                                </span>:
                             </th>
                             <td>
-                                <div wicket:id="input"></div>
+                                <select wicket:id="ownerRelationship">
+                                    <option></option>
+                                </select>
                             </td>
                         </tr>
                         <tr wicket:id="ownerNameContainer">

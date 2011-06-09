@@ -4,6 +4,7 @@ import static com.google.common.collect.ImmutableMap.*;
 import java.util.Collections;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Sets.*;
+import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import java.util.List;
 import org.apache.wicket.PageParameters;
@@ -205,7 +206,9 @@ public class PersonStrategy extends TemplateStrategy {
     public Person newInstance() {
         Person person = new Person();
         fillAttributes(person);
-        person.setRegistration(registrationStrategy.newInstance());
+        Registration registration = registrationStrategy.newInstance();
+        person.setRegistration(registration);
+        registration.setPerson(person);
 
         //set up subject ids to visible-by-all subject
         Set<Long> defaultSubjectIds = newHashSet(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
@@ -306,6 +309,7 @@ public class PersonStrategy extends TemplateStrategy {
                     registration = registrationStrategy.findHistoryObject(registrationId, date);
                 }
                 person.setRegistration(registration);
+                registration.setPerson(person);
             }
         }
     }
@@ -460,13 +464,16 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public List<Person> findOwnersByAddress(String addressEntity, long addressId) {
+    public List<Person> findOwnersByAddress(String addressEntity, long addressId, Long excludeId) {
         long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
-        Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
-                "addressAttributeType", RegistrationStrategy.ADDRESS,
-                "addressId", addressId,
-                "addressTypeId", addressTypeId,
-                "isOwnerAttributeType", RegistrationStrategy.IS_OWNER);
+        Map<String, Long> params = newHashMap();
+        params.put("registrationAttributeType", REGISTRATION);
+        params.put("addressAttributeType", RegistrationStrategy.ADDRESS);
+        params.put("addressId", addressId);
+        params.put("addressTypeId", addressTypeId);
+        params.put("isOwnerAttributeType", RegistrationStrategy.IS_OWNER);
+        params.put("excludeId", excludeId);
+        
         List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findOwnersByAddress", params);
         List<Person> persons = newArrayList();
         for (Long personId : personIds) {
@@ -478,13 +485,16 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public Person findResponsibleByAddress(String addressEntity, long addressId) {
+    public Person findResponsibleByAddress(String addressEntity, long addressId, Long excludeId) {
         long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
-        Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
-                "addressAttributeType", RegistrationStrategy.ADDRESS,
-                "addressId", addressId,
-                "addressTypeId", addressTypeId,
-                "isResponsibleAttributeType", RegistrationStrategy.IS_RESPONSIBLE);
+        Map<String, Long> params = newHashMap();
+        params.put("registrationAttributeType", REGISTRATION);
+        params.put("addressAttributeType", RegistrationStrategy.ADDRESS);
+        params.put("addressId", addressId);
+        params.put("addressTypeId", addressTypeId);
+        params.put("isResponsibleAttributeType", RegistrationStrategy.IS_RESPONSIBLE);
+        params.put("excludeId", excludeId);
+
         Long personId = (Long) sqlSession().selectOne(PERSON_MAPPING + ".findResponsibleByAddress", params);
         Person person = personId != null ? findById(personId, true, false, true) : null;
         if (person != null) {
@@ -495,12 +505,12 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     public String getOwnerName(String addressEntity, long addressId, Locale locale) {
-        List<Person> owners = findOwnersByAddress(addressEntity, addressId);
+        List<Person> owners = findOwnersByAddress(addressEntity, addressId, null);
         if (owners != null && !owners.isEmpty()) {
             //TODO: take first owner, might all owners should be taken into account?
             return displayDomainObject(owners.get(0), locale);
         } else {
-            Person responsible = findResponsibleByAddress(addressEntity, addressId);
+            Person responsible = findResponsibleByAddress(addressEntity, addressId, null);
             if (responsible != null) {
                 return responsible.getRegistration().getOwnerName();
             }

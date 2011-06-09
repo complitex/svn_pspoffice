@@ -533,7 +533,7 @@ public final class RegistrationInputPanel extends Panel {
         //owner validation
         switch (residentStatusModel.getObject()) {
             case OWNER: {
-                Person responsible = personStrategy.findResponsibleByAddress(addressEntity, addressId);
+                Person responsible = personStrategy.findResponsibleByAddress(addressEntity, addressId, registration.getPerson().getId());
                 if (responsible != null) {
                     error(ResourceUtil.getFormatString(this, "responsible_exists",
                             personStrategy.displayDomainObject(responsible, getLocale())));
@@ -541,7 +541,7 @@ public final class RegistrationInputPanel extends Panel {
             }
             break;
             case RESPONSIBLE: {
-                List<Person> owners = personStrategy.findOwnersByAddress(addressEntity, addressId);
+                List<Person> owners = personStrategy.findOwnersByAddress(addressEntity, addressId, registration.getPerson().getId());
                 if (owners != null && !owners.isEmpty()) {
                     if (owners.size() == 1) {
                         error(ResourceUtil.getFormatString(this, "owner_exists",
@@ -557,7 +557,7 @@ public final class RegistrationInputPanel extends Panel {
                         error(ResourceUtil.getFormatString(this, "owners_exists", ownersParam));
                     }
                 }
-                Person responsible = personStrategy.findResponsibleByAddress(addressEntity, addressId);
+                Person responsible = personStrategy.findResponsibleByAddress(addressEntity, addressId, registration.getPerson().getId());
                 if (responsible != null) {
                     error(ResourceUtil.getFormatString(this, "responsible_exists",
                             personStrategy.displayDomainObject(responsible, getLocale())));

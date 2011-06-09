@@ -317,7 +317,7 @@ public final class PersonEdit extends FormTemplatePage {
 
                     @Override
                     public boolean isVisible() {
-                        return newPerson.getId() != null;
+                        return !isNew();
                     }
                 });
     }

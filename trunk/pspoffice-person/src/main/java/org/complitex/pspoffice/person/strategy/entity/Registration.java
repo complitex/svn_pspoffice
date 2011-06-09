@@ -48,12 +48,21 @@ public class Registration extends DomainObject {
     }
     private Map<Locale, Address> addressComponentMap = newHashMap();
     private DomainObject ownerRelationshipObject;
+    private Person person;
 
     public Registration() {
     }
 
     public Registration(DomainObject object) {
         super(object);
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
     }
 
     /**

@@ -38,5 +38,10 @@ GlassFish Application Server 3.0 Servlet 3.0//EN"
         <group-name>EMPLOYEES</group-name>
         <group-name>EMPLOYEES_CHILD_VIEW</group-name>
     </security-role-mapping>
+
+    <security-role-mapping>
+        <role-name>OWNER_RELATIONSHIP_MODULE_EDIT</role-name>
+        <group-name>ADMINISTRATORS</group-name>
+    </security-role-mapping>
 </sun-web-app>
 

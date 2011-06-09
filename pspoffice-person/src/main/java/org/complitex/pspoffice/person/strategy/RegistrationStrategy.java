@@ -23,6 +23,7 @@ import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -77,6 +78,8 @@ public class RegistrationStrategy extends Strategy {
     private BuildingStrategy buildingStrategy;
     @EJB
     private StreetStrategy streetStrategy;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -91,6 +94,11 @@ public class RegistrationStrategy extends Strategy {
             return null;
         }
         return new Registration(registrationObject);
+    }
+
+    @Transactional
+    public DomainObject loadOwnerRelationship(long ownerRelationshipId) {
+        return ownerRelationshipStrategy.findById(ownerRelationshipId, true);
     }
 
     @Transactional

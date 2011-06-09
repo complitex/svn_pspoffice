@@ -7,5 +7,7 @@
         <menu class="org.complitex.address.menu.AddressDescriptionMenu"/>
         <menu class="org.complitex.pspoffice.person.menu.RegistrationMenu"/>
         <menu class="org.complitex.pspoffice.person.menu.RegistrationDescriptionMenu"/>
+        <menu class="org.complitex.pspoffice.ownerrelationship.menu.OwnerRelationshipMenu"/>
+        <menu class="org.complitex.pspoffice.ownerrelationship.menu.OwnerRelationshipDescriptionMenu"/>
     </sidebar>
 </template>

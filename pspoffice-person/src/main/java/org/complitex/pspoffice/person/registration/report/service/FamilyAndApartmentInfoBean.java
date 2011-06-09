@@ -41,7 +41,7 @@ public class FamilyAndApartmentInfoBean extends AbstractBean {
         for (Person p : members) {
             FamilyMember member = new FamilyMember();
             member.setName(personStrategy.displayDomainObject(p, locale));
-            member.setRelation(p.getRegistration().getOwnerRelationship());
+            member.setRelation(p.getRegistration().getOwnerRelationship(locale));
             member.setBirthDate(p.getBirthDate());
             member.setRegistrationDate(p.getRegistration().getRegistrationDate());
             info.addFamilyMember(member);

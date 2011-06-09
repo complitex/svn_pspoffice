@@ -83,6 +83,7 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2020, 2020, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2021, 2021, UPPER('boolean'));
 
+-- Registration --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration',1), ('registration_string_culture',1);
 
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2100, 1, 'Регистрация'), (2100, 2, 'Регистрация');
@@ -175,10 +176,30 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2121, 2119, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2122, 2120, UPPER('date'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2123, 2121, UPPER('string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2124, 2122, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2124, 2122, 'owner_relationship');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2125, 2123, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2126, 2124, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2127, 2125, UPPER('boolean'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2128, 2126, UPPER('boolean'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2129, 2127, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2130, 2128, UPPER('string'));
+
+-- Owner relationship --
+INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('owner_relationship',1), ('owner_relationship_string_culture',1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2200, 1, 'Отношение к владельцу'), (2200, 2, 'Отношение к владельцу');
+insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (2200, 'owner_relationship', 2200, '');
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2201, 1, UPPER('Наименование')), (2201, 2, UPPER('Наименование'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2200, 2200, 1, 2201, 1);
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2200, 2200, UPPER('string_culture'));
+
+INSERT INTO `owner_relationship`(`object_id`) VALUES (1),(2),(3),(4),(5),(6),(7);
+INSERT INTO `owner_relationship_string_culture`(`id`, `locale_id`, `value`) VALUES
+(1, 1, UPPER('владелец')), (1, 2,UPPER('владелец')),
+(2, 1, UPPER('ответственный квартиросьемщик')), (2, 2,UPPER('ответственный квартиросьемщик')),
+(3, 1, UPPER('дети')), (3, 2, UPPER('дети')),
+(4, 1, UPPER('гость')), (4, 2, UPPER('гость')),
+(5, 1, UPPER('муж')), (5, 2, UPPER('муж')),
+(6, 1, UPPER('жена')), (6, 2, UPPER('жена')),
+(7, 1, UPPER('дальний родственник')), (7, 2, UPPER('дальний родственник'));
+INSERT INTO `owner_relationship_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
+(1,1,2200,1,2200),(1,2,2200,2,2200),(1,3,2200,3,2200),(1,4,2200,4,2200),(1,5,2200,5,2200),(1,6,2200,6,2200),(1,7,2200,7,2200);

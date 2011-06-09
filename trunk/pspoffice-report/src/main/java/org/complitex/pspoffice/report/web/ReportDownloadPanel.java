@@ -39,7 +39,7 @@ public class ReportDownloadPanel extends Panel {
 
         final IModel<String> typeModel = new Model<String>("PDF");
 
-        form.add(new DropDownChoice<String>("type", typeModel, Arrays.asList("PDF", "RTF", "ODT")));
+        form.add(new DropDownChoice<String>("type", typeModel, Arrays.asList("PDF", "RTF")));
 
         //Загрузить
         form.add(new AjaxButton("download"){
@@ -58,7 +58,10 @@ public class ReportDownloadPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 PageParameters pageParameters = new PageParameters();
                 pageParameters.add("type", typeModel.getObject().toLowerCase());
-                pageParameters.add("object_id", objectId.toString());
+
+                if (objectId != null) {
+                    pageParameters.add("object_id", objectId.toString());
+                }
 
                 dialog.close(target);
 

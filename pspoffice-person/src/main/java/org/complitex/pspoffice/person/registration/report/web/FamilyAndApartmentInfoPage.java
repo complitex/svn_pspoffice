@@ -59,7 +59,7 @@ public final class FamilyAndApartmentInfoPage extends TemplatePage {
     @EJB
     private FamilyAndApartmentInfoBean familyAndApartmentInfoBean;
 
-     private ReportDownloadPanel reportDownloadPanel;
+    private ReportDownloadPanel reportDownloadPanel;
 
     private class MessagesFragment extends Fragment {
 

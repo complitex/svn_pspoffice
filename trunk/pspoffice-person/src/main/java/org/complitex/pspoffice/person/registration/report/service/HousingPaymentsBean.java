@@ -42,7 +42,7 @@ public class HousingPaymentsBean extends AbstractBean {
             FamilyMember member = new FamilyMember();
             member.setName(personStrategy.displayDomainObject(person, locale));
             member.setBirthDate(person.getBirthDate());
-            member.setPassport(person.getPassportData());
+            member.setPassport(person.getPassportOrBirthCertificate());
             member.setRelation(person.getRegistration().getOwnerRelationship(locale));
             payments.addFamilyMember(member);
         }

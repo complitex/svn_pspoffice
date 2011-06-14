@@ -206,4 +206,9 @@ public class Person extends DomainObject {
             return null;
         }
     }
+
+    public String getPassportOrBirthCertificate() {
+        String passport = getPassportData();
+        return passport != null ? passport : getStringValue(this, BIRTH_CERTIFICATE_INFO);
+    }
 }

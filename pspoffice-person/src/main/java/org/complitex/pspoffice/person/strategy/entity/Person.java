@@ -189,8 +189,8 @@ public class Person extends DomainObject {
         return getDateValue(this, BIRTH_CERTIFICATE_ACQUISITION_DATE);
     }
 
-    public Date getBirthCertificateAcquisitionOrganization() {
-        return getDateValue(this, BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION);
+    public String getBirthCertificateAcquisitionOrganization() {
+        return getStringValue(this, BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION);
     }
 
     public boolean isUkraineCitizen() {

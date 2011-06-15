@@ -21,6 +21,7 @@ import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.service.NameBean;
+import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
@@ -44,6 +45,8 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private PersonStrategy personStrategy;
     @EJB
     private NameBean nameBean;
+    @EJB
+    private SessionBean sessionBean;
 
     @Transactional
     public RegistrationStopCoupon get(Person person, Locale locale, String clientLineSeparator)
@@ -97,6 +100,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
                 person.getBirthCertificateAcquisitionDate(), person.getBirthCertificateAcquisitionOrganization(), locale));
         coupon.setUkraineCitizenship(person.isUkraineCitizen());
         coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale, clientLineSeparator));
+        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganizationName(locale));
         return coupon;
     }
 

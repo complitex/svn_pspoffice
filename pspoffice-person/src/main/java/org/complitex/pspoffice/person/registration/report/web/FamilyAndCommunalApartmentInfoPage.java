@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+
+import com.google.common.collect.ImmutableList;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -31,10 +33,15 @@ import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.type.Date2Panel;
 import org.complitex.dictionary.web.component.type.DatePanel;
+import org.complitex.pspoffice.person.download.FamilyAndApartmentInfoDownload;
+import org.complitex.pspoffice.person.download.FamilyAndCommunalApartmentInfoDownload;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyAndCommunalApartmentInfo;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.registration.report.service.FamilyAndCommunalApartmentInfoBean;
+import org.complitex.pspoffice.report.web.ReportDownloadPanel;
+import org.complitex.template.web.component.toolbar.SaveButton;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.TemplatePage;
 import org.slf4j.Logger;
@@ -48,8 +55,11 @@ import org.slf4j.LoggerFactory;
 public final class FamilyAndCommunalApartmentInfoPage extends TemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(FamilyAndCommunalApartmentInfoPage.class);
+
     @EJB
     private FamilyAndCommunalApartmentInfoBean familyAndCommunalApartmentInfoBean;
+
+    private ReportDownloadPanel reportDownloadPanel;
 
     private class MessagesFragment extends Fragment {
 
@@ -209,6 +219,24 @@ public final class FamilyAndCommunalApartmentInfoPage extends TemplatePage {
                 setResponsePage(FamilyAndCommunalApartmentInfoParamPage.class);
             }
         });
+
+         //Загрузка отчетов
+        reportDownloadPanel = new ReportDownloadPanel("report_download", FamilyAndCommunalApartmentInfoDownload.class, null,
+                getString("report_download"));
+        add(reportDownloadPanel);
+    }
+
+     @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return ImmutableList.of(
+                new SaveButton(id, true) {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        reportDownloadPanel.open(target);
+                    }
+                }
+        );
     }
 }
 

@@ -31,7 +31,6 @@ import org.complitex.dictionary.util.OSInfoUtil;
 import org.complitex.dictionary.web.component.type.BooleanPanel;
 import org.complitex.dictionary.web.component.type.Date2Panel;
 import org.complitex.dictionary.web.component.type.GenderPanel;
-import org.complitex.pspoffice.person.download.RegistrationCardDownload;
 import org.complitex.pspoffice.person.download.RegistrationStopCouponDownload;
 import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
@@ -55,7 +54,6 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
     private static final Logger log = LoggerFactory.getLogger(RegistrationStopCouponPage.class);
     @EJB
     private RegistrationStopCouponBean couponBean;
-
     private ReportDownloadPanel reportDownloadPanel;
 
     private class FieldLabel extends Label {
@@ -173,6 +171,8 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
                     passportAcquisitionDateLabel.getModel(), true));
             form.add(new FieldLabel("passportAcquisitionOrganization"));
             form.add(new TextArea("passportAcquisitionOrganization"));
+            form.add(new FieldLabel("birthCertificateInfo"));
+            form.add(new TextField("birthCertificateInfo"));
             FieldLabel ukraineCitizenshipLabel = new FieldLabel("ukraineCitizenship");
             form.add(ukraineCitizenshipLabel);
             form.add(new BooleanPanel("ukraineCitizenship", new PropertyModel<Boolean>(model, "ukraineCitizenship"),
@@ -214,8 +214,7 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
                     protected void onClick(AjaxRequestTarget target) {
                         reportDownloadPanel.open(target);
                     }
-                }
-        );
+                });
     }
 }
 

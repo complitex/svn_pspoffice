@@ -93,11 +93,21 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setPassportAcquisitionOrganization(person.getPassportAcquisitionOrganization());
         coupon.setPassportAcquisitionDate(person.getPassportAcquisitionDate());
 
-        //TODO: add birth certificate info
-        coupon.setBirthCertificateInfo(null);
+        coupon.setBirthCertificateInfo(getBirthCertificateInfo(person.getBirthCertificateInfo(),
+                person.getBirthCertificateAcquisitionDate(), person.getBirthCertificateAcquisitionOrganization(), locale));
         coupon.setUkraineCitizenship(person.isUkraineCitizen());
         coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale, clientLineSeparator));
         return coupon;
+    }
+
+    private String getBirthCertificateInfo(String birthCertificateInfo, Date birthCertificateAcquisitionDate,
+            String birthCertificateAcquisitionOrganization, Locale locale) {
+        if (birthCertificateInfo != null && birthCertificateAcquisitionDate != null && birthCertificateAcquisitionOrganization != null) {
+            DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
+            String birthCertificateAcquisitionDateAsString = dateFormat.format(birthCertificateAcquisitionDate);
+            return birthCertificateInfo + ", " + birthCertificateAcquisitionDateAsString + ", " + birthCertificateAcquisitionOrganization;
+        }
+        return null;
     }
 
     private String getChildrenInfo(Collection<Person> children, Locale locale, String lineSeparator) {

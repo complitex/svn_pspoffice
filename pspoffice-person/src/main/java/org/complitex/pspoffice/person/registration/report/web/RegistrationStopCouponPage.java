@@ -54,6 +54,7 @@ public final class RegistrationStopCouponPage extends FormTemplatePage {
     private static final Logger log = LoggerFactory.getLogger(RegistrationStopCouponPage.class);
     @EJB
     private RegistrationStopCouponBean couponBean;
+
     private ReportDownloadPanel reportDownloadPanel;
 
     private class FieldLabel extends Label {

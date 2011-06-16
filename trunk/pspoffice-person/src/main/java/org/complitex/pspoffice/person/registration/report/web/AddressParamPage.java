@@ -4,7 +4,9 @@
  */
 package org.complitex.pspoffice.person.registration.report.web;
 
-import com.google.common.collect.ImmutableList;
+import static com.google.common.collect.Lists.*;
+import java.util.List;
+import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -16,6 +18,7 @@ import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.pspoffice.person.registration.report.service.CommunalApartmentService;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
 
@@ -26,6 +29,9 @@ import org.complitex.template.web.template.FormTemplatePage;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public abstract class AddressParamPage extends FormTemplatePage {
 
+    @EJB
+    private CommunalApartmentService communalApartmentService;
+
     public AddressParamPage() {
         add(new Label("title", new ResourceModel("title")));
         add(new Label("address_label", new ResourceModel("address_label")));
@@ -34,8 +40,12 @@ public abstract class AddressParamPage extends FormTemplatePage {
         add(messages);
 
         final SearchComponentState addressComponentState = new SearchComponentState();
-        SearchComponent searchComponent = new SearchComponent("searchComponent", addressComponentState,
-                ImmutableList.of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, true);
+        List<String> searchFilters = newArrayList("city", "street", "building", "apartment");
+        if (!isSeparateApartment()) {
+            searchFilters.add("room");
+        }
+        SearchComponent searchComponent = new SearchComponent("searchComponent", addressComponentState, searchFilters,
+                null, ShowMode.ACTIVE, true);
         add(searchComponent);
 
         AjaxLink<Void> submit = new AjaxLink<Void>("submit") {
@@ -43,13 +53,26 @@ public abstract class AddressParamPage extends FormTemplatePage {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 SimpleObjectInfo addressInfo = getAddressObjectInfo(addressComponentState);
-                if (addressInfo != null) {
+                if (addressInfo != null && isSeparateApartment()) {
+                    if ("apartment".equals(addressInfo.getEntityTable())) {
+                        if (communalApartmentService.isCommunalApartment(addressInfo.getId())) {
+                            error(getString("separate_apartment_required"));
+                        }
+                    } else {
+                        error(getString("separate_apartment_required"));
+                    }
+                }
+                if (addressInfo != null && getSession().getFeedbackMessages().isEmpty()) {
                     toReferencePage(addressInfo.getEntityTable(), addressInfo.getId());
                 }
                 target.addComponent(messages);
             }
         };
         add(submit);
+    }
+
+    protected boolean isSeparateApartment() {
+        return false;
     }
 
     protected abstract void toReferencePage(String addressEntity, long addressId);

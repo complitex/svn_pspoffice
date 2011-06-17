@@ -5,14 +5,15 @@
 package org.complitex.pspoffice.person.strategy.entity;
 
 import java.io.Serializable;
-import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
+import org.complitex.address.strategy.building.entity.Building;
+import org.complitex.address.strategy.street.StreetStrategy;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.strategy.IStrategy;
+import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.EjbBeanLocator;
-import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import static org.complitex.dictionary.util.AttributeUtil.*;
@@ -25,28 +26,26 @@ public class Registration extends DomainObject {
 
     public static class Address implements Serializable {
 
-        private String country;
-        private String region;
-        private String district;
-        private String city;
-        private String street;
-        private String buildingNumber;
-        private String buildingCorp;
-        private String apartment;
+        private DomainObject country;
+        private DomainObject region;
+        private DomainObject district;
+        private DomainObject city;
+        private DomainObject street;
+        private Building building;
+        private DomainObject apartment;
 
-        public Address(String country, String region, String district, String city, String street, String buildingNumber,
-                String buildingCorp, String apartment) {
+        public Address(DomainObject country, DomainObject region, DomainObject district, DomainObject city,
+                DomainObject street, Building building, DomainObject apartment) {
             this.country = country;
             this.region = region;
             this.district = district;
             this.city = city;
             this.street = street;
-            this.buildingNumber = buildingNumber;
-            this.buildingCorp = buildingCorp;
+            this.building = building;
             this.apartment = apartment;
         }
     }
-    private Map<Locale, Address> addressComponentMap = newHashMap();
+    private Address address;
     private DomainObject ownerRelationshipObject;
     private Person person;
 
@@ -70,58 +69,65 @@ public class Registration extends DomainObject {
      * Caches the displayed values.
      */
     public String getCountry(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).country;
+        loadAddressComponentsIfNecessary();
+        return address.country != null ? strategy("country").displayDomainObject(address.country, locale) : null;
     }
 
     public String getRegion(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).region;
+        loadAddressComponentsIfNecessary();
+        return address.region != null ? strategy("region").displayDomainObject(address.region, locale) : null;
     }
 
     public String getDistrict(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).district;
+        loadAddressComponentsIfNecessary();
+        return address.district != null ? strategy("district").displayDomainObject(address.district, locale) : null;
     }
 
     public String getCity(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).city;
+        loadAddressComponentsIfNecessary();
+        return address.city != null ? strategy("city").displayDomainObject(address.city, locale) : null;
     }
 
     public String getStreet(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).street;
+        loadAddressComponentsIfNecessary();
+        return address.street != null ? streetStrategy().getName(address.street, locale) : null;
     }
 
     public String getBuildingNumber(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).buildingNumber;
+        loadAddressComponentsIfNecessary();
+        return address.building != null ? address.building.getAccompaniedNumber(locale) : null;
     }
 
     public String getBuildingCorp(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).buildingCorp;
+        loadAddressComponentsIfNecessary();
+        return address.building != null ? address.building.getAccompaniedCorp(locale) : null;
     }
 
     public String getApartment(Locale locale) {
-        loadAddressComponentsIfNecessary(locale);
-        return addressComponentMap.get(locale).apartment;
+        loadAddressComponentsIfNecessary();
+        return address.apartment != null ? strategy("apartment").displayDomainObject(address.apartment, locale) : null;
     }
 
-    private void loadAddressComponentsIfNecessary(Locale locale) {
-        if (addressComponentMap.get(locale) == null) {
-            Address address = registrationStrategy().loadAddress(getAddressEntity(), getAddressId(), locale);
-            addressComponentMap.put(locale, address);
+    private void loadAddressComponentsIfNecessary() {
+        if (address == null) {
+            address = registrationStrategy().loadAddress(getAddressEntity(), getAddressId());
         }
     }
 
     private RegistrationStrategy registrationStrategy() {
-        return EjbBeanLocator.getBean(RegistrationStrategy.class);
+        return (RegistrationStrategy) strategy("registration");
     }
 
-    private OwnerRelationshipStrategy ownerRelationshipStrategy() {
-        return EjbBeanLocator.getBean("Owner_relationshipStrategy");
+    private StrategyFactory strategyFactory() {
+        return EjbBeanLocator.getBean(StrategyFactory.class);
+    }
+
+    private IStrategy strategy(String entityTable) {
+        return strategyFactory().getStrategy(entityTable);
+    }
+
+    private StreetStrategy streetStrategy() {
+        return (StreetStrategy) strategy("street");
     }
 
     public String getAddressEntity() {
@@ -238,7 +244,7 @@ public class Registration extends DomainObject {
                 Long ownerRelationshipId = ownerRelationshipAttribute.getValueId();
                 if (ownerRelationshipId != null) {
                     ownerRelationshipObject = registrationStrategy().loadOwnerRelationship(ownerRelationshipId);
-                    return ownerRelationshipStrategy().displayDomainObject(ownerRelationshipObject, locale);
+                    return strategy("owner_relationship").displayDomainObject(ownerRelationshipObject, locale);
                 }
             }
         }
@@ -275,9 +281,5 @@ public class Registration extends DomainObject {
 
     public String getPersonalAccount() {
         return getStringValue(this, PERSONAL_ACCOUNT);
-    }
-
-    public DomainObject getOwnerRelationshipObject() {
-        return ownerRelationshipObject;
     }
 }

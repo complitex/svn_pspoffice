@@ -8,6 +8,7 @@ import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -38,8 +39,31 @@ public class ReportDownloadPanel extends Panel {
         dialog.add(form);
 
         final IModel<String> typeModel = new Model<String>("PDF");
+        final IModel<String> localeModel = new Model<String>("ru_RU");
 
         form.add(new DropDownChoice<String>("type", typeModel, Arrays.asList("PDF", "RTF")));
+
+        form.add(new DropDownChoice<String>("locale", localeModel, Arrays.asList("ru_RU", "uk_UA"),
+                new IChoiceRenderer<String>(){
+
+            @Override
+            public Object getDisplayValue(String object) {
+                if ("ru_RU".equals(object)){
+                    return getString("ru");
+                }
+
+                if ("uk_UA".equals(object)){
+                    return getString("uk");
+                }
+
+                return null;
+            }
+
+            @Override
+            public String getIdValue(String object, int index) {
+                return object;
+            }
+        }));
 
         //Загрузить
         form.add(new AjaxButton("download"){
@@ -58,6 +82,7 @@ public class ReportDownloadPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 PageParameters pageParameters = new PageParameters();
                 pageParameters.add("type", typeModel.getObject().toLowerCase());
+                pageParameters.add("locale", localeModel.getObject());
 
                 if (objectId != null) {
                     pageParameters.add("object_id", objectId.toString());

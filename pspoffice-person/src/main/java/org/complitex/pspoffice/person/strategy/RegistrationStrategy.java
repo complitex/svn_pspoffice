@@ -206,7 +206,7 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
-    public Registration.Address loadAddress(String addressEntity, long addressId, Locale locale) {
+    public Registration.Address loadAddress(String addressEntity, long addressId) {
         IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
         DomainObject addressObject = addressStrategy.findById(addressId, true);
         SearchComponentState addressComponentState = new SearchComponentState();
@@ -215,30 +215,26 @@ public class RegistrationStrategy extends Strategy {
             addressComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
             addressComponentState.put(addressEntity, addressObject);
         }
-        String apartment = null;
-        DomainObject apartmentObject = addressComponentState.get("apartment");
-        if (apartmentObject != null && apartmentObject.getId() != null && apartmentObject.getId() > 0) {
-            apartment = strategyFactory.getStrategy("apartment").displayDomainObject(apartmentObject, locale);
-        }
-        Building buildingObject = (Building) addressComponentState.get("building");
-        String buildingNumber = buildingObject.getAccompaniedNumber(locale);
-        String buildingCorp = buildingObject.getAccompaniedCorp(locale);
-        Long districtId = buildingStrategy.getDistrictId(buildingObject);
-        String district = null;
+        DomainObject apartment = addressComponentState.get("apartment");
+        apartment = apartment != null && apartment.getId() != null && apartment.getId() > 0 ? apartment : null;
+        Building building = (Building) addressComponentState.get("building");
+        building = building != null && building.getId() != null && building.getId() > 0 ? building : null;
+        Long districtId = buildingStrategy.getDistrictId(building);
+        DomainObject district = null;
         if (districtId != null) {
             IStrategy districtStrategy = strategyFactory.getStrategy("district");
-            DomainObject districtObject = districtStrategy.findById(districtId, true);
-            district = districtStrategy.displayDomainObject(districtObject, locale);
+            district = districtStrategy.findById(districtId, true);
+            district = district != null && district.getId() != null && district.getId() > 0 ? district : null;
         }
-        DomainObject streetObject = addressComponentState.get("street");
-        String street = streetStrategy.getName(streetObject, locale);
-        DomainObject cityObject = addressComponentState.get("city");
-        String city = strategyFactory.getStrategy("city").displayDomainObject(cityObject, locale);
-        DomainObject regionObject = addressComponentState.get("region");
-        String region = strategyFactory.getStrategy("region").displayDomainObject(regionObject, locale);
-        DomainObject countryObject = addressComponentState.get("country");
-        String country = strategyFactory.getStrategy("country").displayDomainObject(countryObject, locale);
-        return new Registration.Address(country, region, district, city, street, buildingNumber, buildingCorp, apartment);
+        DomainObject street = addressComponentState.get("street");
+        street = street != null && street.getId() != null && street.getId() > 0 ? street : null;
+        DomainObject city = addressComponentState.get("city");
+        city = city != null && city.getId() != null && city.getId() > 0 ? city : null;
+        DomainObject region = addressComponentState.get("region");
+        region = region != null && region.getId() != null && region.getId() > 0 ? region : null;
+        DomainObject country = addressComponentState.get("country");
+        country = country != null && country.getId() != null && country.getId() > 0 ? country : null;
+        return new Registration.Address(country, region, district, city, street, building, apartment);
     }
 
     @Override

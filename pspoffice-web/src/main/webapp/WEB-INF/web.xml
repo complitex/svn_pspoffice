@@ -38,6 +38,9 @@
         <role-name>PERSON_MODULE_EDIT</role-name>
     </security-role>
     <security-role>
+        <role-name>PERSON_MODULE_DESCRIPTION_EDIT</role-name>
+    </security-role>
+    <security-role>
         <role-name>CHILD_ORGANIZATION_VIEW</role-name>
     </security-role>
     <security-role>

@@ -25,7 +25,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_DESCRIPTION_EDIT)
 public class RegistrationDescriptionMenu extends ResourceTemplateMenu {
 
     @Override

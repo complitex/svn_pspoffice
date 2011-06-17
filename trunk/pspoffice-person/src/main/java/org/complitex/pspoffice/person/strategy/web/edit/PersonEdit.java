@@ -51,8 +51,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public final class PersonEdit extends FormTemplatePage {
+@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+public class PersonEdit extends FormTemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(PersonEdit.class);
     @EJB

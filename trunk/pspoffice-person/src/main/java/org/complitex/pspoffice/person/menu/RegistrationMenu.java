@@ -26,7 +26,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
+@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
 public class RegistrationMenu extends ResourceTemplateMenu {
 
     private static IStrategy getPersonStrategy() {

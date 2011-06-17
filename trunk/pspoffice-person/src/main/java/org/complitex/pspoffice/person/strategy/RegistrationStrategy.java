@@ -240,4 +240,9 @@ public class RegistrationStrategy extends Strategy {
         String country = strategyFactory.getStrategy("country").displayDomainObject(countryObject, locale);
         return new Registration.Address(country, region, district, city, street, buildingNumber, buildingCorp, apartment);
     }
+
+    @Override
+    public String[] getDescriptionRoles() {
+        return new String[]{SecurityRole.PERSON_MODULE_DESCRIPTION_EDIT};
+    }
 }

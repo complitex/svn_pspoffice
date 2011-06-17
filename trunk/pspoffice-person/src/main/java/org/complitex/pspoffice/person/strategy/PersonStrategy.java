@@ -473,7 +473,7 @@ public class PersonStrategy extends TemplateStrategy {
         params.put("addressTypeId", addressTypeId);
         params.put("isOwnerAttributeType", RegistrationStrategy.IS_OWNER);
         params.put("excludeId", excludeId);
-        
+
         List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findOwnersByAddress", params);
         List<Person> persons = newArrayList();
         for (Long personId : personIds) {
@@ -552,5 +552,10 @@ public class PersonStrategy extends TemplateStrategy {
             }
         }
         return ResourceUtil.getString(RESOURCE_BUNDLE, "no_form_of_ownership", locale);
+    }
+
+    @Override
+    public String[] getDescriptionRoles() {
+        return new String[]{SecurityRole.PERSON_MODULE_DESCRIPTION_EDIT};
     }
 }

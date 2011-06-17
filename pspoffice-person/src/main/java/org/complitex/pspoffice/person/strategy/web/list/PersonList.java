@@ -45,25 +45,22 @@ import org.complitex.template.web.component.toolbar.AddItemButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ScrollListPage;
 import org.complitex.template.web.security.SecurityRole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
+@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
 public final class PersonList extends ScrollListPage {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonList.class);
-    private DomainObjectExample example;
-    private static final String PAGE = PersonList.class.getName();
     @EJB
     private PersonStrategy personStrategy;
     @EJB
     private LocaleBean localeBean;
     @EJB
     private StringCultureBean stringBean;
+    private DomainObjectExample example;
+    private static final String PAGE = PersonList.class.getName();
 
     private class ColumnLabelModel extends AbstractReadOnlyModel<String> {
 

@@ -27,7 +27,6 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
-import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.DeleteException;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
@@ -204,16 +203,10 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Override
     public Person newInstance() {
-        Person person = new Person();
-        fillAttributes(person);
+        Person person = new Person(super.newInstance());
         Registration registration = registrationStrategy.newInstance();
         person.setRegistration(registration);
         registration.setPerson(person);
-
-        //set up subject ids to visible-by-all subject
-        Set<Long> defaultSubjectIds = newHashSet(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
-        person.setSubjectIds(defaultSubjectIds);
-
         return person;
     }
 
@@ -221,10 +214,10 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     protected void insertDomainObject(DomainObject object, Date insertDate) {
         Person person = (Person) object;
-        DomainObject registration = person.getRegistration();
+        Registration registration = person.getRegistration();
+        registration.setSubjectIds(person.getSubjectIds());
         registrationStrategy.insert(registration, insertDate);
         person.getAttribute(REGISTRATION).setValueId(registration.getId());
-        person.updateChildrenAttributes();
         super.insertDomainObject(person, insertDate);
     }
 
@@ -240,9 +233,9 @@ public class PersonStrategy extends TemplateStrategy {
         Person oldPerson = (Person) oldObject;
         Person newPerson = (Person) newObject;
 
-        DomainObject oldRegistration = oldPerson.getRegistration();
-        DomainObject newRegistration = newPerson.getRegistration();
-        DomainObject changedRegistration = newPerson.getChangedRegistration();
+        Registration oldRegistration = oldPerson.getRegistration();
+        Registration newRegistration = newPerson.getRegistration();
+        Registration changedRegistration = newPerson.getChangedRegistration();
 
         if (oldRegistration == null) {
             if (newRegistration != null) {
@@ -255,6 +248,7 @@ public class PersonStrategy extends TemplateStrategy {
         } else {
             if (changedRegistration == null) {
                 Date updateRegistrationDate = newPerson.isRegistrationStopped() ? DateUtil.justBefore(updateDate) : updateDate;
+                newRegistration.setSubjectIds(newPerson.getSubjectIds());
                 registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
                 if (newPerson.isRegistrationStopped()) {
                     registrationStrategy.archive(newRegistration, updateDate);
@@ -262,6 +256,7 @@ public class PersonStrategy extends TemplateStrategy {
                 }
             } else {
                 Date updateRegistrationDate = DateUtil.justBefore(updateDate);
+                newRegistration.setSubjectIds(newPerson.getSubjectIds());
                 registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
                 changedRegistration.setSubjectIds(newPerson.getSubjectIds());
                 registrationStrategy.insert(changedRegistration, updateDate);
@@ -269,8 +264,6 @@ public class PersonStrategy extends TemplateStrategy {
                 registrationStrategy.archive(newRegistration, updateDate);
             }
         }
-
-        newPerson.updateChildrenAttributes();
         super.update(oldObject, newObject, updateDate);
     }
 

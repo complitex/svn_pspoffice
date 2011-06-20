@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.edit;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -68,6 +69,7 @@ import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 /**
  *
@@ -169,7 +171,9 @@ public final class PersonInputPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (registrationInputPanel.validate()) {
                     registrationInputPanel.beforePersist();
-                    person.setChangedRegistration(registrationStrategy.newInstance());
+                    Registration changedRegistration = registrationStrategy.newInstance();
+                    person.setChangedRegistration(changedRegistration);
+                    changedRegistration.setPerson(person);
                     registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getChangedRegistration(), date);
                     registrationStopCouponLink.setVisible(true);
                     updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
@@ -480,6 +484,26 @@ public final class PersonInputPanel extends Panel {
     public void beforePersist() {
         if (registrationInputPanel != null) {
             registrationInputPanel.beforePersist();
+        }
+        updateChildrenAttributes();
+    }
+
+    private void updateChildrenAttributes() {
+        person.getAttributes().removeAll(Collections2.filter(person.getAttributes(), new Predicate<Attribute>() {
+
+            @Override
+            public boolean apply(Attribute attr) {
+                return attr.getAttributeTypeId().equals(CHILDREN);
+            }
+        }));
+        long attributeId = 1;
+        for (Person child : person.getChildren()) {
+            Attribute childrenAttribute = new Attribute();
+            childrenAttribute.setAttributeId(attributeId++);
+            childrenAttribute.setAttributeTypeId(CHILDREN);
+            childrenAttribute.setValueTypeId(CHILDREN);
+            childrenAttribute.setValueId(child.getId());
+            person.addAttribute(childrenAttribute);
         }
     }
 

@@ -4,13 +4,10 @@
  */
 package org.complitex.pspoffice.person.strategy.entity;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
 import org.complitex.dictionary.converter.GenderConverter;
-import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.util.StringUtil;
@@ -92,29 +89,6 @@ public class Person extends DomainObject {
 
     public void setChild(int index, Person child) {
         children.set(index, child);
-    }
-
-    public void updateChildrenAttributes() {
-        getAttributes().removeAll(Collections2.filter(getAttributes(), new Predicate<Attribute>() {
-
-            @Override
-            public boolean apply(Attribute attr) {
-                return attr.getAttributeTypeId().equals(CHILDREN);
-            }
-        }));
-        long attributeId = 1;
-        for (Person child : getChildren()) {
-            addChildrenAttribute(child.getId(), attributeId++);
-        }
-    }
-
-    private void addChildrenAttribute(long valueId, long attributeId) {
-        Attribute childrenAttribute = new Attribute();
-        childrenAttribute.setAttributeId(attributeId);
-        childrenAttribute.setAttributeTypeId(CHILDREN);
-        childrenAttribute.setValueTypeId(CHILDREN);
-        childrenAttribute.setValueId(valueId);
-        addAttribute(childrenAttribute);
     }
 
     public String getFullName() {

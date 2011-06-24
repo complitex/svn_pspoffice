@@ -4,6 +4,7 @@
         <menu class="org.complitex.pspoffice.web.AdminTemplateMenu"/>
         <menu class="org.complitex.address.menu.AddressMenu"/>
         <menu class="org.complitex.organization.web.OrganizationTemplateMenu"/>
+        <menu class="org.complitex.organization_type.menu.OrganizationTypeMenu"/>
         <menu class="org.complitex.address.menu.AddressDescriptionMenu"/>
         <menu class="org.complitex.pspoffice.person.menu.RegistrationMenu"/>
         <menu class="org.complitex.pspoffice.person.menu.RegistrationDescriptionMenu"/>

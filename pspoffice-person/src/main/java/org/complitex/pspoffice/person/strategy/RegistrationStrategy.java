@@ -12,7 +12,6 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.complitex.address.strategy.building.BuildingStrategy;
 import org.complitex.address.strategy.building.entity.Building;
-import org.complitex.address.strategy.street.StreetStrategy;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
@@ -76,8 +75,6 @@ public class RegistrationStrategy extends Strategy {
     private StrategyFactory strategyFactory;
     @EJB
     private BuildingStrategy buildingStrategy;
-    @EJB
-    private StreetStrategy streetStrategy;
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
 

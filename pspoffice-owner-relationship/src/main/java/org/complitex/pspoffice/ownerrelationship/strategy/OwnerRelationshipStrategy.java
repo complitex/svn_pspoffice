@@ -28,7 +28,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@Stateless(name = "Owner_relationshipStrategy")
+@Stateless
 public class OwnerRelationshipStrategy extends TemplateStrategy {
 
     private static final String RESOURCE_BUNDLE = OwnerRelationshipStrategy.class.getName();

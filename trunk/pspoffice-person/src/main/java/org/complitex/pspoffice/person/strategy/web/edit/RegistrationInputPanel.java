@@ -78,7 +78,7 @@ public final class RegistrationInputPanel extends Panel {
     private PersonStrategy personStrategy;
     @EJB
     private StrategyFactory strategyFactory;
-    @EJB(name = "Owner_relationshipStrategy")
+    @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     private Registration registration;
     private Attribute addressAttribute;

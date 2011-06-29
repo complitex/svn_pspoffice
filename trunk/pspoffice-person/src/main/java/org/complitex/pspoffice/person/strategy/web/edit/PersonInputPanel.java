@@ -40,10 +40,7 @@ import org.complitex.dictionary.converter.DoubleConverter;
 import org.complitex.dictionary.converter.GenderConverter;
 import org.complitex.dictionary.converter.IntegerConverter;
 import org.complitex.dictionary.converter.StringConverter;
-import org.complitex.dictionary.entity.Attribute;
-import org.complitex.dictionary.entity.Gender;
-import org.complitex.dictionary.entity.SimpleTypes;
-import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.entity.*;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
@@ -305,18 +302,21 @@ public final class PersonInputPanel extends Panel {
                     }
                 }));
 
-                SearchComponentState<Person> searchComponentState = new SearchComponentState<Person>() {
+                SearchComponentState searchComponentState = new SearchComponentState() {
 
                     @Override
-                    public void put(String entity, Person child) {
+                    public DomainObject put(String entity, DomainObject child) {
                         super.put(entity, child);
                         int index = getCurrentIndex(fakeContainer);
-                        person.setChild(index, child);
+
+                        person.setChild(index, (Person) child);
+
+                        return child;
                     }
                 };
                 Person child = item.getModelObject();
                 if (child != null) {
-                    searchComponentState.getState().put(personStrategy.getEntityTable(), child);
+                    searchComponentState.put(personStrategy.getEntityTable(), child);
                 }
 
                 SearchComponent searchChildComponent = new SearchComponent("searchChildComponent", searchComponentState,

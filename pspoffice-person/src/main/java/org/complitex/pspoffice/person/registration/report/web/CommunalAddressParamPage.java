@@ -131,12 +131,12 @@ public abstract class CommunalAddressParamPage extends FormTemplatePage {
 
     protected final SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
         DomainObject building = addressComponentState.get("building");
-        if (building == null || building.getId() == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (building == null || building.getId() == null || building.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             error(getString("address_invalid"));
             return null;
         }
         DomainObject apartment = addressComponentState.get("apartment");
-        if (apartment == null || apartment.getId() == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (apartment == null || apartment.getId() == null || apartment.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             //TODO: add building selection
             error(getString("address_invalid"));
             return null;

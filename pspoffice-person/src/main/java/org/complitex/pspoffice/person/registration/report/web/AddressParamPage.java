@@ -79,16 +79,16 @@ public abstract class AddressParamPage extends FormTemplatePage {
 
     protected final SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
         DomainObject building = addressComponentState.get("building");
-        if (building == null || building.getId() == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (building == null || building.getId() == null || building.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             error(getString("address_invalid"));
             return null;
         }
         DomainObject apartment = addressComponentState.get("apartment");
-        if (apartment == null || apartment.getId() == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (apartment == null || apartment.getId() == null || apartment.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             return new SimpleObjectInfo("building", building.getId());
         }
         DomainObject room = addressComponentState.get("room");
-        if (room == null || room.getId() == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (room == null || room.getId() == null || room.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             return new SimpleObjectInfo("apartment", apartment.getId());
         }
         return new SimpleObjectInfo("room", room.getId());

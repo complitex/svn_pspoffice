@@ -437,14 +437,14 @@ public final class RegistrationInputPanel extends Panel {
             }
             if (addressEntity.equals("apartment")) {
                 DomainObject room = new DomainObject();
-                room.setId(SearchComponent.NOT_SPECIFIED_ID);
+                room.setId(SearchComponentState.NOT_SPECIFIED_ID);
                 searchComponentState.put("room", room);
             } else if (addressEntity.equals("building")) {
                 DomainObject room = new DomainObject();
-                room.setId(SearchComponent.NOT_SPECIFIED_ID);
+                room.setId(SearchComponentState.NOT_SPECIFIED_ID);
                 searchComponentState.put("room", room);
                 DomainObject apartment = new DomainObject();
-                apartment.setId(SearchComponent.NOT_SPECIFIED_ID);
+                apartment.setId(SearchComponentState.NOT_SPECIFIED_ID);
                 searchComponentState.put("apartment", apartment);
             }
         }
@@ -453,13 +453,13 @@ public final class RegistrationInputPanel extends Panel {
 
     public void beforePersist() {
         // current address attributes
-        if (!addressSearchComponentState.get("room").getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (!addressSearchComponentState.get("room").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             addressAttribute.setValueTypeId(ADDRESS_ROOM);
             addressAttribute.setValueId(addressSearchComponentState.get("room").getId());
-        } else if (!addressSearchComponentState.get("apartment").getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        } else if (!addressSearchComponentState.get("apartment").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             addressAttribute.setValueTypeId(ADDRESS_APARTMENT);
             addressAttribute.setValueId(addressSearchComponentState.get("apartment").getId());
-        } else if (!addressSearchComponentState.get("building").getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        } else if (!addressSearchComponentState.get("building").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             addressAttribute.setValueTypeId(ADDRESS_BUILDING);
             addressAttribute.setValueId(addressSearchComponentState.get("building").getId());
         } else {
@@ -504,18 +504,18 @@ public final class RegistrationInputPanel extends Panel {
         String addressEntity = null;
         Long addressId = null;
         DomainObject building = addressSearchComponentState.get("building");
-        if (building == null || building.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+        if (building == null || building.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             error(getString("address_failing"));
         } else {
             DomainObject apartment = addressSearchComponentState.get("apartment");
-            if (apartment == null || apartment.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+            if (apartment == null || apartment.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
                 if (isLeafBuilding(building.getId())) {
                     addressEntity = "building";
                     addressId = building.getId();
                 }
             } else {
                 DomainObject room = addressSearchComponentState.get("room");
-                if (room == null || room.getId().equals(SearchComponent.NOT_SPECIFIED_ID)) {
+                if (room == null || room.getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
                     if (isLeafApartment(apartment.getId())) {
                         addressEntity = "apartment";
                         addressId = apartment.getId();

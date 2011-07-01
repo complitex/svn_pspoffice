@@ -23,19 +23,11 @@ import org.apache.wicket.markup.html.form.RadioChoice;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionary.converter.BooleanConverter;
-import org.complitex.dictionary.converter.DateConverter;
-import org.complitex.dictionary.converter.DoubleConverter;
-import org.complitex.dictionary.converter.IntegerConverter;
-import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.SimpleTypes;
-import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
@@ -44,19 +36,11 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
-import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeModel;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.type.BigStringPanel;
-import org.complitex.dictionary.web.component.type.BooleanPanel;
-import org.complitex.dictionary.web.component.type.Date2Panel;
-import org.complitex.dictionary.web.component.type.DatePanel;
-import org.complitex.dictionary.web.component.type.DoublePanel;
-import org.complitex.dictionary.web.component.type.IntegerPanel;
-import org.complitex.dictionary.web.component.type.StringCulturePanel;
-import org.complitex.dictionary.web.component.type.StringPanel;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
@@ -103,7 +87,8 @@ public final class RegistrationInputPanel extends Panel {
         //current address
         WebMarkupContainer currentAddressContainer = new WebMarkupContainer("currentAddressContainer");
         add(currentAddressContainer);
-        currentAddressContainer.add(new Label("label", newLabelModel(entity.getAttributeType(ADDRESS).getAttributeNames())));
+        currentAddressContainer.add(new Label("label",
+                labelModel(entity.getAttributeType(ADDRESS).getAttributeNames(), getLocale())));
         WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
         requiredContainer.setVisible(entity.getAttributeType(ADDRESS).isMandatory());
         currentAddressContainer.add(requiredContainer);
@@ -195,7 +180,7 @@ public final class RegistrationInputPanel extends Panel {
         this.add(ownerRelationshipContainer);
 
         //label
-        IModel<String> labelModel = newLabelModel(attributeType.getAttributeNames());
+        IModel<String> labelModel = labelModel(attributeType.getAttributeNames(), getLocale());
         ownerRelationshipContainer.add(new Label("label", labelModel));
 
         //select
@@ -322,22 +307,11 @@ public final class RegistrationInputPanel extends Panel {
         initAttributeInput(container, attributeTypeId, showIfMissing, mandatory);
     }
 
-    private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames) {
-        return new AbstractReadOnlyModel<String>() {
-
-            @Override
-            public String getObject() {
-                return stringBean.displayValue(attributeTypeNames, getLocale());
-            }
-        };
-    }
-
     private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing, Boolean mandatory) {
         final EntityAttributeType attributeType = registrationStrategy.getEntity().getAttributeType(attributeTypeId);
 
         //label
-        IModel<String> labelModel = newLabelModel(attributeType.getAttributeNames());
-        parent.add(new Label("label", labelModel));
+        parent.add(new Label("label", labelModel(attributeType.getAttributeNames(), getLocale())));
 
         //required container
         boolean isRequired = mandatory == null ? attributeType.isMandatory() : mandatory;
@@ -350,65 +324,11 @@ public final class RegistrationInputPanel extends Panel {
         if (attribute == null) {
             attribute = new Attribute();
             attribute.setLocalizedValues(stringBean.newStringCultures());
+            attribute.setAttributeTypeId(attributeTypeId);
             parent.setVisible(showIfMissing);
         }
-
-        String valueType = attributeType.getEntityAttributeValueTypes().get(0).getValueType();
-        SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
-
-        Component input = null;
-        final StringCulture systemLocaleStringCulture = stringBean.getSystemStringCulture(attribute.getLocalizedValues());
-        switch (type) {
-            case STRING: {
-                IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
-                input = new StringPanel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case BIG_STRING: {
-                IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
-                input = new BigStringPanel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case STRING_CULTURE: {
-                IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attribute, "localizedValues");
-                input = new StringCulturePanel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case INTEGER: {
-                IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
-                input = new IntegerPanel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case DATE: {
-                IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                input = new DatePanel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case DATE2: {
-                IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                input = new Date2Panel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case BOOLEAN: {
-                IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
-                input = new BooleanPanel("input", model, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-            case DOUBLE: {
-                IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
-                input = new DoublePanel("input", model, isRequired, labelModel,
-                        !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
-            }
-            break;
-        }
-        parent.add(input);
+        parent.add(newInputComponent(registrationStrategy.getEntityTable(), null, registration, attribute, getLocale(),
+                isHistory()));
     }
 
     private SearchComponentState initAddressSearchComponentState() {

@@ -17,7 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
-import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -33,34 +32,18 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
-import org.complitex.dictionary.converter.BooleanConverter;
-import org.complitex.dictionary.converter.DateConverter;
-import org.complitex.dictionary.converter.DoubleConverter;
-import org.complitex.dictionary.converter.GenderConverter;
-import org.complitex.dictionary.converter.IntegerConverter;
-import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.*;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
-import org.complitex.dictionary.web.component.DomainObjectInputPanel.SimpleTypeModel;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.name.FullNamePanel;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.type.BigStringPanel;
-import org.complitex.dictionary.web.component.type.BooleanPanel;
-import org.complitex.dictionary.web.component.type.Date2Panel;
-import org.complitex.dictionary.web.component.type.DatePanel;
-import org.complitex.dictionary.web.component.type.DoublePanel;
-import org.complitex.dictionary.web.component.type.GenderPanel;
-import org.complitex.dictionary.web.component.type.IntegerPanel;
-import org.complitex.dictionary.web.component.type.StringCulturePanel;
-import org.complitex.dictionary.web.component.type.StringPanel;
 import org.complitex.pspoffice.person.registration.report.web.RegistrationStopCouponPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -119,7 +102,8 @@ public final class PersonInputPanel extends Panel {
         Entity entity = personStrategy.getEntity();
 
         //registration panel:
-        Label registrationLabel = new Label("registrationLabel", newLabelModel(entity.getAttributeType(REGISTRATION).getAttributeNames()));
+        Label registrationLabel = new Label("registrationLabel",
+                labelModel(entity.getAttributeType(REGISTRATION).getAttributeNames(), getLocale()));
         registrationLabel.setOutputMarkupId(true);
         final String registrationLabelMarkupId = registrationLabel.getMarkupId();
         add(registrationLabel);
@@ -284,7 +268,8 @@ public final class PersonInputPanel extends Panel {
         //children
         WebMarkupContainer childrenFieldsetContainer = new WebMarkupContainer("childrenFieldsetContainer");
         add(childrenFieldsetContainer);
-        childrenFieldsetContainer.add(new Label("childrenLabel", newLabelModel(entity.getAttributeType(CHILDREN).getAttributeNames())));
+        childrenFieldsetContainer.add(new Label("childrenLabel",
+                labelModel(entity.getAttributeType(CHILDREN).getAttributeNames(), getLocale())));
         final WebMarkupContainer childrenContainer = new WebMarkupContainer("childrenContainer");
         childrenContainer.setOutputMarkupId(true);
         childrenFieldsetContainer.add(childrenContainer);
@@ -375,16 +360,6 @@ public final class PersonInputPanel extends Panel {
         initAttributeInput(container, attributeTypeId, showIfMissing);
     }
 
-    private IModel<String> newLabelModel(final List<StringCulture> attributeTypeNames) {
-        return new AbstractReadOnlyModel<String>() {
-
-            @Override
-            public String getObject() {
-                return stringBean.displayValue(attributeTypeNames, getLocale());
-            }
-        };
-    }
-
     private boolean isPassportContainerVisible() {
         return !(isHistory() && (person.getAttribute(PASSPORT_SERIAL_NUMBER) == null) && (person.getAttribute(PASSPORT_NUMBER) == null)
                 && (person.getAttribute(PASSPORT_ACQUISITION_ORGANIZATION) == null)
@@ -401,8 +376,7 @@ public final class PersonInputPanel extends Panel {
         final EntityAttributeType attributeType = personStrategy.getEntity().getAttributeType(attributeTypeId);
 
         //label
-        IModel<String> labelModel = newLabelModel(attributeType.getAttributeNames());
-        parent.add(new Label("label", labelModel));
+        parent.add(new Label("label", labelModel(attributeType.getAttributeNames(), getLocale())));
 
         //required container
         WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
@@ -414,71 +388,10 @@ public final class PersonInputPanel extends Panel {
         if (attribute == null) {
             attribute = new Attribute();
             attribute.setLocalizedValues(stringBean.newStringCultures());
+            attribute.setAttributeTypeId(attributeTypeId);
             parent.setVisible(showIfMissing);
         }
-
-        String valueType = attributeType.getEntityAttributeValueTypes().get(0).getValueType();
-        SimpleTypes type = SimpleTypes.valueOf(valueType.toUpperCase());
-
-        Component input = null;
-        final StringCulture systemLocaleStringCulture = stringBean.getSystemStringCulture(attribute.getLocalizedValues());
-        switch (type) {
-            case STRING: {
-                IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
-                input = new StringPanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case BIG_STRING: {
-                IModel<String> model = new SimpleTypeModel<String>(systemLocaleStringCulture, new StringConverter());
-                input = new BigStringPanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case STRING_CULTURE: {
-                IModel<List<StringCulture>> model = new PropertyModel<List<StringCulture>>(attribute, "localizedValues");
-                input = new StringCulturePanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case INTEGER: {
-                IModel<Integer> model = new SimpleTypeModel<Integer>(systemLocaleStringCulture, new IntegerConverter());
-                input = new IntegerPanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case DATE: {
-                IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                input = new DatePanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case DATE2: {
-                IModel<Date> model = new SimpleTypeModel<Date>(systemLocaleStringCulture, new DateConverter());
-                input = new Date2Panel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case BOOLEAN: {
-                IModel<Boolean> model = new SimpleTypeModel<Boolean>(systemLocaleStringCulture, new BooleanConverter());
-                input = new BooleanPanel("input", model, labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case DOUBLE: {
-                IModel<Double> model = new SimpleTypeModel<Double>(systemLocaleStringCulture, new DoubleConverter());
-                input = new DoublePanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-            case GENDER: {
-                IModel<Gender> model = new SimpleTypeModel<Gender>(systemLocaleStringCulture, new GenderConverter());
-                input = new GenderPanel("input", model, attributeType.isMandatory(), labelModel,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-            }
-            break;
-        }
-        parent.add(input);
+        parent.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute, getLocale(), isHistory()));
     }
 
     public void beforePersist() {

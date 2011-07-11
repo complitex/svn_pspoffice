@@ -36,7 +36,7 @@
     </sql>
 
     <select id="find" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
-        SELECT DISTINCT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`, e.`parent_entity_id`, e.`entity_type_id`,
+        SELECT DISTINCT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`, e.`parent_entity_id`,
                 e.`permission_id`, ln.`name` last_name, fn.`name` first_name, mn.`name` middle_name
         FROM `person` e
             <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>

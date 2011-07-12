@@ -6,12 +6,6 @@ package org.complitex.pspoffice.person.strategy.web.edit;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import static com.google.common.collect.ImmutableList.*;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
-import java.util.Date;
-import java.util.List;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -36,17 +30,27 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.web.component.ShowMode;
-import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+
+import javax.ejb.EJB;
+import java.util.Date;
+import java.util.List;
+
+import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.canEdit;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
+import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 
 /**
  *
@@ -94,7 +98,7 @@ public final class RegistrationInputPanel extends Panel {
         currentAddressContainer.add(requiredContainer);
         addressAttribute = registration.getAttribute(ADDRESS);
         addressSearchComponentState = initAddressSearchComponentState();
-        SearchComponent addressSearchPanel = new SearchComponent("input", addressSearchComponentState,
+        WiQuerySearchComponent addressSearchPanel = new WiQuerySearchComponent("input", addressSearchComponentState,
                 of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
                 !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
         currentAddressContainer.add(addressSearchPanel);

@@ -4,9 +4,6 @@
  */
 package org.complitex.pspoffice.person.registration.report.web;
 
-import static com.google.common.collect.Lists.*;
-import java.util.List;
-import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -16,11 +13,16 @@ import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
 import org.complitex.dictionary.web.component.ShowMode;
-import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.registration.report.service.CommunalApartmentService;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
+
+import javax.ejb.EJB;
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  *
@@ -44,7 +46,7 @@ public abstract class AddressParamPage extends FormTemplatePage {
         if (!isSeparateApartment()) {
             searchFilters.add("room");
         }
-        SearchComponent searchComponent = new SearchComponent("searchComponent", addressComponentState, searchFilters,
+        WiQuerySearchComponent searchComponent = new WiQuerySearchComponent("searchComponent", addressComponentState, searchFilters,
                 null, ShowMode.ACTIVE, true);
         add(searchComponent);
 

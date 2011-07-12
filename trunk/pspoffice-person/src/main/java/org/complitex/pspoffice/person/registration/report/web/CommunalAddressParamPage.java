@@ -4,11 +4,6 @@
  */
 package org.complitex.pspoffice.person.registration.report.web;
 
-import static com.google.common.collect.ImmutableList.*;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -28,12 +23,19 @@ import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
-import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.registration.report.service.CommunalApartmentService;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
+
+import javax.ejb.EJB;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.collect.ImmutableList.of;
 
 /**
  *
@@ -86,7 +88,7 @@ public abstract class CommunalAddressParamPage extends FormTemplatePage {
         add(messages);
 
         SearchComponentState addressComponentState = new SearchComponentState();
-        SearchComponent searchComponent = new SearchComponent("searchComponent", addressComponentState,
+        WiQuerySearchComponent searchComponent = new WiQuerySearchComponent("searchComponent", addressComponentState,
                 of("city", "street", "building", "apartment"), new CommunalAddressCallback(), ShowMode.ACTIVE, true);
         add(searchComponent);
 

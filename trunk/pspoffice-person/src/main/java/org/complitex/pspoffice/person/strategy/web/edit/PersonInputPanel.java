@@ -8,15 +8,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import java.text.MessageFormat;
-import java.util.Collection;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.Sets.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import javax.ejb.EJB;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -32,24 +23,38 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.complitex.dictionary.entity.*;
+import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.name.FullNamePanel;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
-import org.complitex.dictionary.web.component.search.SearchComponent;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.registration.report.web.RegistrationStopCouponPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
-import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+
+import javax.ejb.EJB;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.canEdit;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
+import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 
 /**
  *
@@ -304,7 +309,7 @@ public final class PersonInputPanel extends Panel {
                     searchComponentState.put(personStrategy.getEntityTable(), child);
                 }
 
-                SearchComponent searchChildComponent = new SearchComponent("searchChildComponent", searchComponentState,
+                WiQuerySearchComponent searchChildComponent = new WiQuerySearchComponent("searchChildComponent", searchComponentState,
                         ImmutableList.of(personStrategy.getEntityTable()), null, ShowMode.ACTIVE,
                         !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
                 item.add(searchChildComponent);

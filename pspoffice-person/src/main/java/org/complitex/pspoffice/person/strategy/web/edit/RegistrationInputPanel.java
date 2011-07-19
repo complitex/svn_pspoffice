@@ -33,6 +33,7 @@ import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
+import static org.complitex.dictionary.web.component.search.WiQuerySearchComponent.SearchFilterSettings;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -98,9 +99,13 @@ public final class RegistrationInputPanel extends Panel {
         currentAddressContainer.add(requiredContainer);
         addressAttribute = registration.getAttribute(ADDRESS);
         addressSearchComponentState = initAddressSearchComponentState();
+        boolean canEdit = !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration);
         WiQuerySearchComponent addressSearchPanel = new WiQuerySearchComponent("input", addressSearchComponentState,
-                of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
-                !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
+                of(new SearchFilterSettings("city", canEdit, ShowMode.ACTIVE, false),
+                new SearchFilterSettings("street", canEdit, ShowMode.ACTIVE, false),
+                new SearchFilterSettings("building", canEdit, ShowMode.ACTIVE, true),
+                new SearchFilterSettings("apartment", canEdit, ShowMode.ACTIVE, true),
+                new SearchFilterSettings("room", canEdit, ShowMode.ACTIVE, true)), null);
         currentAddressContainer.add(addressSearchPanel);
 
         //system attributes:
@@ -377,13 +382,16 @@ public final class RegistrationInputPanel extends Panel {
 
     public void beforePersist() {
         // current address attributes
-        if (!addressSearchComponentState.get("room").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
+        if (addressSearchComponentState.get("room") != null
+                && !addressSearchComponentState.get("room").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             addressAttribute.setValueTypeId(ADDRESS_ROOM);
             addressAttribute.setValueId(addressSearchComponentState.get("room").getId());
-        } else if (!addressSearchComponentState.get("apartment").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
+        } else if (addressSearchComponentState.get("apartment") != null
+                && !addressSearchComponentState.get("apartment").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             addressAttribute.setValueTypeId(ADDRESS_APARTMENT);
             addressAttribute.setValueId(addressSearchComponentState.get("apartment").getId());
-        } else if (!addressSearchComponentState.get("building").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
+        } else if (addressSearchComponentState.get("building") != null
+                && !addressSearchComponentState.get("building").getId().equals(SearchComponentState.NOT_SPECIFIED_ID)) {
             addressAttribute.setValueTypeId(ADDRESS_BUILDING);
             addressAttribute.setValueId(addressSearchComponentState.get("building").getId());
         } else {

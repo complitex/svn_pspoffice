@@ -33,7 +33,6 @@ import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
-import static org.complitex.dictionary.web.component.search.WiQuerySearchComponent.SearchFilterSettings;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -99,13 +98,9 @@ public final class RegistrationInputPanel extends Panel {
         currentAddressContainer.add(requiredContainer);
         addressAttribute = registration.getAttribute(ADDRESS);
         addressSearchComponentState = initAddressSearchComponentState();
-        boolean canEdit = !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration);
         WiQuerySearchComponent addressSearchPanel = new WiQuerySearchComponent("input", addressSearchComponentState,
-                of(new SearchFilterSettings("city", canEdit, ShowMode.ACTIVE, false),
-                new SearchFilterSettings("street", canEdit, ShowMode.ACTIVE, false),
-                new SearchFilterSettings("building", canEdit, ShowMode.ACTIVE, true),
-                new SearchFilterSettings("apartment", canEdit, ShowMode.ACTIVE, true),
-                new SearchFilterSettings("room", canEdit, ShowMode.ACTIVE, true)), null);
+                of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE,
+                !isHistory() && canEdit(null, registrationStrategy.getEntityTable(), registration));
         currentAddressContainer.add(addressSearchPanel);
 
         //system attributes:

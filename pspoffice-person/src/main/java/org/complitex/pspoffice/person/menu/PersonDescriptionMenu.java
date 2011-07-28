@@ -26,11 +26,11 @@ import org.complitex.template.web.security.SecurityRole;
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.PERSON_MODULE_DESCRIPTION_EDIT)
-public class RegistrationDescriptionMenu extends ResourceTemplateMenu {
+public class PersonDescriptionMenu extends ResourceTemplateMenu {
 
     @Override
     public String getTitle(Locale locale) {
-        return getString(MenuResources.class, locale, "registration_description_menu");
+        return getString(MenuResources.class, locale, "person_description_menu");
     }
 
     private String getEntityName(String entity, Locale locale) {

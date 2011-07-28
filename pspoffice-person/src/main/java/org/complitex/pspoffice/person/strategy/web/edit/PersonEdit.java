@@ -31,10 +31,8 @@ import org.complitex.dictionary.web.component.permission.DomainObjectPermissions
 import org.complitex.dictionary.web.component.permission.PermissionPropagationDialogPanel;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.Module;
-import org.complitex.pspoffice.person.registration.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.download.RegistrationCardDownload;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
@@ -105,7 +103,7 @@ public class PersonEdit extends FormTemplatePage {
         Form form = new Form("form");
 
         //input panel
-        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages);
+        personInputPanel = new PersonInputPanel("personInputPanel", newPerson);
         form.add(personInputPanel);
 
         //history
@@ -206,8 +204,8 @@ public class PersonEdit extends FormTemplatePage {
         add(form);
 
         //Загрузка отчетов
-        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCardDownload.class, newPerson.getId(), getString("report_download"));
-        add(reportDownloadPanel);
+//        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCardDownload.class, newPerson.getId(), getString("report_download"));
+//        add(reportDownloadPanel);
     }
 
     private boolean validate() {
@@ -278,21 +276,21 @@ public class PersonEdit extends FormTemplatePage {
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
         return ImmutableList.of(
-                new F3ReferenceButton(id) {
-
-                    @Override
-                    protected void onClick() {
-                        setResponsePage(new F3ReferencePage(newPerson));
-                    }
-
-                    @Override
-                    protected void onBeforeRender() {
-                        if (isNew() || newPerson.getRegistration() == null) {
-                            setVisibilityAllowed(false);
-                        }
-                        super.onBeforeRender();
-                    }
-                },
+//                new F3ReferenceButton(id) {
+//
+//                    @Override
+//                    protected void onClick() {
+//                        setResponsePage(new F3ReferencePage(newPerson));
+//                    }
+//
+//                    @Override
+//                    protected void onBeforeRender() {
+//                        if (isNew() || newPerson.getRegistration() == null) {
+//                            setVisibilityAllowed(false);
+//                        }
+//                        super.onBeforeRender();
+//                    }
+//                },
                 new DeleteItemButton(id) {
 
                     @Override
@@ -307,19 +305,20 @@ public class PersonEdit extends FormTemplatePage {
                         }
                         super.onBeforeRender();
                     }
-                },
-                new SaveButton(id, true) {
-
-                    @Override
-                    protected void onClick(AjaxRequestTarget target) {
-                        reportDownloadPanel.open(target);
-                    }
-
-                    @Override
-                    public boolean isVisible() {
-                        return !isNew();
-                    }
-                });
+                }
+//                new SaveButton(id, true) {
+//
+//                    @Override
+//                    protected void onClick(AjaxRequestTarget target) {
+//                        reportDownloadPanel.open(target);
+//                    }
+//
+//                    @Override
+//                    public boolean isVisible() {
+//                        return !isNew();
+//                    }
+//                }
+                );
     }
 }
 

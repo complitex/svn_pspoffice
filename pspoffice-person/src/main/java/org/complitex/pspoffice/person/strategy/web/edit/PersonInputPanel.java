@@ -34,7 +34,6 @@ import org.complitex.dictionary.web.component.name.FullNamePanel;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
-import org.complitex.pspoffice.person.registration.report.web.RegistrationStopCouponPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -69,11 +68,8 @@ public final class PersonInputPanel extends Panel {
     @EJB
     private PersonStrategy personStrategy;
     @EJB
-    private RegistrationStrategy registrationStrategy;
     private Person person;
-    private RegistrationInputPanel registrationInputPanel;
     private Date date;
-    private FeedbackPanel messages;
 
     public PersonInputPanel(String id, Person person, Date date) {
         super(id);
@@ -82,10 +78,9 @@ public final class PersonInputPanel extends Panel {
         init();
     }
 
-    public PersonInputPanel(String id, Person person, FeedbackPanel messages) {
+    public PersonInputPanel(String id, Person person) {
         super(id);
         this.person = person;
-        this.messages = messages;
         init();
     }
 
@@ -106,104 +101,104 @@ public final class PersonInputPanel extends Panel {
 
         Entity entity = personStrategy.getEntity();
 
-        //registration panel:
-        Label registrationLabel = new Label("registrationLabel",
-                labelModel(entity.getAttributeType(REGISTRATION).getAttributeNames(), getLocale()));
-        registrationLabel.setOutputMarkupId(true);
-        final String registrationLabelMarkupId = registrationLabel.getMarkupId();
-        add(registrationLabel);
-        Form registrationForm = new Form("registrationForm");
-        add(registrationForm);
-        final WebMarkupContainer registrationContainer = new WebMarkupContainer("registrationContainer");
-        registrationContainer.setOutputMarkupId(true);
-        registrationForm.add(registrationContainer);
-
-        final Link<Void> registrationStopCouponLink = new Link("registrationStopCouponLink") {
-
-            @Override
-            public void onClick() {
-                setResponsePage(new RegistrationStopCouponPage(person));
-            }
-        };
-        registrationStopCouponLink.setVisible(false);
-        registrationContainer.add(registrationStopCouponLink);
-
-        if (person.getRegistration() != null) {
-            registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
-            registrationContainer.add(registrationInputPanel);
-        } else {
-            registrationContainer.add(new NoRegistrationPanel(REGISTRATION_PANEL_ID));
-        }
-
-        final WebMarkupContainer registrationControlContainer = new WebMarkupContainer("registrationControlContainer");
-        registrationControlContainer.setOutputMarkupPlaceholderTag(true);
-        registrationContainer.add(registrationControlContainer);
-        AjaxLink<Void> addRegistration = new AjaxLink<Void>("addRegistration") {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                person.setRegistration(registrationStrategy.newInstance());
-                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
-                updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
-                        target, registrationLabelMarkupId);
-            }
-        };
-        addRegistration.setVisible(!isHistory() && (person.getRegistration() == null)
-                && canEdit(null, personStrategy.getEntityTable(), person));
-        registrationControlContainer.add(addRegistration);
-        AjaxSubmitLink changeRegistration = new AjaxSubmitLink("changeRegistration", registrationForm) {
-
-            @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (registrationInputPanel.validate()) {
-                    registrationInputPanel.beforePersist();
-                    Registration changedRegistration = registrationStrategy.newInstance();
-                    person.setChangedRegistration(changedRegistration);
-                    changedRegistration.setPerson(person);
-                    registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getChangedRegistration(), date);
-                    registrationStopCouponLink.setVisible(true);
-                    updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
-                            target, registrationLabelMarkupId);
-                } else {
-                    target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-                }
-                target.addComponent(messages);
-            }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-                target.addComponent(messages);
-            }
-        };
-        changeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
-                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
-        registrationControlContainer.add(changeRegistration);
-        AjaxSubmitLink stopRegistration = new AjaxSubmitLink("stopRegistration", registrationForm) {
-
-            @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (registrationInputPanel.validate()) {
-                    registrationInputPanel.beforePersist();
-                    person.setRegistrationStopped(true);
-                    registrationStopCouponLink.setVisible(true);
-                    updateRegistrationContainer(registrationContainer, registrationControlContainer,
-                            new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);
-                } else {
-                    target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-                }
-                target.addComponent(messages);
-            }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-                target.addComponent(messages);
-            }
-        };
-        stopRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
-                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
-        registrationControlContainer.add(stopRegistration);
+//        //registration panel:
+//        Label registrationLabel = new Label("registrationLabel",
+//                labelModel(entity.getAttributeType(REGISTRATION).getAttributeNames(), getLocale()));
+//        registrationLabel.setOutputMarkupId(true);
+//        final String registrationLabelMarkupId = registrationLabel.getMarkupId();
+//        add(registrationLabel);
+//        Form registrationForm = new Form("registrationForm");
+//        add(registrationForm);
+//        final WebMarkupContainer registrationContainer = new WebMarkupContainer("registrationContainer");
+//        registrationContainer.setOutputMarkupId(true);
+//        registrationForm.add(registrationContainer);
+//
+//        final Link<Void> registrationStopCouponLink = new Link("registrationStopCouponLink") {
+//
+//            @Override
+//            public void onClick() {
+//                setResponsePage(new RegistrationStopCouponPage(person));
+//            }
+//        };
+//        registrationStopCouponLink.setVisible(false);
+//        registrationContainer.add(registrationStopCouponLink);
+//
+//        if (person.getRegistration() != null) {
+//            registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
+//            registrationContainer.add(registrationInputPanel);
+//        } else {
+//            registrationContainer.add(new NoRegistrationPanel(REGISTRATION_PANEL_ID));
+//        }
+//
+//        final WebMarkupContainer registrationControlContainer = new WebMarkupContainer("registrationControlContainer");
+//        registrationControlContainer.setOutputMarkupPlaceholderTag(true);
+//        registrationContainer.add(registrationControlContainer);
+//        AjaxLink<Void> addRegistration = new AjaxLink<Void>("addRegistration") {
+//
+//            @Override
+//            public void onClick(AjaxRequestTarget target) {
+//                person.setRegistration(registrationStrategy.newInstance());
+//                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
+//                updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
+//                        target, registrationLabelMarkupId);
+//            }
+//        };
+//        addRegistration.setVisible(!isHistory() && (person.getRegistration() == null)
+//                && canEdit(null, personStrategy.getEntityTable(), person));
+//        registrationControlContainer.add(addRegistration);
+//        AjaxSubmitLink changeRegistration = new AjaxSubmitLink("changeRegistration", registrationForm) {
+//
+//            @Override
+//            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+//                if (registrationInputPanel.validate()) {
+//                    registrationInputPanel.beforePersist();
+//                    Registration changedRegistration = registrationStrategy.newInstance();
+//                    person.setChangedRegistration(changedRegistration);
+//                    changedRegistration.setPerson(person);
+//                    registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getChangedRegistration(), date);
+//                    registrationStopCouponLink.setVisible(true);
+//                    updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
+//                            target, registrationLabelMarkupId);
+//                } else {
+//                    target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
+//                }
+//                target.addComponent(messages);
+//            }
+//
+//            @Override
+//            protected void onError(AjaxRequestTarget target, Form<?> form) {
+//                target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
+//                target.addComponent(messages);
+//            }
+//        };
+//        changeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
+//                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
+//        registrationControlContainer.add(changeRegistration);
+//        AjaxSubmitLink stopRegistration = new AjaxSubmitLink("stopRegistration", registrationForm) {
+//
+//            @Override
+//            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+//                if (registrationInputPanel.validate()) {
+//                    registrationInputPanel.beforePersist();
+//                    person.setRegistrationStopped(true);
+//                    registrationStopCouponLink.setVisible(true);
+//                    updateRegistrationContainer(registrationContainer, registrationControlContainer,
+//                            new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);
+//                } else {
+//                    target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
+//                }
+//                target.addComponent(messages);
+//            }
+//
+//            @Override
+//            protected void onError(AjaxRequestTarget target, Form<?> form) {
+//                target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
+//                target.addComponent(messages);
+//            }
+//        };
+//        stopRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
+//                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
+//        registrationControlContainer.add(stopRegistration);
 
         //system attributes:
         initSystemAttributeInput(this, "birthCountry", BIRTH_COUNTRY, true);
@@ -400,9 +395,6 @@ public final class PersonInputPanel extends Panel {
     }
 
     public void beforePersist() {
-        if (registrationInputPanel != null) {
-            registrationInputPanel.beforePersist();
-        }
         updateChildrenAttributes();
     }
 
@@ -426,9 +418,7 @@ public final class PersonInputPanel extends Panel {
     }
 
     public boolean validate() {
-        boolean childrenValid = validateChildren();
-        boolean registrationValid = registrationInputPanel != null ? registrationInputPanel.validate() : true;
-        return childrenValid && registrationValid;
+        return validateChildren();
     }
 
     private boolean validateChildren() {

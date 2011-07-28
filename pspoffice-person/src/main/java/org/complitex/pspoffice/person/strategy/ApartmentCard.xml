@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.person.strategy.ApartmentCard">
+
+    <resultMap id="ApartmentCard" type="org.complitex.pspoffice.person.strategy.entity.ApartmentCard"
+            extends="org.complitex.dictionary.entity.DomainObject.DomainObject">
+    </resultMap>
+
+    <sql id="findByApartmentSql">
+        LEFT JOIN `apartment_card_attribute` apartment_a ON (apartment_a.`object_id` = e.`object_id` AND apartment_a.`status` = 'ACTIVE'
+            AND apartment_a.`attribute_type_id` = 2402 AND apartment_a.`value_type_id` = 2403)
+        LEFT JOIN `apartment_card_attribute` room_a ON (room_a.`object_id` = e.`object_id` AND room_a.`status` = 'ACTIVE'
+            AND room_a.`attribute_type_id` = 2402 AND room_a.`value_type_id` = 2402)
+            
+        LEFT JOIN `room` room ON (room.`object_id` = room_a.`value_id` AND room.`status` IN ('ACTIVE', 'INACTIVE'))
+        LEFT JOIN `apartment` apartment ON (apartment.`status` IN ('ACTIVE', 'INACTIVE')
+            AND apartment.`object_id` = room.`parent_id` AND room.`parent_entity_id` = 100)
+
+        WHERE apartment_a.`value_id` = #{addressId} OR apartment.`object_id` = #{addressId}
+    </sql>
+
+    <select id="findByApartment" parameterType="map" resultType="long">
+        SELECT DISTINCT e.`object_id` FROM `apartment_card` e
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByApartmentSql"/>
+        limit ${start},${size}
+    </select>
+
+    <select id="countByApartment" parameterType="map" resultType="integer">
+        SELECT COUNT(DISTINCT e.`object_id`) FROM `apartment_card` e
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByApartmentSql"/>
+    </select>
+
+    <sql id="findByBuildingSql">
+        LEFT JOIN `apartment_card_attribute` building_a ON (building_a.`object_id` = e.`object_id` AND building_a.`status` = 'ACTIVE'
+            AND building_a.`attribute_type_id` = 2402 AND building_a.`value_type_id` = 2404)
+        LEFT JOIN `apartment_card_attribute` apartment_a ON (apartment_a.`object_id` = e.`object_id` AND apartment_a.`status` = 'ACTIVE'
+            AND apartment_a.`attribute_type_id` = 2402 AND apartment_a.`value_type_id` = 2403)
+        LEFT JOIN `apartment_card_attribute` room_a ON (room_a.`object_id` = e.`object_id` AND room_a.`status` = 'ACTIVE'
+            AND room_a.`attribute_type_id` = 2402 AND room_a.`value_type_id` = 2402)
+
+        LEFT JOIN `room` room1 ON (room1.`object_id` = room_a.`value_id` AND room1.`status` IN ('ACTIVE', 'INACTIVE'))
+        LEFT JOIN `apartment` apartment1 ON (apartment1.`status` IN ('ACTIVE', 'INACTIVE')
+            AND apartment1.`object_id` = room1.`parent_id` AND room1.`parent_entity_id` = 100)
+        LEFT JOIN `building` building1 ON (building1.`status` IN ('ACTIVE', 'INACTIVE') AND building1.`object_id` = apartment1.`parent_id`)
+
+        LEFT JOIN `room` room2 ON (room2.`object_id` = room_a.`value_id` AND room2.`status` IN ('ACTIVE', 'INACTIVE'))
+        LEFT JOIN `building` building2 ON (building2.`status` IN ('ACTIVE', 'INACTIVE')
+            AND building2.`object_id` = room2.`parent_id` AND room2.`parent_entity_id` = 500)
+
+        LEFT JOIN `apartment` apartment3 ON (apartment3.`status` IN ('ACTIVE', 'INACTIVE') AND apartment3.`object_id` = apartment_a.`value_id`)
+        LEFT JOIN `building` building3 ON (building3.`status` IN ('ACTIVE', 'INACTIVE') AND building3.`object_id` = apartment3.`parent_id`)
+
+        WHERE building_a.`value_id` = #{addressId} OR building1.`object_id` = #{addressId} OR building2.`object_id` = #{addressId}
+                OR building3.`object_id` = #{addressId}
+    </sql>
+
+    <select id="findByBuilding" parameterType="long" resultType="long">
+        SELECT DISTINCT e.`object_id` FROM `apartment_card` e
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByBuildingSql"/>
+        limit ${start},${size}
+    </select>
+
+    <select id="countByBuilding" parameterType="long" resultType="integer">
+        SELECT COUNT(DISTINCT e.`object_id`) FROM `apartment_card` e
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByBuildingSql"/>
+    </select>
+</mapper>

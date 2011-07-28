@@ -23,9 +23,6 @@ public class Person extends DomainObject {
     private String lastName;
     private String firstName;
     private String middleName;
-    private Registration registration;
-    private Registration changedRegistration;
-    private boolean registrationStopped;
     private List<Person> children = newArrayList();
 
     public Person(DomainObject copy) {
@@ -59,22 +56,6 @@ public class Person extends DomainObject {
         this.middleName = middleName;
     }
 
-    public Registration getRegistration() {
-        return registration;
-    }
-
-    public void setRegistration(Registration registration) {
-        this.registration = registration;
-    }
-
-    public Registration getChangedRegistration() {
-        return changedRegistration;
-    }
-
-    public void setChangedRegistration(Registration newRegistration) {
-        this.changedRegistration = newRegistration;
-    }
-
     public List<Person> getChildren() {
         return children;
     }
@@ -93,14 +74,6 @@ public class Person extends DomainObject {
 
     public String getFullName() {
         return lastName + " " + firstName + " " + middleName;
-    }
-
-    public boolean isRegistrationStopped() {
-        return registrationStopped;
-    }
-
-    public void setRegistrationStopped(boolean registrationStopped) {
-        this.registrationStopped = registrationStopped;
     }
 
     public String getNationality() {

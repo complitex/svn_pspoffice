@@ -1,10 +1,7 @@
 package org.complitex.pspoffice.person.strategy;
 
-import static com.google.common.collect.ImmutableMap.*;
 import java.util.Collections;
 import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.Sets.*;
-import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import java.util.List;
 import org.apache.wicket.PageParameters;
@@ -17,9 +14,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StringCulture;
@@ -27,14 +21,11 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
-import org.complitex.dictionary.strategy.DeleteException;
-import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.pspoffice.person.strategy.entity.FullName;
-import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.util.FullNameParser;
 import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
 import org.complitex.template.strategy.TemplateStrategy;
@@ -99,8 +90,6 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long DEFAULT_ORDER_BY_ID = -1;
     @EJB
     private StringCultureBean stringBean;
-    @EJB
-    private RegistrationStrategy registrationStrategy;
     @EJB
     private NameBean nameBean;
 
@@ -205,52 +194,6 @@ public class PersonStrategy extends TemplateStrategy {
         return new Person(super.newInstance());
     }
 
-//    @Transactional
-//    @Override
-//    protected void insertUpdatedDomainObject(DomainObject object, Date updateDate) {
-//        super.insertDomainObject(object, updateDate);
-//    }
-//
-//    @Transactional
-//    @Override
-//    public void update(DomainObject oldObject, DomainObject newObject, Date updateDate) {
-//        Person oldPerson = (Person) oldObject;
-//        Person newPerson = (Person) newObject;
-//
-//        Registration oldRegistration = oldPerson.getRegistration();
-//        Registration newRegistration = newPerson.getRegistration();
-//        Registration changedRegistration = newPerson.getChangedRegistration();
-//
-//        if (oldRegistration == null) {
-//            if (newRegistration != null) {
-//                newRegistration.setSubjectIds(newPerson.getSubjectIds());
-//                registrationStrategy.insert(newRegistration, updateDate);
-//                newPerson.getAttribute(REGISTRATION).setValueId(newRegistration.getId());
-//            } else {
-//                // do nothing
-//            }
-//        } else {
-//            if (changedRegistration == null) {
-//                Date updateRegistrationDate = newPerson.isRegistrationStopped() ? DateUtil.justBefore(updateDate) : updateDate;
-//                newRegistration.setSubjectIds(newPerson.getSubjectIds());
-//                registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
-//                if (newPerson.isRegistrationStopped()) {
-//                    registrationStrategy.archive(newRegistration, updateDate);
-//                    newPerson.getAttribute(REGISTRATION).setValueId(null);
-//                }
-//            } else {
-//                Date updateRegistrationDate = DateUtil.justBefore(updateDate);
-//                newRegistration.setSubjectIds(newPerson.getSubjectIds());
-//                registrationStrategy.update(oldRegistration, newRegistration, updateRegistrationDate);
-//                changedRegistration.setSubjectIds(newPerson.getSubjectIds());
-//                registrationStrategy.insert(changedRegistration, updateDate);
-//                newPerson.getAttribute(REGISTRATION).setValueId(changedRegistration.getId());
-//                registrationStrategy.archive(newRegistration, updateDate);
-//            }
-//        }
-//        super.update(oldObject, newObject, updateDate);
-//    }
-
     @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
@@ -269,24 +212,6 @@ public class PersonStrategy extends TemplateStrategy {
         }
         return person;
     }
-
-//    @Transactional
-//    private void loadRegistration(Person person, Date date) {
-//        Attribute registrationAttribute = person.getAttribute(REGISTRATION);
-//        if (registrationAttribute != null) {
-//            Long registrationId = registrationAttribute.getValueId();
-//            if (registrationId != null) {
-//                Registration registration = null;
-//                if (date == null) {
-//                    registration = registrationStrategy.findById(registrationId, true);
-//                } else {
-//                    registration = registrationStrategy.findHistoryObject(registrationId, date);
-//                }
-//                person.setRegistration(registration);
-//                registration.setPerson(person);
-//            }
-//        }
-//    }
 
     @Transactional
     public void loadName(Person person) {
@@ -347,28 +272,10 @@ public class PersonStrategy extends TemplateStrategy {
         }
     }
 
-//    @Transactional
-//    private Set<Long> findRegistrationIds(long personId) {
-//        Map<String, Long> params = of("personId", personId, "registrationAttributeType", REGISTRATION);
-//        return newHashSet(sqlSession().selectList(PERSON_MAPPING + ".findRegistrationIds", params));
-//    }
-
     @Override
     public long getDefaultOrderByAttributeId() {
         return DEFAULT_ORDER_BY_ID;
     }
-
-//    @Transactional
-//    @Override
-//    public TreeSet<Date> getHistoryDates(long objectId) {
-//        TreeSet<Date> historyDates = super.getHistoryDates(objectId);
-//        Set<Long> addressIds = findRegistrationIds(objectId);
-//        for (Long addressId : addressIds) {
-//            TreeSet<Date> addressHistoryDates = registrationStrategy.getHistoryDates(addressId);
-//            historyDates.addAll(addressHistoryDates);
-//        }
-//        return historyDates;
-//    }
 
     @Transactional
     @Override
@@ -382,33 +289,6 @@ public class PersonStrategy extends TemplateStrategy {
         return person;
     }
 
-//    @Transactional
-//    @Override
-//    public void delete(long objectId, Locale locale) throws DeleteException {
-//        deleteChecks(objectId, locale);
-//        Set<Long> registrationIds = findRegistrationIds(objectId);
-//        deleteStrings(objectId);
-//        deleteAttribute(objectId);
-//        deleteObject(objectId, locale);
-//
-//        //delete registrations:
-//        for (Long registrationId : registrationIds) {
-//            registrationStrategy.delete(registrationId, locale);
-//        }
-//    }
-//    @Transactional
-//    @Override
-//    public void changeChildrenActivity(long personId, boolean enable) {
-//        Set<Long> registrationIds = findRegistrationIds(personId);
-//        if (!registrationIds.isEmpty()) {
-//            Map<String, Object> params = newHashMap();
-//            params.put("personId", personId);
-//            params.put("enabled", !enable);
-//            params.put("status", enable ? StatusType.ACTIVE : StatusType.INACTIVE);
-//            sqlSession().update(PERSON_MAPPING + ".updateRegistrationActivity", params);
-//        }
-//    }
-
     @Override
     public int getSearchTextFieldSize() {
         return 40;
@@ -418,114 +298,6 @@ public class PersonStrategy extends TemplateStrategy {
     public Class<? extends WebPage> getHistoryPage() {
         return PersonHistoryPage.class;
     }
-
-//    @Transactional
-//    public List<Person> findPersonsByAddress(String addressEntity, long addressId) {
-//        long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
-//        Map<String, Long> params = of("registrationAttributeType", REGISTRATION,
-//                "addressAttributeType", RegistrationStrategy.ADDRESS,
-//                "addressId", addressId,
-//                "addressTypeId", addressTypeId);
-//        List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findPersonIdsByAddress", params);
-//        List<Person> persons = newArrayList();
-//        for (Long personId : personIds) {
-//            Person person = findById(personId, true, false, true);
-//            loadName(person);
-//            persons.add(person);
-//        }
-//        return persons;
-//    }
-
-//    @Transactional
-//    public List<Person> findOwnersByAddress(String addressEntity, long addressId, Long excludeId) {
-//        long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
-//        Map<String, Long> params = newHashMap();
-//        params.put("registrationAttributeType", REGISTRATION);
-//        params.put("addressAttributeType", RegistrationStrategy.ADDRESS);
-//        params.put("addressId", addressId);
-//        params.put("addressTypeId", addressTypeId);
-//        params.put("isOwnerAttributeType", RegistrationStrategy.IS_OWNER);
-//        params.put("excludeId", excludeId);
-//
-//        List<Long> personIds = sqlSession().selectList(PERSON_MAPPING + ".findOwnersByAddress", params);
-//        List<Person> persons = newArrayList();
-//        for (Long personId : personIds) {
-//            Person person = findById(personId, true, false, false);
-//            loadName(person);
-//            persons.add(person);
-//        }
-//        return persons;
-//    }
-//
-//    @Transactional
-//    public Person findResponsibleByAddress(String addressEntity, long addressId, Long excludeId) {
-//        long addressTypeId = registrationStrategy.getAddressTypeId(addressEntity);
-//        Map<String, Long> params = newHashMap();
-//        params.put("registrationAttributeType", REGISTRATION);
-//        params.put("addressAttributeType", RegistrationStrategy.ADDRESS);
-//        params.put("addressId", addressId);
-//        params.put("addressTypeId", addressTypeId);
-//        params.put("isResponsibleAttributeType", RegistrationStrategy.IS_RESPONSIBLE);
-//        params.put("excludeId", excludeId);
-//
-//        Long personId = (Long) sqlSession().selectOne(PERSON_MAPPING + ".findResponsibleByAddress", params);
-//        Person person = personId != null ? findById(personId, true, false, true) : null;
-//        if (person != null) {
-//            loadName(person);
-//        }
-//        return person;
-//    }
-
-//    @Transactional
-//    public String getOwnerName(String addressEntity, long addressId, Locale locale) {
-//        List<Person> owners = findOwnersByAddress(addressEntity, addressId, null);
-//        if (owners != null && !owners.isEmpty()) {
-//            //TODO: take first owner, might all owners should be taken into account?
-//            return displayDomainObject(owners.get(0), locale);
-//        } else {
-//            Person responsible = findResponsibleByAddress(addressEntity, addressId, null);
-//            if (responsible != null) {
-//                return responsible.getRegistration().getOwnerName();
-//            }
-//        }
-//        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_name", locale);
-//    }
-//
-//    public String getOwnerOrResponsibleName(List<Person> members, Locale locale) {
-//        if (members != null && !members.isEmpty()) {
-//            for (Person person : members) {
-//                if (person.getRegistration().isOwner() || person.getRegistration().isResponsible()) {
-//                    //TODO: take first owner, might all owners should be taken into account?
-//                    return displayDomainObject(person, locale);
-//                }
-//            }
-//        }
-//        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_owner_or_responsible", locale);
-//    }
-//
-//    public String getPersonalAccount(List<Person> members, Locale locale) {
-//        if (members != null && !members.isEmpty()) {
-//            for (Person person : members) {
-//                String personalAccount = person.getRegistration().getPersonalAccount();
-//                if (!Strings.isEmpty(personalAccount)) {
-//                    return personalAccount;
-//                }
-//            }
-//        }
-//        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_personal_account", locale);
-//    }
-//
-//    public String getFormOfOwnership(List<Person> members, Locale locale) {
-//        if (members != null && !members.isEmpty()) {
-//            for (Person person : members) {
-//                String formOfOwnership = person.getRegistration().getFormOfOwnership();
-//                if (!Strings.isEmpty(formOfOwnership)) {
-//                    return formOfOwnership;
-//                }
-//            }
-//        }
-//        return ResourceUtil.getString(RESOURCE_BUNDLE, "no_form_of_ownership", locale);
-//    }
 
     @Override
     public String[] getDescriptionRoles() {

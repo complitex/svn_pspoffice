@@ -11,14 +11,10 @@ import com.google.common.collect.ImmutableList;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -31,13 +27,10 @@ import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.name.FullNamePanel;
-import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 import javax.ejb.EJB;
 import java.text.MessageFormat;
@@ -61,8 +54,6 @@ import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
  */
 public final class PersonInputPanel extends Panel {
 
-    private static final String REGISTRATION_PANEL_ID = "registrationPanel";
-    private static final String REGISTRATION_FOCUS_JS = "$('#" + REGISTRATION_PANEL_ID + " input[type=\"text\"]:enabled:first').focus()";
     @EJB
     private StringCultureBean stringBean;
     @EJB
@@ -100,105 +91,6 @@ public final class PersonInputPanel extends Panel {
         add(fullNamePanel);
 
         Entity entity = personStrategy.getEntity();
-
-//        //registration panel:
-//        Label registrationLabel = new Label("registrationLabel",
-//                labelModel(entity.getAttributeType(REGISTRATION).getAttributeNames(), getLocale()));
-//        registrationLabel.setOutputMarkupId(true);
-//        final String registrationLabelMarkupId = registrationLabel.getMarkupId();
-//        add(registrationLabel);
-//        Form registrationForm = new Form("registrationForm");
-//        add(registrationForm);
-//        final WebMarkupContainer registrationContainer = new WebMarkupContainer("registrationContainer");
-//        registrationContainer.setOutputMarkupId(true);
-//        registrationForm.add(registrationContainer);
-//
-//        final Link<Void> registrationStopCouponLink = new Link("registrationStopCouponLink") {
-//
-//            @Override
-//            public void onClick() {
-//                setResponsePage(new RegistrationStopCouponPage(person));
-//            }
-//        };
-//        registrationStopCouponLink.setVisible(false);
-//        registrationContainer.add(registrationStopCouponLink);
-//
-//        if (person.getRegistration() != null) {
-//            registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
-//            registrationContainer.add(registrationInputPanel);
-//        } else {
-//            registrationContainer.add(new NoRegistrationPanel(REGISTRATION_PANEL_ID));
-//        }
-//
-//        final WebMarkupContainer registrationControlContainer = new WebMarkupContainer("registrationControlContainer");
-//        registrationControlContainer.setOutputMarkupPlaceholderTag(true);
-//        registrationContainer.add(registrationControlContainer);
-//        AjaxLink<Void> addRegistration = new AjaxLink<Void>("addRegistration") {
-//
-//            @Override
-//            public void onClick(AjaxRequestTarget target) {
-//                person.setRegistration(registrationStrategy.newInstance());
-//                registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getRegistration(), date);
-//                updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
-//                        target, registrationLabelMarkupId);
-//            }
-//        };
-//        addRegistration.setVisible(!isHistory() && (person.getRegistration() == null)
-//                && canEdit(null, personStrategy.getEntityTable(), person));
-//        registrationControlContainer.add(addRegistration);
-//        AjaxSubmitLink changeRegistration = new AjaxSubmitLink("changeRegistration", registrationForm) {
-//
-//            @Override
-//            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-//                if (registrationInputPanel.validate()) {
-//                    registrationInputPanel.beforePersist();
-//                    Registration changedRegistration = registrationStrategy.newInstance();
-//                    person.setChangedRegistration(changedRegistration);
-//                    changedRegistration.setPerson(person);
-//                    registrationInputPanel = new RegistrationInputPanel(REGISTRATION_PANEL_ID, person.getChangedRegistration(), date);
-//                    registrationStopCouponLink.setVisible(true);
-//                    updateRegistrationContainer(registrationContainer, registrationControlContainer, registrationInputPanel,
-//                            target, registrationLabelMarkupId);
-//                } else {
-//                    target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-//                }
-//                target.addComponent(messages);
-//            }
-//
-//            @Override
-//            protected void onError(AjaxRequestTarget target, Form<?> form) {
-//                target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-//                target.addComponent(messages);
-//            }
-//        };
-//        changeRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
-//                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
-//        registrationControlContainer.add(changeRegistration);
-//        AjaxSubmitLink stopRegistration = new AjaxSubmitLink("stopRegistration", registrationForm) {
-//
-//            @Override
-//            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-//                if (registrationInputPanel.validate()) {
-//                    registrationInputPanel.beforePersist();
-//                    person.setRegistrationStopped(true);
-//                    registrationStopCouponLink.setVisible(true);
-//                    updateRegistrationContainer(registrationContainer, registrationControlContainer,
-//                            new NoRegistrationPanel(REGISTRATION_PANEL_ID), target, registrationLabelMarkupId);
-//                } else {
-//                    target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-//                }
-//                target.addComponent(messages);
-//            }
-//
-//            @Override
-//            protected void onError(AjaxRequestTarget target, Form<?> form) {
-//                target.appendJavascript(ScrollToElementUtil.scrollTo(messages.getMarkupId()));
-//                target.addComponent(messages);
-//            }
-//        };
-//        stopRegistration.setVisible(!isHistory() && (person.getRegistration() != null)
-//                && !isNew() && canEdit(null, personStrategy.getEntityTable(), person));
-//        registrationControlContainer.add(stopRegistration);
 
         //system attributes:
         initSystemAttributeInput(this, "birthCountry", BIRTH_COUNTRY, true);
@@ -343,15 +235,6 @@ public final class PersonInputPanel extends Panel {
                 person.getAttribute(attributeTypeId).setValueId(object);
             }
         };
-    }
-
-    private void updateRegistrationContainer(WebMarkupContainer registrationContainer, WebMarkupContainer registrationControlContainer,
-            Panel registrationPanel, AjaxRequestTarget target, String scrollToElementId) {
-        registrationContainer.get(REGISTRATION_PANEL_ID).replaceWith(registrationPanel);
-        registrationControlContainer.setVisible(false);
-        target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToElementId));
-        target.appendJavascript(REGISTRATION_FOCUS_JS);
-        target.addComponent(registrationContainer);
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {

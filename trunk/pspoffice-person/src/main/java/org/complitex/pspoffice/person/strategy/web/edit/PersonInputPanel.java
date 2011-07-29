@@ -7,7 +7,6 @@ package org.complitex.pspoffice.person.strategy.web.edit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -20,15 +19,11 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.complitex.dictionary.entity.Attribute;
-import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
-import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.name.FullNamePanel;
-import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 
@@ -38,6 +33,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -179,27 +175,25 @@ public final class PersonInputPanel extends Panel {
                     }
                 }));
 
-                SearchComponentState searchComponentState = new SearchComponentState() {
+                IModel<Person> childModel = new Model<Person>() {
 
                     @Override
-                    public DomainObject put(String entity, DomainObject child) {
-                        super.put(entity, child);
+                    public Person getObject() {
                         int index = getCurrentIndex(fakeContainer);
+                        return person.getChildren().get(index);
+                    }
 
-                        person.setChild(index, (Person) child);
-
-                        return child;
+                    @Override
+                    public void setObject(Person child) {
+                        int index = getCurrentIndex(fakeContainer);
+                        person.setChild(index, child);
                     }
                 };
-                Person child = item.getModelObject();
-                if (child != null) {
-                    searchComponentState.put(personStrategy.getEntityTable(), child);
-                }
+                childModel.setObject(item.getModelObject());
 
-                WiQuerySearchComponent searchChildComponent = new WiQuerySearchComponent("searchChildComponent", searchComponentState,
-                        ImmutableList.of(personStrategy.getEntityTable()), null, ShowMode.ACTIVE,
+                PersonPicker personPicker = new PersonPicker("searchChildComponent", childModel, false, null,
                         !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-                item.add(searchChildComponent);
+                item.add(personPicker);
 
                 addRemoveLink("removeChild", item, null, childrenContainer).
                         setVisible(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));

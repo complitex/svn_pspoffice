@@ -87,4 +87,23 @@
             </choose>
         </if>
     </sql>
+
+    <select id="findByName" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
+        SELECT DISTINCT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`, e.`parent_entity_id`,
+                e.`permission_id`, ln.`name` last_name, fn.`name` first_name, mn.`name` middle_name
+        FROM `person` e
+        <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
+        WHERE
+            <include refid="org.complitex.dictionary.entity.DomainObject.statusFilter"/>
+            <include refid="org.complitex.dictionary.entity.DomainObject.permissionFilter"/>
+            AND ln.`name` = #{additionalParams.last_name}
+            <if test="additionalParams['first_name'] != null">
+                AND fn.`name` LIKE CONCAT(#{additionalParams.first_name}, '%')
+            </if>
+            <if test="additionalParams['middle_name'] != null">
+                AND mn.`name` LIKE CONCAT(#{additionalParams.middle_name}, '%')
+            </if>
+        ORDER BY ln.`name`, fn.`name`, mn.`name`
+    </select>
+
 </mapper>

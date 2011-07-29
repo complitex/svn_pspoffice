@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:wicket>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <wicket:panel>
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>
+                        <span wicket:id="personLabel"></span>
+                    </td>
+                    <td>
+                        <span style="margin-left: 10px;">
+                            <a wicket:id="choose">
+                                <wicket:message key="choose"/>
+                            </a>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+
+            <div wicket:id="lookupDialog" style="display: none" wicket:message="title:lookup_dialog_title">
+                <div wicket:id="content">
+                    <div>
+                        <table border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td>
+                                    <table border="0" cellpadding="0" cellspacing="5px">
+                                        <tr>
+                                            <td align="center">
+                                                <wicket:message key="last_name"/>
+                                            </td>
+                                            <td align="center">
+                                                <wicket:message key="first_name"/>
+                                            </td>
+                                            <td align="center">
+                                                <wicket:message key="middle_name"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input type="text" wicket:id="lastName"/>
+                                            </td>
+                                            <td>
+                                                <input type="text" wicket:id="firstName"/>
+                                            </td>
+                                            <td>
+                                                <input type="text" wicket:id="middleName"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td>
+                                    <input type="button" wicket:id="find" class="btnMiddle" wicket:message="value:find" style="margin-left: 10px;"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div wicket:id="personsContainer" style="margin-top: 15px;">
+                        <table class="tbColor" border="0" cellpadding="0" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <wicket:message key="full_name"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="birth_date"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="gender"/>
+                                    </th>
+                                    <th>
+                                        <wicket:message key="id_code"/>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody wicket:id="radioGroup">
+                                <tr wicket:id="persons">
+                                    <td>
+                                        <input type="radio" wicket:id="radio"/>
+                                    </td>
+                                    <td>
+                                        <span wicket:id="fullName"></span>
+                                    </td>
+                                    <td>
+                                        <span wicket:id="birthDate"></span>
+                                    </td>
+                                    <td>
+                                        <span wicket:id="gender"></span>
+                                    </td>
+                                    <td>
+                                        <span wicket:id="idCode"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <input type="button" wicket:id="select" wicket:message="value:select" class="btnMiddle"/>
+                        <input type="button" wicket:id="cancel" wicket:message="value:cancel" class="btnMiddle"/>
+                    </div>
+                </div>
+            </div>
+        </wicket:panel>
+    </body>
+</html>

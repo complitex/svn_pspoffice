@@ -9,7 +9,6 @@ import com.google.common.base.Predicate;
 import java.util.List;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.ImmutableList.*;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
@@ -40,16 +39,14 @@ import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
-import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
-import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -81,7 +78,7 @@ public class RegistrationEdit extends FormTemplatePage {
     private Registration oldRegistration;
     private String addressEntity;
     private long addressId;
-    private SearchComponentState personSearchComponentState;
+    private IModel<Person> personModel;
 
     public RegistrationEdit(long apartmentCardId, String addressEntity, long addressId, Registration registration) {
         this.apartmentCardId = apartmentCardId;
@@ -135,10 +132,10 @@ public class RegistrationEdit extends FormTemplatePage {
         final EntityAttributeType personAttributeType = entity.getAttributeType(PERSON);
         personContainer.add(new WebMarkupContainer("required").setVisible(personAttributeType.isMandatory()));
 
-        personSearchComponentState = initPersonSearchComponentState();
-        WiQuerySearchComponent owner = new WiQuerySearchComponent("person", personSearchComponentState,
-                of("person"), null, ShowMode.ACTIVE, isNew());
-        personContainer.add(owner);
+        personModel = new Model<Person>(newRegistration.getPerson());
+        PersonPicker person = new PersonPicker("person", personModel, true,
+                labelModel(personAttributeType.getAttributeNames(), getLocale()), isNew());
+        personContainer.add(person);
         form.add(personContainer);
 
         //system attributes:
@@ -317,7 +314,7 @@ public class RegistrationEdit extends FormTemplatePage {
     public void beforePersist() {
         // person
         Attribute personAttribute = newRegistration.getAttribute(PERSON);
-        Person person = (Person) personSearchComponentState.get("person");
+        Person person = personModel.getObject();
         Long personId = person != null ? person.getId() : null;
         if (personId != null) {
             personAttribute.setValueId(personId);
@@ -327,12 +324,6 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private boolean validate() {
-        //person validation
-        if (personSearchComponentState.get("person") == null || personSearchComponentState.get("person").getId() == null
-                || personSearchComponentState.get("person").getId() <= 0) {
-            error(getString("person_required"));
-            return false;
-        }
         return true;
     }
 
@@ -350,16 +341,6 @@ public class RegistrationEdit extends FormTemplatePage {
 
     private void back() {
         setResponsePage(new ApartmentCardEdit(apartmentCardId));
-    }
-
-    private SearchComponentState initPersonSearchComponentState() {
-        if (isNew()) {
-            return new SearchComponentState();
-        }
-
-        SearchComponentState searchComponentState = new SearchComponentState();
-        searchComponentState.put("person", newRegistration.getPerson());
-        return searchComponentState;
     }
 }
 

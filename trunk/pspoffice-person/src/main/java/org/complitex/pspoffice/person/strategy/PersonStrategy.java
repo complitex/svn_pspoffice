@@ -14,8 +14,10 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
@@ -302,5 +304,35 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public String[] getDescriptionRoles() {
         return new String[]{SecurityRole.PERSON_MODULE_DESCRIPTION_EDIT};
+    }
+
+    @Transactional
+    public List<Person> findByName(String lastName, String firstName, String middleName) {
+        if (Strings.isEmpty(lastName)) {
+            throw new IllegalArgumentException("Last name is null or empty.");
+        }
+        DomainObjectExample example = new DomainObjectExample();
+        example.setStatus(StatusType.ACTIVE.name());
+        example.addAdditionalParam("last_name", lastName);
+
+        firstName = firstName != null ? firstName.trim() : null;
+        if (Strings.isEmpty(firstName)) {
+            firstName = null;
+        }
+        example.addAdditionalParam("first_name", firstName);
+
+        middleName = middleName != null ? middleName.trim() : null;
+        if (Strings.isEmpty(middleName)) {
+            middleName = null;
+        }
+        example.addAdditionalParam("middle_name", middleName);
+
+        prepareExampleForPermissionCheck(example);
+
+        List<Person> persons = sqlSession().selectList(PERSON_MAPPING + ".findByName", example);
+        for (Person person : persons) {
+            loadAttributes(person);
+        }
+        return persons;
     }
 }

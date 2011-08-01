@@ -2,21 +2,27 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.edit;
+package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.ImmutableList.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
@@ -110,7 +116,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             try {
                 if (validate()) {
                     save();
-                    additionalAction();
+                    action();
                 } else {
                     target.addComponent(messages);
                     scrollToMessages(target);
@@ -133,7 +139,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
         }
 
-        protected void additionalAction() {
+        protected void action() {
         }
     }
 
@@ -160,7 +166,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         init(apartmentCardStrategy.findById(apartmentCardId, true));
     }
 
-    private void init(ApartmentCard apartmentCard) {
+    private void init(final ApartmentCard apartmentCard) {
         if (apartmentCard.getId() == null) {
             oldApartmentCard = null;
             newApartmentCard = apartmentCard;
@@ -170,6 +176,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         }
 
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+        add(JavascriptPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js"));
 
         IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
@@ -213,7 +220,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         ownerContainer.add(new Label("label", labelModel(ownerAttributeType.getAttributeNames(), getLocale())));
         ownerContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
 
-
         ownerModel = new Model<Person>(newApartmentCard.getOwner());
         PersonPicker owner = new PersonPicker("owner", ownerModel, true, labelModel, true);
         ownerContainer.add(owner);
@@ -223,12 +229,67 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         initSystemAttributeInput(form, "formOfOwnership", FORM_OF_OWNERSHIP);
 
         //registrations
+        final Map<Long, IModel<Boolean>> selectedMap = newHashMap();
+        for (Registration registration : apartmentCard.getRegistrations()) {
+            if (!registration.isFinished()) {
+                selectedMap.put(registration.getId(), new Model<Boolean>(false));
+            }
+        }
+
+        final RemoveRegistrationDialog removeRegistrationDialog = new RemoveRegistrationDialog("removeRegistrationDialog");
+        add(removeRegistrationDialog);
+
+        final AjaxLink<Void> removeRegistration = new AjaxLink<Void>("removeRegistration") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                List<Registration> registrationsToRemove = newArrayList(filter(apartmentCard.getRegistrations(), new Predicate<Registration>() {
+
+                    @Override
+                    public boolean apply(Registration registration) {
+                        IModel<Boolean> model = selectedMap.get(registration.getId());
+                        return model != null ? model.getObject() : false;
+                    }
+                }));
+                removeRegistrationDialog.open(target, apartmentCard.getId(), registrationsToRemove);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return isAnySelected(selectedMap.values());
+            }
+        };
+        removeRegistration.setOutputMarkupPlaceholderTag(true);
+        form.add(removeRegistration);
+
+        AjaxCheckBox allSelected = new AjaxCheckBox("allSelected", new Model<Boolean>(false)) {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                for (IModel<Boolean> selectedModel : selectedMap.values()) {
+                    selectedModel.setObject(getModelObject());
+                }
+                target.addComponent(removeRegistration);
+            }
+        };
+        allSelected.setVisible(!selectedMap.isEmpty());
+        form.add(allSelected);
+
         ListView<Registration> registrations = new ListView<Registration>("registrations", apartmentCard.getRegistrations()) {
 
             @Override
             protected void populateItem(ListItem<Registration> item) {
                 final Registration registration = item.getModelObject();
 
+                AjaxCheckBox selected = new AjaxCheckBox("selected", selectedMap.get(registration.getId())) {
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        target.addComponent(removeRegistration);
+                    }
+                };
+                selected.setEnabled(!registration.isFinished());
+                item.add(selected);
                 item.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));
                 Date birthDate = registration.getPerson().getBirthDate();
                 item.add(new Label("personBirthDate", birthDate != null ? DATE_FORMATTER.format(birthDate) : null));
@@ -260,7 +321,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         AjaxSubmitLink addRegistration = new SubmitLink("addRegistration", form, messages, label) {
 
             @Override
-            protected void additionalAction() {
+            protected void action() {
                 setResponsePage(new RegistrationEdit(newApartmentCard.getId(),
                         getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
             }
@@ -464,6 +525,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private void back() {
         setResponsePage(ApartmentCardSearch.class);
+    }
+
+    private boolean isAnySelected(Collection<IModel<Boolean>> models) {
+        return any(models, new Predicate<IModel<Boolean>>() {
+
+            @Override
+            public boolean apply(IModel<Boolean> model) {
+                return model.getObject();
+            }
+        });
     }
 
     @Override

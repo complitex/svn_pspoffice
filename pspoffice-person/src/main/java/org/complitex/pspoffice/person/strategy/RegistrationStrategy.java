@@ -4,15 +4,18 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
-import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
+import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.Strategy;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
@@ -93,16 +96,37 @@ public class RegistrationStrategy extends Strategy {
         registration.setPerson(person);
     }
 
+//    @Transactional
+//    @Override
+//    public Registration findHistoryObject(long objectId, Date date) {
+//        DomainObject registrationObject = super.findHistoryObject(objectId, date);
+//        if (registrationObject == null) {
+//            return null;
+//        }
+//        Registration registration = new Registration(registrationObject);
+//        loadPerson(registration);
+//        return registration;
+//    }
+
     @Transactional
-    @Override
-    public Registration findHistoryObject(long objectId, Date date) {
-        DomainObject registrationObject = super.findHistoryObject(objectId, date);
+    public Registration findFinishedRegistration(long objectId){
+        DomainObjectExample example = new DomainObjectExample(objectId);
+        example.setTable(getEntityTable());
+        example.setStartDate(DateUtil.getCurrentDate());
+
+        DomainObject registrationObject = (DomainObject) sqlSession().selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
         if (registrationObject == null) {
             return null;
         }
+        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, DateUtil.justBefore(registrationObject.getEndDate()));
+        loadStringCultures(historyAttributes);
+        registrationObject.setAttributes(historyAttributes);
+        updateStringsForNewLocales(registrationObject);
+
         Registration registration = new Registration(registrationObject);
         loadPerson(registration);
         return registration;
+
     }
 
     @Override

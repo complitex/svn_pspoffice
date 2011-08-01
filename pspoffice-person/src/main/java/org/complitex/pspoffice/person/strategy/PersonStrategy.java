@@ -25,7 +25,7 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
+import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
 import org.complitex.pspoffice.person.strategy.entity.FullName;
 import org.complitex.pspoffice.person.strategy.util.FullNameParser;

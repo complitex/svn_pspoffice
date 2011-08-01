@@ -4,6 +4,9 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
@@ -14,6 +17,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
@@ -23,11 +27,13 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -235,12 +241,12 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public void loadAllRegistrations(ApartmentCard apartmentCard) {
         List<Attribute> registrationAttributes = apartmentCard.getAttributes(REGISTRATIONS);
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
-            for (Attribute registratioAttribute : registrationAttributes) {
-                long registrationId = registratioAttribute.getValueId();
+            for (Attribute registrationAttribute : registrationAttributes) {
+                long registrationId = registrationAttribute.getValueId();
                 Registration registration = registrationStrategy.findById(registrationId, false);
                 if (registration == null) {
                     //find history registration
-                    registration = registrationStrategy.findHistoryObject(registrationId, DateUtil.getCurrentDate());
+                    registration = registrationStrategy.findFinishedRegistration(registrationId);
                 }
                 apartmentCard.addRegistration(registration);
             }
@@ -265,5 +271,43 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         registrationAttribute.setValueId(registrationId);
         registrationAttribute.setStartDate(insertDate);
         insertAttribute(registrationAttribute);
+    }
+
+    @Transactional
+    public void removeRegistrations(long apartmentCardId, List<Registration> removeRegistrations,
+            RemoveRegistrationCard removeRegistrationCard) {
+
+        Date archiveTime = DateUtil.getCurrentDate();
+        Date updateRegistrationsTime = DateUtil.justBefore(archiveTime);
+
+        for (Registration registration : removeRegistrations) {
+            Registration newRegistration = CloneUtil.cloneObject(registration);
+            //departure reason
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_REASON).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getReason());
+            //departure date
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_DATE).getLocalizedValues()).
+                    setValue(new DateConverter().toString(removeRegistrationCard.getDate()));
+            //departure address
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_COUNTRY).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getCountry());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_REGION).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getRegion());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_DISTRICT).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getDistrict());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_CITY).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getCity());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_STREET).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getStreet());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_BUILDING_NUMBER).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getBuildingNumber());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_BUILDING_CORP).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getBuildingCorp());
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_APARTMENT).getLocalizedValues()).
+                    setValue(removeRegistrationCard.getApartment());
+
+            registrationStrategy.update(registration, newRegistration, updateRegistrationsTime);
+            registrationStrategy.archive(newRegistration, archiveTime);
+        }
     }
 }

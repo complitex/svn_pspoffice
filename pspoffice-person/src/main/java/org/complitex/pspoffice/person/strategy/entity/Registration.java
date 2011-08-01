@@ -17,7 +17,6 @@ import static org.complitex.dictionary.util.AttributeUtil.*;
 public class Registration extends DomainObject {
 
     private Person person;
-    private ApartmentCard apartmentCard;
 
     public Registration() {
     }
@@ -119,14 +118,6 @@ public class Registration extends DomainObject {
     }
 
     public boolean isFinished() {
-        return getStatus() == StatusType.ARCHIVE;
-    }
-
-    public ApartmentCard getApartmentCard() {
-        return apartmentCard;
-    }
-
-    public void setApartmentCard(ApartmentCard apartmentCard) {
-        this.apartmentCard = apartmentCard;
+        return getStatus() != StatusType.ACTIVE;
     }
 }

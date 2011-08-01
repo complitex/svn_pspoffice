@@ -11,7 +11,7 @@ import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInst
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.web.HistoryPanel;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.web.edit.PersonInputPanel;
+import org.complitex.pspoffice.person.strategy.web.edit.person.PersonInputPanel;
 import org.complitex.template.web.pages.HistoryPage;
 import org.complitex.template.web.security.SecurityRole;
 

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.edit;
+package org.complitex.pspoffice.person.strategy.web.edit.person;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

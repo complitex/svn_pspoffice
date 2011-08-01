@@ -6,7 +6,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.web.edit.PersonEdit;
+import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.template.strategy.TemplateStrategy;
 
 /**

@@ -48,7 +48,6 @@ public class ApartmentCard extends DomainObject {
 
     public void addRegistration(Registration registration) {
         this.registrations.add(registration);
-        registration.setApartmentCard(this);
     }
 
     public long getAddressId() {

@@ -82,7 +82,6 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 chain("find", "'.ui-dialog-titlebar-close'").
                 chain("hide").render()));
         lookupDialog.setCloseOnEscape(false);
-        lookupDialog.setOutputMarkupId(true);
         add(lookupDialog);
 
         //content

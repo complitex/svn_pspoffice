@@ -14,6 +14,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
@@ -22,6 +23,7 @@ import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -30,9 +32,10 @@ import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
+import org.complitex.resources.WebCommonResourceInitializer;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
-import org.odlabs.wiquery.ui.dialog.Dialog;
 
 /**
  *
@@ -40,6 +43,13 @@ import org.odlabs.wiquery.ui.dialog.Dialog;
  */
 public final class PersonPicker extends FormComponentPanel<Person> {
 
+    private static class Dialog extends org.odlabs.wiquery.ui.dialog.Dialog {
+
+        public Dialog(String id) {
+            super(id);
+            getOptions().putLiteral("width", "auto");
+        }
+    }
     private static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
     @EJB
     private PersonStrategy personStrategy;
@@ -59,6 +69,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         setRequired(required);
         setLabel(labelModel);
 
+        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+
         final Label personLabel = new Label("personLabel", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -77,7 +89,6 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         //lookup dialog
         final Dialog lookupDialog = new Dialog("lookupDialog");
         lookupDialog.setModal(true);
-        lookupDialog.setWidth(650);
         lookupDialog.setOpenEvent(JsScopeUiEvent.quickScope(new JsStatement().self().chain("parents", "'.ui-dialog:first'").
                 chain("find", "'.ui-dialog-titlebar-close'").
                 chain("hide").render()));
@@ -212,6 +223,62 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         };
         choose.setVisible(enabled);
         add(choose);
+
+        //person creation dialog
+        final Dialog personCreationDialog = new Dialog("personCreationDialog");
+        personCreationDialog.setModal(true);
+        personCreationDialog.setOpenEvent(JsScopeUiEvent.quickScope(new JsStatement().self().chain("parents", "'.ui-dialog:first'").
+                chain("find", "'.ui-dialog-titlebar-close'").
+                chain("hide").render()));
+        personCreationDialog.setCloseOnEscape(false);
+        add(personCreationDialog);
+
+        //person edit container
+        final WebMarkupContainer personEditContainer = new WebMarkupContainer("personEditContainer");
+        personEditContainer.setOutputMarkupId(true);
+        personCreationDialog.add(personEditContainer);
+
+        //person edit panel
+        personEditContainer.add(new EmptyPanel("personEditPanel"));
+
+        //create new
+        AjaxLink<Void> createNew = new AjaxLink<Void>("createNew") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                clearAndCloseLookupDialog(lastNameModel, firstNameModel, middleNameModel, personModel, personsModel,
+                        target, lookupDialog, content, select);
+
+                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel));
+
+                target.addComponent(personEditContainer);
+                personCreationDialog.open(target);
+            }
+        };
+        content.add(createNew);
+    }
+
+    private PersonEditPanel newPersonEditPanel(final Dialog personCreationDialog, final WebMarkupContainer personEditContainer,
+            final Label personLabel) {
+        return new PersonEditPanel("personEditPanel", null, personStrategy.newInstance()) {
+
+            @Override
+            protected void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target) {
+                Person createdPerson = personStrategy.findById(newPerson.getId(), false, false);
+                personStrategy.loadName(createdPerson);
+                PersonPicker.this.getModel().setObject(createdPerson);
+
+                target.addComponent(personLabel);
+                this.onBack(target);
+            }
+
+            @Override
+            protected void onBack(AjaxRequestTarget target) {
+                personEditContainer.replace(new EmptyPanel("personEditPanel"));
+                target.addComponent(personEditContainer);
+                personCreationDialog.close(target);
+            }
+        };
     }
 
     private void clearAndCloseLookupDialog(IModel<String> lastNameModel, IModel<String> firstNameModel,

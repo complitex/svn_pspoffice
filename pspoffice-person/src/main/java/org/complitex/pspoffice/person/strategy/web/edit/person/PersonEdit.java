@@ -9,35 +9,20 @@ import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
-import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionary.entity.Log;
-import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.DeleteException;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.util.CloneUtil;
-import org.complitex.dictionary.util.DateUtil;
-import org.complitex.dictionary.web.component.permission.DomainObjectPermissionsPanel;
-import org.complitex.dictionary.web.component.permission.PermissionPropagationDialogPanel;
-import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
-import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.DeleteItemButton;
-import org.complitex.template.web.component.toolbar.SaveButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
@@ -54,20 +39,13 @@ public class PersonEdit extends FormTemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(PersonEdit.class);
     @EJB
-    private StringCultureBean stringBean;
-    @EJB
-    private LogBean logBean;
-    @EJB
     private PersonStrategy personStrategy;
+    @EJB
+    private StringCultureBean stringBean;
     private Person oldPerson;
     private Person newPerson;
-    private PersonInputPanel personInputPanel;
-    private FeedbackPanel messages;
-    private ReportDownloadPanel reportDownloadPanel;
 
     public PersonEdit(PageParameters parameters) {
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-
         Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
         if (objectId == null) {
             //create new entity
@@ -79,157 +57,30 @@ public class PersonEdit extends FormTemplatePage {
             newPerson = personStrategy.findById(objectId, false);
             oldPerson = CloneUtil.cloneObject(newPerson);
         }
-        init();
-    }
 
-    private void init() {
-        IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
+        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+
+        Label title = new Label("title", new AbstractReadOnlyModel<String>() {
 
             @Override
             public String getObject() {
                 return stringBean.displayValue(personStrategy.getEntity().getEntityNames(), getLocale());
             }
-        };
-        Label title = new Label("title", labelModel);
+        });
         add(title);
-        final Label label = new Label("label", labelModel);
-        label.setOutputMarkupId(true);
-        add(label);
 
-        messages = new FeedbackPanel("messages");
-        messages.setOutputMarkupId(true);
-        add(messages);
-
-        Form form = new Form("form");
-
-        //input panel
-        personInputPanel = new PersonInputPanel("personInputPanel", newPerson);
-        form.add(personInputPanel);
-
-        //history
-        WebMarkupContainer historyContainer = new WebMarkupContainer("historyContainer");
-        Link history = new Link("history") {
+        add(new PersonEditPanel("personEditPanel", oldPerson, newPerson) {
 
             @Override
-            public void onClick() {
-                setResponsePage(personStrategy.getHistoryPage(), personStrategy.getHistoryPageParams(newPerson.getId()));
-            }
-        };
-        historyContainer.add(history);
-        historyContainer.setVisible(!isNew());
-        form.add(historyContainer);
-
-        //permissions panel
-        DomainObjectPermissionsPanel permissionsPanel = new DomainObjectPermissionsPanel("permissionsPanel", newPerson.getSubjectIds());
-        permissionsPanel.setEnabled(canEdit(null, personStrategy.getEntityTable(), newPerson));
-        form.add(permissionsPanel);
-
-        //permissionPropagationDialogPanel
-        final PermissionPropagationDialogPanel permissionPropagationDialogPanel =
-                new PermissionPropagationDialogPanel("permissionPropagationDialogPanel") {
-
-                    @Override
-                    protected void applyPropagation(boolean propagate) {
-                        try {
-                            save(propagate);
-                        } catch (Exception e) {
-                            log.error("", e);
-                            error(getString("db_error"));
-                        }
-
-                    }
-                };
-        add(permissionPropagationDialogPanel);
-
-        //save-cancel functional
-        AjaxSubmitLink submit = new AjaxSubmitLink("submit") {
-
-            @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                try {
-                    if (validate()) {
-                        if (isNew()) {
-                            save(false);
-                        } else {
-                            boolean canPopagatePermissions = personStrategy.canPropagatePermissions(newPerson);
-                            if (canPopagatePermissions && personStrategy.isNeedToChangePermission(oldPerson.getSubjectIds(),
-                                    newPerson.getSubjectIds())) {
-                                permissionPropagationDialogPanel.open(target);
-                            } else {
-                                save(false);
-                            }
-                        }
-                    } else {
-                        target.addComponent(messages);
-                        scrollToMessages(target);
-                    }
-                } catch (Exception e) {
-                    log.error("", e);
-                    error(getString("db_error"));
-                    target.addComponent(messages);
-                    scrollToMessages(target);
-                }
+            protected void onBack(AjaxRequestTarget target) {
+                PersonEdit.this.back();
             }
 
             @Override
-            protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.addComponent(messages);
-                scrollToMessages(target);
+            protected void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target) {
+                this.onBack(target);
             }
-
-            private void scrollToMessages(AjaxRequestTarget target) {
-                target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
-            }
-        };
-        submit.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));
-        form.add(submit);
-        Link cancel = new Link("cancel") {
-
-            @Override
-            public void onClick() {
-                back();
-            }
-        };
-        cancel.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));
-        form.add(cancel);
-        Link back = new Link("back") {
-
-            @Override
-            public void onClick() {
-                back();
-            }
-        };
-        back.setVisible(!canEdit(null, personStrategy.getEntityTable(), newPerson));
-        form.add(back);
-        add(form);
-
-        //Загрузка отчетов
-//        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCardDownload.class, newPerson.getId(), getString("report_download"));
-//        add(reportDownloadPanel);
-    }
-
-    private boolean validate() {
-        return personInputPanel.validate();
-    }
-
-    private boolean isNew() {
-        return oldPerson == null;
-    }
-
-    private void save(boolean propagate) {
-        personInputPanel.beforePersist();
-        if (isNew()) {
-            personStrategy.insert(newPerson, DateUtil.getCurrentDate());
-        } else {
-            if (!propagate) {
-                personStrategy.update(oldPerson, newPerson, DateUtil.getCurrentDate());
-            } else {
-                personStrategy.updateAndPropagate(oldPerson, newPerson, DateUtil.getCurrentDate());
-            }
-        }
-        logBean.log(Log.STATUS.OK, Module.NAME, PersonEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, personStrategy,
-                oldPerson, newPerson, getLocale(), null);
-        back();
+        });
     }
 
     private void back() {
@@ -238,25 +89,6 @@ public class PersonEdit extends FormTemplatePage {
         setResponsePage(personStrategy.getListPage(), listPageParams);
     }
 
-//    private void disable() {
-//        try {
-//            personStrategy.disable(newPerson);
-//            back();
-//        } catch (Exception e) {
-//            log.error("", e);
-//            error(getString("db_error"));
-//        }
-//    }
-//
-//    private void enable() {
-//        try {
-//            personStrategy.enable(newPerson);
-//            back();
-//        } catch (Exception e) {
-//            log.error("", e);
-//            error(getString("db_error"));
-//        }
-//    }
     private void delete() {
         try {
             personStrategy.delete(newPerson.getId(), getLocale());
@@ -276,48 +108,47 @@ public class PersonEdit extends FormTemplatePage {
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
         return ImmutableList.of(
-//                new F3ReferenceButton(id) {
-//
-//                    @Override
-//                    protected void onClick() {
-//                        setResponsePage(new F3ReferencePage(newPerson));
-//                    }
-//
-//                    @Override
-//                    protected void onBeforeRender() {
-//                        if (isNew() || newPerson.getRegistration() == null) {
-//                            setVisibilityAllowed(false);
-//                        }
-//                        super.onBeforeRender();
-//                    }
-//                },
+                //                new F3ReferenceButton(id) {
+                //
+                //                    @Override
+                //                    protected void onClick() {
+                //                        setResponsePage(new F3ReferencePage(newPerson));
+                //                    }
+                //
+                //                    @Override
+                //                    protected void onBeforeRender() {
+                //                        if (isNew() || newPerson.getRegistration() == null) {
+                //                            setVisibilityAllowed(false);
+                //                        }
+                //                        super.onBeforeRender();
+                //                    }
+                //                },
                 new DeleteItemButton(id) {
 
-                    @Override
-                    protected void onClick() {
-                        delete();
-                    }
+            @Override
+            protected void onClick() {
+                delete();
+            }
 
-                    @Override
-                    protected void onBeforeRender() {
-                        if (!canDelete(null, "person", newPerson)) {
-                            setVisibilityAllowed(false);
-                        }
-                        super.onBeforeRender();
-                    }
+            @Override
+            protected void onBeforeRender() {
+                if (!canDelete(null, "person", newPerson)) {
+                    setVisibilityAllowed(false);
                 }
-//                new SaveButton(id, true) {
-//
-//                    @Override
-//                    protected void onClick(AjaxRequestTarget target) {
-//                        reportDownloadPanel.open(target);
-//                    }
-//
-//                    @Override
-//                    public boolean isVisible() {
-//                        return !isNew();
-//                    }
-//                }
+                super.onBeforeRender();
+            }
+        } //                new SaveButton(id, true) {
+                //
+                //                    @Override
+                //                    protected void onClick(AjaxRequestTarget target) {
+                //                        reportDownloadPanel.open(target);
+                //                    }
+                //
+                //                    @Override
+                //                    public boolean isVisible() {
+                //                        return !isNew();
+                //                    }
+                //                }
                 );
     }
 }

@@ -203,7 +203,7 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    protected Person findById(long id, boolean runAsAdmin, boolean loadChildren) {
+    public Person findById(long id, boolean runAsAdmin, boolean loadChildren) {
         DomainObject personObject = super.findById(id, runAsAdmin);
         if (personObject == null) {
             return null;

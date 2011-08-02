@@ -4,7 +4,10 @@
  */
 package org.complitex.pspoffice.person.strategy.web.list;
 
+import java.io.Serializable;
+import java.util.Map;
 import javax.ejb.EJB;
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import static com.google.common.collect.ImmutableList.*;
@@ -14,6 +17,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.search.ISearchCallback;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
@@ -27,53 +31,70 @@ import org.complitex.template.web.template.FormTemplatePage;
  */
 public class ApartmentCardSearch extends FormTemplatePage {
 
+    private class AddressSearchCallback implements ISearchCallback, Serializable {
+
+        @Override
+        public void found(Component component, Map<String, Long> ids, AjaxRequestTarget target) {
+            Long apartmentId = ids.get("apartment");
+            if (apartmentId != null) {
+                search(target);
+            }
+        }
+    }
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
+    private final SearchComponentState addressSearchComponentState;
+    private final FeedbackPanel messages;
 
     public ApartmentCardSearch() {
         add(new Label("title", new ResourceModel("title")));
         add(new Label("address_label", new ResourceModel("address_label")));
-        final FeedbackPanel messages = new FeedbackPanel("messages");
+        messages = new FeedbackPanel("messages");
         messages.setOutputMarkupId(true);
         add(messages);
 
-        final SearchComponentState addressSearchComponentState = new SearchComponentState();
+        addressSearchComponentState = new SearchComponentState();
         WiQuerySearchComponent addressSearchComponent = new WiQuerySearchComponent("addressSearchComponent",
-                addressSearchComponentState, of("city", "street", "building", "apartment"), null, ShowMode.ACTIVE, true);
+                addressSearchComponentState, of("city", "street", "building", "apartment"), new AddressSearchCallback(),
+                ShowMode.ACTIVE, true);
         add(addressSearchComponent);
 
         AjaxLink<Void> submit = new AjaxLink<Void>("search") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                SimpleObjectInfo addressInfo = getAddressObjectInfo(addressSearchComponentState);
-                if (addressInfo != null) {
-                    String addressEntity = addressInfo.getEntityTable();
-                    long addressId = addressInfo.getId();
-                    int count = apartmentCardStrategy.countByAddress(addressEntity, addressId);
-                    if (count == 1) {
-                        ApartmentCard apartmentCard = apartmentCardStrategy.findOneByAddress(addressEntity, addressId);
-                        setResponsePage(new ApartmentCardEdit(apartmentCard));
-                    } else if (count > 1) {
-                        setResponsePage(new ApartmentCardList(addressEntity, addressId));
-                    } else {
-                        setResponsePage(new ApartmentCardNotFound(addressEntity, addressId));
-                    }
-                } else {
-                    target.addComponent(messages);
-                }
+                search(target);
             }
         };
         add(submit);
     }
 
-    protected final SimpleObjectInfo getAddressObjectInfo(SearchComponentState addressComponentState) {
-        DomainObject building = addressComponentState.get("building");
+    private void search(AjaxRequestTarget target) {
+        SimpleObjectInfo addressInfo = getAddressObjectInfo();
+        if (addressInfo != null) {
+            String addressEntity = addressInfo.getEntityTable();
+            long addressId = addressInfo.getId();
+            int count = apartmentCardStrategy.countByAddress(addressEntity, addressId);
+            if (count == 1) {
+                ApartmentCard apartmentCard = apartmentCardStrategy.findOneByAddress(addressEntity, addressId);
+                setResponsePage(new ApartmentCardEdit(apartmentCard));
+            } else if (count > 1) {
+                setResponsePage(new ApartmentCardList(addressEntity, addressId));
+            } else {
+                setResponsePage(new ApartmentCardNotFound(addressEntity, addressId));
+            }
+        } else {
+            target.addComponent(messages);
+        }
+    }
+
+    private SimpleObjectInfo getAddressObjectInfo() {
+        DomainObject building = addressSearchComponentState.get("building");
         if (building == null || building.getId() == null || building.getId() <= 0) {
             error(getString("address_invalid"));
             return null;
         }
-        DomainObject apartment = addressComponentState.get("apartment");
+        DomainObject apartment = addressSearchComponentState.get("apartment");
         if (apartment == null || apartment.getId() == null || apartment.getId() <= 0) {
             return new SimpleObjectInfo("building", building.getId());
         }

@@ -96,18 +96,6 @@ public class RegistrationStrategy extends Strategy {
         registration.setPerson(person);
     }
 
-//    @Transactional
-//    @Override
-//    public Registration findHistoryObject(long objectId, Date date) {
-//        DomainObject registrationObject = super.findHistoryObject(objectId, date);
-//        if (registrationObject == null) {
-//            return null;
-//        }
-//        Registration registration = new Registration(registrationObject);
-//        loadPerson(registration);
-//        return registration;
-//    }
-
     @Transactional
     public Registration findFinishedRegistration(long objectId){
         DomainObjectExample example = new DomainObjectExample(objectId);

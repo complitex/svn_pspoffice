@@ -13,7 +13,6 @@ import org.complitex.dictionary.service.StringCultureBean;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
-import java.util.Map;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
@@ -27,8 +26,6 @@ import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.PersonList;
-import org.complitex.pspoffice.person.strategy.entity.FullName;
-import org.complitex.pspoffice.person.strategy.util.FullNameParser;
 import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -48,7 +45,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long LAST_NAME = 2000;
     public static final long FIRST_NAME = 2001;
     public static final long MIDDLE_NAME = 2002;
-    public static final long NATIONALITY = 2003;
+    public static final long IDENTITY_CODE = 2003;
     public static final long BIRTH_DATE = 2004;
     public static final long BIRTH_COUNTRY = 2005;
     public static final long BIRTH_REGION = 2006;
@@ -58,7 +55,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long PASSPORT_NUMBER = 2010;
     public static final long PASSPORT_ACQUISITION_ORGANIZATION = 2011;
     public static final long PASSPORT_ACQUISITION_DATE = 2012;
-    public static final long JOB_INFO = 2013;
+    public static final long DEATH_DATE = 2013;
     public static final long MILITARY_SERVISE_RELATION = 2014;
     public static final long CHILDREN = 2015;
     public static final long GENDER = 2016;
@@ -155,23 +152,6 @@ public class PersonStrategy extends TemplateStrategy {
             loadAttributes(person);
         }
         return persons;
-    }
-
-    @Override
-    public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-        FullName fullName = FullNameParser.parse(searchTextInput);
-        if (fullName != null) {
-            example.addAdditionalParam(LAST_NAME_FILTER, fullName.getLastName());
-            if (fullName.getFirstName() != null) {
-                example.addAdditionalParam(FIRST_NAME_FILTER, fullName.getFirstName());
-            }
-            if (fullName.getMiddleName() != null) {
-                example.addAdditionalParam(MIDDLE_NAME_FILTER, fullName.getMiddleName());
-            }
-        } else {
-            //setup intentionally false criteria
-            example.setId(-1L);
-        }
     }
 
     @Transactional

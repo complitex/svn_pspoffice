@@ -76,8 +76,8 @@ public class Person extends DomainObject {
         return lastName + " " + firstName + " " + middleName;
     }
 
-    public String getNationality() {
-        return getStringValue(this, NATIONALITY);
+    public String getIdentityCode() {
+        return getStringValue(this, IDENTITY_CODE);
     }
 
     public Date getBirthDate() {
@@ -116,8 +116,8 @@ public class Person extends DomainObject {
         return getDateValue(this, PASSPORT_ACQUISITION_DATE);
     }
 
-    public String getJobInfo() {
-        return getStringValue(this, JOB_INFO);
+    public Date getDeathDate() {
+        return getDateValue(this, DEATH_DATE);
     }
 
     public String getMilitaryServiceRelation() {

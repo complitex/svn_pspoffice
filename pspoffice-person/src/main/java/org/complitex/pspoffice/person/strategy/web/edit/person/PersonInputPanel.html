@@ -6,14 +6,55 @@
     </head>
     <body>
         <wicket:panel>
-            <div wicket:id="fullNamePanel"></div>
+            <div wicket:id="personFullNamePanel"></div>
 
-            <div>
+            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <wicket:container wicket:id="identityCodeContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
+                </tr>
+                <tr>
+                    <wicket:container wicket:id="birthDateContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
+                </tr>
+                <tr>
+                    <wicket:container wicket:id="genderContainer">
+                        <th>
+                            <wicket:container wicket:id="label"/>
+                            <wicket:container wicket:id="required">
+                                <b class="blue">*</b>
+                            </wicket:container>:
+                        </th>
+                        <td>
+                            <div wicket:id="input"></div>
+                        </td>
+                    </wicket:container>
+                </tr>
+            </table>
+            <div wicket:id="birthPlaceContainer">
                 <fieldset>
                     <legend>
                         <span>
                             <h3>
-                                <wicket:message key="birthLabel"/>
+                                <wicket:message key="birthPlaceLabel"/>
                             </h3>
                         </span>
                     </legend>
@@ -59,19 +100,6 @@
                         </tr>
                         <tr>
                             <wicket:container wicket:id="birthCityContainer">
-                                <th>
-                                    <wicket:container wicket:id="label"/>
-                                    <wicket:container wicket:id="required">
-                                        <b class="blue">*</b>
-                                    </wicket:container>:
-                                </th>
-                                <td>
-                                    <div wicket:id="input"></div>
-                                </td>
-                            </wicket:container>
-                        </tr>
-                        <tr>
-                            <wicket:container wicket:id="birthDateContainer">
                                 <th>
                                     <wicket:container wicket:id="label"/>
                                     <wicket:container wicket:id="required">
@@ -206,32 +234,6 @@
 
             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                    <wicket:container wicket:id="genderContainer">
-                        <th>
-                            <wicket:container wicket:id="label"/>
-                            <wicket:container wicket:id="required">
-                                <b class="blue">*</b>
-                            </wicket:container>:
-                        </th>
-                        <td>
-                            <div wicket:id="input"></div>
-                        </td>
-                    </wicket:container>
-                </tr>
-                <tr>
-                    <wicket:container wicket:id="nationalityContainer">
-                        <th>
-                            <wicket:container wicket:id="label"/>
-                            <wicket:container wicket:id="required">
-                                <b class="blue">*</b>
-                            </wicket:container>:
-                        </th>
-                        <td>
-                            <div wicket:id="input"></div>
-                        </td>
-                    </wicket:container>                    
-                </tr>
-                <tr>
                     <wicket:container wicket:id="ukraineCitizenshipContainer">
                         <th>
                             <wicket:container wicket:id="label"/>
@@ -245,7 +247,7 @@
                     </wicket:container>
                 </tr>
                 <tr>
-                    <wicket:container wicket:id="jobInfoContainer">
+                    <wicket:container wicket:id="militaryServiceRelationContainer">
                         <th>
                             <wicket:container wicket:id="label"/>
                             <wicket:container wicket:id="required">
@@ -258,7 +260,7 @@
                     </wicket:container>
                 </tr>
                 <tr>
-                    <wicket:container wicket:id="militaryServiceRelationContainer">
+                    <wicket:container wicket:id="deathDateContainer">
                         <th>
                             <wicket:container wicket:id="label"/>
                             <wicket:container wicket:id="required">

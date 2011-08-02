@@ -23,7 +23,6 @@ import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
-import org.complitex.dictionary.web.component.name.FullNamePanel;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 
@@ -81,19 +80,25 @@ public final class PersonInputPanel extends Panel {
 
     private void init() {
         //full name:
-        FullNamePanel fullNamePanel = new FullNamePanel("fullNamePanel", newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME),
-                newNameModel(LAST_NAME));
-        fullNamePanel.setEnabled(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-        add(fullNamePanel);
+        PersonFullNamePanel personFullNamePanel = new PersonFullNamePanel("personFullNamePanel",
+                newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME), newNameModel(LAST_NAME));
+        personFullNamePanel.setEnabled(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        add(personFullNamePanel);
 
         Entity entity = personStrategy.getEntity();
 
         //system attributes:
-        initSystemAttributeInput(this, "birthCountry", BIRTH_COUNTRY, true);
-        initSystemAttributeInput(this, "birthRegion", BIRTH_REGION, true);
-        initSystemAttributeInput(this, "birthDistrict", BIRTH_DISTRICT, false);
-        initSystemAttributeInput(this, "birthCity", BIRTH_CITY, true);
+        initSystemAttributeInput(this, "identityCode", IDENTITY_CODE, true);
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
+        initSystemAttributeInput(this, "gender", GENDER, false);
+
+        WebMarkupContainer birthPlaceContainer = new WebMarkupContainer("birthPlaceContainer");
+        birthPlaceContainer.setVisible(isBirthPlaceContainerVisible());
+        add(birthPlaceContainer);
+        initSystemAttributeInput(birthPlaceContainer, "birthCountry", BIRTH_COUNTRY, false);
+        initSystemAttributeInput(birthPlaceContainer, "birthRegion", BIRTH_REGION, false);
+        initSystemAttributeInput(birthPlaceContainer, "birthDistrict", BIRTH_DISTRICT, false);
+        initSystemAttributeInput(birthPlaceContainer, "birthCity", BIRTH_CITY, false);
 
         //passport info
         WebMarkupContainer passportContainer = new WebMarkupContainer("passportContainer");
@@ -112,10 +117,8 @@ public final class PersonInputPanel extends Panel {
         initSystemAttributeInput(birthCertificateContainer, "birthCertificateAcquisitionDate", BIRTH_CERTIFICATE_ACQUISITION_DATE, false);
         initSystemAttributeInput(birthCertificateContainer, "birthCertificateAcquisitionOrganization", BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION, false);
 
-        initSystemAttributeInput(this, "gender", GENDER, false);
-        initSystemAttributeInput(this, "nationality", NATIONALITY, false);
         initSystemAttributeInput(this, "ukraineCitizenship", UKRAINE_CITIZENSHIP, false);
-        initSystemAttributeInput(this, "jobInfo", JOB_INFO, false);
+        initSystemAttributeInput(this, "deathDate", DEATH_DATE, false);
         initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION, false);
 
         //user attributes:
@@ -247,6 +250,12 @@ public final class PersonInputPanel extends Panel {
         return !(isHistory() && (person.getAttribute(BIRTH_CERTIFICATE_INFO) == null)
                 && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_DATE) == null)
                 && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION) == null));
+    }
+
+    private boolean isBirthPlaceContainerVisible() {
+        return !(isHistory() && (person.getAttribute(BIRTH_COUNTRY) == null) && (person.getAttribute(BIRTH_DISTRICT) == null)
+                && (person.getAttribute(BIRTH_REGION) == null)
+                && (person.getAttribute(BIRTH_CITY) == null));
     }
 
     private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {

@@ -101,8 +101,15 @@
                     </div>
                     <div style="margin-top: 20px;">
                         <input type="button" wicket:id="select" wicket:message="value:select" class="btnMiddle"/>
+                        <input type="button" wicket:id="createNew" wicket:message="value:create_new" class="btnMiddle"/>
                         <input type="button" wicket:id="cancel" wicket:message="value:cancel" class="btnMiddle"/>
                     </div>
+                </div>
+            </div>
+
+            <div wicket:id="personCreationDialog" style="display: none" wicket:message="title:person_creation_dialog_title">
+                <div wicket:id="personEditContainer">
+                    <div wicket:id="personEditPanel"></div>
                 </div>
             </div>
         </wicket:panel>

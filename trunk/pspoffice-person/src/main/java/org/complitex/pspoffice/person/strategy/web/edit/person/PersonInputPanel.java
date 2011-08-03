@@ -32,7 +32,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
+import org.complitex.resources.WebCommonResourceInitializer;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -79,6 +81,8 @@ public final class PersonInputPanel extends Panel {
     }
 
     private void init() {
+        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.COLLAPSIBLE_FS_JS));
+
         //full name:
         PersonFullNamePanel personFullNamePanel = new PersonFullNamePanel("personFullNamePanel",
                 newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME), newNameModel(LAST_NAME));

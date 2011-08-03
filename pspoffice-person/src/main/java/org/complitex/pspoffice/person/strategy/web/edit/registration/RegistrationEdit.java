@@ -101,6 +101,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
     private void init() {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.COLLAPSIBLE_FS_JS));
 
         final Entity entity = registrationStrategy.getEntity();
 

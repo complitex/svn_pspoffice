@@ -17,6 +17,7 @@ import static org.complitex.dictionary.util.AttributeUtil.*;
 public class Registration extends DomainObject {
 
     private Person person;
+    private DomainObject ownerRelationship;
 
     public Registration() {
     }
@@ -119,5 +120,13 @@ public class Registration extends DomainObject {
 
     public boolean isFinished() {
         return getStatus() != StatusType.ACTIVE;
+    }
+
+    public DomainObject getOwnerRelationship() {
+        return ownerRelationship;
+    }
+
+    public void setOwnerRelationship(DomainObject ownerRelationship) {
+        this.ownerRelationship = ownerRelationship;
     }
 }

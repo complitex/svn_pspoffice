@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.list;
+package org.complitex.pspoffice.person.strategy.web.list.apartment_card;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -10,6 +10,7 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import static com.google.common.collect.ImmutableList.*;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -23,12 +24,14 @@ import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
+import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
 
 /**
  *
  * @author Artem
  */
+@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
 public class ApartmentCardSearch extends FormTemplatePage {
 
     private class AddressSearchCallback implements ISearchCallback, Serializable {

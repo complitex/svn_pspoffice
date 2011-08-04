@@ -4,6 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy.entity;
 
+import com.google.common.base.Predicate;
+import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
 import org.complitex.dictionary.entity.DomainObject;
@@ -69,7 +71,13 @@ public class ApartmentCard extends DomainObject {
     }
 
     public int getRegisteredCount() {
-        return 0;
+        return newArrayList(filter(registrations, new Predicate<Registration>() {
+
+            @Override
+            public boolean apply(Registration registration) {
+                return !registration.isFinished();
+            }
+        })).size();
     }
 
     public String getFormOfOwnership() {

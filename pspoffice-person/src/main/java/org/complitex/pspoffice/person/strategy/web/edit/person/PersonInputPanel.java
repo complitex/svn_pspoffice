@@ -32,9 +32,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.model.ResourceModel;
+import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
-import org.complitex.resources.WebCommonResourceInitializer;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -81,8 +81,6 @@ public final class PersonInputPanel extends Panel {
     }
 
     private void init() {
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.COLLAPSIBLE_FS_JS));
-
         //full name:
         PersonFullNamePanel personFullNamePanel = new PersonFullNamePanel("personFullNamePanel",
                 newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME), newNameModel(LAST_NAME));
@@ -96,30 +94,30 @@ public final class PersonInputPanel extends Panel {
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
         initSystemAttributeInput(this, "gender", GENDER, false);
 
-        WebMarkupContainer birthPlaceContainer = new WebMarkupContainer("birthPlaceContainer");
-        birthPlaceContainer.setVisible(isBirthPlaceContainerVisible());
-        add(birthPlaceContainer);
-        initSystemAttributeInput(birthPlaceContainer, "birthCountry", BIRTH_COUNTRY, false);
-        initSystemAttributeInput(birthPlaceContainer, "birthRegion", BIRTH_REGION, false);
-        initSystemAttributeInput(birthPlaceContainer, "birthDistrict", BIRTH_DISTRICT, false);
-        initSystemAttributeInput(birthPlaceContainer, "birthCity", BIRTH_CITY, false);
+        CollapsibleFieldset birthPlaceFieldset = new CollapsibleFieldset("birthPlaceFieldset", new ResourceModel("birthPlaceLabel"));
+        birthPlaceFieldset.setVisible(isBirthPlaceFieldsetVisible());
+        add(birthPlaceFieldset);
+        initSystemAttributeInput(birthPlaceFieldset, "birthCountry", BIRTH_COUNTRY, false);
+        initSystemAttributeInput(birthPlaceFieldset, "birthRegion", BIRTH_REGION, false);
+        initSystemAttributeInput(birthPlaceFieldset, "birthDistrict", BIRTH_DISTRICT, false);
+        initSystemAttributeInput(birthPlaceFieldset, "birthCity", BIRTH_CITY, false);
 
         //passport info
-        WebMarkupContainer passportContainer = new WebMarkupContainer("passportContainer");
-        passportContainer.setVisible(isPassportContainerVisible());
-        add(passportContainer);
-        initSystemAttributeInput(passportContainer, "passportSerialNumber", PASSPORT_SERIAL_NUMBER, false);
-        initSystemAttributeInput(passportContainer, "passportNumber", PASSPORT_NUMBER, false);
-        initSystemAttributeInput(passportContainer, "passportAcquisitionDate", PASSPORT_ACQUISITION_DATE, false);
-        initSystemAttributeInput(passportContainer, "passportAcquisitionOrganization", PASSPORT_ACQUISITION_ORGANIZATION, false);
+        CollapsibleFieldset passportFieldset = new CollapsibleFieldset("passportFieldset", new ResourceModel("passportLabel"));
+        passportFieldset.setVisible(isPassportFieldsetVisible());
+        add(passportFieldset);
+        initSystemAttributeInput(passportFieldset, "passportSerialNumber", PASSPORT_SERIAL_NUMBER, false);
+        initSystemAttributeInput(passportFieldset, "passportNumber", PASSPORT_NUMBER, false);
+        initSystemAttributeInput(passportFieldset, "passportAcquisitionDate", PASSPORT_ACQUISITION_DATE, false);
+        initSystemAttributeInput(passportFieldset, "passportAcquisitionOrganization", PASSPORT_ACQUISITION_ORGANIZATION, false);
 
         // birth certificate info
-        WebMarkupContainer birthCertificateContainer = new WebMarkupContainer("birthCertificateContainer");
-        birthCertificateContainer.setVisible(isBirthCertificateContainerVisible());
-        add(birthCertificateContainer);
-        initSystemAttributeInput(birthCertificateContainer, "birthCertificateInfo", BIRTH_CERTIFICATE_INFO, false);
-        initSystemAttributeInput(birthCertificateContainer, "birthCertificateAcquisitionDate", BIRTH_CERTIFICATE_ACQUISITION_DATE, false);
-        initSystemAttributeInput(birthCertificateContainer, "birthCertificateAcquisitionOrganization", BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION, false);
+        CollapsibleFieldset birthCertificateFieldset = new CollapsibleFieldset("birthCertificateFieldset", new ResourceModel("birthCertificateLabel"));
+        birthCertificateFieldset.setVisible(isBirthCertificateFieldsetVisible());
+        add(birthCertificateFieldset);
+        initSystemAttributeInput(birthCertificateFieldset, "birthCertificateInfo", BIRTH_CERTIFICATE_INFO, false);
+        initSystemAttributeInput(birthCertificateFieldset, "birthCertificateAcquisitionDate", BIRTH_CERTIFICATE_ACQUISITION_DATE, false);
+        initSystemAttributeInput(birthCertificateFieldset, "birthCertificateAcquisitionOrganization", BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION, false);
 
         initSystemAttributeInput(this, "ukraineCitizenship", UKRAINE_CITIZENSHIP, false);
         initSystemAttributeInput(this, "deathDate", DEATH_DATE, false);
@@ -161,13 +159,12 @@ public final class PersonInputPanel extends Panel {
         add(userAttributesView);
 
         //children
-        WebMarkupContainer childrenFieldsetContainer = new WebMarkupContainer("childrenFieldsetContainer");
-        add(childrenFieldsetContainer);
-        childrenFieldsetContainer.add(new Label("childrenLabel",
-                labelModel(entity.getAttributeType(CHILDREN).getAttributeNames(), getLocale())));
+        CollapsibleFieldset childrenFieldset = new CollapsibleFieldset("childrenFieldset",
+                labelModel(entity.getAttributeType(CHILDREN).getAttributeNames(), getLocale()));
+        add(childrenFieldset);
         final WebMarkupContainer childrenContainer = new WebMarkupContainer("childrenContainer");
         childrenContainer.setOutputMarkupId(true);
-        childrenFieldsetContainer.add(childrenContainer);
+        childrenFieldset.add(childrenContainer);
         ListView<Person> children = new AjaxRemovableListView<Person>("children", person.getChildren()) {
 
             @Override
@@ -216,10 +213,10 @@ public final class PersonInputPanel extends Panel {
             }
         };
         addChild.setVisible(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
-        childrenFieldsetContainer.add(addChild);
+        childrenFieldset.add(addChild);
         childrenContainer.add(children);
         if (isHistory() && person.getChildren().isEmpty()) {
-            childrenFieldsetContainer.setVisible(false);
+            childrenFieldset.setVisible(false);
         }
     }
 
@@ -244,19 +241,19 @@ public final class PersonInputPanel extends Panel {
         initAttributeInput(container, attributeTypeId, showIfMissing);
     }
 
-    private boolean isPassportContainerVisible() {
+    private boolean isPassportFieldsetVisible() {
         return !(isHistory() && (person.getAttribute(PASSPORT_SERIAL_NUMBER) == null) && (person.getAttribute(PASSPORT_NUMBER) == null)
                 && (person.getAttribute(PASSPORT_ACQUISITION_ORGANIZATION) == null)
                 && (person.getAttribute(PASSPORT_ACQUISITION_DATE) == null));
     }
 
-    private boolean isBirthCertificateContainerVisible() {
+    private boolean isBirthCertificateFieldsetVisible() {
         return !(isHistory() && (person.getAttribute(BIRTH_CERTIFICATE_INFO) == null)
                 && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_DATE) == null)
                 && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION) == null));
     }
 
-    private boolean isBirthPlaceContainerVisible() {
+    private boolean isBirthPlaceFieldsetVisible() {
         return !(isHistory() && (person.getAttribute(BIRTH_COUNTRY) == null) && (person.getAttribute(BIRTH_DISTRICT) == null)
                 && (person.getAttribute(BIRTH_REGION) == null)
                 && (person.getAttribute(BIRTH_CITY) == null));

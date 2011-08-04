@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.list;
+package org.complitex.pspoffice.person.strategy.web.list.person;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;

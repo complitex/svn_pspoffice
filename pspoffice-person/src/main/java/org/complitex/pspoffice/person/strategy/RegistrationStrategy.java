@@ -67,11 +67,11 @@ public class RegistrationStrategy extends Strategy {
     @Transactional
     @Override
     public Registration findById(long id, boolean runAsAdmin) {
-        return findById(id, runAsAdmin, true);
+        return findById(id, runAsAdmin, true, true);
     }
 
     @Transactional
-    public Registration findById(long id, boolean runAsAdmin, boolean loadPerson) {
+    public Registration findById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship) {
         DomainObject registrationObject = super.findById(id, runAsAdmin);
         if (registrationObject == null) {
             return null;
@@ -80,12 +80,10 @@ public class RegistrationStrategy extends Strategy {
         if (loadPerson) {
             loadPerson(registration);
         }
+        if (loadOwnerRelationship) {
+            loadOwnerRelationship(registration);
+        }
         return registration;
-    }
-
-    @Transactional
-    public DomainObject loadOwnerRelationship(long ownerRelationshipId) {
-        return ownerRelationshipStrategy.findById(ownerRelationshipId, true);
     }
 
     @Transactional
@@ -97,7 +95,14 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
-    public Registration findFinishedRegistration(long objectId){
+    private void loadOwnerRelationship(Registration registration) {
+        long ownerRelationshipId = registration.getAttribute(OWNER_RELATIONSHIP).getValueId();
+        DomainObject ownerRelationship = ownerRelationshipStrategy.findById(ownerRelationshipId, true);
+        registration.setOwnerRelationship(ownerRelationship);
+    }
+
+    @Transactional
+    public Registration findFinishedRegistration(long objectId) {
         DomainObjectExample example = new DomainObjectExample(objectId);
         example.setTable(getEntityTable());
         example.setStartDate(DateUtil.getCurrentDate());
@@ -113,6 +118,7 @@ public class RegistrationStrategy extends Strategy {
 
         Registration registration = new Registration(registrationObject);
         loadPerson(registration);
+        loadOwnerRelationship(registration);
         return registration;
 
     }

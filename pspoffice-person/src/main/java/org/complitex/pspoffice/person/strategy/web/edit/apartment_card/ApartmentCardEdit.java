@@ -52,6 +52,7 @@ import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -59,10 +60,10 @@ import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
-import org.complitex.pspoffice.person.strategy.web.list.ApartmentCardSearch;
+import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.resources.WebCommonResourceInitializer;
-import org.complitex.template.web.component.toolbar.AddItemButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -93,6 +94,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private RegistrationStrategy registrationStrategy;
     @EJB
     private StrategyFactory strategyFactory;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
     private String addressEntity;
     private Long addressId;
     private ApartmentCard oldApartmentCard;
@@ -298,6 +301,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 item.add(new Label("registrationStartDate", registrationStartDate != null ? DATE_FORMATTER.format(registrationStartDate) : null));
                 Date registrationEndDate = registration.getDepartureDate();
                 item.add(new Label("registrationEndDate", registrationEndDate != null ? DATE_FORMATTER.format(registrationEndDate) : null));
+                item.add(new Label("registrationOwnerRelationship",
+                        StringUtil.valueOf(ownerRelationshipStrategy.displayDomainObject(registration.getOwnerRelationship(), getLocale()))));
 
                 Link<Void> registrationDetails = new Link<Void>("registrationDetails") {
 
@@ -539,7 +544,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-        return of(new AddItemButton(id) {
+        return of(new AddApartmentCardButton(id) {
 
             @Override
             protected void onClick() {

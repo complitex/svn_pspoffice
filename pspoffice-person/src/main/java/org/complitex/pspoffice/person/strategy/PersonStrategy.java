@@ -25,7 +25,7 @@ import org.complitex.dictionary.service.NameBean;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
-import org.complitex.pspoffice.person.strategy.web.list.PersonList;
+import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
 import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;

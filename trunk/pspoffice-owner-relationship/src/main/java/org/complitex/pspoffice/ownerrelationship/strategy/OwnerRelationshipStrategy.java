@@ -83,17 +83,17 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
         return (List<DomainObject>) find(example);
     }
 
-    @Transactional
-    public List<DomainObject> getAllWithoutOwnerAndResponsible() {
-        List<DomainObject> all = getAll();
-        return newArrayList(filter(all, new Predicate<DomainObject>() {
-
-            @Override
-            public boolean apply(DomainObject input) {
-                return !RESERVED_INSTANCE_IDS.contains(input.getId());
-            }
-        }));
-    }
+//    @Transactional
+//    public List<DomainObject> getAllWithoutOwnerAndResponsible() {
+//        List<DomainObject> all = getAll();
+//        return newArrayList(filter(all, new Predicate<DomainObject>() {
+//
+//            @Override
+//            public boolean apply(DomainObject input) {
+//                return !RESERVED_INSTANCE_IDS.contains(input.getId());
+//            }
+//        }));
+//    }
 
     @Override
     public String[] getEditRoles() {

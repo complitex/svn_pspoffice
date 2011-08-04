@@ -26,6 +26,7 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.Attribute;
@@ -39,6 +40,7 @@ import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
+import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
@@ -101,7 +103,6 @@ public class RegistrationEdit extends FormTemplatePage {
 
     private void init() {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.COLLAPSIBLE_FS_JS));
 
         final Entity entity = registrationStrategy.getEntity();
 
@@ -143,25 +144,32 @@ public class RegistrationEdit extends FormTemplatePage {
         //system attributes:
         initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, false);
         initSystemAttributeInput(form, "registrationType", REGISTRATION_TYPE, false);
-        initSystemAttributeInput(form, "arrivalCountry", ARRIVAL_COUNTRY, true);
-        initSystemAttributeInput(form, "arrivalRegion", ARRIVAL_REGION, true);
-        initSystemAttributeInput(form, "arrivalStreet", ARRIVAL_STREET, true);
-        initSystemAttributeInput(form, "arrivalDistrict", ARRIVAL_DISTRICT, true);
-        initSystemAttributeInput(form, "arrivalBuildingNumber", ARRIVAL_BUILDING_NUMBER, true);
-        initSystemAttributeInput(form, "arrivalCity", ARRIVAL_CITY, true);
-        initSystemAttributeInput(form, "arrivalBuildingCorp", ARRIVAL_BUILDING_CORP, true);
-        initSystemAttributeInput(form, "arrivalApartment", ARRIVAL_APARTMENT, true);
-        initSystemAttributeInput(form, "arrivalDate", ARRIVAL_DATE, false);
-        initSystemAttributeInput(form, "departureCountry", DEPARTURE_COUNTRY, true);
-        initSystemAttributeInput(form, "departureRegion", DEPARTURE_REGION, true);
-        initSystemAttributeInput(form, "departureDistrict", DEPARTURE_DISTRICT, true);
-        initSystemAttributeInput(form, "departureCity", DEPARTURE_CITY, true);
-        initSystemAttributeInput(form, "departureStreet", DEPARTURE_STREET, true);
-        initSystemAttributeInput(form, "departureBuildingNumber", DEPARTURE_BUILDING_NUMBER, true);
-        initSystemAttributeInput(form, "departureBuildingCorp", DEPARTURE_BUILDING_CORP, true);
-        initSystemAttributeInput(form, "departureApartment", DEPARTURE_APARTMENT, true);
-        initSystemAttributeInput(form, "departureDate", DEPARTURE_DATE, false);
-        initSystemAttributeInput(form, "departureReason", DEPARTURE_REASON, false);
+
+        CollapsibleFieldset arrivalAddressFieldset = new CollapsibleFieldset("arrivalAddressFieldset",
+                new ResourceModel("arrival_address"), false);
+        form.add(arrivalAddressFieldset);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalCountry", ARRIVAL_COUNTRY, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalRegion", ARRIVAL_REGION, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalStreet", ARRIVAL_STREET, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalDistrict", ARRIVAL_DISTRICT, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalBuildingNumber", ARRIVAL_BUILDING_NUMBER, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalCity", ARRIVAL_CITY, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalBuildingCorp", ARRIVAL_BUILDING_CORP, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalApartment", ARRIVAL_APARTMENT, true);
+        initSystemAttributeInput(arrivalAddressFieldset, "arrivalDate", ARRIVAL_DATE, true);
+
+        CollapsibleFieldset departureAddressFieldset = new CollapsibleFieldset("departureAddressFieldset", new ResourceModel("departure_address"));
+        form.add(departureAddressFieldset);
+        initSystemAttributeInput(departureAddressFieldset, "departureCountry", DEPARTURE_COUNTRY, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureRegion", DEPARTURE_REGION, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureDistrict", DEPARTURE_DISTRICT, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureCity", DEPARTURE_CITY, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureStreet", DEPARTURE_STREET, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureBuildingNumber", DEPARTURE_BUILDING_NUMBER, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureBuildingCorp", DEPARTURE_BUILDING_CORP, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureApartment", DEPARTURE_APARTMENT, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureDate", DEPARTURE_DATE, true);
+        initSystemAttributeInput(departureAddressFieldset, "departureReason", DEPARTURE_REASON, true);
 
         form.add(initOwnerRelationship());
 
@@ -249,7 +257,7 @@ public class RegistrationEdit extends FormTemplatePage {
         ownerRelationshipContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
 
         //owner relationship
-        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAllWithoutOwnerAndResponsible();
+        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll();
         final Attribute ownerRelationshipAttribute = newRegistration.getAttribute(OWNER_RELATIONSHIP);
         IModel<DomainObject> ownerRelationshipModel = new Model<DomainObject>() {
 

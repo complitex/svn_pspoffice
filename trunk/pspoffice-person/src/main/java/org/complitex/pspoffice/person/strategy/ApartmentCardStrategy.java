@@ -4,9 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
@@ -217,22 +214,18 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     public ApartmentCard findOneByAddress(String addressEntity, long addressId) {
-        return findByAddress(addressEntity, addressId, 0, 1, true).get(0);
+        return findByAddress(addressEntity, addressId, 0, 1).get(0);
     }
 
     @Transactional
     public List<ApartmentCard> findByAddress(String addressEntity, long addressId, int start, int size) {
-        return findByAddress(addressEntity, addressId, start, size, false);
-    }
-
-    private List<ApartmentCard> findByAddress(String addressEntity, long addressId, int start, int size, boolean loadRegistrations) {
         checkEntity(addressEntity);
         Map<String, Object> params = ImmutableMap.<String, Object>of("addressId", addressId, "start", start, "size", size);
         addressEntity = Strings.capitalize(addressEntity);
         List<Long> apartmentCardIds = sqlSession().selectList(APARTMENT_CARD_MAPPING + ".findBy" + addressEntity, params);
         List<ApartmentCard> apartmentCards = newArrayList();
         for (Long apartmentCardId : apartmentCardIds) {
-            apartmentCards.add(findById(apartmentCardId, false, true, loadRegistrations));
+            apartmentCards.add(findById(apartmentCardId, false, true, true));
         }
         return apartmentCards;
     }
@@ -243,7 +236,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
             for (Attribute registrationAttribute : registrationAttributes) {
                 long registrationId = registrationAttribute.getValueId();
-                Registration registration = registrationStrategy.findById(registrationId, false);
+                Registration registration = registrationStrategy.findById(registrationId, true);
                 if (registration == null) {
                     //find history registration
                     registration = registrationStrategy.findFinishedRegistration(registrationId);

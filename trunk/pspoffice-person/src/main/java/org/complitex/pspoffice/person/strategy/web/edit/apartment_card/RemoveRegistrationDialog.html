@@ -32,75 +32,65 @@
                             </tr>
                         </table>
 
-                        <div>
-                            <fieldset class="collapsible_fs">
-                                <legend>
-                                    <span class="image plus"></span>
-                                    <span class="fs_title">
-                                        <wicket:message key="address"/>
-                                    </span>
-                                </legend>
-                                <div class="fs_content plus">
-                                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                        <tr>
-                                            <th>
-                                                <wicket:message key="country"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="country"/>
-                                            </td>
-                                            <th>
-                                                <wicket:message key="street"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="street"/>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <wicket:message key="region"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="region"/>
-                                            </td>
-                                            <th>
-                                                <wicket:message key="building_number"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="buildingNumber"/>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <wicket:message key="district"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="district"/>
-                                            </td>
-                                            <th>
-                                                <wicket:message key="building_corp"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="buildingCorp"/>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <wicket:message key="city"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="city"/>
-                                            </td>
-                                            <th>
-                                                <wicket:message key="apartment"/>:
-                                            </th>
-                                            <td>
-                                                <input type="text" wicket:id="apartment"/>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </fieldset>
+                        <div wicket:id="addressFieldset">
+                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <th>
+                                        <wicket:message key="country"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="country"/>
+                                    </td>
+                                    <th>
+                                        <wicket:message key="street"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="street"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <wicket:message key="region"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="region"/>
+                                    </td>
+                                    <th>
+                                        <wicket:message key="building_number"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="buildingNumber"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <wicket:message key="district"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="district"/>
+                                    </td>
+                                    <th>
+                                        <wicket:message key="building_corp"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="buildingCorp"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <wicket:message key="city"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="city"/>
+                                    </td>
+                                    <th>
+                                        <wicket:message key="apartment"/>:
+                                    </th>
+                                    <td>
+                                        <input type="text" wicket:id="apartment"/>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
 
                         <div style="margin-top: 30px;">

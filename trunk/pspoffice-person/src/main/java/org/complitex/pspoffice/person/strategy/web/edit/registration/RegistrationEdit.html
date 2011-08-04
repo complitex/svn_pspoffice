@@ -88,271 +88,249 @@
                     </tr>
                 </table>
 
-                <div>
-                    <fieldset class="collapsible_fs">
-                        <legend>
-                            <span class="image minus"></span>
-                            <span class="fs_title">
-                                <wicket:message key="arrival_address"/>
-                            </span>
-                        </legend>
-                        <div class="fs_content">
-                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <wicket:container wicket:id="arrivalCountryContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="arrivalStreetContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="arrivalRegionContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="arrivalBuildingNumberContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="arrivalDistrictContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="arrivalBuildingCorpContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="arrivalCityContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="arrivalApartmentContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="arrivalDateContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td colspan="3">
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                            </table>
-                        </div>
-                    </fieldset>
+                <div wicket:id="arrivalAddressFieldset">
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="arrivalCountryContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="arrivalStreetContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="arrivalRegionContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="arrivalBuildingNumberContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="arrivalDistrictContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="arrivalBuildingCorpContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="arrivalCityContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="arrivalApartmentContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="arrivalDateContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td colspan="3">
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                    </table>
                 </div>
 
-                <div>
-                    <fieldset class="collapsible_fs">
-                        <legend>
-                            <span class="image plus"></span>
-                            <span class="fs_title">
-                                <wicket:message key="departure_address"/>
-                            </span>
-                        </legend>
-                        <div class="fs_content plus">
-                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <wicket:container wicket:id="departureCountryContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="departureStreetContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="departureRegionContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="departureBuildingNumberContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="departureDistrictContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="departureBuildingCorpContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="departureCityContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                    <wicket:container wicket:id="departureApartmentContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                    </wicket:container>
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="departureDateContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                        <th></th><td></td>
-                                    </wicket:container>
+                <div wicket:id="departureAddressFieldset">
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <wicket:container wicket:id="departureCountryContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="departureStreetContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="departureRegionContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="departureBuildingNumberContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="departureDistrictContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="departureBuildingCorpContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="departureCityContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                            <wicket:container wicket:id="departureApartmentContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                            </wicket:container>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="departureDateContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                                <th></th><td></td>
+                            </wicket:container>
 
-                                </tr>
-                                <tr>
-                                    <wicket:container wicket:id="departureReasonContainer">
-                                        <th>
-                                            <wicket:container wicket:id="label"/>
-                                            <wicket:container wicket:id="required">
-                                                <b class="blue">*</b>
-                                            </wicket:container>:
-                                        </th>
-                                        <td>
-                                            <div wicket:id="input"></div>
-                                        </td>
-                                        <th></th><td></td>
-                                    </wicket:container>
-                                </tr>
-                            </table>
-                        </div>
-                    </fieldset>
+                        </tr>
+                        <tr>
+                            <wicket:container wicket:id="departureReasonContainer">
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </wicket:container>:
+                                </th>
+                                <td>
+                                    <div wicket:id="input"></div>
+                                </td>
+                                <th></th><td></td>
+                            </wicket:container>
+                        </tr>
+                    </table>
                 </div>
-
-
 
                 <div style="margin-top: 30px;">
                     <input type="button" wicket:message="value:register" wicket:id="submit" class="btnMiddle"/>

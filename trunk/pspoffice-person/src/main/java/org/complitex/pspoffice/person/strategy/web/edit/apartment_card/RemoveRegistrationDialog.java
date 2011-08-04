@@ -10,18 +10,18 @@ import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.web.component.DatePicker;
+import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
-import org.complitex.resources.WebCommonResourceInitializer;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 import org.odlabs.wiquery.ui.dialog.Dialog;
@@ -50,8 +50,6 @@ final class RemoveRegistrationDialog extends Panel {
     }
 
     void init() {
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.COLLAPSIBLE_FS_JS));
-
         dialog = new Dialog("dialog");
         dialog.setModal(true);
         dialog.setWidth(650);
@@ -78,14 +76,16 @@ final class RemoveRegistrationDialog extends Panel {
         date.setRequired(true);
         form.add(date);
 
-        form.add(new TextField<String>("country"));
-        form.add(new TextField<String>("region"));
-        form.add(new TextField<String>("district"));
-        form.add(new TextField<String>("city"));
-        form.add(new TextField<String>("street"));
-        form.add(new TextField<String>("buildingNumber"));
-        form.add(new TextField<String>("buildingCorp"));
-        form.add(new TextField<String>("apartment"));
+        CollapsibleFieldset addressFieldset = new CollapsibleFieldset("addressFieldset", new ResourceModel("address"));
+        form.add(addressFieldset);
+        addressFieldset.add(new TextField<String>("country"));
+        addressFieldset.add(new TextField<String>("region"));
+        addressFieldset.add(new TextField<String>("district"));
+        addressFieldset.add(new TextField<String>("city"));
+        addressFieldset.add(new TextField<String>("street"));
+        addressFieldset.add(new TextField<String>("buildingNumber"));
+        addressFieldset.add(new TextField<String>("buildingCorp"));
+        addressFieldset.add(new TextField<String>("apartment"));
 
         AjaxSubmitLink removeFromRegistration = new AjaxSubmitLink("removeFromRegistration") {
 

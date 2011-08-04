@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.list;
+package org.complitex.pspoffice.person.strategy.web.list.apartment_card;
 
-import com.google.common.collect.ImmutableList;
+import static com.google.common.collect.ImmutableList.*;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -24,8 +24,8 @@ import org.complitex.dictionary.web.component.paging.PagingNavigator;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
+import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
-import org.complitex.template.web.component.toolbar.AddItemButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
@@ -117,7 +117,7 @@ public class ApartmentCardList extends ListPage {
 
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-        return ImmutableList.of(new AddItemButton(id) {
+        return of(new AddApartmentCardButton(id) {
 
             @Override
             protected void onClick() {
@@ -126,4 +126,5 @@ public class ApartmentCardList extends ListPage {
         });
     }
 }
+
 

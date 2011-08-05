@@ -5,18 +5,23 @@
 package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Date;
+import java.util.Iterator;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.ImmutableList.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.Preference;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
@@ -26,7 +31,9 @@ import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
+import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
@@ -63,6 +70,28 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public static final long FORM_OF_OWNERSHIP_TYPE = 2405;
     public static final long HOUSING_RIGHTS_TYPE = 2406;
     public static final long REGISTRATIONS_TYPE = 2407;
+    /**
+     * Apartment card search state preference page
+     */
+    public static final String APARTMENT_CARD_SEARCH_STATE_PAGE = "APARTMENT_CARD_SEARCH_STATE_PAGE";
+    /**
+     * Apartment card search state session key
+     */
+    private static final MetaDataKey<SearchComponentState> APARTMENT_CARD_SEARCH_STATE_KEY = new MetaDataKey<SearchComponentState>() {
+    };
+    /**
+     * Set of persistable search state entities
+     */
+    private static final Set<String> SEARCH_STATE_ENTITES = ImmutableSet.of("country", "region", "city");
+    /**
+     * Full address search component state enabled key
+     */
+    private static final MetaDataKey<Boolean> FULL_ADDRESS_ENABLED_KEY = new MetaDataKey<Boolean>() {
+    };
+    /**
+     * Apartment card full address enabled page
+     */
+    private static final String FULL_ADDRESS_ENABLED_PAGE = "APARTMENT_CARD_FULL_ADDRESS_ENABLED_PAGE";
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -302,5 +331,57 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             registrationStrategy.update(registration, newRegistration, updateRegistrationsTime);
             registrationStrategy.archive(newRegistration, archiveTime);
         }
+    }
+
+    @Transactional
+    public void storeSearchState(DictionaryFwSession session, SearchComponentState searchComponentState) {
+        for (Iterator<Map.Entry<String, DomainObject>> iterator = searchComponentState.entrySet().iterator();
+                iterator.hasNext();) {
+            String key = iterator.next().getKey();
+            if (!SEARCH_STATE_ENTITES.contains(key)) {
+                iterator.remove();
+            }
+        }
+
+        for (String key : searchComponentState.keySet()) {
+            if (SEARCH_STATE_ENTITES.contains(key)) {
+                DomainObject object = searchComponentState.get(key);
+                long objectId = object == null ? SearchComponentState.NOT_SPECIFIED_ID
+                        : (object.getId() != null ? object.getId() : SearchComponentState.NOT_SPECIFIED_ID);
+                session.putPreference(APARTMENT_CARD_SEARCH_STATE_PAGE, key, String.valueOf(objectId), true);
+            }
+        }
+    }
+
+    @Transactional
+    public SearchComponentState restoreSearchState(DictionaryFwSession session) {
+        SearchComponentState searchComponentState = session.getMetaData(APARTMENT_CARD_SEARCH_STATE_KEY);
+        if (searchComponentState == null) {
+            searchComponentState = new SearchComponentState();
+            session.setMetaData(APARTMENT_CARD_SEARCH_STATE_KEY, searchComponentState);
+            for (Preference p : session.getPreferenceMap(APARTMENT_CARD_SEARCH_STATE_PAGE).values()) {
+                searchComponentState.put(p.getKey(), session.getPreferenceDomainObject(p.getPage(), p.getKey()));
+            }
+        }
+        return searchComponentState;
+    }
+
+    @Transactional
+    public boolean isFullAddressEnabled(DictionaryFwSession session) {
+        Boolean fullAddressSearchStateEnabled = session.getMetaData(FULL_ADDRESS_ENABLED_KEY);
+        if (fullAddressSearchStateEnabled == null) {
+            fullAddressSearchStateEnabled = session.getPreferenceBoolean(FULL_ADDRESS_ENABLED_PAGE, FULL_ADDRESS_ENABLED_PAGE);
+            if (fullAddressSearchStateEnabled != null) {
+                session.setMetaData(FULL_ADDRESS_ENABLED_KEY, fullAddressSearchStateEnabled);
+            }
+        }
+        return fullAddressSearchStateEnabled != null ? fullAddressSearchStateEnabled : true;
+    }
+
+    @Transactional
+    public void storeFullAddressEnabled(DictionaryFwSession session, boolean fullAddressSearchStateEnabled) {
+        session.setMetaData(FULL_ADDRESS_ENABLED_KEY, fullAddressSearchStateEnabled);
+        session.putPreference(FULL_ADDRESS_ENABLED_PAGE, FULL_ADDRESS_ENABLED_PAGE,
+                String.valueOf(fullAddressSearchStateEnabled), true);
     }
 }

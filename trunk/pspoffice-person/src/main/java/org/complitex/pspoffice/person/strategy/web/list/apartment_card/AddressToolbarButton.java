@@ -18,14 +18,27 @@ import org.complitex.template.web.component.toolbar.ToolbarButton;
  */
 abstract class AddressToolbarButton extends ToolbarButton {
 
-    AddressToolbarButton(String id, boolean fullAddressEnabled) {
-        super(id, new ResourceReference(AddressToolbarButton.class, "gear_blue.png"), new ResourceModel("address_toolbar_button_title"), true);
+    private boolean isPostBack;
+
+    AddressToolbarButton(String id) {
+        super(id, true, null);
         add(CSSPackageResource.getHeaderContribution(AddressToolbarButton.class, AddressToolbarButton.class.getSimpleName() + ".css"));
         add(JavascriptPackageResource.getHeaderContribution(AddressToolbarButton.class, AddressToolbarButton.class.getSimpleName() + ".js"));
-        if (fullAddressEnabled) {
-            get("link").add(new CssAttributeBehavior("down"));
+    }
+
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        if (!isPostBack) {
+            isPostBack = true;
+            init(new ResourceReference(AddressToolbarButton.class, "gear_blue.png"), new ResourceModel("address_toolbar_button_title"));
+            if (isFullAddressEnabled()) {
+                getLink().add(new CssAttributeBehavior("down"));
+            }
         }
     }
+
+    abstract boolean isFullAddressEnabled();
 
     @Override
     protected abstract void onClick(AjaxRequestTarget target);

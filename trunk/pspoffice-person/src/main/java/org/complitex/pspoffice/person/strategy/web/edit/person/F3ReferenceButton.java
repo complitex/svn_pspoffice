@@ -23,8 +23,13 @@ public abstract class F3ReferenceButton extends ToolbarButton {
     }
 
     @Override
-    protected Link addLink() {
-        return new ToolbarButtonLink() {
+    protected Link newLink(String linkId) {
+        return new Link<Void>(linkId) {
+
+            @Override
+            public void onClick() {
+                F3ReferenceButton.this.onClick();
+            }
 
             @Override
             protected void onComponentTag(ComponentTag tag) {

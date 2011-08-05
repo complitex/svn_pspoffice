@@ -66,6 +66,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
         messages.setOutputMarkupId(true);
         add(messages);
 
+        fullAddressEnabledModel = new Model<Boolean>(apartmentCardStrategy.isFullAddressEnabled(getTemplateSession()));
         addressSearchComponentState = apartmentCardStrategy.restoreSearchState(getTemplateSession());
         addressSearchComponentContainer = new WebMarkupContainer("addressSearchComponentContainer");
         addressSearchComponentContainer.setOutputMarkupId(true);
@@ -137,8 +138,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
 
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-        this.fullAddressEnabledModel = new Model<Boolean>(apartmentCardStrategy.isFullAddressEnabled(getTemplateSession()));
-        return of(new AddressToolbarButton(id, fullAddressEnabledModel.getObject()) {
+        return of(new AddressToolbarButton(id) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
@@ -147,6 +147,11 @@ public class ApartmentCardSearch extends FormTemplatePage {
                 addressSearchComponentContainer.replace(newSearchComponent());
                 target.addComponent(addressSearchComponentContainer);
                 target.addComponent(messages);
+            }
+
+            @Override
+            boolean isFullAddressEnabled() {
+                return fullAddressEnabledModel.getObject();
             }
         });
     }

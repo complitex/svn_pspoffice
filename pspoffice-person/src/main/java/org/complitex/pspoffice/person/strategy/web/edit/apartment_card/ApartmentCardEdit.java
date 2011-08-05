@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import org.apache.wicket.markup.html.link.AbstractLink;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -102,16 +103,14 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private ApartmentCard newApartmentCard;
     private SearchComponentState addressSearchComponentState;
     private IModel<Person> ownerModel;
+    private Form form;
+    private FeedbackPanel messages;
+    private Component scrollToComponent;
 
     private class SubmitLink extends AjaxSubmitLink {
 
-        private FeedbackPanel messages;
-        private Component scrollToComponent;
-
-        public SubmitLink(String id, Form<?> form, FeedbackPanel messages, Component scrollToComponent) {
+        public SubmitLink(String id) {
             super(id, form);
-            this.messages = messages;
-            this.scrollToComponent = scrollToComponent;
         }
 
         @Override
@@ -143,6 +142,19 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         }
 
         protected void action() {
+        }
+    }
+
+    private class AddRegistrationLink extends SubmitLink {
+
+        public AddRegistrationLink(String id) {
+            super(id);
+        }
+
+        @Override
+        protected void action() {
+            setResponsePage(new RegistrationEdit(newApartmentCard.getId(),
+                    getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
         }
     }
 
@@ -190,15 +202,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         };
         Label title = new Label("title", labelModel);
         add(title);
-        final Label label = new Label("label", labelModel);
+        Label label = new Label("label", labelModel);
         label.setOutputMarkupId(true);
         add(label);
+        scrollToComponent = label;
 
-        final FeedbackPanel messages = new FeedbackPanel("messages");
+        messages = new FeedbackPanel("messages");
         messages.setOutputMarkupId(true);
         add(messages);
 
-        Form form = new Form("form");
+        form = new Form("form");
 
         final Entity entity = apartmentCardStrategy.getEntity();
 
@@ -323,14 +336,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             }
         };
         form.add(registrations);
-        AjaxSubmitLink addRegistration = new SubmitLink("addRegistration", form, messages, label) {
 
-            @Override
-            protected void action() {
-                setResponsePage(new RegistrationEdit(newApartmentCard.getId(),
-                        getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
-            }
-        };
+        AddRegistrationLink addRegistration = new AddRegistrationLink("addRegistration");
         addRegistration.setVisible(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(addRegistration);
 
@@ -373,7 +380,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         form.add(userAttributesView);
 
         //save-cancel functional
-        AjaxSubmitLink submit = new SubmitLink("submit", form, messages, label);
+        AjaxSubmitLink submit = new SubmitLink("submit");
         submit.setVisible(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(submit);
         Link cancel = new Link("cancel") {
@@ -544,21 +551,29 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-        return of(new AddApartmentCardButton(id) {
+        return of(
+                new AddApartmentCardButton(id) {
 
-            @Override
-            protected void onClick() {
-                setResponsePage(new ApartmentCardEdit(oldApartmentCard.getAddressEntity(), oldApartmentCard.getAddressId()));
-            }
+                    @Override
+                    protected void onClick() {
+                        setResponsePage(new ApartmentCardEdit(oldApartmentCard.getAddressEntity(), oldApartmentCard.getAddressId()));
+                    }
 
-            @Override
-            protected void onBeforeRender() {
-                super.onBeforeRender();
-                if (isNew()) {
-                    setVisibilityAllowed(false);
-                }
-            }
-        });
+                    @Override
+                    protected void onBeforeRender() {
+                        super.onBeforeRender();
+                        if (isNew()) {
+                            setVisible(false);
+                        }
+                    }
+                },
+                new AddRegistrationToolbarButton(id) {
+
+                    @Override
+                    protected AbstractLink newLink(String linkId) {
+                        return new AddRegistrationLink(linkId);
+                    }
+                });
     }
 }
 

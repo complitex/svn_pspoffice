@@ -34,6 +34,7 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
@@ -97,6 +98,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB
+    private OwnershipFormStrategy ownershipFormStrategy;
+    @EJB
     private StringCultureBean stringBean;
     @EJB
     private StrategyFactory strategyFactory;
@@ -129,10 +132,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Transactional
     @Override
     public ApartmentCard findById(long id, boolean runAsAdmin) {
-        return findById(id, runAsAdmin, true, true);
+        return findById(id, runAsAdmin, true, true, true);
     }
 
-    private ApartmentCard findById(long id, boolean runAsAdmin, boolean loadOwner, boolean loadRegistrations) {
+    private ApartmentCard findById(long id, boolean runAsAdmin, boolean loadOwner, boolean loadRegistrations, boolean loadOwnershipForm) {
         DomainObject apartmentCardObject = super.findById(id, runAsAdmin);
         if (apartmentCardObject == null) {
             return null;
@@ -144,7 +147,17 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         if (loadRegistrations) {
             loadAllRegistrations(apartmentCard);
         }
+        if (loadOwnershipForm) {
+            loadOwnershipForm(apartmentCard);
+        }
         return apartmentCard;
+    }
+
+    @Transactional
+    private void loadOwnershipForm(ApartmentCard apartmentCard) {
+        long ownershipFormId = apartmentCard.getAttribute(FORM_OF_OWNERSHIP).getValueId();
+        DomainObject ownershipForm = ownershipFormStrategy.findById(ownershipFormId, true);
+        apartmentCard.setOwnershipForm(ownershipForm);
     }
 
     @Transactional
@@ -254,7 +267,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         List<Long> apartmentCardIds = sqlSession().selectList(APARTMENT_CARD_MAPPING + ".findBy" + addressEntity, params);
         List<ApartmentCard> apartmentCards = newArrayList();
         for (Long apartmentCardId : apartmentCardIds) {
-            apartmentCards.add(findById(apartmentCardId, false, true, true));
+            apartmentCards.add(findById(apartmentCardId, false, true, true, true));
         }
         return apartmentCards;
     }
@@ -285,7 +298,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     private void insertRegistrationAttribute(long apartmentCardId, long registrationId, Date insertDate) {
         Attribute registrationAttribute = new Attribute();
         registrationAttribute.setObjectId(apartmentCardId);
-        ApartmentCard apartmentCard = findById(apartmentCardId, true, false, false);
+        ApartmentCard apartmentCard = findById(apartmentCardId, true, false, false, false);
         List<Attribute> registrationAttributes = apartmentCard.getAttributes(REGISTRATIONS);
         registrationAttribute.setAttributeId(registrationAttributes != null ? registrationAttributes.size() + 1 : 1L);
         registrationAttribute.setAttributeTypeId(REGISTRATIONS);

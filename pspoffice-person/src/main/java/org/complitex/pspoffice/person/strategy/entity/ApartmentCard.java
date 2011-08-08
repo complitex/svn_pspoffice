@@ -20,6 +20,7 @@ public class ApartmentCard extends DomainObject {
 
     private List<Registration> registrations = newArrayList();
     private Person owner;
+    private DomainObject ownershipForm;
 
     public ApartmentCard(DomainObject copy) {
         super(copy);
@@ -38,6 +39,14 @@ public class ApartmentCard extends DomainObject {
 
     public void setOwner(Person owner) {
         this.owner = owner;
+    }
+
+    public DomainObject getOwnershipForm() {
+        return ownershipForm;
+    }
+
+    public void setOwnershipForm(DomainObject ownershipForm) {
+        this.ownershipForm = ownershipForm;
     }
 
     public List<Registration> getRegistrations() {
@@ -78,9 +87,5 @@ public class ApartmentCard extends DomainObject {
                 return !registration.isFinished();
             }
         })).size();
-    }
-
-    public String getFormOfOwnership() {
-        return getStringValue(this, FORM_OF_OWNERSHIP);
     }
 }

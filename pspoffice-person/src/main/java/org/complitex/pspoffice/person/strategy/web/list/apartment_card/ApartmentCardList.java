@@ -21,6 +21,7 @@ import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
 import org.complitex.dictionary.web.component.paging.PagingNavigator;
+import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
@@ -43,6 +44,8 @@ public class ApartmentCardList extends ListPage {
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
     private PersonStrategy personStrategy;
+    @EJB
+    private OwnershipFormStrategy ownershipFormStrategy;
     private String addressEntity;
     private long addressId;
 
@@ -88,7 +91,8 @@ public class ApartmentCardList extends ListPage {
                         apartmentCard.getAddressId(), getLocale())));
                 item.add(new Label("owner", personStrategy.displayDomainObject(apartmentCard.getOwner(), getLocale())));
                 item.add(new Label("registeredCount", String.valueOf(apartmentCard.getRegisteredCount())));
-                item.add(new Label("formOfOwnership", StringUtil.valueOf(apartmentCard.getFormOfOwnership())));
+                item.add(new Label("formOfOwnership", StringUtil.valueOf(
+                        ownershipFormStrategy.displayDomainObject(apartmentCard.getOwnershipForm(), getLocale()))));
 
                 Link<Void> detailsLink = new Link<Void>("detailsLink") {
 

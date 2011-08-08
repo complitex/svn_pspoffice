@@ -4,3 +4,7 @@ update sequence set sequence_value = (select IFNULL(max(`id`), 0) from `registra
 update sequence set sequence_value = (select IFNULL(max(`object_id`), 0) from `registration`)+1 where sequence_name = 'registration';
 update sequence set sequence_value = (select IFNULL(max(`id`), 0) from `owner_relationship_string_culture`)+1 where sequence_name = 'owner_relationship_string_culture';
 update sequence set sequence_value = (select IFNULL(max(`object_id`), 0) from `owner_relationship`)+1 where sequence_name = 'owner_relationship';
+update sequence set sequence_value = (select IFNULL(max(`id`), 0) from `apartment_card_string_culture`)+1 where sequence_name = 'apartment_card_string_culture';
+update sequence set sequence_value = (select IFNULL(max(`object_id`), 0) from `apartment_card`)+1 where sequence_name = 'apartment_card';
+update sequence set sequence_value = (select IFNULL(max(`id`), 0) from `ownership_form_string_culture`)+1 where sequence_name = 'ownership_form_string_culture';
+update sequence set sequence_value = (select IFNULL(max(`object_id`), 0) from `ownership_form`)+1 where sequence_name = 'ownership_form';

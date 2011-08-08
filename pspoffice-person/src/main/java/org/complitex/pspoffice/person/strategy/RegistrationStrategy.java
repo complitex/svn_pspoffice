@@ -19,6 +19,7 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
 /**
@@ -58,6 +59,8 @@ public class RegistrationStrategy extends Strategy {
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     @EJB
     private PersonStrategy personStrategy;
+    @EJB
+    private RegistrationTypeStrategy registrationTypeStrategy;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -67,11 +70,12 @@ public class RegistrationStrategy extends Strategy {
     @Transactional
     @Override
     public Registration findById(long id, boolean runAsAdmin) {
-        return findById(id, runAsAdmin, true, true);
+        return findById(id, runAsAdmin, true, true, true);
     }
 
     @Transactional
-    public Registration findById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship) {
+    private Registration findById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship,
+            boolean loadRegistrationType) {
         DomainObject registrationObject = super.findById(id, runAsAdmin);
         if (registrationObject == null) {
             return null;
@@ -82,6 +86,9 @@ public class RegistrationStrategy extends Strategy {
         }
         if (loadOwnerRelationship) {
             loadOwnerRelationship(registration);
+        }
+        if (loadRegistrationType) {
+            loadRegistrationType(registration);
         }
         return registration;
     }
@@ -102,6 +109,13 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
+    private void loadRegistrationType(Registration registration) {
+        long registrationTypeId = registration.getAttribute(REGISTRATION_TYPE).getValueId();
+        DomainObject registrationType = registrationTypeStrategy.findById(registrationTypeId, true);
+        registration.setRegistrationType(registrationType);
+    }
+
+    @Transactional
     public Registration findFinishedRegistration(long objectId) {
         DomainObjectExample example = new DomainObjectExample(objectId);
         example.setTable(getEntityTable());
@@ -119,6 +133,7 @@ public class RegistrationStrategy extends Strategy {
         Registration registration = new Registration(registrationObject);
         loadPerson(registration);
         loadOwnerRelationship(registration);
+        loadRegistrationType(registration);
         return registration;
 
     }

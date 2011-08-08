@@ -29,8 +29,12 @@
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-ownership-form</artifactId>
         </dependency>
-
         <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-registration-type</artifactId>
+        </dependency>
+
+        <!--<dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket</artifactId>
         </dependency>
@@ -69,6 +73,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
+        </dependency>-->
     </dependencies>
 </project>

@@ -61,6 +61,10 @@
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-ownership-form</artifactId>
         </dependency>
+         <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-registration-type</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-report</artifactId>

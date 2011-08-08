@@ -96,7 +96,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2403, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2402, 2400, 1, 2403, 1);
 /* Форма собственности */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2404, 1, UPPER('Форма собственности')), (2404, 2, UPPER('Форма собственности'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2403, 2400, 0, 2404, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2403, 2400, 1, 2404, 1);
 /* Документ права на жилплощадь */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2405, 1, UPPER('Документ права на жилплощадь')), (2405, 2, UPPER('Документ права на жилплощадь'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2404, 2400, 0, 2405, 1);
@@ -109,7 +109,7 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2402, 2402, 'room');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2403, 2402, 'apartment');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2404, 2402, 'building');
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2405, 2403, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2405, 2403, 'ownership_form');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2406, 2404, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2407, 2405, 'registration');
 
@@ -213,3 +213,19 @@ INSERT INTO `owner_relationship_string_culture`(`id`, `locale_id`, `value`) VALU
 (7, 1, UPPER('дальний родственник')), (7, 2, UPPER('дальний родственник'));
 INSERT INTO `owner_relationship_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,1,2200,1,2200),(1,2,2200,2,2200),(1,3,2200,3,2200),(1,4,2200,4,2200),(1,5,2200,5,2200),(1,6,2200,6,2200),(1,7,2200,7,2200);
+
+-- Forms of ownerships
+INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('ownership_form',1), ('ownership_form_string_culture',1);
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2500, 1, 'Форма собственности'), (2500, 2, 'Форма власності');
+INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2500, 'ownership_form', 2500, '');
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2501, 1, UPPER('Название')), (2501, 2, UPPER('Назва'));
+INSERT INTO `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) VALUES (2500, 2500, 1, 2501, 1);
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2500, 2500, UPPER('string_culture'));
+
+INSERT INTO `ownership_form`(`object_id`) VALUES (1),(2),(3),(4),(5),(6);
+INSERT INTO `ownership_form_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('мiсцевих Рад')), (1, 2,UPPER('мiсцевих Рад')),
+(2, 1, UPPER('кооперативна')), (2, 2, UPPER('кооперативна')), (3, 1, UPPER('вiдомча')), (3, 2, UPPER('вiдомча')),
+(4, 1, UPPER('громадська')), (4, 2, UPPER('громадська')), (5, 1, UPPER('приватна')), (5, 2, UPPER('приватна')),
+(6, 1, UPPER('приватизована')), (6, 2, UPPER('приватизована'));
+INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
+(1,1,2500,1,2500),(1,2,2500,2,2500),(1,3,2500,3,2500),(1,4,2500,4,2500),(1,5,2500,5,2500),(1,6,2500,6,2500);

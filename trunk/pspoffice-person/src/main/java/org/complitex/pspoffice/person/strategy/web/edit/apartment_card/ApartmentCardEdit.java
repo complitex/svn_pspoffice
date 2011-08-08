@@ -49,11 +49,14 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.StringUtil;
+import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
+import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -97,6 +100,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private StrategyFactory strategyFactory;
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
+    @EJB
+    private OwnershipFormStrategy ownershipFormStrategy;
     private String addressEntity;
     private Long addressId;
     private ApartmentCard oldApartmentCard;
@@ -233,16 +238,17 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         //owner
         WebMarkupContainer ownerContainer = new WebMarkupContainer("ownerContainer");
         final EntityAttributeType ownerAttributeType = entity.getAttributeType(OWNER);
-        ownerContainer.add(new Label("label", labelModel(ownerAttributeType.getAttributeNames(), getLocale())));
+        IModel<String> ownerLabelModel = labelModel(ownerAttributeType.getAttributeNames(), getLocale());
+        ownerContainer.add(new Label("label", ownerLabelModel));
         ownerContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
 
         ownerModel = new Model<Person>(newApartmentCard.getOwner());
-        PersonPicker owner = new PersonPicker("owner", ownerModel, true, labelModel, true);
+        PersonPicker owner = new PersonPicker("owner", ownerModel, true, ownerLabelModel, true);
         ownerContainer.add(owner);
         form.add(ownerContainer);
 
         // form of ownership
-        initSystemAttributeInput(form, "formOfOwnership", FORM_OF_OWNERSHIP);
+        form.add(initFormOfOwnership());
 
         //registrations
         final Map<Long, IModel<Boolean>> selectedMap = newHashMap();
@@ -455,6 +461,15 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         } else {
             throw new IllegalStateException("Owner has not been filled in.");
         }
+
+        // form of ownership
+        Attribute formOfOwnershipAttribute = newApartmentCard.getAttribute(FORM_OF_OWNERSHIP);
+        DomainObject ownershipForm = newApartmentCard.getOwnershipForm();
+        Long ownershipFormId = ownershipForm != null ? ownershipForm.getId() : null;
+        if (ownershipFormId != null) {
+            formOfOwnershipAttribute.setValueId(ownershipFormId);
+            formOfOwnershipAttribute.setValueTypeId(FORM_OF_OWNERSHIP_TYPE);
+        }
     }
 
     private boolean validate() {
@@ -537,6 +552,49 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private void back() {
         setResponsePage(ApartmentCardSearch.class);
+    }
+
+    private Component initFormOfOwnership() {
+        final EntityAttributeType formOfOwnershipAttributeType = apartmentCardStrategy.getEntity().getAttributeType(FORM_OF_OWNERSHIP);
+
+        WebMarkupContainer formOfOwnershipContainer = new WebMarkupContainer("formOfOwnershipContainer");
+        add(formOfOwnershipContainer);
+
+        //label
+        IModel<String> labelModel = labelModel(formOfOwnershipAttributeType.getAttributeNames(), getLocale());
+        formOfOwnershipContainer.add(new Label("label", labelModel));
+
+        //required
+        formOfOwnershipContainer.add(new WebMarkupContainer("required").setVisible(formOfOwnershipAttributeType.isMandatory()));
+
+        //form of ownership
+        final List<DomainObject> allOwnershipForms = ownershipFormStrategy.getAll();
+        IModel<DomainObject> formOfOwnershipModel = new Model<DomainObject>() {
+
+            @Override
+            public void setObject(DomainObject object) {
+                newApartmentCard.setOwnershipForm(object);
+            }
+
+            @Override
+            public DomainObject getObject() {
+                return newApartmentCard.getOwnershipForm();
+            }
+        };
+
+        DisableAwareDropDownChoice<DomainObject> formOfOwnership = new DisableAwareDropDownChoice<DomainObject>("input",
+                formOfOwnershipModel, allOwnershipForms, new DomainObjectDisableAwareRenderer() {
+
+            @Override
+            public Object getDisplayValue(DomainObject object) {
+                return ownershipFormStrategy.displayDomainObject(object, getLocale());
+            }
+        });
+        formOfOwnership.setRequired(formOfOwnershipAttributeType.isMandatory());
+        formOfOwnership.setLabel(labelModel);
+        formOfOwnership.setEnabled(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
+        formOfOwnershipContainer.add(formOfOwnership);
+        return formOfOwnershipContainer;
     }
 
     private boolean isAnySelected(Collection<IModel<Boolean>> models) {

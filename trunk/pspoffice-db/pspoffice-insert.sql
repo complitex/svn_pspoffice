@@ -158,9 +158,10 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2118, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2117, 2100, 0, 2118, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2119, 1, UPPER('Причина выбытия')), (2119, 2, UPPER('Причина вибуття'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2118, 2100, 0, 2119, 1);
-/* Дата и тип регистрации */
+/* Дата регистрации */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2120, 1, UPPER('Дата начала регистрации')), (2120, 2, UPPER('Дата начала регистрации'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2119, 2100, 0, 2120, 1);
+/* Тип регистрации */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2121, 1, UPPER('Тип регистрации')), (2121, 2, UPPER('Тип регистрации'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 0, 2121, 1);
 /* Отношение к владельцу */
@@ -190,7 +191,7 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2117, 2117, UPPER('date2'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2118, 2118, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2119, 2119, UPPER('date'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2120, 2120, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2120, 2120, 'registration_type');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2121, 2121, 'owner_relationship');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2122, 2122, 'person');
 
@@ -229,3 +230,16 @@ INSERT INTO `ownership_form_string_culture`(`id`, `locale_id`, `value`) VALUES (
 (6, 1, UPPER('приватизована')), (6, 2, UPPER('приватизована'));
 INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,1,2500,1,2500),(1,2,2500,2,2500),(1,3,2500,3,2500),(1,4,2500,4,2500),(1,5,2500,5,2500),(1,6,2500,6,2500);
+
+-- Registration type
+INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration_type',1), ('registration_type_string_culture',1);
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2600, 1, 'Тип регистрации'), (2600, 2, 'Тип регистрации');
+INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2600, 'registration_type', 2600, '');
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2601, 1, UPPER('Название')), (2601, 2, UPPER('Назва'));
+INSERT INTO `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) VALUES (2600, 2600, 1, 2601, 1);
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2600, 2600, UPPER('string_culture'));
+
+INSERT INTO `registration_type`(`object_id`) VALUES (1),(2);
+INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('постоянная')), (2, 1, UPPER('временная'));
+INSERT INTO `registration_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
+(1,1,2600,1,2600),(1,2,2600,2,2600);

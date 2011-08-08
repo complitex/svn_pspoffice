@@ -67,6 +67,7 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
@@ -102,6 +103,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     @EJB
     private OwnershipFormStrategy ownershipFormStrategy;
+    @EJB
+    private RegistrationTypeStrategy registrationTypeStrategy;
     private String addressEntity;
     private Long addressId;
     private ApartmentCard oldApartmentCard;
@@ -315,7 +318,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 item.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));
                 Date birthDate = registration.getPerson().getBirthDate();
                 item.add(new Label("personBirthDate", birthDate != null ? DATE_FORMATTER.format(birthDate) : null));
-                item.add(new Label("registrationType", StringUtil.valueOf(registration.getRegistrationType())));
+                item.add(new Label("registrationType",
+                        StringUtil.valueOf(registrationTypeStrategy.displayDomainObject(registration.getRegistrationType(), getLocale()))));
                 Date registrationStartDate = registration.getRegistrationDate();
                 item.add(new Label("registrationStartDate", registrationStartDate != null ? DATE_FORMATTER.format(registrationStartDate) : null));
                 Date registrationEndDate = registration.getDepartureDate();
@@ -466,10 +470,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         Attribute formOfOwnershipAttribute = newApartmentCard.getAttribute(FORM_OF_OWNERSHIP);
         DomainObject ownershipForm = newApartmentCard.getOwnershipForm();
         Long ownershipFormId = ownershipForm != null ? ownershipForm.getId() : null;
-        if (ownershipFormId != null) {
-            formOfOwnershipAttribute.setValueId(ownershipFormId);
-            formOfOwnershipAttribute.setValueTypeId(FORM_OF_OWNERSHIP_TYPE);
-        }
+        formOfOwnershipAttribute.setValueId(ownershipFormId);
+        formOfOwnershipAttribute.setValueTypeId(FORM_OF_OWNERSHIP_TYPE);
     }
 
     private boolean validate() {

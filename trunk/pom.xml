@@ -26,6 +26,7 @@
         <module>pspoffice-report</module>
         <module>pspoffice-owner-relationship</module>
         <module>pspoffice-ownership-form</module>
+        <module>pspoffice-registration-type</module>
 
         <module>../complitex/complitex-dictionary</module>
         <module>../complitex/complitex-template</module>
@@ -120,6 +121,12 @@
             <dependency>
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-ownership-form</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-registration-type</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

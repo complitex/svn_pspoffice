@@ -18,6 +18,7 @@ public class Registration extends DomainObject {
 
     private Person person;
     private DomainObject ownerRelationship;
+    private DomainObject registrationType;
 
     public Registration() {
     }
@@ -32,6 +33,14 @@ public class Registration extends DomainObject {
 
     public void setPerson(Person person) {
         this.person = person;
+    }
+
+    public DomainObject getRegistrationType() {
+        return registrationType;
+    }
+
+    public void setRegistrationType(DomainObject registrationType) {
+        this.registrationType = registrationType;
     }
 
     public String getArrivalCountry() {
@@ -112,10 +121,6 @@ public class Registration extends DomainObject {
 
     public Date getRegistrationDate() {
         return getDateValue(this, REGISTRATION_DATE);
-    }
-
-    public String getRegistrationType() {
-        return getStringValue(this, REGISTRATION_TYPE);
     }
 
     public boolean isFinished() {

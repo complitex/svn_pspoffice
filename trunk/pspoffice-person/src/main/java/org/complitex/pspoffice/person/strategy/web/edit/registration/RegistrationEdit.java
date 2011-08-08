@@ -50,6 +50,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -71,11 +72,13 @@ public class RegistrationEdit extends FormTemplatePage {
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     @EJB
+    private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB
+    private ApartmentCardStrategy apartmentCardStrategy;
+    @EJB
     private StringCultureBean stringBean;
     @EJB
     private LogBean logBean;
-    @EJB
-    private ApartmentCardStrategy apartmentCardStrategy;
     private long apartmentCardId;
     private Registration newRegistration;
     private Registration oldRegistration;
@@ -143,7 +146,8 @@ public class RegistrationEdit extends FormTemplatePage {
 
         //system attributes:
         initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, false);
-        initSystemAttributeInput(form, "registrationType", REGISTRATION_TYPE, false);
+
+        form.add(initRegistrationType());
 
         CollapsibleFieldset arrivalAddressFieldset = new CollapsibleFieldset("arrivalAddressFieldset",
                 new ResourceModel("arrival_address"), false);
@@ -244,37 +248,30 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private Component initOwnerRelationship() {
-        final EntityAttributeType ownerAttributeType = registrationStrategy.getEntity().getAttributeType(OWNER_RELATIONSHIP);
+        final EntityAttributeType ownerRelationshipAttributeType = registrationStrategy.getEntity().getAttributeType(OWNER_RELATIONSHIP);
 
         WebMarkupContainer ownerRelationshipContainer = new WebMarkupContainer("ownerRelationshipContainer");
         add(ownerRelationshipContainer);
 
         //label
-        IModel<String> labelModel = labelModel(ownerAttributeType.getAttributeNames(), getLocale());
+        IModel<String> labelModel = labelModel(ownerRelationshipAttributeType.getAttributeNames(), getLocale());
         ownerRelationshipContainer.add(new Label("label", labelModel));
 
         //required
-        ownerRelationshipContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
+        ownerRelationshipContainer.add(new WebMarkupContainer("required").setVisible(ownerRelationshipAttributeType.isMandatory()));
 
         //owner relationship
         final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll();
-        final Attribute ownerRelationshipAttribute = newRegistration.getAttribute(OWNER_RELATIONSHIP);
         IModel<DomainObject> ownerRelationshipModel = new Model<DomainObject>() {
 
             @Override
             public void setObject(DomainObject object) {
-                ownerRelationshipAttribute.setValueId(object != null ? object.getId() : null);
+                newRegistration.setOwnerRelationship(object);
             }
 
             @Override
             public DomainObject getObject() {
-                final Long ownerRelationshipId = ownerRelationshipAttribute.getValueId();
-                for (DomainObject ownerRelationship : allOwnerRelationships) {
-                    if (ownerRelationship.getId().equals(ownerRelationshipId)) {
-                        return ownerRelationship;
-                    }
-                }
-                return null;
+                return newRegistration.getOwnerRelationship();
             }
         };
 
@@ -286,11 +283,54 @@ public class RegistrationEdit extends FormTemplatePage {
                 return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
             }
         });
-        ownerRelationship.setRequired(true);
+        ownerRelationship.setRequired(ownerRelationshipAttributeType.isMandatory());
         ownerRelationship.setLabel(labelModel);
         ownerRelationship.setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
         ownerRelationshipContainer.add(ownerRelationship);
         return ownerRelationshipContainer;
+    }
+
+    private Component initRegistrationType() {
+        final EntityAttributeType registrationTypeAttributeType = registrationStrategy.getEntity().getAttributeType(REGISTRATION_TYPE);
+
+        WebMarkupContainer registrationTypeContainer = new WebMarkupContainer("registrationTypeContainer");
+        add(registrationTypeContainer);
+
+        //label
+        IModel<String> labelModel = labelModel(registrationTypeAttributeType.getAttributeNames(), getLocale());
+        registrationTypeContainer.add(new Label("label", labelModel));
+
+        //required
+        registrationTypeContainer.add(new WebMarkupContainer("required").setVisible(registrationTypeAttributeType.isMandatory()));
+
+        //registration type
+        final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
+        IModel<DomainObject> registrationTypeModel = new Model<DomainObject>() {
+
+            @Override
+            public void setObject(DomainObject object) {
+                newRegistration.setRegistrationType(object);
+            }
+
+            @Override
+            public DomainObject getObject() {
+                return newRegistration.getRegistrationType();
+            }
+        };
+
+        DisableAwareDropDownChoice<DomainObject> registrationType = new DisableAwareDropDownChoice<DomainObject>("input",
+                registrationTypeModel, allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
+
+            @Override
+            public Object getDisplayValue(DomainObject object) {
+                return registrationTypeStrategy.displayDomainObject(object, getLocale());
+            }
+        });
+        registrationType.setRequired(registrationTypeAttributeType.isMandatory());
+        registrationType.setLabel(labelModel);
+        registrationType.setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
+        registrationTypeContainer.add(registrationType);
+        return registrationTypeContainer;
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
@@ -331,6 +371,18 @@ public class RegistrationEdit extends FormTemplatePage {
         } else {
             throw new IllegalStateException("Person has not been filled in.");
         }
+
+        // owner relationship
+        Attribute ownerRelationshipAttribute = newRegistration.getAttribute(OWNER_RELATIONSHIP);
+        DomainObject ownerRelationship = newRegistration.getOwnerRelationship();
+        Long ownerRelationshipId = ownerRelationship != null ? ownerRelationship.getId() : null;
+        ownerRelationshipAttribute.setValueId(ownerRelationshipId);
+
+        // registration type
+        Attribute registrationTypeAttribute = newRegistration.getAttribute(REGISTRATION_TYPE);
+        DomainObject registrationType = newRegistration.getRegistrationType();
+        Long registrationTypeId = registrationType != null ? registrationType.getId() : null;
+        registrationTypeAttribute.setValueId(registrationTypeId);
     }
 
     private boolean validate() {

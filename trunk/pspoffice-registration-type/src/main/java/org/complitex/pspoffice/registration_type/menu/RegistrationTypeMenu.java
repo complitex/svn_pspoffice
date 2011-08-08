@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.ownership.menu;
+package org.complitex.pspoffice.registration_type.menu;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.wicket.Page;
@@ -23,15 +23,15 @@ import org.complitex.template.web.security.SecurityRole;
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public class OwnershipFormMenu extends ResourceTemplateMenu {
+public class RegistrationTypeMenu extends ResourceTemplateMenu {
 
     private static IStrategy getStrategy() {
-        return EjbBeanLocator.getBean(StrategyFactory.class).getStrategy("ownership_form");
+        return EjbBeanLocator.getBean(StrategyFactory.class).getStrategy("registration_type");
     }
 
     @Override
     public String getTitle(Locale locale) {
-        return getString(MenuResources.class, locale, "ownership_form_menu");
+        return getString(MenuResources.class, locale, "registration_type_menu");
     }
 
     @Override
@@ -55,7 +55,7 @@ public class OwnershipFormMenu extends ResourceTemplateMenu {
 
             @Override
             public String getTagId() {
-                return "ownership_form_item";
+                return "registration_type_item";
             }
         });
         return links;
@@ -63,6 +63,6 @@ public class OwnershipFormMenu extends ResourceTemplateMenu {
 
     @Override
     public String getTagId() {
-        return "ownership_form_menu";
+        return "registration_type_menu";
     }
 }

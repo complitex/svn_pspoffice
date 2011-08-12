@@ -29,6 +29,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Gender;
+import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -183,7 +184,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 item.add(new Label("birthDate", birthDate != null ? DATE_FORMATTER.format(birthDate) : null));
                 Gender gender = person.getGender();
                 item.add(new Label("gender", gender != null ? GenderPanel.display(person.getGender(), getLocale()) : null));
-                item.add(new Label("idCode", ""));
+                item.add(new Label("idCode", StringUtil.valueOf(person.getIdentityCode())));
             }
         };
         radioGroup.add(persons);

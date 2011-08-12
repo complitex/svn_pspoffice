@@ -4,7 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -17,7 +16,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.complitex.dictionary.web.component.DatePicker;
+import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
@@ -72,7 +71,7 @@ final class RemoveRegistrationDialog extends Panel {
         reason.setRequired(true);
         form.add(reason);
 
-        DatePicker<Date> date = new DatePicker<Date>("date");
+        MaskedDateInput date = new MaskedDateInput("date");
         date.setRequired(true);
         form.add(date);
 

@@ -4,13 +4,12 @@
  */
 package org.complitex.pspoffice.ownerrelationship.strategy;
 
-import com.google.common.base.Predicate;
-import static com.google.common.collect.ImmutableList.*;
+import static com.google.common.collect.ImmutableSet.*;
 import com.google.common.collect.ImmutableMap;
-import static com.google.common.collect.Iterables.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import static com.google.common.collect.Lists.*;
 import javax.ejb.Stateless;
 import static org.apache.wicket.util.string.Strings.*;
@@ -41,7 +40,7 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
      */
     public static final long OWNER = 1;
     public static final long RESPONSIBLE = 2;
-    private static final List<Long> RESERVED_INSTANCE_IDS = of(OWNER, RESPONSIBLE);
+    private static final Set<Long> RESERVED_INSTANCE_IDS = of(OWNER, RESPONSIBLE);
 
     @Override
     public String getEntityTable() {
@@ -94,7 +93,6 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
 //            }
 //        }));
 //    }
-
     @Override
     public String[] getEditRoles() {
         return new String[]{SecurityRole.OWNER_RELATIONSHIP_MODULE_EDIT};

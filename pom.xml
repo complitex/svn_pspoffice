@@ -27,6 +27,8 @@
         <module>pspoffice-owner-relationship</module>
         <module>pspoffice-ownership-form</module>
         <module>pspoffice-registration-type</module>
+        <module>pspoffice-document-type</module>
+        <module>pspoffice-document</module>
 
         <module>../complitex/complitex-dictionary</module>
         <module>../complitex/complitex-template</module>
@@ -37,7 +39,7 @@
         <module>../complitex/complitex-images</module>
         <module>../complitex/complitex-organization-type</module>
         <module>../complitex/complitex-organization</module>
-  </modules>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -127,6 +129,18 @@
             <dependency>
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-registration-type</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-document-type</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-document</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

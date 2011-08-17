@@ -61,9 +61,17 @@
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-ownership-form</artifactId>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-registration-type</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-document-type</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-document</artifactId>
         </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
@@ -127,12 +135,12 @@
         <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
     </properties>
 
-<build>
-        <plugins>            
+    <build>
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>                
+                <version>2.1.1</version>
             </plugin>
         </plugins>
     </build>

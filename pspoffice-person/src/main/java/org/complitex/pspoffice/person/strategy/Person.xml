@@ -106,4 +106,10 @@
         ORDER BY ln.`name`, fn.`name`, mn.`name`
     </select>
 
+    <select id="findPreviousDocumentAttributes" parameterType="long" resultMap="org.complitex.dictionary.entity.Attribute.Attribute">
+        SELECT p.* FROM `person_attribute` p WHERE p.`status` = 'ARCHIVE' AND p.`attribute_type_id` = 2009 AND
+                            p.`object_id` = #{objectId}
+                 ORDER BY p.`end_date`
+    </select>
+
 </mapper>

@@ -22,7 +22,11 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.NameBean;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
+import org.complitex.pspoffice.document.strategy.DocumentStrategy;
+import org.complitex.pspoffice.document.strategy.entity.Document;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
@@ -51,17 +55,11 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long BIRTH_REGION = 2006;
     public static final long BIRTH_DISTRICT = 2007;
     public static final long BIRTH_CITY = 2008;
-    public static final long PASSPORT_SERIAL_NUMBER = 2009;
-    public static final long PASSPORT_NUMBER = 2010;
-    public static final long PASSPORT_ACQUISITION_ORGANIZATION = 2011;
-    public static final long PASSPORT_ACQUISITION_DATE = 2012;
+    public static final long DOCUMENT = 2009;
     public static final long DEATH_DATE = 2013;
     public static final long MILITARY_SERVISE_RELATION = 2014;
     public static final long CHILDREN = 2015;
     public static final long GENDER = 2016;
-    public static final long BIRTH_CERTIFICATE_INFO = 2017;
-    public static final long BIRTH_CERTIFICATE_ACQUISITION_DATE = 2018;
-    public static final long BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION = 2019;
     public static final long UKRAINE_CITIZENSHIP = 2020;
 
     /**
@@ -91,6 +89,10 @@ public class PersonStrategy extends TemplateStrategy {
     private StringCultureBean stringBean;
     @EJB
     private NameBean nameBean;
+    @EJB
+    private DocumentStrategy documentStrategy;
+    @EJB
+    private DocumentTypeStrategy documentTypeStrategy;
 
     @Override
     public String getEntityTable() {
@@ -179,11 +181,11 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
-        return findById(id, runAsAdmin, true);
+        return findById(id, runAsAdmin, true, true);
     }
 
     @Transactional
-    public Person findById(long id, boolean runAsAdmin, boolean loadChildren) {
+    public Person findById(long id, boolean runAsAdmin, boolean loadChildren, boolean loadDocument) {
         DomainObject personObject = super.findById(id, runAsAdmin);
         if (personObject == null) {
             return null;
@@ -191,6 +193,9 @@ public class PersonStrategy extends TemplateStrategy {
         Person person = new Person(personObject);
         if (loadChildren) {
             loadChildren(person);
+        }
+        if (loadDocument) {
+            loadDocument(person);
         }
         return person;
     }
@@ -200,6 +205,32 @@ public class PersonStrategy extends TemplateStrategy {
         person.setFirstName(nameBean.getFirstName(person.getAttribute(FIRST_NAME).getValueId()));
         person.setMiddleName(nameBean.getMiddleName(person.getAttribute(MIDDLE_NAME).getValueId()));
         person.setLastName(nameBean.getLastName(person.getAttribute(LAST_NAME).getValueId()));
+    }
+
+    @Transactional
+    private void loadDocument(Person person) {
+        long documentId = person.getAttribute(DOCUMENT).getValueId();
+        Document document = documentStrategy.findById(documentId, true);
+        person.setDocument(document);
+    }
+
+    @Transactional
+    public List<Document> findPreviousDocuments(Long personId) {
+        if(personId == null){
+            return null;
+        }
+        List<Attribute> previousDocumentAttributes = sqlSession().selectList(PERSON_MAPPING + ".findPreviousDocumentAttributes",
+                personId);
+        List<Document> previousDocuments = newArrayList();
+        for (Attribute previousDocumentAttribute : previousDocumentAttributes) {
+            Document previousDocument = documentStrategy.findHistoryObject(previousDocumentAttribute.getValueId(),
+                    previousDocumentAttribute.getEndDate());
+            long documentTypeId = previousDocument.getDocumentTypeId();
+            DomainObject documentType = documentTypeStrategy.findById(documentTypeId, true);
+            previousDocument.setDocumentType(documentType);
+            previousDocuments.add(previousDocument);
+        }
+        return previousDocuments;
     }
 
     @Transactional
@@ -259,18 +290,18 @@ public class PersonStrategy extends TemplateStrategy {
         return DEFAULT_ORDER_BY_ID;
     }
 
-    @Transactional
-    @Override
-    public Person findHistoryObject(long objectId, Date date) {
-        DomainObject personObject = super.findHistoryObject(objectId, date);
-        if (personObject == null) {
-            return null;
-        }
-        Person person = new Person(personObject);
-        loadChildren(person);
-        return person;
-    }
-
+//    @Transactional
+//    @Override
+//    public Person findHistoryObject(long objectId, Date date) {
+//        DomainObject personObject = super.findHistoryObject(objectId, date);
+//        if (personObject == null) {
+//            return null;
+//        }
+//        Person person = new Person(personObject);
+//        loadChildren(person);
+//        loadDocument(person);
+//        return person;
+//    }
     @Override
     public int getSearchTextFieldSize() {
         return 40;
@@ -314,5 +345,54 @@ public class PersonStrategy extends TemplateStrategy {
             loadAttributes(person);
         }
         return persons;
+    }
+
+    @Transactional
+    @Override
+    protected void insertDomainObject(DomainObject object, Date insertDate) {
+        Person person = (Person) object;
+        person.getDocument().setSubjectIds(person.getSubjectIds());
+        documentStrategy.insert(person.getDocument(), insertDate);
+        updateDocumentAttribute(null, person);
+        super.insertDomainObject(object, insertDate);
+    }
+
+    @Transactional
+    @Override
+    protected void insertUpdatedDomainObject(DomainObject object, Date updateDate) {
+        super.insertDomainObject(object, updateDate);
+    }
+
+    @Transactional
+    @Override
+    public void update(DomainObject oldObject, DomainObject newObject, Date updateDate) {
+        Person oldPerson = (Person) oldObject;
+        Person newPerson = (Person) newObject;
+
+        Date archiveDocumentDate = DateUtil.justAfter(updateDate);
+        Date updateDocumentDate = DateUtil.justBefore(updateDate);
+
+        newPerson.getDocument().setSubjectIds(newPerson.getSubjectIds());
+        documentStrategy.update(oldPerson.getDocument(), newPerson.getDocument(), updateDocumentDate);
+
+        if (newPerson.getReplacedDocument() != null) {
+            documentStrategy.archive(newPerson.getDocument(), archiveDocumentDate);
+            newPerson.getReplacedDocument().setSubjectIds(newPerson.getSubjectIds());
+            documentStrategy.insert(newPerson.getReplacedDocument(), updateDate);
+        }
+
+        updateDocumentAttribute(oldPerson, newPerson);
+        super.update(oldPerson, newPerson, updateDate);
+    }
+
+    private void updateDocumentAttribute(Person oldPerson, Person newPerson) {
+        Long documentId = null;
+        if (oldPerson == null) {
+            documentId = newPerson.getDocument().getId();
+        } else {
+            documentId = newPerson.getReplacedDocument() != null ? newPerson.getReplacedDocument().getId()
+                    : newPerson.getDocument().getId();
+        }
+        newPerson.getAttribute(DOCUMENT).setValueId(documentId);
     }
 }

@@ -157,106 +157,33 @@
                 </table>
             </div>
 
-            <div wicket:id="passportFieldset">
-                <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                        <wicket:container wicket:id="passportSerialNumberContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                    <tr>
-                        <wicket:container wicket:id="passportNumberContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                    <tr>
-                        <wicket:container wicket:id="passportAcquisitionDateContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                    <tr>
-                        <wicket:container wicket:id="passportAcquisitionOrganizationContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                </table>
-            </div>
-
-            <div wicket:id="birthCertificateFieldset">
-
-                <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                        <wicket:container wicket:id="birthCertificateInfoContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                    <tr>
-                        <wicket:container wicket:id="birthCertificateAcquisitionDateContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                    <tr>
-                        <wicket:container wicket:id="birthCertificateAcquisitionOrganizationContainer">
-                            <th>
-                                <wicket:container wicket:id="label"/>
-                                <wicket:container wicket:id="required">
-                                    <b class="blue">*</b>
-                                </wicket:container>:
-                            </th>
-                            <td>
-                                <div wicket:id="input"></div>
-                            </td>
-                        </wicket:container>
-                    </tr>
-                </table>
+            <div wicket:id="documentFieldset">
+                <div style="padding-left: 20px;">
+                    <form action="#" wicket:id="documentForm">
+                        <table>
+                            <tr>
+                                <th>
+                                    <wicket:container wicket:id="label"/>
+                                    <wicket:container wicket:id="required"><b class="blue">*</b></wicket:container>:
+                                </th>
+                                <td>
+                                    <select wicket:id="documentType">
+                                        <option></option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <div wicket:id="documentInputPanelContainer" style="padding-top: 5px;">
+                            <div wicket:id="documentInputPanel"></div>
+                        </div>
+                    </form>
+                    <div wicket:id="documentButtonsContainer" style="padding-top: 25px;">
+                        <input type="button" wicket:id="replaceDocument" wicket:message="value:replace_document" class="btnMiddle"/>
+                        <a style="float: right;" wicket:id="showPreviousDocuments">
+                            <wicket:message key="show_previous_documents"/>
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div wicket:id="childrenFieldset">
@@ -281,6 +208,25 @@
                 </div>
             </div>
 
+            <div wicket:id="previousDocumentsDialog" style="display: none" wicket:message="title:previous_documents_dialog_title">
+                <div wicket:id="content">
+                    <h2>
+                        <span wicket:id="previousDocumentsLabel"></span>
+                    </h2>
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 10px;">
+                        <tr wicket:id="previousDocuments">
+                            <td>
+                                <fieldset>
+                                    <legend>
+                                        <span wicket:id="previousDocumentLabel"></span>
+                                    </legend>
+                                    <div wicket:id="previousDocument"></div>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </wicket:panel>
     </body>
 </html>

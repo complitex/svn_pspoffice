@@ -89,67 +89,67 @@ public class PersonEdit extends FormTemplatePage {
         setResponsePage(personStrategy.getListPage(), listPageParams);
     }
 
-    private void delete() {
-        try {
-            personStrategy.delete(newPerson.getId(), getLocale());
-            back();
-        } catch (DeleteException e) {
-            if (!Strings.isEmpty(e.getMessage())) {
-                error(e.getMessage());
-            } else {
-                error(getString("delete_error"));
-            }
-        } catch (Exception e) {
-            log.error("", e);
-            error(getString("db_error"));
-        }
-    }
+//    private void delete() {
+//        try {
+//            personStrategy.delete(newPerson.getId(), getLocale());
+//            back();
+//        } catch (DeleteException e) {
+//            if (!Strings.isEmpty(e.getMessage())) {
+//                error(e.getMessage());
+//            } else {
+//                error(getString("delete_error"));
+//            }
+//        } catch (Exception e) {
+//            log.error("", e);
+//            error(getString("db_error"));
+//        }
+//    }
 
-    @Override
-    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-        return ImmutableList.of(
-                //                new F3ReferenceButton(id) {
-                //
-                //                    @Override
-                //                    protected void onClick() {
-                //                        setResponsePage(new F3ReferencePage(newPerson));
-                //                    }
-                //
-                //                    @Override
-                //                    protected void onBeforeRender() {
-                //                        if (isNew() || newPerson.getRegistration() == null) {
-                //                            setVisibilityAllowed(false);
-                //                        }
-                //                        super.onBeforeRender();
-                //                    }
-                //                },
-                new DeleteItemButton(id) {
-
-            @Override
-            protected void onClick() {
-                delete();
-            }
-
-            @Override
-            protected void onBeforeRender() {
-                if (!canDelete(null, "person", newPerson)) {
-                    setVisibilityAllowed(false);
-                }
-                super.onBeforeRender();
-            }
-        } //                new SaveButton(id, true) {
-                //
-                //                    @Override
-                //                    protected void onClick(AjaxRequestTarget target) {
-                //                        reportDownloadPanel.open(target);
-                //                    }
-                //
-                //                    @Override
-                //                    public boolean isVisible() {
-                //                        return !isNew();
-                //                    }
-                //                }
-                );
-    }
+//    @Override
+//    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+//        return ImmutableList.of(
+//                //                new F3ReferenceButton(id) {
+//                //
+//                //                    @Override
+//                //                    protected void onClick() {
+//                //                        setResponsePage(new F3ReferencePage(newPerson));
+//                //                    }
+//                //
+//                //                    @Override
+//                //                    protected void onBeforeRender() {
+//                //                        if (isNew() || newPerson.getRegistration() == null) {
+//                //                            setVisibilityAllowed(false);
+//                //                        }
+//                //                        super.onBeforeRender();
+//                //                    }
+//                //                },
+//                new DeleteItemButton(id) {
+//
+//            @Override
+//            protected void onClick() {
+//                delete();
+//            }
+//
+//            @Override
+//            protected void onBeforeRender() {
+//                if (!canDelete(null, "person", newPerson)) {
+//                    setVisibilityAllowed(false);
+//                }
+//                super.onBeforeRender();
+//            }
+//        } //                new SaveButton(id, true) {
+//                //
+//                //                    @Override
+//                //                    protected void onClick(AjaxRequestTarget target) {
+//                //                        reportDownloadPanel.open(target);
+//                //                    }
+//                //
+//                //                    @Override
+//                //                    public boolean isVisible() {
+//                //                        return !isNew();
+//                //                    }
+//                //                }
+//                );
+//    }
 }
 

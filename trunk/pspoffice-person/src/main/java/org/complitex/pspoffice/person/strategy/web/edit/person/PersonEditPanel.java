@@ -76,17 +76,18 @@ public abstract class PersonEditPanel extends Panel {
         Form form = new Form("form");
 
         //input panel
-        personInputPanel = new PersonInputPanel("personInputPanel", newPerson);
+        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label);
         form.add(personInputPanel);
 
+        /*
         //history
         WebMarkupContainer historyContainer = new WebMarkupContainer("historyContainer");
         Link history = new Link("history") {
 
-            @Override
-            public void onClick() {
-                setResponsePage(personStrategy.getHistoryPage(), personStrategy.getHistoryPageParams(newPerson.getId()));
-            }
+        @Override
+        public void onClick() {
+        setResponsePage(personStrategy.getHistoryPage(), personStrategy.getHistoryPageParams(newPerson.getId()));
+        }
         };
         historyContainer.add(history);
         historyContainer.setVisible(!isNew());
@@ -96,6 +97,7 @@ public abstract class PersonEditPanel extends Panel {
         DomainObjectPermissionsPanel permissionsPanel = new DomainObjectPermissionsPanel("permissionsPanel", newPerson.getSubjectIds());
         permissionsPanel.setEnabled(canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(permissionsPanel);
+         */
 
         //save-cancel functional
         AjaxSubmitLink submit = new AjaxSubmitLink("submit") {

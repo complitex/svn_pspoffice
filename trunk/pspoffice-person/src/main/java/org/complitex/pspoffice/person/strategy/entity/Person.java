@@ -10,7 +10,7 @@ import java.util.List;
 import org.complitex.dictionary.converter.GenderConverter;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Gender;
-import org.complitex.dictionary.util.StringUtil;
+import org.complitex.pspoffice.document.strategy.entity.Document;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 
@@ -24,12 +24,30 @@ public class Person extends DomainObject {
     private String firstName;
     private String middleName;
     private List<Person> children = newArrayList();
+    private Document document;
+    private Document replacedDocument;
 
     public Person(DomainObject copy) {
         super(copy);
     }
 
     public Person() {
+    }
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
+    }
+
+    public Document getReplacedDocument() {
+        return replacedDocument;
+    }
+
+    public void setReplacedDocument(Document replacedDocument) {
+        this.replacedDocument = replacedDocument;
     }
 
     public String getFirstName() {
@@ -100,22 +118,6 @@ public class Person extends DomainObject {
         return getStringValue(this, BIRTH_CITY);
     }
 
-    public String getPassportSerialNumber() {
-        return getStringValue(this, PASSPORT_SERIAL_NUMBER);
-    }
-
-    public String getPassportNumber() {
-        return getStringValue(this, PASSPORT_NUMBER);
-    }
-
-    public String getPassportAcquisitionOrganization() {
-        return getStringValue(this, PASSPORT_ACQUISITION_ORGANIZATION);
-    }
-
-    public Date getPassportAcquisitionDate() {
-        return getDateValue(this, PASSPORT_ACQUISITION_DATE);
-    }
-
     public Date getDeathDate() {
         return getDateValue(this, DEATH_DATE);
     }
@@ -128,34 +130,7 @@ public class Person extends DomainObject {
         return getAttributeValue(this, GENDER, new GenderConverter());
     }
 
-    public String getBirthCertificateInfo() {
-        return getStringValue(this, BIRTH_CERTIFICATE_INFO);
-    }
-
-    public Date getBirthCertificateAcquisitionDate() {
-        return getDateValue(this, BIRTH_CERTIFICATE_ACQUISITION_DATE);
-    }
-
-    public String getBirthCertificateAcquisitionOrganization() {
-        return getStringValue(this, BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION);
-    }
-
     public boolean isUkraineCitizen() {
         return getBooleanValue(this, UKRAINE_CITIZENSHIP);
-    }
-
-    public String getPassportData() {
-        String passportSerialNumber = getStringValue(this, PASSPORT_SERIAL_NUMBER);
-        String passportNumber = getStringValue(this, PASSPORT_NUMBER);
-        if (passportSerialNumber != null && passportNumber != null) {
-            return StringUtil.valueOf(passportSerialNumber) + " " + StringUtil.valueOf(passportNumber);
-        } else {
-            return null;
-        }
-    }
-
-    public String getPassportOrBirthCertificate() {
-        String passport = getPassportData();
-        return passport != null ? passport : getStringValue(this, BIRTH_CERTIFICATE_INFO);
     }
 }

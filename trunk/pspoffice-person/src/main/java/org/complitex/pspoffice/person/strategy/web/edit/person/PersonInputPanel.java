@@ -7,6 +7,7 @@ package org.complitex.pspoffice.person.strategy.web.edit.person;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import static com.google.common.collect.Iterables.*;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -32,9 +33,24 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import org.apache.wicket.Component;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.panel.EmptyPanel;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.ResourceModel;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
+import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
+import org.complitex.dictionary.web.component.DomainObjectInputPanel;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
+import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
+import org.complitex.pspoffice.document.strategy.DocumentStrategy;
+import org.complitex.pspoffice.document.strategy.entity.Document;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
+import org.odlabs.wiquery.ui.dialog.Dialog;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -56,8 +72,14 @@ public final class PersonInputPanel extends Panel {
     @EJB
     private PersonStrategy personStrategy;
     @EJB
+    private DocumentStrategy documentStrategy;
+    @EJB
+    private DocumentTypeStrategy documentTypeStrategy;
     private Person person;
     private Date date;
+    private FeedbackPanel messages;
+    private Component scrollToComponent;
+    private boolean documentReplacedFlag;
 
     public PersonInputPanel(String id, Person person, Date date) {
         super(id);
@@ -66,9 +88,11 @@ public final class PersonInputPanel extends Panel {
         init();
     }
 
-    public PersonInputPanel(String id, Person person) {
+    public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent) {
         super(id);
         this.person = person;
+        this.messages = messages;
+        this.scrollToComponent = scrollToComponent;
         init();
     }
 
@@ -101,27 +125,12 @@ public final class PersonInputPanel extends Panel {
         initSystemAttributeInput(birthPlaceFieldset, "birthRegion", BIRTH_REGION, false);
         initSystemAttributeInput(birthPlaceFieldset, "birthDistrict", BIRTH_DISTRICT, false);
         initSystemAttributeInput(birthPlaceFieldset, "birthCity", BIRTH_CITY, false);
-
-        //passport info
-        CollapsibleFieldset passportFieldset = new CollapsibleFieldset("passportFieldset", new ResourceModel("passportLabel"));
-        passportFieldset.setVisible(isPassportFieldsetVisible());
-        add(passportFieldset);
-        initSystemAttributeInput(passportFieldset, "passportSerialNumber", PASSPORT_SERIAL_NUMBER, false);
-        initSystemAttributeInput(passportFieldset, "passportNumber", PASSPORT_NUMBER, false);
-        initSystemAttributeInput(passportFieldset, "passportAcquisitionDate", PASSPORT_ACQUISITION_DATE, false);
-        initSystemAttributeInput(passportFieldset, "passportAcquisitionOrganization", PASSPORT_ACQUISITION_ORGANIZATION, false);
-
-        // birth certificate info
-        CollapsibleFieldset birthCertificateFieldset = new CollapsibleFieldset("birthCertificateFieldset", new ResourceModel("birthCertificateLabel"));
-        birthCertificateFieldset.setVisible(isBirthCertificateFieldsetVisible());
-        add(birthCertificateFieldset);
-        initSystemAttributeInput(birthCertificateFieldset, "birthCertificateInfo", BIRTH_CERTIFICATE_INFO, false);
-        initSystemAttributeInput(birthCertificateFieldset, "birthCertificateAcquisitionDate", BIRTH_CERTIFICATE_ACQUISITION_DATE, false);
-        initSystemAttributeInput(birthCertificateFieldset, "birthCertificateAcquisitionOrganization", BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION, false);
-
         initSystemAttributeInput(this, "ukraineCitizenship", UKRAINE_CITIZENSHIP, false);
         initSystemAttributeInput(this, "deathDate", DEATH_DATE, false);
         initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION, false);
+
+        //document
+        add(initDocument());
 
         //user attributes:
         List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
@@ -241,18 +250,6 @@ public final class PersonInputPanel extends Panel {
         initAttributeInput(container, attributeTypeId, showIfMissing);
     }
 
-    private boolean isPassportFieldsetVisible() {
-        return !(isHistory() && (person.getAttribute(PASSPORT_SERIAL_NUMBER) == null) && (person.getAttribute(PASSPORT_NUMBER) == null)
-                && (person.getAttribute(PASSPORT_ACQUISITION_ORGANIZATION) == null)
-                && (person.getAttribute(PASSPORT_ACQUISITION_DATE) == null));
-    }
-
-    private boolean isBirthCertificateFieldsetVisible() {
-        return !(isHistory() && (person.getAttribute(BIRTH_CERTIFICATE_INFO) == null)
-                && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_DATE) == null)
-                && (person.getAttribute(BIRTH_CERTIFICATE_ACQUISITION_ORGANIZATION) == null));
-    }
-
     private boolean isBirthPlaceFieldsetVisible() {
         return !(isHistory() && (person.getAttribute(BIRTH_COUNTRY) == null) && (person.getAttribute(BIRTH_DISTRICT) == null)
                 && (person.getAttribute(BIRTH_REGION) == null)
@@ -282,10 +279,7 @@ public final class PersonInputPanel extends Panel {
     }
 
     public void beforePersist() {
-        updateChildrenAttributes();
-    }
-
-    private void updateChildrenAttributes() {
+        //children
         person.getAttributes().removeAll(Collections2.filter(person.getAttributes(), new Predicate<Attribute>() {
 
             @Override
@@ -305,12 +299,12 @@ public final class PersonInputPanel extends Panel {
     }
 
     public boolean validate() {
-        return validateChildren();
-    }
+        //document
+        if ((!documentReplacedFlag ? person.getDocument() : person.getReplacedDocument()) == null) {
+            error(getString("empty_document"));
+        }
 
-    private boolean validateChildren() {
-        boolean valid = true;
-
+        //children
         Collection<Person> nonNullChildren = newArrayList(filter(person.getChildren(), new Predicate<Person>() {
 
             @Override
@@ -320,7 +314,6 @@ public final class PersonInputPanel extends Panel {
         }));
         if (nonNullChildren.size() != person.getChildren().size()) {
             error(getString("children_error"));
-            valid = false;
         }
 
         Set<Long> childrenIds = newHashSet(transform(nonNullChildren, new Function<Person, Long>() {
@@ -334,14 +327,183 @@ public final class PersonInputPanel extends Panel {
         if (!isNew()) {
             if (childrenIds.contains(person.getId())) {
                 error(getString("references_themselves"));
-                valid = false;
             }
         }
 
         if (childrenIds.size() != nonNullChildren.size()) {
             error(getString("children_duplicate"));
-            valid = false;
         }
-        return valid;
+
+        return getSession().getFeedbackMessages().isEmpty();
+    }
+
+    private Component initDocument() {
+        CollapsibleFieldset documentFieldset = new CollapsibleFieldset("documentFieldset",
+                new ResourceModel("documentLabel"), false);
+
+        final Form documentForm = new Form("documentForm");
+        documentFieldset.add(documentForm);
+
+        final WebMarkupContainer documentButtonsContainer = new WebMarkupContainer("documentButtonsContainer");
+        documentButtonsContainer.setOutputMarkupPlaceholderTag(true);
+        documentFieldset.add(documentButtonsContainer);
+
+        final WebMarkupContainer documentInputPanelContainer = new WebMarkupContainer("documentInputPanelContainer");
+        documentInputPanelContainer.setOutputMarkupId(true);
+        if (person.getDocument() == null) {
+            documentInputPanelContainer.add(new EmptyPanel("documentInputPanel"));
+        } else {
+            documentInputPanelContainer.add(newDocumentInputPanel(person.getDocument()));
+        }
+        documentForm.add(documentInputPanelContainer);
+
+        //document type
+        final EntityAttributeType documentTypeAttributeType = documentStrategy.getEntity().getAttributeType(DocumentStrategy.DOCUMENT_TYPE);
+        //label
+        IModel<String> labelModel = labelModel(documentTypeAttributeType.getAttributeNames(), getLocale());
+        documentForm.add(new Label("label", labelModel));
+        //required
+        documentForm.add(new WebMarkupContainer("required").setVisible(documentTypeAttributeType.isMandatory()));
+        final List<DomainObject> allDocumentTypes = documentTypeStrategy.getAll();
+        final IModel<DomainObject> documentTypeModel = new Model<DomainObject>();
+        if (person.getDocument() != null) {
+            documentTypeModel.setObject(find(allDocumentTypes, new Predicate<DomainObject>() {
+
+                @Override
+                public boolean apply(DomainObject documentType) {
+                    return documentType.getId().equals(person.getDocument().getDocumentTypeId());
+                }
+            }));
+        }
+        final DisableAwareDropDownChoice<DomainObject> documentType = new DisableAwareDropDownChoice<DomainObject>("documentType",
+                documentTypeModel, allDocumentTypes, new DomainObjectDisableAwareRenderer() {
+
+            @Override
+            public Object getDisplayValue(DomainObject object) {
+                return documentTypeStrategy.displayDomainObject(object, getLocale());
+            }
+        });
+        documentType.setOutputMarkupId(true);
+        documentType.setLabel(labelModel);
+        documentType.setEnabled(person.getDocument() == null && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        documentType.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                DomainObject newDocumentType = documentTypeModel.getObject();
+                if (newDocumentType != null && newDocumentType.getId() != null) {
+                    documentType.setEnabled(false);
+                    Document document = documentStrategy.newInstance(newDocumentType.getId());
+                    if (!documentReplacedFlag) {
+                        person.setDocument(document);
+                    } else {
+                        person.setReplacedDocument(document);
+                    }
+                    documentInputPanelContainer.replace(newDocumentInputPanel(document));
+                    target.addComponent(documentInputPanelContainer);
+                    target.addComponent(documentType);
+                }
+            }
+        });
+        documentForm.add(documentType);
+
+        //replace document
+        AjaxSubmitLink replaceDocument = new AjaxSubmitLink("replaceDocument", documentForm) {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                documentReplacedFlag = true;
+                setVisible(false);
+                target.addComponent(documentButtonsContainer);
+                documentTypeModel.setObject(null);
+                documentType.setEnabled(true);
+                target.addComponent(documentType);
+                documentInputPanelContainer.replace(new EmptyPanel("documentInputPanel"));
+                target.addComponent(documentInputPanelContainer);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(messages);
+                target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
+            }
+        };
+        replaceDocument.setVisible(person.getDocument() != null && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        documentButtonsContainer.add(replaceDocument);
+
+        //previous documents
+        final Dialog previousDocumentsDialog = new Dialog("previousDocumentsDialog") {
+
+            {
+                getOptions().putLiteral("width", "auto");
+            }
+        };
+        previousDocumentsDialog.setModal(true);
+        add(previousDocumentsDialog);
+
+        final WebMarkupContainer content = new WebMarkupContainer("content");
+        content.setOutputMarkupPlaceholderTag(true);
+        content.setVisible(false);
+        previousDocumentsDialog.add(content);
+
+        content.add(new Label("previousDocumentsLabel",
+                new AbstractReadOnlyModel<String>() {
+
+                    private boolean nameLoaded;
+
+                    @Override
+                    public String getObject() {
+                        if (!nameLoaded) {
+                            personStrategy.loadName(person);
+                            nameLoaded = true;
+                        }
+                        return MessageFormat.format(getString("previous_documents_dialog_label"),
+                                personStrategy.displayDomainObject(person, getLocale()));
+                    }
+                }));
+
+        IModel<List<Document>> previousDocumentsModel = new AbstractReadOnlyModel<List<Document>>() {
+
+            private List<Document> previousDocuments;
+
+            @Override
+            public List<Document> getObject() {
+                if (previousDocuments == null) {
+                    previousDocuments = personStrategy.findPreviousDocuments(person.getId());
+                }
+                return previousDocuments;
+            }
+        };
+
+        ListView<Document> previousDocuments = new ListView<Document>("previousDocuments", previousDocumentsModel) {
+
+            @Override
+            protected void populateItem(ListItem<Document> item) {
+                Document previousDocument = item.getModelObject();
+                item.add(new Label("previousDocumentLabel",
+                        documentTypeStrategy.displayDomainObject(previousDocument.getDocumentType(), getLocale())));
+                item.add(new DomainObjectInputPanel("previousDocument", previousDocument, documentStrategy.getEntityTable(),
+                        null, null, null, previousDocument.getStartDate()));
+            }
+        };
+        content.add(previousDocuments);
+
+        AjaxLink<Void> showPreviousDocuments = new AjaxLink<Void>("showPreviousDocuments") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                content.setVisible(true);
+                target.addComponent(content);
+                previousDocumentsDialog.open(target);
+            }
+        };
+        showPreviousDocuments.setVisible(previousDocumentsModel.getObject() != null && !previousDocumentsModel.getObject().isEmpty());
+        documentButtonsContainer.add(showPreviousDocuments);
+
+        return documentFieldset;
+    }
+
+    private DomainObjectInputPanel newDocumentInputPanel(Document document) {
+        return new DomainObjectInputPanel("documentInputPanel", document, documentStrategy.getEntityTable(), null, null, null);
     }
 }

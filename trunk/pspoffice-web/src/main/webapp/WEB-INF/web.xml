@@ -52,6 +52,9 @@
     <security-role>
         <role-name>REGISTRATION_TYPE_MODULE_EDIT</role-name>
     </security-role>
+    <security-role>
+        <role-name>DOCUMENT_TYPE_MODULE_EDIT</role-name>
+    </security-role>
     
     <login-config>
         <auth-method>FORM</auth-method>

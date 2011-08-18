@@ -173,16 +173,20 @@
                                 </td>
                             </tr>
                         </table>
-                        <div wicket:id="documentInputPanelContainer" style="padding-top: 5px;">
-                            <div wicket:id="documentInputPanel"></div>
+                        <div style="padding-top: 5px;">
+                            <div id="documentInputPanelWrapper">
+                                <div wicket:id="documentInputPanelContainer">
+                                    <div wicket:id="documentInputPanel"></div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                     <div wicket:id="documentButtonsContainer" style="padding-top: 25px;">
                         <input type="button" wicket:id="replaceDocument" wicket:message="value:replace_document" class="btnMiddle"/>
-                        <a style="float: right;" wicket:id="showPreviousDocuments">
-                            <wicket:message key="show_previous_documents"/>
-                        </a>
                     </div>
+                    <a style="float: right;" wicket:id="showPreviousDocuments">
+                        <wicket:message key="show_previous_documents"/>
+                    </a>
                 </div>
             </div>
 
@@ -213,12 +217,12 @@
                     <h2>
                         <span wicket:id="previousDocumentsLabel"></span>
                     </h2>
-                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 10px;">
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-bottom: 10px;">
                         <tr wicket:id="previousDocuments">
                             <td>
-                                <fieldset>
+                                <fieldset style="margin-top: 20px;">
                                     <legend>
-                                        <span wicket:id="previousDocumentLabel"></span>
+                                        <span style="font-weight: bold; font-size: 15px;" wicket:id="previousDocumentLabel"></span>
                                     </legend>
                                     <div wicket:id="previousDocument"></div>
                                 </fieldset>

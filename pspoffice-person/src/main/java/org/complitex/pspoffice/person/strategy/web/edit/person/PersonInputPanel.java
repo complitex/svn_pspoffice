@@ -36,6 +36,7 @@ import java.util.Set;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -51,6 +52,8 @@ import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.odlabs.wiquery.ui.dialog.Dialog;
+import org.odlabs.wiquery.ui.effects.CoreEffectJavaScriptResourceReference;
+import org.odlabs.wiquery.ui.effects.SlideEffectJavaScriptResourceReference;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -105,6 +108,9 @@ public final class PersonInputPanel extends Panel {
     }
 
     private void init() {
+        add(JavascriptPackageResource.getHeaderContribution(CoreEffectJavaScriptResourceReference.get()));
+        add(JavascriptPackageResource.getHeaderContribution(SlideEffectJavaScriptResourceReference.get()));
+
         //full name:
         PersonFullNamePanel personFullNamePanel = new PersonFullNamePanel("personFullNamePanel",
                 newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME), newNameModel(LAST_NAME));
@@ -402,6 +408,9 @@ public final class PersonInputPanel extends Panel {
                     documentInputPanelContainer.replace(newDocumentInputPanel(document));
                     target.addComponent(documentInputPanelContainer);
                     target.addComponent(documentType);
+                    target.prependJavascript("$('#documentInputPanelWrapper').hide();");
+                    target.appendJavascript("$('#documentInputPanelWrapper').slideDown('fast',"
+                            + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
                 }
             }
         });
@@ -417,9 +426,10 @@ public final class PersonInputPanel extends Panel {
                 target.addComponent(documentButtonsContainer);
                 documentTypeModel.setObject(null);
                 documentType.setEnabled(true);
+
+                target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
+                target.focusComponent(documentType);
                 target.addComponent(documentType);
-                documentInputPanelContainer.replace(new EmptyPanel("documentInputPanel"));
-                target.addComponent(documentInputPanelContainer);
             }
 
             @Override
@@ -498,7 +508,7 @@ public final class PersonInputPanel extends Panel {
             }
         };
         showPreviousDocuments.setVisible(previousDocumentsModel.getObject() != null && !previousDocumentsModel.getObject().isEmpty());
-        documentButtonsContainer.add(showPreviousDocuments);
+        documentFieldset.add(showPreviousDocuments);
 
         return documentFieldset;
     }

@@ -351,7 +351,8 @@ public final class PersonInputPanel extends Panel {
         documentFieldset.add(documentForm);
 
         final WebMarkupContainer documentButtonsContainer = new WebMarkupContainer("documentButtonsContainer");
-        documentButtonsContainer.setOutputMarkupPlaceholderTag(true);
+        documentButtonsContainer.setOutputMarkupId(true);
+        documentButtonsContainer.setVisible(!isNew());
         documentFieldset.add(documentButtonsContainer);
 
         final WebMarkupContainer documentInputPanelContainer = new WebMarkupContainer("documentInputPanelContainer");
@@ -430,6 +431,7 @@ public final class PersonInputPanel extends Panel {
                 target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
                 target.focusComponent(documentType);
                 target.addComponent(documentType);
+                target.addComponent(messages);
             }
 
             @Override
@@ -508,7 +510,7 @@ public final class PersonInputPanel extends Panel {
             }
         };
         showPreviousDocuments.setVisible(previousDocumentsModel.getObject() != null && !previousDocumentsModel.getObject().isEmpty());
-        documentFieldset.add(showPreviousDocuments);
+        documentButtonsContainer.add(showPreviousDocuments);
 
         return documentFieldset;
     }

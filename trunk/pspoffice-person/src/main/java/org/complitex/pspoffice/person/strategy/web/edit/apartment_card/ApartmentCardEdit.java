@@ -66,6 +66,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
+import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
@@ -315,7 +316,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 };
                 selected.setEnabled(!registration.isFinished());
                 item.add(selected);
-                item.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));
+
+                Link<Void> personLink = new Link<Void>("personLink") {
+
+                    @Override
+                    public void onClick() {
+                        setResponsePage(new PersonEdit(ApartmentCardEdit.this, registration.getPerson().getId()));
+                    }
+                };
+                personLink.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));
+                item.add(personLink);
                 Date birthDate = registration.getPerson().getBirthDate();
                 item.add(new Label("personBirthDate", birthDate != null ? DATE_FORMATTER.format(birthDate) : null));
                 item.add(new Label("registrationType",

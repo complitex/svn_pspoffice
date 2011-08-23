@@ -17,7 +17,10 @@ import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.util.StringUtil;
+import static org.complitex.dictionary.util.AttributeUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -36,8 +39,8 @@ public class DocumentStrategy extends TemplateStrategy {
      * Document type to attributes map
      */
     private static final Multimap<Long, Long> DOCUMENT_TYPE_TO_ATTRIBUTES_MAP = ImmutableMultimap.<Long, Long>builder().
-            putAll(1L, 2811L, 2812L, 2813L, 2814L).
-            putAll(2L, 2815L, 2816L, 2817L).build();
+            putAll(DocumentTypeStrategy.PASSPORT, 2811L, 2812L, 2813L, 2814L).
+            putAll(DocumentTypeStrategy.BIRTH_CERTIFICATE, 2815L, 2816L, 2817L).build();
     @EJB
     private StringCultureBean stringBean;
 
@@ -109,7 +112,16 @@ public class DocumentStrategy extends TemplateStrategy {
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Document document = (Document) object;
+
+        long documentTypeId = document.getDocumentTypeId();
+        if (documentTypeId == DocumentTypeStrategy.PASSPORT) {
+            return getStringValue(document, 2811) + " " + getStringValue(document, 2812);
+        } else if (documentTypeId == DocumentTypeStrategy.BIRTH_CERTIFICATE) {
+            return StringUtil.valueOf(getStringValue(document, 2815));
+        } else {
+            throw new IllegalStateException("Unknown document type: " + documentTypeId);
+        }
     }
 
     @Override

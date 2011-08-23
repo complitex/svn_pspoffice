@@ -216,7 +216,7 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     public List<Document> findPreviousDocuments(Long personId) {
-        if(personId == null){
+        if (personId == null) {
             return null;
         }
         List<Attribute> previousDocumentAttributes = sqlSession().selectList(PERSON_MAPPING + ".findPreviousDocumentAttributes",
@@ -343,6 +343,7 @@ public class PersonStrategy extends TemplateStrategy {
         List<Person> persons = sqlSession().selectList(PERSON_MAPPING + ".findByName", example);
         for (Person person : persons) {
             loadAttributes(person);
+            loadDocument(person);
         }
         return persons;
     }

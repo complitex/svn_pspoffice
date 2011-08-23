@@ -111,14 +111,10 @@ final class RemoveRegistrationDialog extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                closeDialog(target);
+                dialog.close(target);
             }
         };
         form.add(cancel);
-    }
-
-    void closeDialog(AjaxRequestTarget target) {
-        dialog.close(target);
     }
 
     void open(AjaxRequestTarget target, long apartmentCardId, List<Registration> registrationsToRemove) {
@@ -130,7 +126,7 @@ final class RemoveRegistrationDialog extends Panel {
         dialog.open(target);
     }
 
-    void removeRegistrations() {
+    private void removeRegistrations() {
         apartmentCardStrategy.removeRegistrations(apartmentCardId, registrationsToRemove, model.getObject());
     }
 }

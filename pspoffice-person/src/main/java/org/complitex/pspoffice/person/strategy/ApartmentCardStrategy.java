@@ -397,4 +397,14 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         session.putPreference(FULL_ADDRESS_ENABLED_PAGE, FULL_ADDRESS_ENABLED_PAGE,
                 String.valueOf(fullAddressSearchStateEnabled), true);
     }
+
+    @Transactional
+    public void changeRegistrationType(long apartmentCardId, List<Registration> registrationsToChangeType, long registrationTypeId) {
+        Date updateDate = DateUtil.getCurrentDate();
+        for (Registration registration : registrationsToChangeType) {
+            Registration newRegistration = CloneUtil.cloneObject(registration);
+            newRegistration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registrationTypeId);
+            registrationStrategy.update(registration, newRegistration, updateDate);
+        }
+    }
 }

@@ -118,7 +118,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private class SubmitLink extends AjaxSubmitLink {
 
-        public SubmitLink(String id) {
+        SubmitLink(String id) {
             super(id, form);
         }
 
@@ -156,7 +156,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private class AddRegistrationLink extends SubmitLink {
 
-        public AddRegistrationLink(String id) {
+        AddRegistrationLink(String id) {
             super(id);
         }
 
@@ -265,6 +265,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         final RemoveRegistrationDialog removeRegistrationDialog = new RemoveRegistrationDialog("removeRegistrationDialog");
         add(removeRegistrationDialog);
 
+        final ChangeRegistrationTypeDialog changeRegistrationTypeDialog = new ChangeRegistrationTypeDialog("changeRegistrationTypeDialog");
+        add(changeRegistrationTypeDialog);
+
         final AjaxLink<Void> removeRegistration = new AjaxLink<Void>("removeRegistration") {
 
             @Override
@@ -288,6 +291,33 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         removeRegistration.setOutputMarkupPlaceholderTag(true);
         form.add(removeRegistration);
 
+        final WebMarkupContainer changeRegistrationType = new WebMarkupContainer("changeRegistrationType") {
+
+            @Override
+            public boolean isVisible() {
+                return isAnySelected(selectedMap.values());
+            }
+        };
+        changeRegistrationType.setOutputMarkupPlaceholderTag(true);
+        form.add(changeRegistrationType);
+
+        AjaxLink<Void> changeRegistrationTypeButton = new AjaxLink<Void>("changeRegistrationTypeButton") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                List<Registration> registrationsToChangeType = newArrayList(filter(apartmentCard.getRegistrations(), new Predicate<Registration>() {
+
+                    @Override
+                    public boolean apply(Registration registration) {
+                        IModel<Boolean> model = selectedMap.get(registration.getId());
+                        return model != null ? model.getObject() : false;
+                    }
+                }));
+                changeRegistrationTypeDialog.open(target, apartmentCard.getId(), registrationsToChangeType);
+            }
+        };
+        changeRegistrationType.add(changeRegistrationTypeButton);
+
         AjaxCheckBox allSelected = new AjaxCheckBox("allSelected", new Model<Boolean>(false)) {
 
             @Override
@@ -296,6 +326,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     selectedModel.setObject(getModelObject());
                 }
                 target.addComponent(removeRegistration);
+                target.addComponent(changeRegistrationType);
             }
         };
         allSelected.setVisible(!selectedMap.isEmpty());
@@ -312,6 +343,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         target.addComponent(removeRegistration);
+                        target.addComponent(changeRegistrationType);
                     }
                 };
                 selected.setEnabled(!registration.isFinished());

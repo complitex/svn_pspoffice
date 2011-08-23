@@ -136,6 +136,13 @@
                     <div>
                         <input type="button" wicket:id="addRegistration" wicket:message="value:add_registration" class="btnMiddle"/>
                         <input type="button" wicket:id="removeRegistration" wicket:message="value:remove_registration" class="btnMiddle"/>
+
+                        <span wicket:id="changeRegistrationType">
+                            <span class="btnLeft" style="display: inline-block; vertical-align: top; position: relative; left: 4px;"></span>
+                            <input type="button" wicket:id="changeRegistrationTypeButton" wicket:message="value:change_registration_type"
+                                   class="btnCenter" style="width: 180px;"/>
+                            <span class="btnRight" style="display: inline-block; vertical-align: top; position: relative; left: -4px;"></span>
+                        </span>
                     </div>
                 </fieldset>
 
@@ -174,6 +181,7 @@
             </form>
 
             <div wicket:id="removeRegistrationDialog"></div>
+            <div wicket:id="changeRegistrationTypeDialog"></div>
         </wicket:extend>
     </body>
 </html>

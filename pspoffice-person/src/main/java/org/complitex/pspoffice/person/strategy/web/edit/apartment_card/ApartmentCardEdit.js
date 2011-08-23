@@ -1,7 +1,13 @@
-$(document).ready(function(){
-    $(".allSelected:checkbox").bind("click", function(){
-        var $allSelected = $(this);
-        var $table = $allSelected.closest("table");
-        $table.find(".selected:checkbox:enabled:").attr("checked", $allSelected.is(":checked"));
+$(function(){
+    var $allSelected = $(".allSelected");
+    var $table = $allSelected.closest("table");
+    var $allCheckboxes = $table.find(".selected");
+
+    $allSelected.click(function(){
+        $allCheckboxes.attr("checked", $allSelected.is(":checked"));
+    });
+
+    $allCheckboxes.click(function(){
+        $allSelected.attr("checked", false);
     });
 });

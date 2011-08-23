@@ -4,26 +4,18 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import javax.ejb.EJB;
+import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.service.StringCultureBean;
-import org.complitex.dictionary.strategy.DeleteException;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.strategy.TemplateStrategy;
-import org.complitex.template.web.component.toolbar.DeleteItemButton;
-import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -44,6 +36,7 @@ public class PersonEdit extends FormTemplatePage {
     private StringCultureBean stringBean;
     private Person oldPerson;
     private Person newPerson;
+    private Page backPage;
 
     public PersonEdit(PageParameters parameters) {
         Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
@@ -57,9 +50,17 @@ public class PersonEdit extends FormTemplatePage {
             newPerson = personStrategy.findById(objectId, false);
             oldPerson = CloneUtil.cloneObject(newPerson);
         }
+        init();
+    }
 
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+    public PersonEdit(Page backPage, long personId) {
+        newPerson = personStrategy.findById(personId, false);
+        oldPerson = CloneUtil.cloneObject(newPerson);
+        this.backPage = backPage;
+        init();
+    }
 
+    private void init() {
         Label title = new Label("title", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -84,11 +85,14 @@ public class PersonEdit extends FormTemplatePage {
     }
 
     private void back() {
-        PageParameters listPageParams = personStrategy.getListPageParams();
-        listPageParams.put(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
-        setResponsePage(personStrategy.getListPage(), listPageParams);
+        if (backPage == null) {
+            PageParameters listPageParams = personStrategy.getListPageParams();
+            listPageParams.put(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
+            setResponsePage(personStrategy.getListPage(), listPageParams);
+        } else {
+            setResponsePage(backPage);
+        }
     }
-
 //    private void delete() {
 //        try {
 //            personStrategy.delete(newPerson.getId(), getLocale());
@@ -104,7 +108,6 @@ public class PersonEdit extends FormTemplatePage {
 //            error(getString("db_error"));
 //        }
 //    }
-
 //    @Override
 //    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
 //        return ImmutableList.of(

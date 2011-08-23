@@ -14,6 +14,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -134,10 +135,20 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         });
         content.add(middleName);
 
-        //personsContainer
-        final WebMarkupContainer personsContainer = new WebMarkupContainer("personsContainer");
-        personsContainer.setOutputMarkupId(true);
-        content.add(personsContainer);
+        //personContainer
+        final WebMarkupContainer personContainer = new WebMarkupContainer("personContainer");
+        personContainer.setOutputMarkupPlaceholderTag(true);
+        content.add(personContainer);
+
+        //personNotFoundContainer
+        final WebMarkupContainer personNotFoundContainer = new WebMarkupContainer("personNotFoundContainer");
+        personNotFoundContainer.setVisible(false);
+        personContainer.add(personNotFoundContainer);
+
+        //personsDataContainer
+        final WebMarkupContainer personsDataContainer = new WebMarkupContainer("personsDataContainer");
+        personsDataContainer.setVisible(false);
+        personContainer.add(personsDataContainer);
 
         final IModel<List<? extends Person>> personsModel = Model.ofList(null);
         final IModel<Person> personModel = new Model<Person>();
@@ -151,8 +162,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                     throw new IllegalStateException("Oops...");
                 } else {
                     PersonPicker.this.getModel().setObject(personModel.getObject());
-                    clearAndCloseLookupDialog(lastNameModel, firstNameModel, middleNameModel, personModel, personsModel,
-                            target, lookupDialog, content, this);
+                    clearAndCloseLookupDialog(personModel, personsModel, target, lookupDialog, content,
+                            personNotFoundContainer, personsDataContainer, this);
                     target.addComponent(personLabel);
                 }
             }
@@ -170,7 +181,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 toggleSelectButton(select, target, personModel);
             }
         });
-        personsContainer.add(radioGroup);
+        personsDataContainer.add(radioGroup);
 
         //persons list view
         ListView<Person> persons = new ListView<Person>("persons", personsModel) {
@@ -190,14 +201,18 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         radioGroup.add(persons);
 
         //find
-        AjaxLink<Void> find = new AjaxLink<Void>("find") {
+        IndicatingAjaxLink<Void> find = new IndicatingAjaxLink<Void>("find") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
                 find(lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject(), personModel,
                         personsModel);
 
-                target.addComponent(personsContainer);
+                boolean isPersonsDataContainerVisible = personsModel.getObject() != null && !personsModel.getObject().isEmpty();
+                personNotFoundContainer.setVisible(!isPersonsDataContainerVisible);
+                personsDataContainer.setVisible(isPersonsDataContainerVisible);
+
+                target.addComponent(personContainer);
                 toggleSelectButton(select, target, personModel);
             }
         };
@@ -208,8 +223,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                clearAndCloseLookupDialog(lastNameModel, firstNameModel, middleNameModel, personModel, personsModel,
-                        target, lookupDialog, content, select);
+                clearAndCloseLookupDialog(personModel, personsModel,
+                        target, lookupDialog, content, personNotFoundContainer, personsDataContainer, select);
             }
         };
         content.add(cancel);
@@ -247,8 +262,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                clearAndCloseLookupDialog(lastNameModel, firstNameModel, middleNameModel, personModel, personsModel,
-                        target, lookupDialog, content, select);
+                clearAndCloseLookupDialog(personModel, personsModel,
+                        target, lookupDialog, content, personNotFoundContainer, personsDataContainer, select);
 
                 personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel));
 
@@ -282,15 +297,14 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         };
     }
 
-    private void clearAndCloseLookupDialog(IModel<String> lastNameModel, IModel<String> firstNameModel,
-            IModel<String> middleNameModel, IModel<Person> personModel, IModel<List<? extends Person>> personsModel,
-            AjaxRequestTarget target, Dialog lookupDialog, WebMarkupContainer content, Component select) {
-        lastNameModel.setObject(null);
-        firstNameModel.setObject(null);
-        middleNameModel.setObject(null);
+    private void clearAndCloseLookupDialog(IModel<Person> personModel, IModel<List<? extends Person>> personsModel,
+            AjaxRequestTarget target, Dialog lookupDialog, WebMarkupContainer content,
+            WebMarkupContainer personNotFoundContainer, WebMarkupContainer personsDataContainer, Component select) {
         personsModel.setObject(null);
         personModel.setObject(null);
         select.setVisible(false);
+        personNotFoundContainer.setVisible(false);
+        personsDataContainer.setVisible(false);
 
         target.addComponent(content);
         lookupDialog.close(target);

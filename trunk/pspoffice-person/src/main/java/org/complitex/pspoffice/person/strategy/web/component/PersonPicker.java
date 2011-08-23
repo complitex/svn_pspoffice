@@ -32,6 +32,7 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.type.GenderPanel;
+import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
@@ -55,6 +56,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     private static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
     @EJB
     private PersonStrategy personStrategy;
+    @EJB
+    private DocumentStrategy documentStrategy;
     private final boolean enabled;
     private final boolean required;
     private final IModel<String> labelModel;
@@ -196,6 +199,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 Gender gender = person.getGender();
                 item.add(new Label("gender", gender != null ? GenderPanel.display(person.getGender(), getLocale()) : null));
                 item.add(new Label("idCode", StringUtil.valueOf(person.getIdentityCode())));
+                item.add(new Label("document", documentStrategy.displayDomainObject(person.getDocument(), getLocale())));
             }
         };
         radioGroup.add(persons);

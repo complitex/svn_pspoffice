@@ -19,6 +19,7 @@ import javax.ejb.Stateless;
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.DateConverter;
+import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Preference;
@@ -34,9 +35,11 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.RegisterOwnerCard;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
 import org.complitex.template.strategy.TemplateStrategy;
@@ -406,5 +409,51 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             newRegistration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registrationTypeId);
             registrationStrategy.update(registration, newRegistration, updateDate);
         }
+    }
+
+    @Transactional
+    public void registerOwner(long apartmentCardId, RegisterOwnerCard registerOwnerCard, Person owner) {
+        Date insertDate = DateUtil.getCurrentDate();
+
+        //owner registration
+        addRegistration(apartmentCardId,
+                newRegistration(owner.getId(), registerOwnerCard, OwnerRelationshipStrategy.OWNER), insertDate);
+
+        //children registration
+        if (registerOwnerCard.isRegisterChildren()) {
+            for (Attribute childAttribute : owner.getAttributes(PersonStrategy.CHILDREN)) {
+                addRegistration(apartmentCardId,
+                        newRegistration(childAttribute.getValueId(), registerOwnerCard, OwnerRelationshipStrategy.CHILDREN),
+                        insertDate);
+            }
+        }
+    }
+
+    private Registration newRegistration(long personId, RegisterOwnerCard registerOwnerCard, long ownerRelationshipId) {
+        Registration registration = registrationStrategy.newInstance();
+        registration.getAttribute(RegistrationStrategy.PERSON).setValueId(personId);
+        registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(ownerRelationshipId);
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.REGISTRATION_DATE).getLocalizedValues()).
+                setValue(new DateConverter().toString(registerOwnerCard.getRegistrationDate()));
+        registration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registerOwnerCard.getRegistrationType().getId());
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_COUNTRY).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getCountry()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_REGION).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getRegion()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_DISTRICT).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getDistrict()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_CITY).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getCity()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_STREET).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getStreet()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_BUILDING_NUMBER).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getBuildingNumber()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_BUILDING_CORP).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getBuildingCorp()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_APARTMENT).getLocalizedValues()).
+                setValue(new StringConverter().toString(registerOwnerCard.getApartment()));
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_DATE).getLocalizedValues()).
+                setValue(new DateConverter().toString(registerOwnerCard.getArrivalDate()));
+        return registration;
     }
 }

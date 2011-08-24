@@ -48,7 +48,7 @@ final class RemoveRegistrationDialog extends Panel {
         init();
     }
 
-    void init() {
+    private void init() {
         dialog = new Dialog("dialog");
         dialog.setModal(true);
         dialog.setWidth(650);

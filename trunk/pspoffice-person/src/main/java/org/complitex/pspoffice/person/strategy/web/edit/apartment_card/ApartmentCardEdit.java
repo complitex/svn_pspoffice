@@ -22,6 +22,7 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -29,6 +30,7 @@ import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInst
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -146,10 +148,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             scrollToMessages(target);
         }
 
-        private void scrollToMessages(AjaxRequestTarget target) {
-            target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
-        }
-
         protected void action() {
         }
     }
@@ -253,6 +251,49 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         // form of ownership
         form.add(initFormOfOwnership());
+
+        //register owner
+        WebMarkupContainer registerOwnerContainer = new WebMarkupContainer("registerOwnerContainer");
+        form.add(registerOwnerContainer);
+        registerOwnerContainer.setVisible(isNew());
+
+        final CheckBox registerOwnerCheckBox = new CheckBox("registerOwnerCheckBox", new Model<Boolean>(false));
+        registerOwnerCheckBox.setOutputMarkupId(true);
+        registerOwnerContainer.add(registerOwnerCheckBox);
+
+        final RegisterOwnerDialog registerOwnerDialog = new RegisterOwnerDialog("registerOwnerDialog");
+        add(registerOwnerDialog);
+
+        registerOwnerCheckBox.add(new AjaxFormSubmitBehavior(form, "onclick") {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target) {
+                if (registerOwnerCheckBox.getModelObject()) {
+                    try {
+                        if (validate()) {
+                            save();
+                            registerOwnerDialog.open(target, newApartmentCard.getId(), ownerModel.getObject());
+                        } else {
+                            target.addComponent(messages);
+                            scrollToMessages(target);
+                        }
+                    } catch (Exception e) {
+                        log.error("", e);
+                        error(getString("db_error"));
+                        target.addComponent(messages);
+                        scrollToMessages(target);
+                    }
+                }
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target) {
+                target.addComponent(messages);
+                registerOwnerCheckBox.clearInput();
+                target.addComponent(registerOwnerCheckBox);
+                scrollToMessages(target);
+            }
+        });
 
         //registrations
         final Map<Long, IModel<Boolean>> selectedMap = newHashMap();
@@ -432,7 +473,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         form.add(userAttributesView);
 
         //save-cancel functional
-        AjaxSubmitLink submit = new SubmitLink("submit");
+        AjaxSubmitLink submit = new SubmitLink("submit") {
+
+            @Override
+            protected void action() {
+                back();
+            }
+        };
         submit.setVisible(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(submit);
         Link cancel = new Link("cancel") {
@@ -591,7 +638,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         }
         logBean.log(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, apartmentCardStrategy,
                 oldApartmentCard, newApartmentCard, getLocale(), null);
-        back();
     }
 
     private void back() {
@@ -649,6 +695,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 return model.getObject();
             }
         });
+    }
+
+    private void scrollToMessages(AjaxRequestTarget target) {
+        target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
     }
 
     @Override

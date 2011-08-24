@@ -67,6 +67,14 @@
                             </td>
                         </wicket:container>
                     </tr>
+                    <tr wicket:id="registerOwnerContainer">
+                        <th>
+                            <wicket:message key="registerOwner"/>
+                        </th>
+                        <td>
+                            <input type="checkbox" wicket:id="registerOwnerCheckBox"/>:
+                        </td>
+                    </tr>
                 </table>
 
                 <fieldset>
@@ -182,6 +190,7 @@
 
             <div wicket:id="removeRegistrationDialog"></div>
             <div wicket:id="changeRegistrationTypeDialog"></div>
+            <div wicket:id="registerOwnerDialog"></div>
         </wicket:extend>
     </body>
 </html>

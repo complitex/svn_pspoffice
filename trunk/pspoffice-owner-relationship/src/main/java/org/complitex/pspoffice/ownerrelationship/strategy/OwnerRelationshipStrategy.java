@@ -40,7 +40,8 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
      */
     public static final long OWNER = 1;
     public static final long RESPONSIBLE = 2;
-    private static final Set<Long> RESERVED_INSTANCE_IDS = of(OWNER, RESPONSIBLE);
+    public static final long CHILDREN = 3;
+    private static final Set<Long> RESERVED_INSTANCE_IDS = of(OWNER, RESPONSIBLE, CHILDREN);
 
     @Override
     public String getEntityTable() {
@@ -82,17 +83,6 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
         return (List<DomainObject>) find(example);
     }
 
-//    @Transactional
-//    public List<DomainObject> getAllWithoutOwnerAndResponsible() {
-//        List<DomainObject> all = getAll();
-//        return newArrayList(filter(all, new Predicate<DomainObject>() {
-//
-//            @Override
-//            public boolean apply(DomainObject input) {
-//                return !RESERVED_INSTANCE_IDS.contains(input.getId());
-//            }
-//        }));
-//    }
     @Override
     public String[] getEditRoles() {
         return new String[]{SecurityRole.OWNER_RELATIONSHIP_MODULE_EDIT};

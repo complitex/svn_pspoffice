@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionary.entity.Attribute;
@@ -186,5 +187,10 @@ public class RegistrationStrategy extends Strategy {
     @Override
     public String[] getDescriptionRoles() {
         return new String[]{SecurityRole.PERSON_MODULE_DESCRIPTION_EDIT};
+    }
+
+    @Override
+    public Page getObjectNotFoundPage() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

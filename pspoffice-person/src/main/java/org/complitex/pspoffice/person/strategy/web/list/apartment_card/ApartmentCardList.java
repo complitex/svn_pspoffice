@@ -56,7 +56,6 @@ public class ApartmentCardList extends ListPage {
     }
 
     private void init() {
-
         add(new Label("title", new ResourceModel("title")));
         add(new Label("label", new StringResourceModel("label", null, new Object[]{
                     addressRendererBean.displayAddress(addressEntity, addressId, getLocale())
@@ -117,6 +116,15 @@ public class ApartmentCardList extends ListPage {
         };
         content.add(dataView);
         content.add(new PagingNavigator("navigator", dataView, getClass().getName(), content));
+
+        Link<Void> back = new Link<Void>("back") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(ApartmentCardSearch.class);
+            }
+        };
+        content.add(back);
     }
 
     @Override

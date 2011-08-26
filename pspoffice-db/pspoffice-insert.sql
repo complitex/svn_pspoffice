@@ -13,7 +13,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2003, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2002, 2000, 1, 2003, 1);
 /* Идентификационный код  */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2004, 1, UPPER('Идентификационный код')), (2004, 2, UPPER('Идентификационный код'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2003, 2000, 1, 2004, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2003, 2000, 0, 2004, 1);
 /* Дата рождения */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2005, 1, UPPER('Дата рождения')), (2005, 2, UPPER('Дата нарождения'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2004, 2000, 1, 2005, 1);
@@ -140,10 +140,10 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2119, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2118, 2100, 0, 2119, 1);
 /* Дата регистрации */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2120, 1, UPPER('Дата начала регистрации')), (2120, 2, UPPER('Дата начала регистрации'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2119, 2100, 0, 2120, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2119, 2100, 1, 2120, 1);
 /* Тип регистрации */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2121, 1, UPPER('Тип регистрации')), (2121, 2, UPPER('Тип регистрации'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 0, 2121, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 1, 2121, 1);
 /* Отношение к владельцу */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2122, 1, UPPER('Отношение к владельцу')), (2122, 2, UPPER('Отношение к владельцу'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2121, 2100, 1, 2122, 1);

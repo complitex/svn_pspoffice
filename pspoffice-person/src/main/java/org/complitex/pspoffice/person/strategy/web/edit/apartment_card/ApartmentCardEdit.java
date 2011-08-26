@@ -69,7 +69,7 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
-import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
+import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -482,7 +482,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         };
         submit.setVisible(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(submit);
-        Link cancel = new Link("cancel") {
+        Link<Void> cancel = new Link<Void>("cancel") {
 
             @Override
             public void onClick() {
@@ -491,7 +491,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         };
         cancel.setVisible(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(cancel);
-        Link back = new Link("back") {
+        Link<Void> back = new Link<Void>("back") {
 
             @Override
             public void onClick() {
@@ -641,7 +641,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     }
 
     private void back() {
-        setResponsePage(ApartmentCardSearch.class);
+        setResponsePage(new ApartmentCardList(getAddressEntity(), getAddressId()));
     }
 
     private Component initFormOfOwnership() {

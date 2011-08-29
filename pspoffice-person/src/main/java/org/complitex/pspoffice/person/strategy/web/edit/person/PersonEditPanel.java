@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -53,13 +54,20 @@ public abstract class PersonEditPanel extends Panel {
         super(id);
         this.oldPerson = oldPerson;
         this.newPerson = newPerson;
-
-        init();
+        init(null, null, null, null);
     }
 
-    private void init() {
+    public PersonEditPanel(String id, Person newPerson,
+            Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName){
+        super(id);
+        this.newPerson = newPerson;
+        init(defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
+    }
+
+    private void init(Locale defaultNameLocale,
+            String defaultLastName, String defaultFirstName, String defaultMiddleName) {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-        
+
         final Label label = new Label("label", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -77,7 +85,8 @@ public abstract class PersonEditPanel extends Panel {
         Form form = new Form("form");
 
         //input panel
-        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label);
+        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label,
+                defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
         form.add(personInputPanel);
 
         /*

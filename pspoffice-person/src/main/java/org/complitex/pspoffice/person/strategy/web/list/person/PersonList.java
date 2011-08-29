@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.list.person;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -193,6 +194,7 @@ public final class PersonList extends ScrollListPage {
             }
         }));
 
+        final Locale systemLocale = localeBean.getSystemLocale();
         //Data View
         DataView<Person> dataView = new DataView<Person>("data", dataProvider, 1) {
 
@@ -201,9 +203,9 @@ public final class PersonList extends ScrollListPage {
                 Person person = item.getModelObject();
 
                 item.add(new Label("id", StringUtil.valueOf(person.getId())));
-                item.add(new Label("lastName", person.getLastName()));
-                item.add(new Label("firstName", person.getFirstName()));
-                item.add(new Label("middleName", person.getMiddleName()));
+                item.add(new Label("lastName", person.getLastName(getLocale(), systemLocale)));
+                item.add(new Label("firstName", person.getFirstName(getLocale(), systemLocale)));
+                item.add(new Label("middleName", person.getMiddleName(getLocale(), systemLocale)));
 
                 ScrollBookmarkablePageLink<WebPage> detailsLink = new ScrollBookmarkablePageLink<WebPage>("detailsLink", personStrategy.getEditPage(),
                         personStrategy.getEditPageParams(person.getId(), null, null), String.valueOf(person.getId()));

@@ -9,22 +9,58 @@
             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                     <th>
-                        <wicket:message key="last_name"/><b class="blue">*</b>:
+                        <wicket:message key="lastName"/><b class="blue">*</b>:
                     </th>
                     <td>
-                        <div wicket:id="last_name"></div>
+                        <table>
+                            <tr wicket:id="lastNames">
+                                <td>
+                                    <div wicket:id="lastName"></div>
+                                </td>
+                                <td>
+                                    <span wicket:id="language"></span>
+                                    <span wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                     <th>
-                        <wicket:message key="first_name"/><b class="blue">*</b>:
+                        <wicket:message key="firstName"/><b class="blue">*</b>:
                     </th>
                     <td>
-                        <div wicket:id="first_name"></div>
+                        <table>
+                            <tr wicket:id="firstNames">
+                                <td>
+                                    <div wicket:id="firstName"></div>
+                                </td>
+                                <td>
+                                    <span wicket:id="language"></span>
+                                    <span wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                     <th>
-                        <wicket:message key="middle_name"/><b class="blue">*</b>:
+                        <wicket:message key="middleName"/><b class="blue">*</b>:
                     </th>
                     <td>
-                        <div wicket:id="middle_name"></div>
+                        <table>
+                            <tr wicket:id="middleNames">
+                                <td>
+                                    <div wicket:id="middleName"></div>
+                                </td>
+                                <td>
+                                    <span wicket:id="language"></span>
+                                    <span wicket:id="required">
+                                        <b class="blue">*</b>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             </table>

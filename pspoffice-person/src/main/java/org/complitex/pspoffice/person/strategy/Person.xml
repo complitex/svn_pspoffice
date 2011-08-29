@@ -3,19 +3,32 @@
 
 <mapper namespace="org.complitex.pspoffice.person.strategy.Person">
 
-    <resultMap id="Person" type="org.complitex.pspoffice.person.strategy.entity.Person" extends="org.complitex.dictionary.entity.DomainObject.DomainObject">
-        <result column="last_name" property="lastName"/>
-        <result column="first_name" property="firstName"/>
-        <result column="middle_name" property="middleName"/>
+    <resultMap id="Person" type="org.complitex.pspoffice.person.strategy.entity.Person"
+            extends="org.complitex.dictionary.entity.DomainObject.DomainObject">
     </resultMap>
 
     <sql id="join">
-        JOIN `person_attribute` lna ON (lna.`status` = 'ACTIVE' AND lna.`object_id` = e.`object_id` AND lna.`attribute_type_id` = 2000)
-        JOIN `last_name` ln ON ln.`id` = lna.`value_id`
-        JOIN `person_attribute` fna ON (fna.`status` = 'ACTIVE' AND fna.`object_id` = e.`object_id` AND fna.`attribute_type_id` = 2001)
-        JOIN `first_name` fn ON fn.`id` = fna.`value_id`
-        JOIN `person_attribute` mna ON (mna.`status` = 'ACTIVE' AND mna.`object_id` = e.`object_id` AND mna.`attribute_type_id` = 2002)
-        JOIN `middle_name` mn ON mn.`id` = mna.`value_id`
+        JOIN `locales` sys ON sys.`system` = 1
+        JOIN `person_attribute` sys_lna ON (sys_lna.`status` = 'ACTIVE' AND sys_lna.`object_id` = e.`object_id` AND sys_lna.`attribute_type_id` = 2000
+            AND sys_lna.`attribute_id` = sys.`id`)
+        JOIN `person_last_name` sys_ln ON sys_ln.`id` = sys_lna.`value_id`
+        LEFT JOIN `person_attribute` lna ON (lna.`status` = 'ACTIVE' AND lna.`object_id` = e.`object_id` AND lna.`attribute_type_id` = 2000
+            AND lna.`attribute_id` = #{localeId})
+        LEFT JOIN `person_last_name` ln ON (ln.`id` = lna.`value_id` AND ln.`locale_id` = #{localeId})
+
+        JOIN `person_attribute` sys_fna ON (sys_fna.`status` = 'ACTIVE' AND sys_fna.`object_id` = e.`object_id` AND sys_fna.`attribute_type_id` = 2001
+            AND sys_fna.`attribute_id` = sys.`id`)
+        JOIN `person_first_name` sys_fn ON sys_fn.`id` = sys_fna.`value_id`
+        LEFT JOIN `person_attribute` fna ON (fna.`status` = 'ACTIVE' AND fna.`object_id` = e.`object_id` AND fna.`attribute_type_id` = 2001
+            AND fna.`attribute_id` = #{localeId})
+        LEFT JOIN `person_first_name` fn ON (fn.`id` = fna.`value_id` AND fn.`locale_id` = #{localeId})
+        
+        JOIN `person_attribute` sys_mna ON (sys_mna.`status` = 'ACTIVE' AND sys_mna.`object_id` = e.`object_id` AND sys_mna.`attribute_type_id` = 2002
+            AND sys_mna.`attribute_id` = sys.`id`)
+        JOIN `person_middle_name` sys_mn ON sys_mn.`id` = sys_mna.`value_id`
+        LEFT JOIN `person_attribute` mna ON (mna.`status` = 'ACTIVE' AND mna.`object_id` = e.`object_id` AND mna.`attribute_type_id` = 2002
+            AND mna.`attribute_id` = #{localeId})
+        LEFT JOIN `person_middle_name` mn ON (mn.`id` = mna.`value_id` AND mn.`locale_id` = #{localeId})
     </sql>
 
     <sql id="filter">
@@ -24,21 +37,22 @@
         </if>
         <if test="additionalParams != null">
             <if test="additionalParams['last_name'] != null">
-                AND ln.`name` LIKE CONCAT('%', #{additionalParams.last_name}, '%')
+                AND (ln.`name` LIKE CONCAT('%', #{additionalParams.last_name}, '%') OR
+                    sys_ln.`name` LIKE CONCAT('%', #{additionalParams.last_name}, '%'))
             </if>
             <if test="additionalParams['first_name'] != null">
-                AND fn.`name` LIKE CONCAT('%', #{additionalParams.first_name}, '%')
+                AND (fn.`name` LIKE CONCAT('%', #{additionalParams.first_name}, '%') OR
+                    sys_fn.`name` LIKE CONCAT('%', #{additionalParams.first_name}, '%'))
             </if>
             <if test="additionalParams['middle_name'] != null">
-                AND mn.`name` LIKE CONCAT('%', #{additionalParams.middle_name}, '%')
+                AND (mn.`name` LIKE CONCAT('%', #{additionalParams.middle_name}, '%') OR
+                    sys_mn.`name` LIKE CONCAT('%', #{additionalParams.middle_name}, '%'))
             </if>
         </if>
     </sql>
 
     <select id="find" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
-        SELECT DISTINCT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`, e.`parent_entity_id`,
-                e.`permission_id`, ln.`name` last_name, fn.`name` first_name, mn.`name` middle_name
-        FROM `person` e
+        SELECT e.* FROM `person` e
             <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
         WHERE
         <include refid="org.complitex.dictionary.entity.DomainObject.statusFilter"/>
@@ -62,16 +76,17 @@
             ORDER BY
             <choose>
                 <when test="orderByAttributeTypeId == 2000">
-                    ln.`name`
+                    IFNULL(ln.`name`, sys_ln.`name`)
                 </when>
                 <when test="orderByAttributeTypeId == 2001">
-                    fn.`name`
+                    IFNULL(fn.`name`, sys_fn.`name`)
                 </when>
                 <when test="orderByAttributeTypeId == 2002">
-                    mn.`name`
+                    IFNULL(mn.`name`, sys_mn.`name`)
                 </when>
                 <when test="orderByAttributeTypeId == -1">
-                    ln.`name`, fn.`name`, mn.`name`
+                    IFNULL(ln.`name`, sys_ln.`name`), IFNULL(fn.`name`, sys_fn.`name`),
+                            IFNULL(mn.`name`, sys_mn.`name`)
                 </when>
                 <otherwise>
                     1
@@ -89,21 +104,21 @@
     </sql>
 
     <select id="findByName" resultMap="org.complitex.pspoffice.person.strategy.Person.Person" parameterType="DomainObjectExample">
-        SELECT DISTINCT e.`object_id`, e.`start_date`, e.`end_date`, e.`status`, e.`parent_id`, e.`parent_entity_id`,
-                e.`permission_id`, ln.`name` last_name, fn.`name` first_name, mn.`name` middle_name
-        FROM `person` e
+        SELECT e.* FROM `person` e
         <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
         WHERE
             <include refid="org.complitex.dictionary.entity.DomainObject.statusFilter"/>
             <include refid="org.complitex.dictionary.entity.DomainObject.permissionFilter"/>
-            AND ln.`name` = #{additionalParams.last_name}
+            AND (ln.`name` = #{additionalParams.last_name} OR sys_ln.`name` = #{additionalParams.last_name})
             <if test="additionalParams['first_name'] != null">
-                AND fn.`name` LIKE CONCAT(#{additionalParams.first_name}, '%')
+                AND (fn.`name` LIKE CONCAT(#{additionalParams.first_name}, '%') OR
+                        sys_fn.`name` LIKE CONCAT(#{additionalParams.first_name}, '%'))
             </if>
             <if test="additionalParams['middle_name'] != null">
-                AND mn.`name` LIKE CONCAT(#{additionalParams.middle_name}, '%')
+                AND (mn.`name` LIKE CONCAT(#{additionalParams.middle_name}, '%') OR
+                        sys_mn.`name` LIKE CONCAT(#{additionalParams.middle_name}, '%'))
             </if>
-        ORDER BY ln.`name`, fn.`name`, mn.`name`
+        ORDER BY IFNULL(ln.`name`, sys_ln.`name`), IFNULL(fn.`name`, sys_fn.`name`), IFNULL(mn.`name`, sys_mn.`name`)
     </select>
 
     <select id="findPreviousDocumentAttributes" parameterType="long" resultMap="org.complitex.dictionary.entity.Attribute.Attribute">

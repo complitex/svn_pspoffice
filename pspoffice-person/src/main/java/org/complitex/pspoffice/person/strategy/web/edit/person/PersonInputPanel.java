@@ -32,6 +32,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -41,6 +42,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -88,7 +90,7 @@ public final class PersonInputPanel extends Panel {
         super(id);
         this.person = person;
         this.date = date;
-        init();
+        init(null, null, null, null);
     }
 
     public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent) {
@@ -96,7 +98,16 @@ public final class PersonInputPanel extends Panel {
         this.person = person;
         this.messages = messages;
         this.scrollToComponent = scrollToComponent;
-        init();
+        init(null, null, null, null);
+    }
+
+    public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent,
+            Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
+        super(id);
+        this.person = person;
+        this.messages = messages;
+        this.scrollToComponent = scrollToComponent;
+        init(defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
     }
 
     private boolean isNew() {
@@ -107,13 +118,14 @@ public final class PersonInputPanel extends Panel {
         return date != null;
     }
 
-    private void init() {
+    private void init(Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
         add(JavascriptPackageResource.getHeaderContribution(CoreEffectJavaScriptResourceReference.get()));
         add(JavascriptPackageResource.getHeaderContribution(SlideEffectJavaScriptResourceReference.get()));
 
         //full name:
-        PersonFullNamePanel personFullNamePanel = new PersonFullNamePanel("personFullNamePanel",
-                newNameModel(FIRST_NAME), newNameModel(MIDDLE_NAME), newNameModel(LAST_NAME));
+        PersonFullNamePanel personFullNamePanel = defaultNameLocale != null ? new PersonFullNamePanel("personFullNamePanel", person,
+                defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName)
+                : new PersonFullNamePanel("personFullNamePanel", person);
         personFullNamePanel.setEnabled(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
         add(personFullNamePanel);
 
@@ -233,21 +245,6 @@ public final class PersonInputPanel extends Panel {
         if (isHistory() && person.getChildren().isEmpty()) {
             childrenFieldset.setVisible(false);
         }
-    }
-
-    private IModel<Long> newNameModel(final long attributeTypeId) {
-        return new Model<Long>() {
-
-            @Override
-            public Long getObject() {
-                return person.getAttribute(attributeTypeId).getValueId();
-            }
-
-            @Override
-            public void setObject(Long object) {
-                person.getAttribute(attributeTypeId).setValueId(object);
-            }
-        };
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
@@ -453,26 +450,9 @@ public final class PersonInputPanel extends Panel {
         previousDocumentsDialog.setModal(true);
         add(previousDocumentsDialog);
 
-        final WebMarkupContainer content = new WebMarkupContainer("content");
-        content.setOutputMarkupPlaceholderTag(true);
-        content.setVisible(false);
-        previousDocumentsDialog.add(content);
 
-        content.add(new Label("previousDocumentsLabel",
-                new AbstractReadOnlyModel<String>() {
-
-                    private boolean nameLoaded;
-
-                    @Override
-                    public String getObject() {
-                        if (!nameLoaded) {
-                            personStrategy.loadName(person);
-                            nameLoaded = true;
-                        }
-                        return MessageFormat.format(getString("previous_documents_dialog_label"),
-                                personStrategy.displayDomainObject(person, getLocale()));
-                    }
-                }));
+        previousDocumentsDialog.add(new Label("previousDocumentsLabel", new StringResourceModel("previous_documents_dialog_label", null,
+                new Object[]{personStrategy.displayDomainObject(person, getLocale())})));
 
         IModel<List<Document>> previousDocumentsModel = new AbstractReadOnlyModel<List<Document>>() {
 
@@ -498,14 +478,12 @@ public final class PersonInputPanel extends Panel {
                         null, null, null, previousDocument.getStartDate()));
             }
         };
-        content.add(previousDocuments);
+        previousDocumentsDialog.add(previousDocuments);
 
         AjaxLink<Void> showPreviousDocuments = new AjaxLink<Void>("showPreviousDocuments") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                content.setVisible(true);
-                target.addComponent(content);
                 previousDocumentsDialog.open(target);
             }
         };

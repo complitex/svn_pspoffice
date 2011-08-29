@@ -1,6 +1,12 @@
 package org.complitex.pspoffice.person.strategy;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import static com.google.common.collect.Lists.*;
 import java.util.Date;
 import java.util.List;
@@ -13,6 +19,7 @@ import org.complitex.dictionary.service.StringCultureBean;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
+import java.util.Set;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
@@ -21,13 +28,15 @@ import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
-import org.complitex.dictionary.service.NameBean;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
+import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
 import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
@@ -61,6 +70,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long CHILDREN = 2015;
     public static final long GENDER = 2016;
     public static final long UKRAINE_CITIZENSHIP = 2020;
+    private static final Set<Long> NAME_ATTRIBUTE_IDS = ImmutableSet.of(LAST_NAME, FIRST_NAME, MIDDLE_NAME);
 
     /**
      * Order by related constants
@@ -88,11 +98,13 @@ public class PersonStrategy extends TemplateStrategy {
     @EJB
     private StringCultureBean stringBean;
     @EJB
-    private NameBean nameBean;
+    private PersonNameBean personNameBean;
     @EJB
     private DocumentStrategy documentStrategy;
     @EJB
     private DocumentTypeStrategy documentTypeStrategy;
+    @EJB
+    private LocaleBean localeBean;
 
     @Override
     public String getEntityTable() {
@@ -129,10 +141,12 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
         Person person = (Person) object;
-        return displayPerson(person.getFirstName(), person.getMiddleName(), person.getLastName());
+        Locale systemLocale = localeBean.getSystemLocale();
+        return displayPerson(person.getFirstName(locale, systemLocale), person.getMiddleName(locale, systemLocale),
+                person.getLastName(locale, systemLocale));
     }
 
-    public String displayPerson(String firstName, String middleName, String lastName) {
+    private String displayPerson(String firstName, String middleName, String lastName) {
         // return in format 'last_name fisrt_name middle_name'
         return lastName + " " + firstName + " " + middleName;
     }
@@ -152,6 +166,7 @@ public class PersonStrategy extends TemplateStrategy {
         List<Person> persons = sqlSession().selectList(PERSON_MAPPING + "." + FIND_OPERATION, example);
         for (Person person : persons) {
             loadAttributes(person);
+            loadName(person);
         }
         return persons;
     }
@@ -181,16 +196,19 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
-        return findById(id, runAsAdmin, true, true);
+        return findById(id, runAsAdmin, true, true, true);
     }
 
     @Transactional
-    public Person findById(long id, boolean runAsAdmin, boolean loadChildren, boolean loadDocument) {
+    public Person findById(long id, boolean runAsAdmin, boolean loadName, boolean loadChildren, boolean loadDocument) {
         DomainObject personObject = super.findById(id, runAsAdmin);
         if (personObject == null) {
             return null;
         }
         Person person = new Person(personObject);
+        if (loadName) {
+            loadName(person);
+        }
         if (loadChildren) {
             loadChildren(person);
         }
@@ -201,10 +219,33 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void loadName(Person person) {
-        person.setFirstName(nameBean.getFirstName(person.getAttribute(FIRST_NAME).getValueId()));
-        person.setMiddleName(nameBean.getMiddleName(person.getAttribute(MIDDLE_NAME).getValueId()));
-        person.setLastName(nameBean.getLastName(person.getAttribute(LAST_NAME).getValueId()));
+    private void loadName(Person person) {
+        //first name
+        for (Attribute firstNameAttribute : person.getAttributes(FIRST_NAME)) {
+            Long nameId = firstNameAttribute.getValueId();
+            if (nameId != null) {
+                person.addFirstName(localeBean.getLocale(firstNameAttribute.getAttributeId()),
+                        personNameBean.findById(PersonNameType.FIRST_NAME, nameId).getName());
+            }
+        }
+
+        //last name
+        for (Attribute lastNameAttribute : person.getAttributes(LAST_NAME)) {
+            Long nameId = lastNameAttribute.getValueId();
+            if (nameId != null) {
+                person.addLastName(localeBean.getLocale(lastNameAttribute.getAttributeId()),
+                        personNameBean.findById(PersonNameType.LAST_NAME, nameId).getName());
+            }
+        }
+
+        //middle name
+        for (Attribute middleNameAttribute : person.getAttributes(MIDDLE_NAME)) {
+            Long nameId = middleNameAttribute.getValueId();
+            if (nameId != null) {
+                person.addMiddleName(localeBean.getLocale(middleNameAttribute.getAttributeId()),
+                        personNameBean.findById(PersonNameType.MIDDLE_NAME, nameId).getName());
+            }
+        }
     }
 
     @Transactional
@@ -258,7 +299,8 @@ public class PersonStrategy extends TemplateStrategy {
         for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
             if (!attributeType.isObsolete()) {
                 if (object.getAttributes(attributeType.getId()).isEmpty()) {
-                    if ((attributeType.getEntityAttributeValueTypes().size() == 1) && !attributeType.getId().equals(CHILDREN)) {
+                    if ((attributeType.getEntityAttributeValueTypes().size() == 1) && !attributeType.getId().equals(CHILDREN)
+                            && !NAME_ATTRIBUTE_IDS.contains(attributeType.getId())) {
                         Attribute attribute = new Attribute();
                         EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
                         attribute.setAttributeTypeId(attributeType.getId());
@@ -280,9 +322,55 @@ public class PersonStrategy extends TemplateStrategy {
                 }
             }
         }
+
+        updateNameAttributesForNewLocales(object);
+
         if (!toAdd.isEmpty()) {
             object.getAttributes().addAll(toAdd);
         }
+    }
+
+    private void updateNameAttributesForNewLocales(DomainObject person) {
+        updateNameAttributeForNewLocales(person, LAST_NAME);
+        updateNameAttributeForNewLocales(person, FIRST_NAME);
+        updateNameAttributeForNewLocales(person, MIDDLE_NAME);
+    }
+
+    private void updateNameAttributeForNewLocales(DomainObject person, final long nameAttributeTypeId) {
+        List<Attribute> nameAttributes = person.getAttributes(nameAttributeTypeId);
+        person.removeAttribute(nameAttributeTypeId);
+        for (final org.complitex.dictionary.entity.Locale locale : localeBean.getAllLocales()) {
+            boolean found = false;
+            for (Attribute nameAttribute : nameAttributes) {
+                if (nameAttribute.getAttributeId().equals(locale.getId())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                Attribute attribute = new Attribute();
+                attribute.setAttributeTypeId(nameAttributeTypeId);
+                attribute.setValueTypeId(nameAttributeTypeId);
+                attribute.setObjectId(person.getId());
+                attribute.setAttributeId(locale.getId());
+                nameAttributes.add(attribute);
+            }
+        }
+        final long systemLocaleId = localeBean.getSystemLocaleObject().getId();
+        Collections.sort(nameAttributes, new Comparator<Attribute>() {
+
+            @Override
+            public int compare(Attribute o1, Attribute o2) {
+                if (o1.getAttributeId().equals(systemLocaleId)) {
+                    return -1;
+                }
+                if (o2.getAttributeId().equals(systemLocaleId)) {
+                    return 1;
+                }
+                return o1.getAttributeId().compareTo(o2.getAttributeId());
+            }
+        });
+        person.getAttributes().addAll(nameAttributes);
     }
 
     @Override
@@ -343,6 +431,7 @@ public class PersonStrategy extends TemplateStrategy {
         List<Person> persons = sqlSession().selectList(PERSON_MAPPING + ".findByName", example);
         for (Person person : persons) {
             loadAttributes(person);
+            loadName(person);
             loadDocument(person);
         }
         return persons;

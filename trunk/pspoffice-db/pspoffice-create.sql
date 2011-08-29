@@ -547,6 +547,48 @@ CREATE TABLE `document_string_culture` (
   CONSTRAINT `fk_document_string_culture__locales` FOREIGN KEY (`locale_id`) REFERENCES `locales` (`id`)
 ) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Локализированное значение атрибута документа';
 
+-- ------------------------------
+-- Person First Name
+-- ------------------------------
+
+DROP TABLE IF EXISTS `person_first_name`;
+
+CREATE TABLE `person_first_name` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор имени персоны',
+  `name` VARCHAR(100) NOT NULL COMMENT 'Имя персоны',
+  `locale_id` BIGINT(20) NOT NULL COMMENT 'Идентификатор локали',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `key_name` (`name`, `locale_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT 'Имя персоны';
+
+-- ------------------------------
+-- Person Middle Name
+-- ------------------------------
+
+DROP TABLE IF EXISTS `person_middle_name`;
+
+CREATE TABLE `person_middle_name` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор отчества персоны',
+  `name` VARCHAR(100) NOT NULL COMMENT 'Отчество персоны',
+  `locale_id` BIGINT(20) NOT NULL COMMENT 'Идентификатор локали',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `key_name` (`name`, `locale_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT 'Отчество персоны';
+
+-- ------------------------------
+-- Person Last Name
+-- ------------------------------
+
+DROP TABLE IF EXISTS `person_last_name`;
+
+CREATE TABLE `person_last_name` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор фамилии персоны',
+  `name` VARCHAR(100) NOT NULL COMMENT 'Фамилия персоны',
+  `locale_id` BIGINT(20) NOT NULL COMMENT 'Идентификатор локали',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `key_name` (`name`, `locale_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT 'Фамилия персоны';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

@@ -12,16 +12,14 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
@@ -35,8 +33,8 @@ import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
-import org.complitex.resources.WebCommonResourceInitializer;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 
@@ -74,8 +72,6 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         setRequired(required);
         setLabel(labelModel);
 
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-
         final Label personLabel = new Label("personLabel", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -105,38 +101,27 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         content.setOutputMarkupId(true);
         lookupDialog.add(content);
 
+        //form
+        Form<Void> filterForm = new Form<Void>("filterForm");
+        content.add(filterForm);
+
         //last name
         final IModel<String> lastNameModel = new Model<String>();
-        TextField<String> lastName = new TextField<String>("lastName", lastNameModel);
-        lastName.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-            }
-        });
-        content.add(lastName);
+        PersonNameComponent lastName = new PersonNameComponent("lastName", null, lastNameModel, PersonNameType.LAST_NAME,
+                getLocale(), false);
+        filterForm.add(lastName);
 
         //first name
         final IModel<String> firstNameModel = new Model<String>();
-        TextField<String> firstName = new TextField<String>("firstName", firstNameModel);
-        firstName.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-            }
-        });
-        content.add(firstName);
+        PersonNameComponent firstName = new PersonNameComponent("firstName", null, firstNameModel, PersonNameType.FIRST_NAME,
+                getLocale(), false);
+        filterForm.add(firstName);
 
         //middle name
         final IModel<String> middleNameModel = new Model<String>();
-        TextField<String> middleName = new TextField<String>("middleName", middleNameModel);
-        middleName.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-            }
-        });
-        content.add(middleName);
+        PersonNameComponent middleName = new PersonNameComponent("middleName", null, middleNameModel, PersonNameType.MIDDLE_NAME,
+                getLocale(), false);
+        filterForm.add(middleName);
 
         //personContainer
         final WebMarkupContainer personContainer = new WebMarkupContainer("personContainer");
@@ -205,10 +190,10 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         radioGroup.add(persons);
 
         //find
-        IndicatingAjaxLink<Void> find = new IndicatingAjaxLink<Void>("find") {
+        IndicatingAjaxButton find = new IndicatingAjaxButton("find", filterForm) {
 
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 find(lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject(), personModel,
                         personsModel);
 
@@ -220,7 +205,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 toggleSelectButton(select, target, personModel);
             }
         };
-        content.add(find);
+        filterForm.add(find);
 
         //cancel
         AjaxLink<Void> cancel = new AjaxLink<Void>("cancel") {
@@ -269,7 +254,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 clearAndCloseLookupDialog(personModel, personsModel,
                         target, lookupDialog, content, personNotFoundContainer, personsDataContainer, select);
 
-                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel));
+                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel,
+                        lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject()));
 
                 target.addComponent(personEditContainer);
                 personCreationDialog.open(target);
@@ -279,13 +265,12 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     }
 
     private PersonEditPanel newPersonEditPanel(final Dialog personCreationDialog, final WebMarkupContainer personEditContainer,
-            final Label personLabel) {
-        return new PersonEditPanel("personEditPanel", null, personStrategy.newInstance()) {
+            final Label personLabel, String lastName, String firstName, String middleName) {
+        return new PersonEditPanel("personEditPanel", personStrategy.newInstance(), getLocale(), lastName, firstName, middleName) {
 
             @Override
             protected void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target) {
-                Person createdPerson = personStrategy.findById(newPerson.getId(), false, false, false);
-                personStrategy.loadName(createdPerson);
+                Person createdPerson = personStrategy.findById(newPerson.getId(), false, true, false, false);
                 PersonPicker.this.getModel().setObject(createdPerson);
 
                 target.addComponent(personLabel);

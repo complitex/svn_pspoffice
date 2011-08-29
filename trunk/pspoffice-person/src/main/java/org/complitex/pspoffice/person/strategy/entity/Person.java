@@ -4,9 +4,13 @@
  */
 package org.complitex.pspoffice.person.strategy.entity;
 
+import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.GenderConverter;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Gender;
@@ -20,9 +24,9 @@ import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
  */
 public class Person extends DomainObject {
 
-    private String lastName;
-    private String firstName;
-    private String middleName;
+    private Map<Locale, String> firstNames = newHashMap();
+    private Map<Locale, String> lastNames = newHashMap();
+    private Map<Locale, String> middleNames = newHashMap();
     private List<Person> children = newArrayList();
     private Document document;
     private Document replacedDocument;
@@ -50,30 +54,6 @@ public class Person extends DomainObject {
         this.replacedDocument = replacedDocument;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getMiddleName() {
-        return middleName;
-    }
-
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
-    }
-
     public List<Person> getChildren() {
         return children;
     }
@@ -88,10 +68,6 @@ public class Person extends DomainObject {
 
     public void setChild(int index, Person child) {
         children.set(index, child);
-    }
-
-    public String getFullName() {
-        return lastName + " " + firstName + " " + middleName;
     }
 
     public String getIdentityCode() {
@@ -132,5 +108,32 @@ public class Person extends DomainObject {
 
     public boolean isUkraineCitizen() {
         return getBooleanValue(this, UKRAINE_CITIZENSHIP);
+    }
+
+    public String getFirstName(Locale locale, Locale systemLocale) {
+        String name = firstNames.get(locale);
+        return !Strings.isEmpty(name) ? name : firstNames.get(systemLocale);
+    }
+
+    public String getLastName(Locale locale, Locale systemLocale) {
+        String name = lastNames.get(locale);
+        return !Strings.isEmpty(name) ? name : lastNames.get(systemLocale);
+    }
+
+    public String getMiddleName(Locale locale, Locale systemLocale) {
+        String name = middleNames.get(locale);
+        return !Strings.isEmpty(name) ? name : middleNames.get(systemLocale);
+    }
+
+    public void addFirstName(Locale locale, String name) {
+        firstNames.put(locale, name);
+    }
+
+    public void addLastName(Locale locale, String name) {
+        lastNames.put(locale, name);
+    }
+
+    public void addMiddleName(Locale locale, String name) {
+        middleNames.put(locale, name);
     }
 }

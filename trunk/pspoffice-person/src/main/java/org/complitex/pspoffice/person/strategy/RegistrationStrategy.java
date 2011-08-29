@@ -98,7 +98,6 @@ public class RegistrationStrategy extends Strategy {
     private void loadPerson(Registration registration) {
         long personId = registration.getAttribute(PERSON).getValueId();
         Person person = personStrategy.findById(personId, true);
-        personStrategy.loadName(person);
         registration.setPerson(person);
     }
 

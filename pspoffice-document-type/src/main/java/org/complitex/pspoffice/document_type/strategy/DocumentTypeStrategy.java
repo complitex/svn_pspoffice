@@ -4,7 +4,9 @@
  */
 package org.complitex.pspoffice.document_type.strategy;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import static com.google.common.collect.ImmutableSet.*;
 import java.util.List;
 import java.util.Locale;
@@ -82,6 +84,28 @@ public class DocumentTypeStrategy extends TemplateStrategy {
         return (List<DomainObject>) find(example);
     }
 
+    @Transactional
+    public List<DomainObject> getChildrenDocumentTypes() {
+        return newArrayList(Iterables.filter(getAll(), new Predicate<DomainObject>() {
+
+            @Override
+            public boolean apply(DomainObject documentType) {
+                return isChildrenDocumentType(documentType.getId());
+            }
+        }));
+    }
+
+    @Transactional
+    public List<DomainObject> getAdultDocumentTypes() {
+        return newArrayList(Iterables.filter(getAll(), new Predicate<DomainObject>() {
+
+            @Override
+            public boolean apply(DomainObject documentType) {
+                return isAdultDocumentType(documentType.getId());
+            }
+        }));
+    }
+
     @Override
     public String[] getEditRoles() {
         return new String[]{SecurityRole.DOCUMENT_TYPE_MODULE_EDIT};
@@ -94,5 +118,13 @@ public class DocumentTypeStrategy extends TemplateStrategy {
             throw new DeleteException(getString(RESOURCE_BUNDLE, "delete_reserved_instance_error", locale));
         }
         super.deleteChecks(objectId, locale);
+    }
+
+    public static boolean isChildrenDocumentType(long documentTypeId) {
+        return documentTypeId == BIRTH_CERTIFICATE;
+    }
+
+    public static boolean isAdultDocumentType(long documentTypeId) {
+        return documentTypeId == PASSPORT;
     }
 }

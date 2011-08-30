@@ -6,6 +6,7 @@ package org.complitex.pspoffice.document.strategy.entity;
 
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import static org.complitex.pspoffice.document.strategy.DocumentStrategy.*;
 
 /**
@@ -34,5 +35,13 @@ public class Document extends DomainObject {
 
     public void setDocumentType(DomainObject documentType) {
         this.documentType = documentType;
+    }
+
+    public boolean isChildrenDocument() {
+        return DocumentTypeStrategy.isChildrenDocumentType(getDocumentTypeId());
+    }
+
+    public boolean isAdultDocument() {
+        return DocumentTypeStrategy.isAdultDocumentType(getDocumentTypeId());
     }
 }

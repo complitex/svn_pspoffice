@@ -212,7 +212,7 @@ public final class PersonInputPanel extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                updateChildrenComponent(target, !person.isChildren());
+                updateChildrenComponent(target, !person.isChild());
             }
 
             @Override
@@ -284,7 +284,7 @@ public final class PersonInputPanel extends Panel {
                 return attr.getAttributeTypeId().equals(CHILDREN);
             }
         }));
-        if (!person.isChildren()) {
+        if (!person.isChild()) {
             long attributeId = 1;
             for (Person child : person.getChildren()) {
                 Attribute childrenAttribute = new Attribute();
@@ -299,12 +299,18 @@ public final class PersonInputPanel extends Panel {
 
     public boolean validate() {
         //document
-        if ((!documentReplacedFlag ? person.getDocument() : person.getReplacedDocument()) == null) {
+        Document document = !documentReplacedFlag ? person.getDocument() : person.getReplacedDocument();
+        if (document == null) {
             error(getString("empty_document"));
+        } else {
+            if (document.isAdultDocument() && person.isChild()) {
+                error(MessageFormat.format(getString("children_document_type_error"),
+                        documentTypeStrategy.displayDomainObject(documentTypeModel.getObject(), getLocale()).toLowerCase(getLocale())));
+            }
         }
 
         //children
-        if (hadChildren && person.isChildren()) {
+        if (hadChildren && person.isChild()) {
             error(getString("person_had_children"));
         }
         Collection<Person> nonNullChildren = newArrayList(filter(person.getChildren(), new Predicate<Person>() {
@@ -401,6 +407,7 @@ public final class PersonInputPanel extends Panel {
         }
         return childrenFieldset;
     }
+    private IModel<DomainObject> documentTypeModel;
 
     private Component initDocument() {
         CollapsibleFieldset documentFieldset = new CollapsibleFieldset("documentFieldset",
@@ -431,7 +438,7 @@ public final class PersonInputPanel extends Panel {
         //required
         documentForm.add(new WebMarkupContainer("required").setVisible(documentTypeAttributeType.isMandatory()));
         final List<DomainObject> allDocumentTypes = documentTypeStrategy.getAll();
-        final IModel<DomainObject> documentTypeModel = new Model<DomainObject>();
+        documentTypeModel = new Model<DomainObject>();
         if (person.getDocument() != null) {
             documentTypeModel.setObject(find(allDocumentTypes, new Predicate<DomainObject>() {
 

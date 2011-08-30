@@ -138,7 +138,7 @@ public class Person extends DomainObject {
         middleNames.put(locale, name);
     }
 
-    public boolean isChildren() {
+    public boolean isChild() {
         Date birthDate = getBirthDate();
         Date currentDate = getCurrentDate();
         return birthDate == null || (currentDate.after(birthDate) && (getYear(currentDate) - getYear(birthDate) < 16));

@@ -1,10 +1,8 @@
 package org.complitex.pspoffice.person.strategy;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import java.util.Collection;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import static com.google.common.collect.Lists.*;
@@ -19,6 +17,7 @@ import org.complitex.dictionary.service.StringCultureBean;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.BooleanConverter;
@@ -36,6 +35,7 @@ import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
@@ -105,6 +105,8 @@ public class PersonStrategy extends TemplateStrategy {
     private DocumentTypeStrategy documentTypeStrategy;
     @EJB
     private LocaleBean localeBean;
+    @EJB
+    private RegistrationStrategy registrationStrategy;
 
     @Override
     public String getEntityTable() {
@@ -484,5 +486,79 @@ public class PersonStrategy extends TemplateStrategy {
                     : newPerson.getDocument().getId();
         }
         newPerson.getAttribute(DOCUMENT).setValueId(documentId);
+    }
+
+    public static class PersonRegistration implements Serializable {
+
+        private long registrationId;
+        private Registration registration;
+        private String addressEntity;
+        private long addressTypeId;
+        private long addressId;
+
+        public long getAddressId() {
+            return addressId;
+        }
+
+        public void setAddressId(long addressId) {
+            this.addressId = addressId;
+        }
+
+        public long getAddressTypeId() {
+            return addressTypeId;
+        }
+
+        public void setAddressTypeId(long addressTypeId) {
+            this.addressTypeId = addressTypeId;
+        }
+
+        public long getRegistrationId() {
+            return registrationId;
+        }
+
+        public void setRegistrationId(long registrationId) {
+            this.registrationId = registrationId;
+        }
+
+        public String getAddressEntity() {
+            return addressEntity;
+        }
+
+        public Registration getRegistration() {
+            return registration;
+        }
+
+        private void setAddressEntity(String addressEntity) {
+            this.addressEntity = addressEntity;
+        }
+
+        private void setRegistration(Registration registration) {
+            this.registration = registration;
+        }
+    }
+
+    @Transactional
+    public int countPersonRegistrations(long personId) {
+        return (Integer) sqlSession().selectOne(PERSON_MAPPING + ".countPersonRegistrations",
+                newFindPersonRegistrationParameters(personId));
+    }
+
+    @Transactional
+    public List<PersonRegistration> findPersonRegistrations(long personId) {
+        List<PersonRegistration> personRegistrations = sqlSession().selectList(PERSON_MAPPING + ".findPersonRegistrations",
+                newFindPersonRegistrationParameters(personId));
+        for (PersonRegistration personRegistration : personRegistrations) {
+            personRegistration.setRegistration(
+                    registrationStrategy.findRegistrationById(personRegistration.getRegistrationId(), true, false, true, true));
+            personRegistration.setAddressEntity(ApartmentCardStrategy.getAddressEntity(personRegistration.getAddressTypeId()));
+        }
+        return personRegistrations;
+    }
+
+    private Map<String, Long> newFindPersonRegistrationParameters(long personId) {
+        return ImmutableMap.of("registrationPersonAT", RegistrationStrategy.PERSON,
+                "apartmentCardRegistrationAT", ApartmentCardStrategy.REGISTRATIONS,
+                "apartmentCardAddressAT", ApartmentCardStrategy.ADDRESS,
+                "personId", personId);
     }
 }

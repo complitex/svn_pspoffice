@@ -29,6 +29,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 
 import javax.ejb.EJB;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -43,16 +44,21 @@ import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
+import org.complitex.dictionary.web.component.fieldset.ICollapsibleFieldsetListener;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
+import org.complitex.pspoffice.person.util.PersonDateFormatter;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.odlabs.wiquery.ui.dialog.Dialog;
 import org.odlabs.wiquery.ui.effects.CoreEffectJavaScriptResourceReference;
 import org.odlabs.wiquery.ui.effects.SlideEffectJavaScriptResourceReference;
@@ -80,6 +86,12 @@ public final class PersonInputPanel extends Panel {
     private DocumentStrategy documentStrategy;
     @EJB
     private DocumentTypeStrategy documentTypeStrategy;
+    @EJB
+    private AddressRendererBean addressRendererBean;
+    @EJB
+    private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
     private Person person;
     private Date date;
     private FeedbackPanel messages;
@@ -245,6 +257,9 @@ public final class PersonInputPanel extends Panel {
         if (isHistory() && person.getChildren().isEmpty()) {
             childrenFieldset.setVisible(false);
         }
+
+        //registrations
+        add(initRegistrationsFieldset());
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
@@ -495,5 +510,65 @@ public final class PersonInputPanel extends Panel {
 
     private DomainObjectInputPanel newDocumentInputPanel(Document document) {
         return new DomainObjectInputPanel("documentInputPanel", document, documentStrategy.getEntityTable(), null, null, null);
+    }
+
+    private Component initRegistrationsFieldset() {
+        final int countPersonRegistrations = isNew() ? 0 : personStrategy.countPersonRegistrations(person.getId());
+
+        final WebMarkupContainer content = new WebMarkupContainer("content");
+        content.setOutputMarkupPlaceholderTag(true);
+        content.setVisible(false);
+
+        ICollapsibleFieldsetListener listener = new ICollapsibleFieldsetListener() {
+
+            @Override
+            public void onExpand(AjaxRequestTarget target) {
+                if (!content.isVisible()) {
+                    content.setVisible(true);
+                    target.addComponent(content);
+                }
+            }
+        };
+        CollapsibleFieldset registrationsFieldset = new CollapsibleFieldset("registrationsFieldset", new ResourceModel("registrations_label"),
+                listener);
+        registrationsFieldset.add(content);
+        registrationsFieldset.setVisible(countPersonRegistrations > 0);
+
+        final IModel<List<PersonRegistration>> personRegistrationsModel = new AbstractReadOnlyModel<List<PersonRegistration>>() {
+
+            private List<PersonRegistration> personRegistrations;
+
+            @Override
+            public List<PersonRegistration> getObject() {
+                if (personRegistrations == null) {
+                    personRegistrations = countPersonRegistrations == 0 ? new ArrayList<PersonRegistration>()
+                            : personStrategy.findPersonRegistrations(person.getId());
+                }
+                return personRegistrations;
+            }
+        };
+        ListView<PersonRegistration> registrations = new ListView<PersonRegistration>("registrations", personRegistrationsModel) {
+
+            @Override
+            protected void populateItem(ListItem<PersonRegistration> item) {
+                PersonRegistration personRegistration = item.getModelObject();
+                item.add(new Label("registrationAddress",
+                        addressRendererBean.displayAddress(personRegistration.getAddressEntity(), personRegistration.getAddressId(),
+                        getLocale())));
+                DomainObject registrationType = personRegistration.getRegistration().getRegistrationType();
+                item.add(new Label("registrationType", registrationType != null
+                        ? registrationTypeStrategy.displayDomainObject(registrationType, getLocale()) : null));
+                Date registrationStartDate = personRegistration.getRegistration().getRegistrationDate();
+                item.add(new Label("registrationStartDate", registrationStartDate != null ? PersonDateFormatter.format(registrationStartDate) : null));
+                Date registrationEndDate = personRegistration.getRegistration().getDepartureDate();
+                item.add(new Label("registrationEndDate", registrationEndDate != null ? PersonDateFormatter.format(registrationEndDate)
+                        : getString("live_registration_end_date")));
+                DomainObject ownerRelationship = personRegistration.getRegistration().getOwnerRelationship();
+                item.add(new Label("registrationOwnerRelationship", ownerRelationship != null
+                        ? ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null));
+            }
+        };
+        content.add(registrations);
+        return registrationsFieldset;
     }
 }

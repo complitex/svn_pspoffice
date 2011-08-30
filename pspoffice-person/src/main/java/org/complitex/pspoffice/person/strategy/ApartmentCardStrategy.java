@@ -170,6 +170,24 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         apartmentCard.setOwner(owner);
     }
 
+    public static String getAddressEntity(long addressValueTypeId) {
+        if (ADDRESS_ROOM == addressValueTypeId) {
+            return "room";
+        } else if (ADDRESS_APARTMENT == addressValueTypeId) {
+            return "apartment";
+        } else if (ADDRESS_BUILDING == addressValueTypeId) {
+            return "building";
+        } else {
+            throw new IllegalStateException("Address attribute expected to be of " + ADDRESS_ROOM + " or "
+                    + ADDRESS_APARTMENT + " or " + ADDRESS_BUILDING + ". But was: " + addressValueTypeId);
+        }
+    }
+
+    public static String getAddressEntity(ApartmentCard apartmentCard) {
+        long valueTypeId = apartmentCard.getAttribute(ADDRESS).getValueTypeId();
+        return getAddressEntity(valueTypeId);
+    }
+
     @Override
     protected void fillAttributes(DomainObject object) {
         List<Attribute> toAdd = newArrayList();
@@ -280,12 +298,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
             for (Attribute registrationAttribute : registrationAttributes) {
                 long registrationId = registrationAttribute.getValueId();
-                Registration registration = registrationStrategy.findById(registrationId, true);
-                if (registration == null) {
-                    //find history registration
-                    registration = registrationStrategy.findFinishedRegistration(registrationId);
-                }
-                apartmentCard.addRegistration(registration);
+                apartmentCard.addRegistration(registrationStrategy.findRegistrationById(registrationId, true, true, true, true));
             }
         }
     }

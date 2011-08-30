@@ -7,6 +7,12 @@
             extends="org.complitex.dictionary.entity.DomainObject.DomainObject">
     </resultMap>
 
+    <resultMap id="PersonRegistration" type="org.complitex.pspoffice.person.strategy.PersonStrategy$PersonRegistration">
+        <id column="registrationId" property="registrationId"/>
+        <result column="addressTypeId" property="addressTypeId"/>
+        <result column="addressId" property="addressId"/>
+    </resultMap>
+
     <sql id="join">
         JOIN `locales` sys ON sys.`system` = 1
         JOIN `person_attribute` sys_lna ON (sys_lna.`status` = 'ACTIVE' AND sys_lna.`object_id` = e.`object_id` AND sys_lna.`attribute_type_id` = 2000
@@ -125,6 +131,31 @@
         SELECT p.* FROM `person_attribute` p WHERE p.`status` = 'ARCHIVE' AND p.`attribute_type_id` = 2009 AND
                             p.`object_id` = #{objectId}
                  ORDER BY p.`end_date`
+    </select>
+
+    <sql id="findPersonRegistrationsSql">
+        FROM `registration_attribute` ra
+            JOIN `apartment_card_attribute` ar ON (ra.`object_id` = ar.`value_id` AND ar.`status` = 'ACTIVE')
+            JOIN `apartment_card_attribute` address ON (address.`object_id` = ar.`object_id` AND address.`status` = 'ACTIVE')
+            WHERE ra.`attribute_type_id` = #{registrationPersonAT}
+                    AND ar.`attribute_type_id` = #{apartmentCardRegistrationAT}
+                    AND address.`attribute_type_id` = #{apartmentCardAddressAT}
+                    AND ra.`value_id` = #{personId}
+    </sql>
+
+    <select id="findPersonRegistrations" parameterType="map" resultMap="org.complitex.pspoffice.person.strategy.Person.PersonRegistration">
+        SELECT ra.`object_id` registrationId, address.`value_id` addressId, address.`value_type_id` addressTypeId
+        <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>
+        ORDER BY 
+                CASE ra.`status`
+                    WHEN 'ACTIVE' THEN 1
+                    ELSE 2
+                END
+    </select>
+
+    <select id="countPersonRegistrations" parameterType="map" resultType="int">
+        SELECT COUNT(DISTINCT ra.`object_id`)
+        <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>
     </select>
 
 </mapper>

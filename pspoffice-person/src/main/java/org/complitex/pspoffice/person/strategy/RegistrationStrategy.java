@@ -116,7 +116,8 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
-    public Registration findFinishedRegistration(long objectId) {
+    private Registration findFinishedRegistration(long objectId, boolean loadPerson, boolean loadOwnerRelationship,
+            boolean loadRegistrationType) {
         DomainObjectExample example = new DomainObjectExample(objectId);
         example.setTable(getEntityTable());
         example.setStartDate(DateUtil.getCurrentDate());
@@ -131,11 +132,27 @@ public class RegistrationStrategy extends Strategy {
         updateStringsForNewLocales(registrationObject);
 
         Registration registration = new Registration(registrationObject);
-        loadPerson(registration);
-        loadOwnerRelationship(registration);
-        loadRegistrationType(registration);
+        if (loadPerson) {
+            loadPerson(registration);
+        }
+        if (loadOwnerRelationship) {
+            loadOwnerRelationship(registration);
+        }
+        if (loadRegistrationType) {
+            loadRegistrationType(registration);
+        }
         return registration;
+    }
 
+    @Transactional
+    public Registration findRegistrationById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship,
+            boolean loadRegistrationType) {
+        Registration registration = findById(id, runAsAdmin, loadPerson, loadOwnerRelationship, loadRegistrationType);
+        if (registration == null) {
+            //find history registration
+            registration = findFinishedRegistration(id, loadPerson, loadOwnerRelationship, loadRegistrationType);
+        }
+        return registration;
     }
 
     @Override

@@ -14,6 +14,7 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.GenderConverter;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Gender;
+import static org.complitex.dictionary.util.DateUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
@@ -135,5 +136,15 @@ public class Person extends DomainObject {
 
     public void addMiddleName(Locale locale, String name) {
         middleNames.put(locale, name);
+    }
+
+    public boolean isChildren() {
+        Date birthDate = getBirthDate();
+        Date currentDate = getCurrentDate();
+        return birthDate == null || (currentDate.after(birthDate) && (getYear(currentDate) - getYear(birthDate) < 16));
+    }
+
+    public boolean hasChildren() {
+        return children.size() > 0;
     }
 }

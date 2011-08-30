@@ -11,6 +11,7 @@ import static com.google.common.collect.Iterables.*;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -38,6 +39,7 @@ import java.util.Set;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
@@ -49,9 +51,11 @@ import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel;
+import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.fieldset.ICollapsibleFieldsetListener;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
+import org.complitex.dictionary.web.component.type.MaskedDateInputPanel;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
@@ -97,20 +101,18 @@ public final class PersonInputPanel extends Panel {
     private FeedbackPanel messages;
     private Component scrollToComponent;
     private boolean documentReplacedFlag;
+    private final boolean hadChildren;
 
     public PersonInputPanel(String id, Person person, Date date) {
         super(id);
         this.person = person;
         this.date = date;
+        this.hadChildren = person.hasChildren();
         init(null, null, null, null);
     }
 
     public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent) {
-        super(id);
-        this.person = person;
-        this.messages = messages;
-        this.scrollToComponent = scrollToComponent;
-        init(null, null, null, null);
+        this(id, person, messages, scrollToComponent, null, null, null, null);
     }
 
     public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent,
@@ -119,6 +121,7 @@ public final class PersonInputPanel extends Panel {
         this.person = person;
         this.messages = messages;
         this.scrollToComponent = scrollToComponent;
+        this.hadChildren = person.hasChildren();
         init(defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
     }
 
@@ -198,8 +201,147 @@ public final class PersonInputPanel extends Panel {
         add(userAttributesView);
 
         //children
+        final Component childrentComponent = initChildren();
+        childrentComponent.setOutputMarkupPlaceholderTag(true);
+
+        childrentComponent.setVisible(person.hasChildren());
+        add(childrentComponent);
+        final MaskedDateInput birthDateComponent = (MaskedDateInput) get("birthDateContainer:" + DomainObjectInputPanel.INPUT_COMPONENT_ID + ":"
+                + MaskedDateInputPanel.DATE_INPUT_ID);
+        birthDateComponent.add(new AjaxFormComponentUpdatingBehavior("onblur") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                updateChildrenComponent(target, !person.isChildren());
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, RuntimeException e) {
+                super.onError(target, e);
+                getSession().getFeedbackMessages().clear(new IFeedbackMessageFilter() {
+
+                    @Override
+                    public boolean accept(FeedbackMessage message) {
+                        return message.getReporter() == birthDateComponent && message.isError();
+                    }
+                });
+                updateChildrenComponent(target, false);
+            }
+
+            private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {
+                boolean wasVisible = childrentComponent.isVisible();
+                childrentComponent.setVisible(visible);
+                if (wasVisible ^ childrentComponent.isVisible()) {
+                    target.addComponent(childrentComponent);
+                }
+            }
+        });
+
+        //registrations
+        add(initRegistrationsFieldset());
+    }
+
+    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
+        WebMarkupContainer container = new WebMarkupContainer(id + "Container");
+        parent.add(container);
+        initAttributeInput(container, attributeTypeId, showIfMissing);
+    }
+
+    private boolean isBirthPlaceFieldsetVisible() {
+        return !(isHistory() && (person.getAttribute(BIRTH_COUNTRY) == null) && (person.getAttribute(BIRTH_DISTRICT) == null)
+                && (person.getAttribute(BIRTH_REGION) == null)
+                && (person.getAttribute(BIRTH_CITY) == null));
+    }
+
+    private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
+        final EntityAttributeType attributeType = personStrategy.getEntity().getAttributeType(attributeTypeId);
+
+        //label
+        parent.add(new Label("label", labelModel(attributeType.getAttributeNames(), getLocale())));
+
+        //required container
+        WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
+        requiredContainer.setVisible(attributeType.isMandatory());
+        parent.add(requiredContainer);
+
+        //input component
+        Attribute attribute = person.getAttribute(attributeTypeId);
+        if (attribute == null) {
+            attribute = new Attribute();
+            attribute.setLocalizedValues(stringBean.newStringCultures());
+            attribute.setAttributeTypeId(attributeTypeId);
+            parent.setVisible(showIfMissing);
+        }
+        parent.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute, getLocale(), isHistory()));
+    }
+
+    public void beforePersist() {
+        //children
+        person.getAttributes().removeAll(Collections2.filter(person.getAttributes(), new Predicate<Attribute>() {
+
+            @Override
+            public boolean apply(Attribute attr) {
+                return attr.getAttributeTypeId().equals(CHILDREN);
+            }
+        }));
+        if (!person.isChildren()) {
+            long attributeId = 1;
+            for (Person child : person.getChildren()) {
+                Attribute childrenAttribute = new Attribute();
+                childrenAttribute.setAttributeId(attributeId++);
+                childrenAttribute.setAttributeTypeId(CHILDREN);
+                childrenAttribute.setValueTypeId(CHILDREN);
+                childrenAttribute.setValueId(child.getId());
+                person.addAttribute(childrenAttribute);
+            }
+        }
+    }
+
+    public boolean validate() {
+        //document
+        if ((!documentReplacedFlag ? person.getDocument() : person.getReplacedDocument()) == null) {
+            error(getString("empty_document"));
+        }
+
+        //children
+        if (hadChildren && person.isChildren()) {
+            error(getString("person_had_children"));
+        }
+        Collection<Person> nonNullChildren = newArrayList(filter(person.getChildren(), new Predicate<Person>() {
+
+            @Override
+            public boolean apply(Person child) {
+                return child != null && child.getId() != null && child.getId() > 0;
+            }
+        }));
+        if (nonNullChildren.size() != person.getChildren().size()) {
+            error(getString("children_error"));
+        }
+
+        Set<Long> childrenIds = newHashSet(transform(nonNullChildren, new Function<Person, Long>() {
+
+            @Override
+            public Long apply(Person child) {
+                return child.getId();
+            }
+        }));
+
+        if (!isNew()) {
+            if (childrenIds.contains(person.getId())) {
+                error(getString("references_themselves"));
+            }
+        }
+
+        if (childrenIds.size() != nonNullChildren.size()) {
+            error(getString("children_duplicate"));
+        }
+
+        return getSession().getFeedbackMessages().isEmpty();
+    }
+
+    private Component initChildren() {
         CollapsibleFieldset childrenFieldset = new CollapsibleFieldset("childrenFieldset",
-                labelModel(entity.getAttributeType(CHILDREN).getAttributeNames(), getLocale()));
+                labelModel(personStrategy.getEntity().getAttributeType(CHILDREN).getAttributeNames(), getLocale()));
         add(childrenFieldset);
         final WebMarkupContainer childrenContainer = new WebMarkupContainer("childrenContainer");
         childrenContainer.setOutputMarkupId(true);
@@ -257,102 +399,7 @@ public final class PersonInputPanel extends Panel {
         if (isHistory() && person.getChildren().isEmpty()) {
             childrenFieldset.setVisible(false);
         }
-
-        //registrations
-        add(initRegistrationsFieldset());
-    }
-
-    private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
-        WebMarkupContainer container = new WebMarkupContainer(id + "Container");
-        parent.add(container);
-        initAttributeInput(container, attributeTypeId, showIfMissing);
-    }
-
-    private boolean isBirthPlaceFieldsetVisible() {
-        return !(isHistory() && (person.getAttribute(BIRTH_COUNTRY) == null) && (person.getAttribute(BIRTH_DISTRICT) == null)
-                && (person.getAttribute(BIRTH_REGION) == null)
-                && (person.getAttribute(BIRTH_CITY) == null));
-    }
-
-    private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
-        final EntityAttributeType attributeType = personStrategy.getEntity().getAttributeType(attributeTypeId);
-
-        //label
-        parent.add(new Label("label", labelModel(attributeType.getAttributeNames(), getLocale())));
-
-        //required container
-        WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
-        requiredContainer.setVisible(attributeType.isMandatory());
-        parent.add(requiredContainer);
-
-        //input component
-        Attribute attribute = person.getAttribute(attributeTypeId);
-        if (attribute == null) {
-            attribute = new Attribute();
-            attribute.setLocalizedValues(stringBean.newStringCultures());
-            attribute.setAttributeTypeId(attributeTypeId);
-            parent.setVisible(showIfMissing);
-        }
-        parent.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute, getLocale(), isHistory()));
-    }
-
-    public void beforePersist() {
-        //children
-        person.getAttributes().removeAll(Collections2.filter(person.getAttributes(), new Predicate<Attribute>() {
-
-            @Override
-            public boolean apply(Attribute attr) {
-                return attr.getAttributeTypeId().equals(CHILDREN);
-            }
-        }));
-        long attributeId = 1;
-        for (Person child : person.getChildren()) {
-            Attribute childrenAttribute = new Attribute();
-            childrenAttribute.setAttributeId(attributeId++);
-            childrenAttribute.setAttributeTypeId(CHILDREN);
-            childrenAttribute.setValueTypeId(CHILDREN);
-            childrenAttribute.setValueId(child.getId());
-            person.addAttribute(childrenAttribute);
-        }
-    }
-
-    public boolean validate() {
-        //document
-        if ((!documentReplacedFlag ? person.getDocument() : person.getReplacedDocument()) == null) {
-            error(getString("empty_document"));
-        }
-
-        //children
-        Collection<Person> nonNullChildren = newArrayList(filter(person.getChildren(), new Predicate<Person>() {
-
-            @Override
-            public boolean apply(Person child) {
-                return child != null && child.getId() != null && child.getId() > 0;
-            }
-        }));
-        if (nonNullChildren.size() != person.getChildren().size()) {
-            error(getString("children_error"));
-        }
-
-        Set<Long> childrenIds = newHashSet(transform(nonNullChildren, new Function<Person, Long>() {
-
-            @Override
-            public Long apply(Person child) {
-                return child.getId();
-            }
-        }));
-
-        if (!isNew()) {
-            if (childrenIds.contains(person.getId())) {
-                error(getString("references_themselves"));
-            }
-        }
-
-        if (childrenIds.size() != nonNullChildren.size()) {
-            error(getString("children_duplicate"));
-        }
-
-        return getSession().getFeedbackMessages().isEmpty();
+        return childrenFieldset;
     }
 
     private Component initDocument() {

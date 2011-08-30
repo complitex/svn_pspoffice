@@ -17,6 +17,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
@@ -86,12 +87,13 @@ public class ApartmentCardList extends ListPage {
                 final ApartmentCard apartmentCard = item.getModelObject();
 
                 item.add(new Label("id", StringUtil.valueOf(apartmentCard.getId())));
-                item.add(new Label("address", addressRendererBean.displayAddress(apartmentCard.getAddressEntity(),
+                item.add(new Label("address", addressRendererBean.displayAddress(ApartmentCardStrategy.getAddressEntity(apartmentCard),
                         apartmentCard.getAddressId(), getLocale())));
                 item.add(new Label("owner", personStrategy.displayDomainObject(apartmentCard.getOwner(), getLocale())));
                 item.add(new Label("registeredCount", String.valueOf(apartmentCard.getRegisteredCount())));
-                item.add(new Label("formOfOwnership", StringUtil.valueOf(
-                        ownershipFormStrategy.displayDomainObject(apartmentCard.getOwnershipForm(), getLocale()))));
+                DomainObject formOfOwnership = apartmentCard.getOwnershipForm();
+                item.add(new Label("formOfOwnership", formOfOwnership != null
+                        ? ownershipFormStrategy.displayDomainObject(formOfOwnership, getLocale()) : null));
 
                 Link<Void> detailsLink = new Link<Void>("detailsLink") {
 

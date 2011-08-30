@@ -65,20 +65,6 @@ public class ApartmentCard extends DomainObject {
         return getAttribute(ADDRESS).getValueId();
     }
 
-    public String getAddressEntity() {
-        long valueTypeId = getAttribute(ADDRESS).getValueTypeId();
-        if (ADDRESS_ROOM == valueTypeId) {
-            return "room";
-        } else if (ADDRESS_APARTMENT == valueTypeId) {
-            return "apartment";
-        } else if (ADDRESS_BUILDING == valueTypeId) {
-            return "building";
-        } else {
-            throw new IllegalStateException("Address attribute expected to be of " + ADDRESS_ROOM + " or " + ADDRESS_APARTMENT + " or " + ADDRESS_BUILDING
-                    + ". But was: " + valueTypeId);
-        }
-    }
-
     public int getRegisteredCount() {
         return newArrayList(filter(registrations, new Predicate<Registration>() {
 

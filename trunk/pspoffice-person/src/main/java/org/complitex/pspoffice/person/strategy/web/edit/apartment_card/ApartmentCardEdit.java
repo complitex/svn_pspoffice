@@ -12,8 +12,6 @@ import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.ImmutableList.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -70,6 +68,7 @@ import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardBut
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
+import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -89,7 +88,6 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 public final class ApartmentCardEdit extends FormTemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(ApartmentCardEdit.class);
-    private static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
@@ -400,21 +398,22 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 personLink.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));
                 item.add(personLink);
                 Date birthDate = registration.getPerson().getBirthDate();
-                item.add(new Label("personBirthDate", birthDate != null ? DATE_FORMATTER.format(birthDate) : null));
+                item.add(new Label("personBirthDate", birthDate != null ? PersonDateFormatter.format(birthDate) : null));
                 item.add(new Label("registrationType",
                         StringUtil.valueOf(registrationTypeStrategy.displayDomainObject(registration.getRegistrationType(), getLocale()))));
                 Date registrationStartDate = registration.getRegistrationDate();
-                item.add(new Label("registrationStartDate", registrationStartDate != null ? DATE_FORMATTER.format(registrationStartDate) : null));
+                item.add(new Label("registrationStartDate", registrationStartDate != null ? PersonDateFormatter.format(registrationStartDate) : null));
                 Date registrationEndDate = registration.getDepartureDate();
-                item.add(new Label("registrationEndDate", registrationEndDate != null ? DATE_FORMATTER.format(registrationEndDate) : null));
-                item.add(new Label("registrationOwnerRelationship",
-                        StringUtil.valueOf(ownerRelationshipStrategy.displayDomainObject(registration.getOwnerRelationship(), getLocale()))));
+                item.add(new Label("registrationEndDate", registrationEndDate != null ? PersonDateFormatter.format(registrationEndDate) : null));
+                DomainObject ownerRelationship = registration.getOwnerRelationship();
+                item.add(new Label("registrationOwnerRelationship", ownerRelationship != null ?
+                        ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null));
 
                 Link<Void> registrationDetails = new Link<Void>("registrationDetails") {
 
                     @Override
                     public void onClick() {
-                        setResponsePage(new RegistrationEdit(newApartmentCard.getId(), newApartmentCard.getAddressEntity(),
+                        setResponsePage(new RegistrationEdit(newApartmentCard.getId(), ApartmentCardStrategy.getAddressEntity(newApartmentCard),
                                 newApartmentCard.getAddressId(), registration));
                     }
                 };
@@ -592,7 +591,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     }
 
     private String getAddressEntity() {
-        return addressEntity != null ? addressEntity : newApartmentCard.getAddressEntity();
+        return addressEntity != null ? addressEntity : ApartmentCardStrategy.getAddressEntity(newApartmentCard);
     }
 
     private long getAddressId() {
@@ -708,7 +707,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                     @Override
                     protected void onClick() {
-                        setResponsePage(new ApartmentCardEdit(oldApartmentCard.getAddressEntity(), oldApartmentCard.getAddressId()));
+                        setResponsePage(new ApartmentCardEdit(
+                                ApartmentCardStrategy.getAddressEntity(oldApartmentCard), oldApartmentCard.getAddressId()));
                     }
 
                     @Override

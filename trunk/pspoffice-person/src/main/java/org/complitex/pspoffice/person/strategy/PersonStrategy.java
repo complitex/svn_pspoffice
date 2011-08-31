@@ -34,6 +34,7 @@ import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
@@ -52,6 +53,11 @@ public class PersonStrategy extends TemplateStrategy {
 
     private static final String PERSON_MAPPING = PersonStrategy.class.getPackage().getName() + ".Person";
     public static final String RESOURCE_BUNDLE = PersonStrategy.class.getName();
+    
+    /**
+     * Person kid-adult age threshold
+     */
+    public static final int AGE_THRESHOLD = 16;
     /**
      * Attribute type ids
      */
@@ -408,7 +414,7 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public List<Person> findByName(String lastName, String firstName, String middleName) {
+    public List<Person> findByName(PersonAgeType personAgeType, String lastName, String firstName, String middleName) {
         if (Strings.isEmpty(lastName)) {
             throw new IllegalArgumentException("Last name is null or empty.");
         }
@@ -430,13 +436,20 @@ public class PersonStrategy extends TemplateStrategy {
 
         prepareExampleForPermissionCheck(example);
 
+        List<Person> results = newArrayList();
         List<Person> persons = sqlSession().selectList(PERSON_MAPPING + ".findByName", example);
         for (Person person : persons) {
             loadAttributes(person);
-            loadName(person);
-            loadDocument(person);
+            boolean eligiblePerson = (personAgeType == PersonAgeType.ANY)
+                    || (personAgeType == PersonAgeType.KID && person.isKid())
+                    || (personAgeType == PersonAgeType.ADULT && !person.isKid());
+            if (eligiblePerson) {
+                loadName(person);
+                loadDocument(person);
+                results.add(person);
+            }
         }
-        return persons;
+        return results;
     }
 
     @Transactional

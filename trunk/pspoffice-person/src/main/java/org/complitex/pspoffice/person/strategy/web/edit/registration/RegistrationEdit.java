@@ -47,6 +47,7 @@ import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
@@ -139,7 +140,7 @@ public class RegistrationEdit extends FormTemplatePage {
         personContainer.add(new WebMarkupContainer("required").setVisible(personAttributeType.isMandatory()));
 
         personModel = new Model<Person>(newRegistration.getPerson());
-        PersonPicker person = new PersonPicker("person", personModel, true,
+        PersonPicker person = new PersonPicker("person", PersonAgeType.ANY, personModel, true,
                 labelModel(personAttributeType.getAttributeNames(), getLocale()), isNew());
         personContainer.add(person);
         form.add(personContainer);

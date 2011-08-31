@@ -63,6 +63,7 @@ import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
@@ -243,7 +244,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         ownerContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
 
         ownerModel = new Model<Person>(newApartmentCard.getOwner());
-        PersonPicker owner = new PersonPicker("owner", ownerModel, true, ownerLabelModel, true);
+        PersonPicker owner = new PersonPicker("owner", PersonAgeType.ADULT, ownerModel, true, ownerLabelModel, true);
         ownerContainer.add(owner);
         form.add(ownerContainer);
 
@@ -406,8 +407,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 Date registrationEndDate = registration.getDepartureDate();
                 item.add(new Label("registrationEndDate", registrationEndDate != null ? PersonDateFormatter.format(registrationEndDate) : null));
                 DomainObject ownerRelationship = registration.getOwnerRelationship();
-                item.add(new Label("registrationOwnerRelationship", ownerRelationship != null ?
-                        ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null));
+                item.add(new Label("registrationOwnerRelationship", ownerRelationship != null
+                        ? ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null));
 
                 Link<Void> registrationDetails = new Link<Void>("registrationDetails") {
 

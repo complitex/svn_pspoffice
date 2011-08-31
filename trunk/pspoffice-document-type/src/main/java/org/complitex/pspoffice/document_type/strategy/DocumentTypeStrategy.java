@@ -85,12 +85,12 @@ public class DocumentTypeStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public List<DomainObject> getChildrenDocumentTypes() {
+    public List<DomainObject> getKidDocumentTypes() {
         return newArrayList(Iterables.filter(getAll(), new Predicate<DomainObject>() {
 
             @Override
             public boolean apply(DomainObject documentType) {
-                return isChildrenDocumentType(documentType.getId());
+                return isKidDocumentType(documentType.getId());
             }
         }));
     }
@@ -120,11 +120,11 @@ public class DocumentTypeStrategy extends TemplateStrategy {
         super.deleteChecks(objectId, locale);
     }
 
-    public static boolean isChildrenDocumentType(long documentTypeId) {
+    public static boolean isKidDocumentType(long documentTypeId) {
         return documentTypeId == BIRTH_CERTIFICATE;
     }
 
     public static boolean isAdultDocumentType(long documentTypeId) {
-        return documentTypeId == PASSPORT;
+        return documentTypeId == PASSPORT || documentTypeId == BIRTH_CERTIFICATE;
     }
 }

@@ -11,7 +11,6 @@ import static com.google.common.collect.Iterables.*;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -21,7 +20,6 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.complitex.dictionary.entity.Attribute;
-import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
@@ -39,6 +37,7 @@ import java.util.Set;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.form.Form;
@@ -48,6 +47,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel;
@@ -60,6 +60,7 @@ import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -101,27 +102,23 @@ public final class PersonInputPanel extends Panel {
     private FeedbackPanel messages;
     private Component scrollToComponent;
     private boolean documentReplacedFlag;
-    private final boolean hadChildren;
+    private final PersonAgeType personAgeType;
 
     public PersonInputPanel(String id, Person person, Date date) {
         super(id);
         this.person = person;
         this.date = date;
-        this.hadChildren = person.hasChildren();
+        this.personAgeType = null;
         init(null, null, null, null);
     }
 
-    public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent) {
-        this(id, person, messages, scrollToComponent, null, null, null, null);
-    }
-
-    public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent,
+    public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent, PersonAgeType personAgeType,
             Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
         super(id);
         this.person = person;
         this.messages = messages;
         this.scrollToComponent = scrollToComponent;
-        this.hadChildren = person.hasChildren();
+        this.personAgeType = personAgeType;
         init(defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
     }
 
@@ -144,11 +141,22 @@ public final class PersonInputPanel extends Panel {
         personFullNamePanel.setEnabled(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
         add(personFullNamePanel);
 
-        Entity entity = personStrategy.getEntity();
-
         //system attributes:
         initSystemAttributeInput(this, "identityCode", IDENTITY_CODE, true);
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
+        final MaskedDateInput birthDateComponent = (MaskedDateInput) get("birthDateContainer:"
+                + DomainObjectInputPanel.INPUT_COMPONENT_ID + ":" + MaskedDateInputPanel.DATE_INPUT_ID);
+        birthDateComponent.setMaxDate(DateUtil.getCurrentDate());
+        if (personAgeType != null) {
+            switch (personAgeType) {
+                case KID:
+                    birthDateComponent.setMinDate(DateUtil.add(DateUtil.getCurrentDate(), -AGE_THRESHOLD));
+                    break;
+                case ADULT:
+                    birthDateComponent.setMaxDate(DateUtil.add(DateUtil.getCurrentDate(), -AGE_THRESHOLD));
+                    break;
+            }
+        }
         initSystemAttributeInput(this, "gender", GENDER, false);
 
         CollapsibleFieldset birthPlaceFieldset = new CollapsibleFieldset("birthPlaceFieldset", new ResourceModel("birthPlaceLabel"));
@@ -166,7 +174,68 @@ public final class PersonInputPanel extends Panel {
         add(initDocument());
 
         //user attributes:
-        List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
+        add(initUserAttributes());
+
+        //children
+        final Component childrentComponent = initChildren();
+        childrentComponent.setOutputMarkupPlaceholderTag(true);
+        if (personAgeType != null) {
+            childrentComponent.setVisible(personAgeType != PersonAgeType.KID);
+        } else {
+            childrentComponent.setVisible(!person.isKid());
+        }
+        add(childrentComponent);
+
+        birthDateComponent.add(new AjaxFormComponentUpdatingBehavior("onblur") {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                boolean showChildrenContainer = true;
+                if (personAgeType != null) {
+                    showChildrenContainer = personAgeType == PersonAgeType.ADULT
+                            || (personAgeType == PersonAgeType.ANY && !person.isKid());
+                } else {
+                    showChildrenContainer = !person.isKid();
+                }
+                showChildrenContainer = person.hasChildren() || showChildrenContainer;
+                updateChildrenComponent(target, showChildrenContainer);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, RuntimeException e) {
+                super.onError(target, e);
+                getSession().getFeedbackMessages().clear(new IFeedbackMessageFilter() {
+
+                    @Override
+                    public boolean accept(FeedbackMessage message) {
+                        return message.getReporter() == birthDateComponent && message.isError();
+                    }
+                });
+
+                boolean showChildrenContainer = false;
+                if (personAgeType != null && personAgeType == PersonAgeType.ADULT) {
+                    showChildrenContainer = true;
+                } else {
+                    showChildrenContainer = person.hasChildren();
+                }
+                updateChildrenComponent(target, showChildrenContainer);
+            }
+
+            private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {
+                boolean wasVisible = childrentComponent.isVisible();
+                childrentComponent.setVisible(visible);
+                if (wasVisible ^ childrentComponent.isVisible()) {
+                    target.addComponent(childrentComponent);
+                }
+            }
+        });
+
+        //registrations
+        add(initRegistrationsFieldset());
+    }
+
+    private Component initUserAttributes() {
+        List<Long> userAttributeTypeIds = newArrayList(transform(filter(personStrategy.getEntity().getEntityAttributeTypes(),
                 new Predicate<EntityAttributeType>() {
 
                     @Override
@@ -198,47 +267,7 @@ public final class PersonInputPanel extends Panel {
                 initAttributeInput(item, userAttributeTypeId, false);
             }
         };
-        add(userAttributesView);
-
-        //children
-        final Component childrentComponent = initChildren();
-        childrentComponent.setOutputMarkupPlaceholderTag(true);
-
-        childrentComponent.setVisible(person.hasChildren());
-        add(childrentComponent);
-        final MaskedDateInput birthDateComponent = (MaskedDateInput) get("birthDateContainer:" + DomainObjectInputPanel.INPUT_COMPONENT_ID + ":"
-                + MaskedDateInputPanel.DATE_INPUT_ID);
-        birthDateComponent.add(new AjaxFormComponentUpdatingBehavior("onblur") {
-
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                updateChildrenComponent(target, !person.isChild());
-            }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, RuntimeException e) {
-                super.onError(target, e);
-                getSession().getFeedbackMessages().clear(new IFeedbackMessageFilter() {
-
-                    @Override
-                    public boolean accept(FeedbackMessage message) {
-                        return message.getReporter() == birthDateComponent && message.isError();
-                    }
-                });
-                updateChildrenComponent(target, false);
-            }
-
-            private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {
-                boolean wasVisible = childrentComponent.isVisible();
-                childrentComponent.setVisible(visible);
-                if (wasVisible ^ childrentComponent.isVisible()) {
-                    target.addComponent(childrentComponent);
-                }
-            }
-        });
-
-        //registrations
-        add(initRegistrationsFieldset());
+        return userAttributesView;
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId, boolean showIfMissing) {
@@ -284,7 +313,7 @@ public final class PersonInputPanel extends Panel {
                 return attr.getAttributeTypeId().equals(CHILDREN);
             }
         }));
-        if (!person.isChild()) {
+        if (!person.isKid()) {
             long attributeId = 1;
             for (Person child : person.getChildren()) {
                 Attribute childrenAttribute = new Attribute();
@@ -298,20 +327,38 @@ public final class PersonInputPanel extends Panel {
     }
 
     public boolean validate() {
+        //birth date and PersonAgeType
+        if (personAgeType != null) {
+            if (!person.isKid() && personAgeType == PersonAgeType.KID) {
+                error(getString("must_be_kid"));
+            }
+            if (person.isKid() && personAgeType == PersonAgeType.ADULT) {
+                error(getString("must_be_adult"));
+            }
+        }
+        //if birth date and PersonAgeType are not correlating then further validation is not make sense.
+        if (!getSession().getFeedbackMessages().isEmpty()) {
+            return false;
+        }
+
         //document
         Document document = !documentReplacedFlag ? person.getDocument() : person.getReplacedDocument();
         if (document == null) {
             error(getString("empty_document"));
         } else {
-            if (document.isAdultDocument() && person.isChild()) {
-                error(MessageFormat.format(getString("children_document_type_error"),
+            if (!document.isKidDocument() && person.isKid()) {
+                error(MessageFormat.format(getString("kid_document_type_error"),
+                        documentTypeStrategy.displayDomainObject(documentTypeModel.getObject(), getLocale()).toLowerCase(getLocale())));
+            }
+            if (!document.isAdultDocument() && !person.isKid()) {
+                error(MessageFormat.format(getString("adult_document_type_error"),
                         documentTypeStrategy.displayDomainObject(documentTypeModel.getObject(), getLocale()).toLowerCase(getLocale())));
             }
         }
 
         //children
-        if (hadChildren && person.isChild()) {
-            error(getString("person_had_children"));
+        if (person.hasChildren() && person.isKid()) {
+            error(getString("kid_has_children_error"));
         }
         Collection<Person> nonNullChildren = newArrayList(filter(person.getChildren(), new Predicate<Person>() {
 
@@ -382,7 +429,7 @@ public final class PersonInputPanel extends Panel {
                 };
                 childModel.setObject(item.getModelObject());
 
-                PersonPicker personPicker = new PersonPicker("searchChildComponent", childModel, false, null,
+                PersonPicker personPicker = new PersonPicker("searchChildComponent", PersonAgeType.KID, childModel, false, null,
                         !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
                 item.add(personPicker);
 
@@ -407,7 +454,13 @@ public final class PersonInputPanel extends Panel {
         }
         return childrenFieldset;
     }
+    /**
+     * Document related
+     */
     private IModel<DomainObject> documentTypeModel;
+    private IModel<List<? extends DomainObject>> documentTypesModel;
+    private DisableAwareDropDownChoice<DomainObject> documentType;
+    private WebMarkupContainer documentInputPanelContainer;
 
     private Component initDocument() {
         CollapsibleFieldset documentFieldset = new CollapsibleFieldset("documentFieldset",
@@ -421,9 +474,9 @@ public final class PersonInputPanel extends Panel {
         documentButtonsContainer.setVisible(!isNew());
         documentFieldset.add(documentButtonsContainer);
 
-        final WebMarkupContainer documentInputPanelContainer = new WebMarkupContainer("documentInputPanelContainer");
+        documentInputPanelContainer = new WebMarkupContainer("documentInputPanelContainer");
         documentInputPanelContainer.setOutputMarkupId(true);
-        if (person.getDocument() == null) {
+        if (isNew()) {
             documentInputPanelContainer.add(new EmptyPanel("documentInputPanel"));
         } else {
             documentInputPanelContainer.add(newDocumentInputPanel(person.getDocument()));
@@ -437,19 +490,22 @@ public final class PersonInputPanel extends Panel {
         documentForm.add(new Label("label", labelModel));
         //required
         documentForm.add(new WebMarkupContainer("required").setVisible(documentTypeAttributeType.isMandatory()));
-        final List<DomainObject> allDocumentTypes = documentTypeStrategy.getAll();
         documentTypeModel = new Model<DomainObject>();
-        if (person.getDocument() != null) {
-            documentTypeModel.setObject(find(allDocumentTypes, new Predicate<DomainObject>() {
+        documentTypesModel = Model.ofList(null);
+        if (!isNew()) {
+            documentTypesModel.setObject(documentTypeStrategy.getAll());
+            documentTypeModel.setObject(find(documentTypesModel.getObject(), new Predicate<DomainObject>() {
 
                 @Override
                 public boolean apply(DomainObject documentType) {
                     return documentType.getId().equals(person.getDocument().getDocumentTypeId());
                 }
             }));
+        } else {
+            initDocumentTypesModel();
         }
-        final DisableAwareDropDownChoice<DomainObject> documentType = new DisableAwareDropDownChoice<DomainObject>("documentType",
-                documentTypeModel, allDocumentTypes, new DomainObjectDisableAwareRenderer() {
+        documentType = new DisableAwareDropDownChoice<DomainObject>("documentType",
+                documentTypeModel, documentTypesModel, new DomainObjectDisableAwareRenderer() {
 
             @Override
             public Object getDisplayValue(DomainObject object) {
@@ -458,7 +514,7 @@ public final class PersonInputPanel extends Panel {
         });
         documentType.setOutputMarkupId(true);
         documentType.setLabel(labelModel);
-        documentType.setEnabled(person.getDocument() == null && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        documentType.setEnabled(isNew() && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
         documentType.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 
             @Override
@@ -481,6 +537,7 @@ public final class PersonInputPanel extends Panel {
                 }
             }
         });
+        updateDocumentTypeComponent();
         documentForm.add(documentType);
 
         //replace document
@@ -493,8 +550,17 @@ public final class PersonInputPanel extends Panel {
                 target.addComponent(documentButtonsContainer);
                 documentTypeModel.setObject(null);
                 documentType.setEnabled(true);
+                initDocumentTypesModel();
+                updateDocumentTypeComponent();
 
-                target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
+                if (documentTypesModel.getObject().size() > 1) {
+                    target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
+                } else {
+                    target.prependJavascript("$('#documentInputPanelWrapper').hide();");
+                    target.appendJavascript("$('#documentInputPanelWrapper').slideDown('fast',"
+                            + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
+                    target.addComponent(documentInputPanelContainer);
+                }
                 target.focusComponent(documentType);
                 target.addComponent(documentType);
                 target.addComponent(messages);
@@ -506,7 +572,7 @@ public final class PersonInputPanel extends Panel {
                 target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
             }
         };
-        replaceDocument.setVisible(person.getDocument() != null && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        replaceDocument.setVisible(!isNew() && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
         documentButtonsContainer.add(replaceDocument);
 
         //previous documents
@@ -564,6 +630,49 @@ public final class PersonInputPanel extends Panel {
 
     private DomainObjectInputPanel newDocumentInputPanel(Document document) {
         return new DomainObjectInputPanel("documentInputPanel", document, documentStrategy.getEntityTable(), null, null, null);
+    }
+
+    private void initDocumentTypesModel() {
+        if (personAgeType != null) {
+            switch (personAgeType) {
+                case KID:
+                    documentTypesModel.setObject(documentTypeStrategy.getKidDocumentTypes());
+                    break;
+                case ADULT:
+                    documentTypesModel.setObject(documentTypeStrategy.getAdultDocumentTypes());
+                    break;
+                case ANY:
+                    if (person.getBirthDate() != null) {
+                        documentTypesModel.setObject(person.isKid() ? documentTypeStrategy.getKidDocumentTypes()
+                                : documentTypeStrategy.getAdultDocumentTypes());
+                    } else {
+                        documentTypesModel.setObject(documentTypeStrategy.getAll());
+                    }
+                    break;
+            }
+        } else {
+            if (person.getBirthDate() != null) {
+                documentTypesModel.setObject(person.isKid() ? documentTypeStrategy.getKidDocumentTypes()
+                        : documentTypeStrategy.getAdultDocumentTypes());
+            } else {
+                documentTypesModel.setObject(documentTypeStrategy.getAll());
+            }
+        }
+    }
+
+    private void updateDocumentTypeComponent() {
+        if (documentTypesModel.getObject().size() == 1) {
+            documentType.setEnabled(false);
+            DomainObject newDocumentType = documentTypesModel.getObject().get(0);
+            documentTypeModel.setObject(newDocumentType);
+            Document document = documentStrategy.newInstance(newDocumentType.getId());
+            if (!documentReplacedFlag) {
+                person.setDocument(document);
+            } else {
+                person.setReplacedDocument(document);
+            }
+            documentInputPanelContainer.replace(newDocumentInputPanel(document));
+        }
     }
 
     private Component initRegistrationsFieldset() {

@@ -15,6 +15,7 @@ import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
@@ -70,7 +71,7 @@ public class PersonEdit extends FormTemplatePage {
         });
         add(title);
 
-        add(new PersonEditPanel("personEditPanel", oldPerson, newPerson) {
+        add(new PersonEditPanel("personEditPanel", PersonAgeType.ANY, oldPerson, newPerson) {
 
             @Override
             protected void onBack(AjaxRequestTarget target) {

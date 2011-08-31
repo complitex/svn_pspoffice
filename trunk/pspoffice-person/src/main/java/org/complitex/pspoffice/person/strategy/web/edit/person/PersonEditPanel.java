@@ -24,6 +24,7 @@ import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.security.SecurityRole;
 import org.slf4j.Logger;
@@ -50,21 +51,21 @@ public abstract class PersonEditPanel extends Panel {
     private FeedbackPanel messages;
 //    private ReportDownloadPanel reportDownloadPanel;
 
-    public PersonEditPanel(String id, Person oldPerson, Person newPerson) {
+    public PersonEditPanel(String id, PersonAgeType personAgeType, Person oldPerson, Person newPerson) {
         super(id);
         this.oldPerson = oldPerson;
         this.newPerson = newPerson;
-        init(null, null, null, null);
+        init(personAgeType, null, null, null, null);
     }
 
-    public PersonEditPanel(String id, Person newPerson,
-            Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName){
+    public PersonEditPanel(String id, Person newPerson, PersonAgeType personAgeType,
+            Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
         super(id);
         this.newPerson = newPerson;
-        init(defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
+        init(personAgeType, defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
     }
 
-    private void init(Locale defaultNameLocale,
+    private void init(PersonAgeType personAgeType, Locale defaultNameLocale,
             String defaultLastName, String defaultFirstName, String defaultMiddleName) {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
 
@@ -85,7 +86,7 @@ public abstract class PersonEditPanel extends Panel {
         Form form = new Form("form");
 
         //input panel
-        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label,
+        personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label, personAgeType,
                 defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
         form.add(personInputPanel);
 

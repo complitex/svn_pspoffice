@@ -104,11 +104,17 @@ public final class PersonInputPanel extends Panel {
     private boolean documentReplacedFlag;
     private final PersonAgeType personAgeType;
 
+    /**
+     * History constructor
+     * @param id
+     * @param person
+     * @param date
+     */
     public PersonInputPanel(String id, Person person, Date date) {
         super(id);
         this.person = person;
         this.date = date;
-        this.personAgeType = null;
+        this.personAgeType = person.isKid() ? PersonAgeType.KID : PersonAgeType.ADULT;
         init(null, null, null, null);
     }
 
@@ -118,7 +124,11 @@ public final class PersonInputPanel extends Panel {
         this.person = person;
         this.messages = messages;
         this.scrollToComponent = scrollToComponent;
-        this.personAgeType = personAgeType;
+        if (!isNew() && !person.isKid()) {
+            this.personAgeType = PersonAgeType.ADULT;
+        } else {
+            this.personAgeType = personAgeType;
+        }
         init(defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
     }
 
@@ -146,17 +156,20 @@ public final class PersonInputPanel extends Panel {
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
         final MaskedDateInput birthDateComponent = (MaskedDateInput) get("birthDateContainer:"
                 + DomainObjectInputPanel.INPUT_COMPONENT_ID + ":" + MaskedDateInputPanel.DATE_INPUT_ID);
-        birthDateComponent.setMaxDate(DateUtil.getCurrentDate());
-        if (personAgeType != null) {
-            switch (personAgeType) {
-                case KID:
-                    birthDateComponent.setMinDate(DateUtil.add(DateUtil.getCurrentDate(), -AGE_THRESHOLD));
-                    break;
-                case ADULT:
-                    birthDateComponent.setMaxDate(DateUtil.add(DateUtil.getCurrentDate(), -AGE_THRESHOLD));
-                    break;
-            }
+
+        switch (personAgeType) {
+            case KID:
+                birthDateComponent.setMinDate(DateUtil.add(DateUtil.getCurrentDate(), -AGE_THRESHOLD));
+                birthDateComponent.setMaxDate(DateUtil.getCurrentDate());
+                break;
+            case ADULT:
+                birthDateComponent.setMaxDate(DateUtil.add(DateUtil.getCurrentDate(), -AGE_THRESHOLD));
+                break;
+            case ANY:
+                birthDateComponent.setMaxDate(DateUtil.getCurrentDate());
+                break;
         }
+
         initSystemAttributeInput(this, "gender", GENDER, false);
 
         CollapsibleFieldset birthPlaceFieldset = new CollapsibleFieldset("birthPlaceFieldset", new ResourceModel("birthPlaceLabel"));
@@ -179,10 +192,8 @@ public final class PersonInputPanel extends Panel {
         //children
         final Component childrentComponent = initChildren();
         childrentComponent.setOutputMarkupPlaceholderTag(true);
-        if (personAgeType != null) {
-            childrentComponent.setVisible(personAgeType != PersonAgeType.KID);
-        } else {
-            childrentComponent.setVisible(!person.isKid());
+        if (personAgeType == PersonAgeType.KID || (personAgeType == PersonAgeType.ANY && !isNew() && person.isKid())) {
+            childrentComponent.setVisible(false);
         }
         add(childrentComponent);
 
@@ -191,13 +202,9 @@ public final class PersonInputPanel extends Panel {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 boolean showChildrenContainer = true;
-                if (personAgeType != null) {
-                    showChildrenContainer = personAgeType == PersonAgeType.ADULT
-                            || (personAgeType == PersonAgeType.ANY && !person.isKid());
-                } else {
-                    showChildrenContainer = !person.isKid();
-                }
-                showChildrenContainer = person.hasChildren() || showChildrenContainer;
+                showChildrenContainer = (personAgeType == PersonAgeType.ADULT)
+                        || (personAgeType == PersonAgeType.ANY && !person.isKid())
+                        || person.hasChildren();
                 updateChildrenComponent(target, showChildrenContainer);
             }
 
@@ -212,13 +219,8 @@ public final class PersonInputPanel extends Panel {
                     }
                 });
 
-                boolean showChildrenContainer = false;
-                if (personAgeType != null && personAgeType == PersonAgeType.ADULT) {
-                    showChildrenContainer = true;
-                } else {
-                    showChildrenContainer = person.hasChildren();
-                }
-                updateChildrenComponent(target, showChildrenContainer);
+//                boolean showChildrenContainer = personAgeType == PersonAgeType.ADULT || person.hasChildren();
+//                updateChildrenComponent(target, showChildrenContainer);
             }
 
             private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {
@@ -328,14 +330,13 @@ public final class PersonInputPanel extends Panel {
 
     public boolean validate() {
         //birth date and PersonAgeType
-        if (personAgeType != null) {
-            if (!person.isKid() && personAgeType == PersonAgeType.KID) {
-                error(getString("must_be_kid"));
-            }
-            if (person.isKid() && personAgeType == PersonAgeType.ADULT) {
-                error(getString("must_be_adult"));
-            }
+        if (!person.isKid() && personAgeType == PersonAgeType.KID) {
+            error(getString("must_be_kid"));
         }
+        if (person.isKid() && personAgeType == PersonAgeType.ADULT) {
+            error(getString("must_be_adult"));
+        }
+
         //if birth date and PersonAgeType are not correlating then further validation is not make sense.
         if (!getSession().getFeedbackMessages().isEmpty()) {
             return false;
@@ -455,7 +456,7 @@ public final class PersonInputPanel extends Panel {
         return childrenFieldset;
     }
     /**
-     * Document related
+     * Document UI related fields
      */
     private IModel<DomainObject> documentTypeModel;
     private IModel<List<? extends DomainObject>> documentTypesModel;
@@ -633,30 +634,21 @@ public final class PersonInputPanel extends Panel {
     }
 
     private void initDocumentTypesModel() {
-        if (personAgeType != null) {
-            switch (personAgeType) {
-                case KID:
-                    documentTypesModel.setObject(documentTypeStrategy.getKidDocumentTypes());
-                    break;
-                case ADULT:
-                    documentTypesModel.setObject(documentTypeStrategy.getAdultDocumentTypes());
-                    break;
-                case ANY:
-                    if (person.getBirthDate() != null) {
-                        documentTypesModel.setObject(person.isKid() ? documentTypeStrategy.getKidDocumentTypes()
-                                : documentTypeStrategy.getAdultDocumentTypes());
-                    } else {
-                        documentTypesModel.setObject(documentTypeStrategy.getAll());
-                    }
-                    break;
-            }
-        } else {
-            if (person.getBirthDate() != null) {
-                documentTypesModel.setObject(person.isKid() ? documentTypeStrategy.getKidDocumentTypes()
-                        : documentTypeStrategy.getAdultDocumentTypes());
-            } else {
-                documentTypesModel.setObject(documentTypeStrategy.getAll());
-            }
+        switch (personAgeType) {
+            case KID:
+                documentTypesModel.setObject(documentTypeStrategy.getKidDocumentTypes());
+                break;
+            case ADULT:
+                documentTypesModel.setObject(documentTypeStrategy.getAdultDocumentTypes());
+                break;
+            case ANY:
+                if (person.getBirthDate() != null) {
+                    documentTypesModel.setObject(person.isKid() ? documentTypeStrategy.getKidDocumentTypes()
+                            : documentTypeStrategy.getAdultDocumentTypes());
+                } else {
+                    documentTypesModel.setObject(documentTypeStrategy.getAll());
+                }
+                break;
         }
     }
 

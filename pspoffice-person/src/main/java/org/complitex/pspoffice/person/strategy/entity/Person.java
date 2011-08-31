@@ -138,10 +138,10 @@ public class Person extends DomainObject {
         middleNames.put(locale, name);
     }
 
-    public boolean isChild() {
+    public boolean isKid() {
         Date birthDate = getBirthDate();
         Date currentDate = getCurrentDate();
-        return birthDate == null || (currentDate.after(birthDate) && (getYear(currentDate) - getYear(birthDate) < 16));
+        return birthDate == null || (!isValidDateInterval(currentDate, birthDate, AGE_THRESHOLD));
     }
 
     public boolean hasChildren() {

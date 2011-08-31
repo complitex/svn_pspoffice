@@ -37,8 +37,8 @@ public class Document extends DomainObject {
         this.documentType = documentType;
     }
 
-    public boolean isChildrenDocument() {
-        return DocumentTypeStrategy.isChildrenDocumentType(getDocumentTypeId());
+    public boolean isKidDocument() {
+        return DocumentTypeStrategy.isKidDocumentType(getDocumentTypeId());
     }
 
     public boolean isAdultDocument() {

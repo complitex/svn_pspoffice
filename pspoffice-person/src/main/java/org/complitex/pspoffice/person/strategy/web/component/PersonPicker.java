@@ -33,6 +33,7 @@ import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
 import org.odlabs.wiquery.core.javascript.JsStatement;
@@ -59,12 +60,15 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     private final boolean enabled;
     private final boolean required;
     private final IModel<String> labelModel;
+    private final PersonAgeType personAgeType;
 
-    public PersonPicker(String id, IModel<Person> model, boolean required, IModel<String> labelModel, boolean enabled) {
+    public PersonPicker(String id, PersonAgeType personAgeType, IModel<Person> model, boolean required,
+            IModel<String> labelModel, boolean enabled) {
         super(id, model);
         this.required = required;
         this.enabled = enabled;
         this.labelModel = labelModel;
+        this.personAgeType = personAgeType;
         init();
     }
 
@@ -266,7 +270,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
     private PersonEditPanel newPersonEditPanel(final Dialog personCreationDialog, final WebMarkupContainer personEditContainer,
             final Label personLabel, String lastName, String firstName, String middleName) {
-        return new PersonEditPanel("personEditPanel", personStrategy.newInstance(), getLocale(), lastName, firstName, middleName) {
+        return new PersonEditPanel("personEditPanel", personStrategy.newInstance(), personAgeType,
+                getLocale(), lastName, firstName, middleName) {
 
             @Override
             protected void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target) {
@@ -312,7 +317,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         if (Strings.isEmpty(lastName)) {
             personsModel.setObject(null);
         } else {
-            personsModel.setObject(personStrategy.findByName(lastName, firstName, middleName));
+            personsModel.setObject(personStrategy.findByName(personAgeType, lastName, firstName, middleName));
         }
         personModel.setObject(null);
     }

@@ -218,9 +218,6 @@ public final class PersonInputPanel extends Panel {
                         return message.getReporter() == birthDateComponent && message.isError();
                     }
                 });
-
-//                boolean showChildrenContainer = personAgeType == PersonAgeType.ADULT || person.hasChildren();
-//                updateChildrenComponent(target, showChildrenContainer);
             }
 
             private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {

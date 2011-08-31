@@ -1,7 +1,9 @@
 package org.complitex.pspoffice.person.strategy;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Predicate;
+import static com.google.common.collect.ImmutableMap.*;
 import com.google.common.collect.ImmutableSet;
+import static com.google.common.collect.Iterables.*;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +30,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.LocaleBean;
+import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
@@ -53,7 +56,6 @@ public class PersonStrategy extends TemplateStrategy {
 
     private static final String PERSON_MAPPING = PersonStrategy.class.getPackage().getName() + ".Person";
     public static final String RESOURCE_BUNDLE = PersonStrategy.class.getName();
-    
     /**
      * Person kid-adult age threshold
      */
@@ -474,6 +476,7 @@ public class PersonStrategy extends TemplateStrategy {
         Person oldPerson = (Person) oldObject;
         Person newPerson = (Person) newObject;
 
+        //document altering
         Date archiveDocumentDate = DateUtil.justAfter(updateDate);
         Date updateDocumentDate = DateUtil.justBefore(updateDate);
 
@@ -487,7 +490,34 @@ public class PersonStrategy extends TemplateStrategy {
         }
 
         updateDocumentAttribute(oldPerson, newPerson);
+
+        // if person was a kid but birth date has changed or time go on then it is need to update parent
+        if (oldPerson.isKid() && !newPerson.isKid()) {
+            removeKidFromParent(newPerson.getId(), updateDate);
+        }
+
         super.update(oldPerson, newPerson, updateDate);
+    }
+
+    @Transactional
+    private void removeKidFromParent(final long childId, Date updateDate) {
+        Map<String, Long> params = of("childId", childId, "personChildrenAT", CHILDREN);
+        List<Long> parentIds = sqlSession().selectList(PERSON_MAPPING + ".findParents", params);
+        for (long parentId : parentIds) {
+            Person oldParent = findById(parentId, true);
+            Person newParent = CloneUtil.cloneObject(oldParent);
+            List<Attribute> children = newParent.getAttributes(CHILDREN);
+            newParent.removeAttribute(CHILDREN);
+            newParent.getAttributes().addAll(newArrayList(filter(children, new Predicate<Attribute>() {
+
+                @Override
+                public boolean apply(Attribute childrenAttribute) {
+                    return !new Long(childId).equals(childrenAttribute.getValueId());
+                }
+            })));
+
+            update(oldParent, newParent, updateDate);
+        }
     }
 
     private void updateDocumentAttribute(Person oldPerson, Person newPerson) {
@@ -569,7 +599,7 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     private Map<String, Long> newFindPersonRegistrationParameters(long personId) {
-        return ImmutableMap.of("registrationPersonAT", RegistrationStrategy.PERSON,
+        return of("registrationPersonAT", RegistrationStrategy.PERSON,
                 "apartmentCardRegistrationAT", ApartmentCardStrategy.REGISTRATIONS,
                 "apartmentCardAddressAT", ApartmentCardStrategy.ADDRESS,
                 "personId", personId);

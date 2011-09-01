@@ -65,9 +65,6 @@ INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('apartment_ca
 
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2400, 1, 'Поквартирная карточка'), (2400, 2, 'Поквартирная карточка');
 insert into `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) values (2400, 'apartment_card', 2400, '');
-/* Лицевой счет */
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2401, 1, UPPER('Лицевой счет')), (2401, 2, UPPER('Лицевой счет'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2400, 2400, 1, 2401, 1);
 /* Собственник */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2402, 1, UPPER('Собственник')), (2402, 2, UPPER('Собственник'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2401, 2400, 1, 2402, 1);
@@ -84,7 +81,6 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2406, 1, UPPER('Зарегистрированные')), (2406, 2, UPPER('Зарегистрированные'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2405, 2400, 0, 2406, 1);
 
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2400, 2400, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2401, 2401, 'person');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2402, 2402, 'room');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2403, 2402, 'apartment');

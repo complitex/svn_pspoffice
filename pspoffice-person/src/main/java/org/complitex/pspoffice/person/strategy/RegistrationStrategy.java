@@ -216,6 +216,7 @@ public class RegistrationStrategy extends Strategy {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Transactional
     public String checkOwner(long apartmentCardId, Long ownerRelationshipId, long personId, Locale locale) {
         if (ownerRelationshipId == null || !ownerRelationshipId.equals(OwnerRelationshipStrategy.OWNER)) {
             return null;
@@ -231,10 +232,10 @@ public class RegistrationStrategy extends Strategy {
         }
     }
 
+    @Transactional
     public boolean validateDuplicatePerson(long apartmentCardId, long personId) {
         Map<String, Long> params = of("apartmentCardRegistrationAT", ApartmentCardStrategy.REGISTRATIONS,
                 "registrationPersonAT", PERSON, "personId", personId, "apartmentCardId", apartmentCardId);
-        Long id = (Long)sqlSession().selectOne(REGISTRATION_MAPPING + ".validateDuplicatePerson", params);
-        return id == null;
+        return sqlSession().selectOne(REGISTRATION_MAPPING + ".validateDuplicatePerson", params) == null;
     }
 }

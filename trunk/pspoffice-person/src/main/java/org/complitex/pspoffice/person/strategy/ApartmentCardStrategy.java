@@ -7,7 +7,6 @@ package org.complitex.pspoffice.person.strategy;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Date;
-import java.util.Iterator;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.ImmutableList.*;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.Preference;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
@@ -74,15 +72,6 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public static final long FORM_OF_OWNERSHIP_TYPE = 2405;
     public static final long HOUSING_RIGHTS_TYPE = 2406;
     public static final long REGISTRATIONS_TYPE = 2407;
-    /**
-     * Apartment card search state preference page
-     */
-    public static final String APARTMENT_CARD_SEARCH_STATE_PAGE = "APARTMENT_CARD_SEARCH_STATE_PAGE";
-    /**
-     * Apartment card search state session key
-     */
-    private static final MetaDataKey<SearchComponentState> APARTMENT_CARD_SEARCH_STATE_KEY = new MetaDataKey<SearchComponentState>() {
-    };
     /**
      * Set of persistable search state entities
      */
@@ -364,32 +353,23 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     public void storeSearchState(DictionaryFwSession session, SearchComponentState searchComponentState) {
-        for (Iterator<Map.Entry<String, DomainObject>> iterator = searchComponentState.entrySet().iterator();
-                iterator.hasNext();) {
-            String key = iterator.next().getKey();
-            if (!SEARCH_STATE_ENTITES.contains(key)) {
-                iterator.remove();
-            }
-        }
-
-        for (String key : searchComponentState.keySet()) {
-            if (SEARCH_STATE_ENTITES.contains(key)) {
-                DomainObject object = searchComponentState.get(key);
-                long objectId = object == null ? SearchComponentState.NOT_SPECIFIED_ID
-                        : (object.getId() != null ? object.getId() : SearchComponentState.NOT_SPECIFIED_ID);
-                session.putPreference(APARTMENT_CARD_SEARCH_STATE_PAGE, key, String.valueOf(objectId), true);
-            }
-        }
+        SearchComponentState globalSearchComponentState = session.getGlobalSearchComponentState();
+        globalSearchComponentState.updateState(searchComponentState);
+        session.storeGlobalSearchComponentState();
     }
 
     @Transactional
     public SearchComponentState restoreSearchState(DictionaryFwSession session) {
-        SearchComponentState searchComponentState = session.getMetaData(APARTMENT_CARD_SEARCH_STATE_KEY);
-        if (searchComponentState == null) {
-            searchComponentState = new SearchComponentState();
-            session.setMetaData(APARTMENT_CARD_SEARCH_STATE_KEY, searchComponentState);
-            for (Preference p : session.getPreferenceMap(APARTMENT_CARD_SEARCH_STATE_PAGE).values()) {
-                searchComponentState.put(p.getKey(), session.getPreferenceDomainObject(p.getPage(), p.getKey()));
+        SearchComponentState globalSearchComponentState = session.getGlobalSearchComponentState();
+        SearchComponentState searchComponentState = new SearchComponentState();
+        boolean useDefault = session.getPreferenceBoolean(DictionaryFwSession.GLOBAL_PAGE, DictionaryFwSession.IS_USE_DEFAULT_STATE_KEY);
+        for (Map.Entry<String, DomainObject> searchFilterEntry : globalSearchComponentState.entrySet()) {
+            String searchFilter = searchFilterEntry.getKey();
+            if (SEARCH_STATE_ENTITES.contains(searchFilter) || (searchFilter.equals("street") && useDefault)) {
+                DomainObject filterObject = searchFilterEntry.getValue();
+                if (filterObject != null && filterObject.getId() > 0) {
+                    searchComponentState.put(searchFilter, filterObject);
+                }
             }
         }
         return searchComponentState;

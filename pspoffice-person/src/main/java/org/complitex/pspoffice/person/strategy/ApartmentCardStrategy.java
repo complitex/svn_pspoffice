@@ -138,7 +138,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         return findById(id, runAsAdmin, true, true, true);
     }
 
-    private ApartmentCard findById(long id, boolean runAsAdmin, boolean loadOwner, boolean loadRegistrations, boolean loadOwnershipForm) {
+    public ApartmentCard findById(long id, boolean runAsAdmin, boolean loadOwner, boolean loadRegistrations,
+            boolean loadOwnershipForm) {
         DomainObject apartmentCardObject = super.findById(id, runAsAdmin);
         if (apartmentCardObject == null) {
             return null;

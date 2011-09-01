@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.edit.registration;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import java.text.MessageFormat;
 import java.util.List;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Iterables.*;
@@ -26,8 +27,10 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
@@ -85,7 +88,6 @@ public class RegistrationEdit extends FormTemplatePage {
     private Registration oldRegistration;
     private String addressEntity;
     private long addressId;
-    private IModel<Person> personModel;
 
     public RegistrationEdit(long apartmentCardId, String addressEntity, long addressId, Registration registration) {
         this.apartmentCardId = apartmentCardId;
@@ -139,9 +141,8 @@ public class RegistrationEdit extends FormTemplatePage {
         final EntityAttributeType personAttributeType = entity.getAttributeType(PERSON);
         personContainer.add(new WebMarkupContainer("required").setVisible(personAttributeType.isMandatory()));
 
-        personModel = new Model<Person>(newRegistration.getPerson());
-        PersonPicker person = new PersonPicker("person", PersonAgeType.ANY, personModel, true,
-                labelModel(personAttributeType.getAttributeNames(), getLocale()), isNew());
+        PersonPicker person = new PersonPicker("person", PersonAgeType.ANY, new PropertyModel<Person>(newRegistration, "person"),
+                true, labelModel(personAttributeType.getAttributeNames(), getLocale()), isNew());
         personContainer.add(person);
         form.add(personContainer);
 
@@ -364,14 +365,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
     public void beforePersist() {
         // person
-        Attribute personAttribute = newRegistration.getAttribute(PERSON);
-        Person person = personModel.getObject();
-        Long personId = person != null ? person.getId() : null;
-        if (personId != null) {
-            personAttribute.setValueId(personId);
-        } else {
-            throw new IllegalStateException("Person has not been filled in.");
-        }
+        newRegistration.getAttribute(PERSON).setValueId(newRegistration.getPerson().getId());
 
         // owner relationship
         Attribute ownerRelationshipAttribute = newRegistration.getAttribute(OWNER_RELATIONSHIP);
@@ -387,7 +381,21 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private boolean validate() {
-        return true;
+        //owner and owner relationship
+        DomainObject ownerRelationship = newRegistration.getOwnerRelationship();
+        Long ownerRelationshipId = ownerRelationship != null ? ownerRelationship.getId() : null;
+        String ownerName = registrationStrategy.checkOwner(apartmentCardId, ownerRelationshipId,
+                newRegistration.getPerson().getId(), getLocale());
+        if (!Strings.isEmpty(ownerName)) {
+            error(MessageFormat.format(getString("owner_is_another_man"), ownerName));
+        }
+
+        //duplicate person registration check
+        if (!registrationStrategy.validateDuplicatePerson(apartmentCardId, newRegistration.getPerson().getId())) {
+            error(getString("person_already_registered"));
+        }
+
+        return getSession().getFeedbackMessages().isEmpty();
     }
 
     private void save() {

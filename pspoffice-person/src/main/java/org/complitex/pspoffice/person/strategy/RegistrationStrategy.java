@@ -4,8 +4,10 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import static com.google.common.collect.ImmutableMap.*;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.Page;
@@ -18,6 +20,7 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -30,6 +33,7 @@ import org.complitex.template.web.security.SecurityRole;
 @Stateless
 public class RegistrationStrategy extends Strategy {
 
+    private static final String REGISTRATION_MAPPING = RegistrationStrategy.class.getPackage().getName() + ".Registration";
     /**
      * Attribute type ids
      */
@@ -62,6 +66,8 @@ public class RegistrationStrategy extends Strategy {
     private PersonStrategy personStrategy;
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB
+    private ApartmentCardStrategy apartmentCardStrategy;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -208,5 +214,27 @@ public class RegistrationStrategy extends Strategy {
     @Override
     public Page getObjectNotFoundPage() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String checkOwner(long apartmentCardId, Long ownerRelationshipId, long personId, Locale locale) {
+        if (ownerRelationshipId == null || !ownerRelationshipId.equals(OwnerRelationshipStrategy.OWNER)) {
+            return null;
+        }
+
+        ApartmentCard apartmentCard = apartmentCardStrategy.findById(apartmentCardId, true, false, false, false);
+        long ownerId = apartmentCard.getAttribute(ApartmentCardStrategy.OWNER).getValueId();
+        if (ownerId != personId) {
+            Person owner = personStrategy.findById(ownerId, true, true, false, false);
+            return personStrategy.displayDomainObject(owner, locale);
+        } else {
+            return null;
+        }
+    }
+
+    public boolean validateDuplicatePerson(long apartmentCardId, long personId) {
+        Map<String, Long> params = of("apartmentCardRegistrationAT", ApartmentCardStrategy.REGISTRATIONS,
+                "registrationPersonAT", PERSON, "personId", personId, "apartmentCardId", apartmentCardId);
+        Long id = (Long)sqlSession().selectOne(REGISTRATION_MAPPING + ".validateDuplicatePerson", params);
+        return id == null;
     }
 }

@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.ImmutableList.*;
@@ -448,5 +449,17 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.ARRIVAL_DATE).getLocalizedValues()).
                 setValue(new DateConverter().toString(registerOwnerCard.getArrivalDate()));
         return registration;
+    }
+
+    @Transactional
+    public boolean validateOwnerAddressUniqueness(long addressId, long addressTypeId, long ownerId, Long apartmentCardId) {
+        Map<String, Long> params = Maps.newHashMap();
+        params.put("apartmentCardAddressAT", ADDRESS);
+        params.put("addressId", addressId);
+        params.put("addressTypeId", addressTypeId);
+        params.put("apartmentCardOwnerAT", OWNER);
+        params.put("ownerId", ownerId);
+        params.put("apartmentCardId", apartmentCardId);
+        return sqlSession().selectOne(APARTMENT_CARD_MAPPING + ".validateOwnerAddressUniqueness", params) == null;
     }
 }

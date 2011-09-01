@@ -37,6 +37,7 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
@@ -112,7 +113,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private ApartmentCard oldApartmentCard;
     private ApartmentCard newApartmentCard;
     private SearchComponentState addressSearchComponentState;
-    private IModel<Person> ownerModel;
     private Form form;
     private FeedbackPanel messages;
     private Component scrollToComponent;
@@ -221,9 +221,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         final Entity entity = apartmentCardStrategy.getEntity();
 
-        //personal account
-        initSystemAttributeInput(form, "personalAccount", PERSONAL_ACCOUNT);
-
         //address
         WebMarkupContainer addressContainer = new WebMarkupContainer("addressContainer");
         final EntityAttributeType addressAttributeType = entity.getAttributeType(ADDRESS);
@@ -243,8 +240,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         ownerContainer.add(new Label("label", ownerLabelModel));
         ownerContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
 
-        ownerModel = new Model<Person>(newApartmentCard.getOwner());
-        PersonPicker owner = new PersonPicker("owner", PersonAgeType.ADULT, ownerModel, true, ownerLabelModel, true);
+        PersonPicker owner = new PersonPicker("owner", PersonAgeType.ADULT, new PropertyModel<Person>(newApartmentCard, "owner"),
+                true, ownerLabelModel, true);
         ownerContainer.add(owner);
         form.add(ownerContainer);
 
@@ -271,14 +268,18 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     try {
                         if (validate()) {
                             save();
-                            registerOwnerDialog.open(target, newApartmentCard.getId(), ownerModel.getObject());
+                            registerOwnerDialog.open(target, newApartmentCard.getId(), newApartmentCard.getOwner());
                         } else {
+                            registerOwnerCheckBox.setModelObject(false);
+                            target.addComponent(registerOwnerCheckBox);
                             target.addComponent(messages);
                             scrollToMessages(target);
                         }
                     } catch (Exception e) {
                         log.error("", e);
                         error(getString("db_error"));
+                        registerOwnerCheckBox.setModelObject(false);
+                        target.addComponent(registerOwnerCheckBox);
                         target.addComponent(messages);
                         scrollToMessages(target);
                     }
@@ -546,14 +547,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         // owner
         Attribute ownerAttribute = newApartmentCard.getAttribute(OWNER);
-        DomainObject owner = ownerModel.getObject();
+        DomainObject owner = newApartmentCard.getOwner();
         Long ownerId = owner != null ? owner.getId() : null;
-        if (ownerId != null) {
-            ownerAttribute.setValueId(ownerId);
-            ownerAttribute.setValueTypeId(OWNER_TYPE);
-        } else {
-            throw new IllegalStateException("Owner has not been filled in.");
-        }
+        ownerAttribute.setValueId(ownerId);
+        ownerAttribute.setValueTypeId(OWNER_TYPE);
 
         // form of ownership
         Attribute formOfOwnershipAttribute = newApartmentCard.getAttribute(FORM_OF_OWNERSHIP);
@@ -565,6 +562,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private boolean validate() {
         //address validation
+        Long addressObjectId = null;
+        Long addressTypeId = null;
+
         DomainObject building = addressSearchComponentState.get("building");
         if (building == null || building.getId() <= 0) {
             error(getString("address_failing"));
@@ -573,18 +573,46 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             if (apartment == null || apartment.getId() <= 0) {
                 if (!apartmentCardStrategy.isLeafAddress(building.getId(), "building")) {
                     error(getString("address_failing"));
+                } else {
+                    addressObjectId = building.getId();
+                    addressTypeId = ADDRESS_BUILDING;
                 }
             } else {
                 DomainObject room = addressSearchComponentState.get("room");
                 if (room == null || room.getId() <= 0) {
                     if (!apartmentCardStrategy.isLeafAddress(apartment.getId(), "apartment")) {
                         error(getString("address_failing"));
+                    } else {
+                        addressObjectId = apartment.getId();
+                        addressTypeId = ADDRESS_APARTMENT;
                     }
                 } else {
                     if (room.getId() == null || room.getId() <= 0) {
                         error(getString("address_failing"));
+                    } else {
+                        addressObjectId = room.getId();
+                        addressTypeId = ADDRESS_ROOM;
                     }
                 }
+            }
+        }
+
+        //one of registered people can have OWNER owner relationship but house owner can be another man
+        long ownerId = newApartmentCard.getOwner().getId();
+        for (Registration registration : newApartmentCard.getRegistrations()) {
+            if (!registration.isFinished()) {
+                if (registration.getOwnerRelationship().getId().equals(OwnerRelationshipStrategy.OWNER)
+                        && !registration.getPerson().getId().equals(ownerId)) {
+                    error(getString("owner_relationship_mismatch"));
+                    break;
+                }
+            }
+        }
+
+        //check address-owner pair is unique
+        if (addressObjectId != null && addressTypeId != null) {
+            if (!apartmentCardStrategy.validateOwnerAddressUniqueness(addressObjectId, addressTypeId, ownerId, newApartmentCard.getId())) {
+                error(getString("owner_address_uniqueness_error"));
             }
         }
 

@@ -65,4 +65,18 @@
         SELECT COUNT(DISTINCT e.`object_id`) FROM `apartment_card` e
         <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByBuildingSql"/>
     </select>
+
+    <select id="validateOwnerAddressUniqueness" parameterType="map" resultType="long">
+        SELECT a.`object_id` FROM `apartment_card` a
+            JOIN `apartment_card_attribute` address ON (address.`object_id` = a.`object_id`
+                AND address.`attribute_type_id` = #{apartmentCardAddressAT} AND address.`status` = 'ACTIVE'
+                AND address.`value_id` = #{addressId} AND address.`value_type_id` = #{addressTypeId})
+            JOIN `apartment_card_attribute` owner ON (owner.`object_id` = a.`object_id`
+                AND owner.`attribute_type_id` = #{apartmentCardOwnerAT} AND owner.`status` = 'ACTIVE'
+                AND owner.`value_id` = #{ownerId})
+            <if test="apartmentCardId != null">
+                WHERE a.`object_id` != #{apartmentCardId}
+            </if>
+            LIMIT 0,1
+    </select>
 </mapper>

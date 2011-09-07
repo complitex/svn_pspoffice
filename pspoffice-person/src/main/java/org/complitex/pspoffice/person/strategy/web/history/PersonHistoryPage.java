@@ -19,7 +19,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class PersonHistoryPage extends HistoryPage {
 
     public PersonHistoryPage(PageParameters params) {

@@ -66,7 +66,7 @@ import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class RegistrationEdit extends FormTemplatePage {
 
     @EJB

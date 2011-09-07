@@ -55,7 +55,6 @@ import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.Module;
@@ -67,6 +66,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
+import org.complitex.pspoffice.person.strategy.web.component.AddressSearchPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
@@ -86,7 +86,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class ApartmentCardEdit extends FormTemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(ApartmentCardEdit.class);
@@ -228,7 +228,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         addressContainer.add(new WebMarkupContainer("required").setVisible(addressAttributeType.isMandatory()));
 
         addressSearchComponentState = initAddressSearchComponentState();
-        WiQuerySearchComponent address = new WiQuerySearchComponent("address", addressSearchComponentState,
+        AddressSearchPanel address = new AddressSearchPanel("address", addressSearchComponentState,
                 of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, true);
         addressContainer.add(address);
         form.add(addressContainer);

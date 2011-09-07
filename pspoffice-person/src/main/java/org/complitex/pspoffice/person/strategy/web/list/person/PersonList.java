@@ -51,7 +51,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class PersonList extends ScrollListPage {
 
     @EJB
@@ -207,8 +207,9 @@ public final class PersonList extends ScrollListPage {
                 item.add(new Label("firstName", person.getFirstName(getLocale(), systemLocale)));
                 item.add(new Label("middleName", person.getMiddleName(getLocale(), systemLocale)));
 
-                ScrollBookmarkablePageLink<WebPage> detailsLink = new ScrollBookmarkablePageLink<WebPage>("detailsLink", personStrategy.getEditPage(),
-                        personStrategy.getEditPageParams(person.getId(), null, null), String.valueOf(person.getId()));
+                ScrollBookmarkablePageLink<WebPage> detailsLink = new ScrollBookmarkablePageLink<WebPage>("detailsLink", 
+                        personStrategy.getEditPage(), personStrategy.getEditPageParams(person.getId(), null, null),
+                        String.valueOf(person.getId()));
                 detailsLink.add(new Label("editMessage", new AbstractReadOnlyModel<String>() {
 
                     @Override

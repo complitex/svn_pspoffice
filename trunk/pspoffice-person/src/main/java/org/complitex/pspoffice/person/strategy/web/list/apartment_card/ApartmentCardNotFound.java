@@ -19,7 +19,7 @@ import org.complitex.template.web.template.TemplatePage;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class ApartmentCardNotFound extends TemplatePage {
 
     @EJB

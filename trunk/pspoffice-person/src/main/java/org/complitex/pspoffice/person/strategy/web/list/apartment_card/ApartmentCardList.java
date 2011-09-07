@@ -36,7 +36,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class ApartmentCardList extends ListPage {
 
     @EJB

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns:wicket>
+    <head>
+        <title></title>
+    </head>
+    <body>
+    <wicket:panel>
+        <div style="display: none" wicket:id="dialog">
+            <div wicket:id="content">
+                <h3 wicket:id="label"></h3>
+                <div wicket:id="messages"></div>
+                <form wicket:id="form">
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <th>
+                                <wicket:message key="parent_address_label"/>:
+                            </th>
+                            <td>
+                                <span wicket:id="address"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <span wicket:id="nameLabel"></span><b class="blue">*</b>:
+                            </th>
+                            <td>
+                                <input type="text" wicket:id="name"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <div wicket:id="permissionPanel"></div>
+                    <div style="margin-top: 30px;">
+                        <input type="button" wicket:message="value:save" wicket:id="submit" class="btnMiddle"/>
+                        <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </wicket:panel>
+</body>
+</html>

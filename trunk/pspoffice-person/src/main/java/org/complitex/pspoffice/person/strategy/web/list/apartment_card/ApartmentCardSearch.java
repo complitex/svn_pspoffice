@@ -24,10 +24,10 @@ import org.complitex.dictionary.strategy.IStrategy.SimpleObjectInfo;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent.SearchFilterSettings;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
+import org.complitex.pspoffice.person.strategy.web.component.AddressSearchPanel;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
@@ -37,7 +37,7 @@ import org.complitex.template.web.template.FormTemplatePage;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class ApartmentCardSearch extends FormTemplatePage {
 
     private static final String SEARCH_COMPONENT_ID = "addressSearchComponent";
@@ -71,8 +71,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
         addressSearchComponentContainer = new WebMarkupContainer("addressSearchComponentContainer");
         addressSearchComponentContainer.setOutputMarkupId(true);
         add(addressSearchComponentContainer);
-        WiQuerySearchComponent addressSearchComponent = newSearchComponent();
-        addressSearchComponentContainer.add(addressSearchComponent);
+        addressSearchComponentContainer.add(newSearchComponent());
 
         AjaxLink<Void> submit = new AjaxLink<Void>("search") {
 
@@ -84,12 +83,12 @@ public class ApartmentCardSearch extends FormTemplatePage {
         add(submit);
     }
 
-    private WiQuerySearchComponent newSearchComponent() {
+    private Component newSearchComponent() {
         return fullAddressEnabledModel.getObject()
-                ? new WiQuerySearchComponent(SEARCH_COMPONENT_ID,
+                ? new AddressSearchPanel(SEARCH_COMPONENT_ID,
                 addressSearchComponentState, of("country", "region", "city", "street", "building", "apartment"), new AddressSearchCallback(),
                 ShowMode.ACTIVE, true)
-                : new WiQuerySearchComponent(SEARCH_COMPONENT_ID, addressSearchComponentState,
+                : new AddressSearchPanel(SEARCH_COMPONENT_ID, addressSearchComponentState,
                 of(new SearchFilterSettings("country", false, false, ShowMode.ACTIVE),
                 new SearchFilterSettings("region", false, false, ShowMode.ACTIVE),
                 new SearchFilterSettings("city", false, false, ShowMode.ACTIVE),

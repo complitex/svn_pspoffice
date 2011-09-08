@@ -19,6 +19,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
+@Deprecated
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class PersonHistoryPage extends HistoryPage {
 

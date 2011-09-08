@@ -7,6 +7,12 @@
             extends="org.complitex.dictionary.entity.DomainObject.DomainObject">
     </resultMap>
 
+    <sql id="permissionFilter">
+        <if test="userPermissionString != null">
+            AND (e.`permission_id` IN ${userPermissionString})
+        </if>
+    </sql>
+
     <sql id="findByApartmentSql">
         LEFT JOIN `apartment_card_attribute` apartment_a ON (apartment_a.`object_id` = e.`object_id` AND apartment_a.`status` = 'ACTIVE'
             AND apartment_a.`attribute_type_id` = 2402 AND apartment_a.`value_type_id` = 2403)
@@ -17,7 +23,8 @@
         LEFT JOIN `apartment` apartment ON (apartment.`status` IN ('ACTIVE', 'INACTIVE')
             AND apartment.`object_id` = room.`parent_id` AND room.`parent_entity_id` = 100)
 
-        WHERE apartment_a.`value_id` = #{addressId} OR apartment.`object_id` = #{addressId}
+        WHERE (apartment_a.`value_id` = #{addressId} OR apartment.`object_id` = #{addressId})
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.permissionFilter"/>
     </sql>
 
     <select id="findByApartment" parameterType="map" resultType="long">
@@ -51,8 +58,9 @@
         LEFT JOIN `apartment` apartment3 ON (apartment3.`status` IN ('ACTIVE', 'INACTIVE') AND apartment3.`object_id` = apartment_a.`value_id`)
         LEFT JOIN `building` building3 ON (building3.`status` IN ('ACTIVE', 'INACTIVE') AND building3.`object_id` = apartment3.`parent_id`)
 
-        WHERE building_a.`value_id` = #{addressId} OR building1.`object_id` = #{addressId} OR building2.`object_id` = #{addressId}
-                OR building3.`object_id` = #{addressId}
+        WHERE (building_a.`value_id` = #{addressId} OR building1.`object_id` = #{addressId} OR building2.`object_id` = #{addressId}
+                OR building3.`object_id` = #{addressId})
+                <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.permissionFilter"/>
     </sql>
 
     <select id="findByBuilding" parameterType="long" resultType="long">

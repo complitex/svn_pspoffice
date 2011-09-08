@@ -10,7 +10,6 @@ import javax.ejb.EJB;
 import org.complitex.address.strategy.room.RoomStrategy;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
-import org.complitex.dictionary.entity.UserOrganization;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.StringCultureBean;
@@ -33,8 +32,8 @@ abstract class RoomAddressDialog extends AbstractAddressCreateDialog {
     @EJB
     private RoomStrategy roomStrategy;
 
-    RoomAddressDialog(String id, Autocomplete<String> autocomplete, List<UserOrganization> userOrganizations) {
-        super(id, autocomplete, userOrganizations);
+    RoomAddressDialog(String id, Autocomplete<String> autocomplete, List<Long> userOrganizationIds) {
+        super(id, autocomplete, userOrganizationIds);
     }
 
     @Override

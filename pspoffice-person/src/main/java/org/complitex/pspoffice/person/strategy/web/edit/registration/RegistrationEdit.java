@@ -49,6 +49,7 @@ import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrat
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
@@ -83,14 +84,14 @@ public class RegistrationEdit extends FormTemplatePage {
     private StringCultureBean stringBean;
     @EJB
     private LogBean logBean;
-    private long apartmentCardId;
+    private ApartmentCard apartmentCard;
     private Registration newRegistration;
     private Registration oldRegistration;
     private String addressEntity;
     private long addressId;
 
-    public RegistrationEdit(long apartmentCardId, String addressEntity, long addressId, Registration registration) {
-        this.apartmentCardId = apartmentCardId;
+    public RegistrationEdit(ApartmentCard apartmentCard, String addressEntity, long addressId, Registration registration) {
+        this.apartmentCard = apartmentCard;
         this.addressEntity = addressEntity;
         this.addressId = addressId;
 
@@ -384,14 +385,14 @@ public class RegistrationEdit extends FormTemplatePage {
         //owner and owner relationship
         DomainObject ownerRelationship = newRegistration.getOwnerRelationship();
         Long ownerRelationshipId = ownerRelationship != null ? ownerRelationship.getId() : null;
-        String ownerName = registrationStrategy.checkOwner(apartmentCardId, ownerRelationshipId,
+        String ownerName = registrationStrategy.checkOwner(apartmentCard.getId(), ownerRelationshipId,
                 newRegistration.getPerson().getId(), getLocale());
         if (!Strings.isEmpty(ownerName)) {
             error(MessageFormat.format(getString("owner_is_another_man"), ownerName));
         }
 
         //duplicate person registration check
-        if (!registrationStrategy.validateDuplicatePerson(apartmentCardId, newRegistration.getPerson().getId())) {
+        if (isNew() && !registrationStrategy.validateDuplicatePerson(apartmentCard.getId(), newRegistration.getPerson().getId())) {
             error(getString("person_already_registered"));
         }
 
@@ -401,7 +402,7 @@ public class RegistrationEdit extends FormTemplatePage {
     private void save() {
         beforePersist();
         if (isNew()) {
-            apartmentCardStrategy.addRegistration(apartmentCardId, newRegistration, DateUtil.getCurrentDate());
+            apartmentCardStrategy.addRegistration(apartmentCard, newRegistration, DateUtil.getCurrentDate());
         } else {
             registrationStrategy.update(oldRegistration, newRegistration, DateUtil.getCurrentDate());
         }
@@ -411,7 +412,7 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private void back() {
-        setResponsePage(new ApartmentCardEdit(apartmentCardId));
+        setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
     }
 }
 

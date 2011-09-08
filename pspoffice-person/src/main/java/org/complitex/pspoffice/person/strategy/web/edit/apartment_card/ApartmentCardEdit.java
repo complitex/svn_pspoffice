@@ -44,6 +44,7 @@ import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.LogBean;
+import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
@@ -67,6 +68,7 @@ import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.AddressSearchPanel;
+import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
@@ -108,6 +110,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private OwnershipFormStrategy ownershipFormStrategy;
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB
+    private SessionBean sessionBean;
     private String addressEntity;
     private Long addressId;
     private ApartmentCard oldApartmentCard;
@@ -159,7 +163,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         @Override
         protected void action() {
-            setResponsePage(new RegistrationEdit(newApartmentCard.getId(),
+            setResponsePage(new RegistrationEdit(newApartmentCard,
                     getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
         }
     }
@@ -248,6 +252,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         // form of ownership
         form.add(initFormOfOwnership());
 
+        //permission panel
+        form.add(new PermissionPanel("permissionPanel", sessionBean.getUserOrganizationObjectIds(), newApartmentCard.getSubjectIds()));
+
         //register owner
         WebMarkupContainer registerOwnerContainer = new WebMarkupContainer("registerOwnerContainer");
         form.add(registerOwnerContainer);
@@ -268,7 +275,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     try {
                         if (validate()) {
                             save();
-                            registerOwnerDialog.open(target, newApartmentCard.getId(), newApartmentCard.getOwner());
+                            registerOwnerDialog.open(target, newApartmentCard);
                         } else {
                             registerOwnerCheckBox.setModelObject(false);
                             target.addComponent(registerOwnerCheckBox);
@@ -415,7 +422,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                     @Override
                     public void onClick() {
-                        setResponsePage(new RegistrationEdit(newApartmentCard.getId(), ApartmentCardStrategy.getAddressEntity(newApartmentCard),
+                        setResponsePage(new RegistrationEdit(newApartmentCard, ApartmentCardStrategy.getAddressEntity(newApartmentCard),
                                 newApartmentCard.getAddressId(), registration));
                     }
                 };
@@ -669,7 +676,17 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     }
 
     private void back() {
-        setResponsePage(new ApartmentCardList(getAddressEntity(), getAddressId()));
+        String backAddressEntity = null;
+        Long backAddressId = null;
+        DomainObject room = addressSearchComponentState.get("room");
+        if (room != null && room.getId() > 0) {
+            backAddressId = room.getParentId();
+            backAddressEntity = room.getParentEntityId().equals(100L) ? "apartment" : "building";
+        } else {
+            backAddressEntity = getAddressEntity();
+            backAddressId = getAddressId();
+        }
+        setResponsePage(new ApartmentCardList(backAddressEntity, backAddressId));
     }
 
     private Component initFormOfOwnership() {
@@ -700,7 +717,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             }
         };
 
-        DisableAwareDropDownChoice<DomainObject> formOfOwnership = new DisableAwareDropDownChoice<DomainObject>("input",
+        DisableAwareDropDownChoice<DomainObject> formOfOwnership = new DisableAwareDropDownChoice<DomainObject>("formOfOwnership",
                 formOfOwnershipModel, allOwnershipForms, new DomainObjectDisableAwareRenderer() {
 
             @Override

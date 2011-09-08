@@ -11,9 +11,9 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.UserOrganization;
 import org.odlabs.wiquery.ui.autocomplete.EnhancedAutocompleteComponent;
 
 /**
@@ -22,11 +22,11 @@ import org.odlabs.wiquery.ui.autocomplete.EnhancedAutocompleteComponent;
  */
 abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocompleteComponent {
 
-    private HiddenField<Void> openDialogButton;
+    private HiddenField<String> openDialogButton;
     private final String entity;
 
     EnhancedAddressAutocompleteComponent(String id, IModel<DomainObject> model, IChoiceRenderer<DomainObject> renderer,
-            boolean canCreate, String entity, List<UserOrganization> userOrganizations) {
+            boolean canCreate, String entity, List<Long> userOrganizationIds) {
         super(id, model, renderer);
 
         if (!(entity.equals("apartment") || entity.equals("room"))) {
@@ -35,7 +35,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
 
         this.entity = entity;
 
-        openDialogButton = new HiddenField<Void>("openDialogButton") {
+        openDialogButton = new HiddenField<String>("openDialogButton", new Model<String>()) {
 
             @Override
             protected void onComponentTag(ComponentTag tag) {
@@ -50,7 +50,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
         openDialogButton.setVisible(canCreate);
         add(openDialogButton);
 
-        final AbstractAddressCreateDialog addressCreateDialog = newAddressCreateDialog("createDialog", userOrganizations);
+        final AbstractAddressCreateDialog addressCreateDialog = newAddressCreateDialog("createDialog", userOrganizationIds);
         add(addressCreateDialog);
         openDialogButton.add(new AjaxEventBehavior("onclick") {
 
@@ -62,9 +62,9 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
         });
     }
 
-    private AbstractAddressCreateDialog newAddressCreateDialog(String id, List<UserOrganization> userOrganizations) {
+    private AbstractAddressCreateDialog newAddressCreateDialog(String id, List<Long> userOrganizationIds) {
         if (entity.equals("apartment")) {
-            return new ApartmentCreateDialog(id, getAutocompleteField(), userOrganizations) {
+            return new ApartmentCreateDialog(id, getAutocompleteField(), userOrganizationIds) {
 
                 @Override
                 void onCreate(AjaxRequestTarget target, DomainObject saved) {
@@ -72,7 +72,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
                 }
             };
         } else {
-            return new RoomAddressDialog(id, getAutocompleteField(), userOrganizations) {
+            return new RoomAddressDialog(id, getAutocompleteField(), userOrganizationIds) {
 
                 @Override
                 void onCreate(AjaxRequestTarget target, DomainObject saved) {

@@ -13,7 +13,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.UserOrganization;
+import org.complitex.dictionary.service.PermissionBean;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -26,20 +26,37 @@ public final class PermissionPanel extends Panel {
 
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
+    private static final DomainObject VISIBLE_BY_ALL = new DomainObject();
 
-    public PermissionPanel(String id, List<UserOrganization> userOrganizations, Set<Long> subjectIds) {
-        super(id);
-        init(userOrganizations, subjectIds);
+    static {
+        VISIBLE_BY_ALL.setId(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
     }
 
-    private void init(final List<UserOrganization> userOrganizations, final Set<Long> subjectIds) {
+    public PermissionPanel(String id, List<Long> userOrganizationIds, Set<Long> subjectIds) {
+        super(id);
+        init(userOrganizationIds, subjectIds);
+    }
+
+    private void init(final List<Long> userOrganizationIds, final Set<Long> subjectIds) {
+        final Long existingSubjectId = subjectIds.isEmpty() ? null : subjectIds.iterator().next();
         final IModel<List<DomainObject>> userOrganizationsModel = new LoadableDetachableModel<List<DomainObject>>() {
 
             @Override
             protected List<DomainObject> load() {
                 List<DomainObject> list = Lists.newArrayList();
-                for (UserOrganization userOrganization : userOrganizations) {
-                    list.add(organizationStrategy.findById(userOrganization.getId(), true));
+                if (existingSubjectId == null) {
+                    for (Long userOrganizationId : userOrganizationIds) {
+                        list.add(organizationStrategy.findById(userOrganizationId, true));
+                    }
+                    if (list.isEmpty()) {
+                        list.add(VISIBLE_BY_ALL);
+                    }
+                } else {
+                    if (existingSubjectId == PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID) {
+                        list.add(VISIBLE_BY_ALL);
+                    } else {
+                        list.add(organizationStrategy.findById(existingSubjectId, true));
+                    }
                 }
                 return list;
             }
@@ -48,7 +65,11 @@ public final class PermissionPanel extends Panel {
 
             @Override
             public String getDisplayValue(DomainObject object) {
-                return organizationStrategy.displayDomainObject(object, getLocale());
+                if (object.getId().equals(VISIBLE_BY_ALL.getId())) {
+                    return getString("visible_by_all");
+                } else {
+                    return organizationStrategy.displayDomainObject(object, getLocale());
+                }
             }
         };
 
@@ -61,14 +82,27 @@ public final class PermissionPanel extends Panel {
                 subjectIds.add(userOrganization.getId());
             }
         };
+
         DisableAwareDropDownChoice<DomainObject> organizationPicker =
                 new DisableAwareDropDownChoice<DomainObject>("organizationPicker", model, userOrganizationsModel, renderer);
         organizationPicker.setRequired(true);
         add(organizationPicker);
 
-        if (userOrganizationsModel.getObject().size() == 1) {
+        if (existingSubjectId != null) {
+            DomainObject selected = null;
+            for (DomainObject organization : userOrganizationsModel.getObject()) {
+                if (organization.getId().equals(existingSubjectId)) {
+                    selected = organization;
+                    break;
+                }
+            }
+            model.setObject(selected);
+            organizationPicker.setEnabled(false);
+        } else if (userOrganizationsModel.getObject().size() == 1) {
             model.setObject(userOrganizationsModel.getObject().get(0));
-            setVisible(false);
+            organizationPicker.setEnabled(false);
         }
+
+        setRenderBodyOnly(true);
     }
 }

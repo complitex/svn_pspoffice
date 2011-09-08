@@ -23,7 +23,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.UserOrganization;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.autocomplete.Autocomplete;
@@ -48,12 +47,12 @@ abstract class AbstractAddressCreateDialog extends Panel {
     private Autocomplete<String> autocomplete;
     private String parentEntity;
     private long parentId;
-    private List<UserOrganization> userOrganizations;
+    private List<Long> userOrganizationIds;
 
-    AbstractAddressCreateDialog(String id, Autocomplete<String> autocomplete, List<UserOrganization> userOrganizations) {
+    AbstractAddressCreateDialog(String id, Autocomplete<String> autocomplete, List<Long> userOrganizationIds) {
         super(id);
         this.autocomplete = autocomplete;
-        this.userOrganizations = userOrganizations;
+        this.userOrganizationIds = userOrganizationIds;
         init();
     }
 
@@ -122,7 +121,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
         form.add(nameField);
 
         final Set<Long> subjectIds = Sets.newHashSet();
-        form.add(new PermissionPanel("permissionPanel", userOrganizations, subjectIds));
+        form.add(new PermissionPanel("permissionPanel", userOrganizationIds, subjectIds));
 
         form.add(new IndicatingAjaxButton("submit", form) {
 

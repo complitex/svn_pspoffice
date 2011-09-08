@@ -27,7 +27,7 @@ import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.RegisterOwnerCard;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.odlabs.wiquery.core.javascript.JsStatement;
@@ -51,9 +51,8 @@ final class RegisterOwnerDialog extends Panel {
     private Dialog dialog;
     private Form<RegisterOwnerCard> form;
     private FeedbackPanel messages;
-    private long apartmentCardId;
+    private ApartmentCard apartmentCard;
     private WebMarkupContainer registerChildrenContainer;
-    private Person owner;
 
     RegisterOwnerDialog(String id) {
         super(id);
@@ -122,7 +121,7 @@ final class RegisterOwnerDialog extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     register();
-                    setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                    setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
@@ -140,11 +139,10 @@ final class RegisterOwnerDialog extends Panel {
         form.add(register);
     }
 
-    void open(AjaxRequestTarget target, long apartmentCardId, Person owner) {
-        this.owner = owner;
-        this.apartmentCardId = apartmentCardId;
+    void open(AjaxRequestTarget target, ApartmentCard apartmentCard) {
+        this.apartmentCard = apartmentCard;
         model.setObject(new RegisterOwnerCard());
-        List<Attribute> childrentAttributes = owner.getAttributes(PersonStrategy.CHILDREN);
+        List<Attribute> childrentAttributes = apartmentCard.getOwner().getAttributes(PersonStrategy.CHILDREN);
         registerChildrenContainer.setVisible(childrentAttributes != null && !childrentAttributes.isEmpty());
         target.addComponent(form);
         target.addComponent(messages);
@@ -152,6 +150,6 @@ final class RegisterOwnerDialog extends Panel {
     }
 
     private void register() {
-        apartmentCardStrategy.registerOwner(apartmentCardId, model.getObject(), owner);
+        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject(), apartmentCard.getOwner());
     }
 }

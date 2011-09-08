@@ -51,6 +51,9 @@ public class ApartmentCardList extends ListPage {
     private long addressId;
 
     public ApartmentCardList(String addressEntity, long addressId) {
+        if (!"apartment".equals(addressEntity) && !"building".equals(addressEntity)) {
+            throw new IllegalArgumentException("Address entity expected to be of 'apartment' or 'building'. But was: " + addressEntity);
+        }
         this.addressEntity = addressEntity;
         this.addressId = addressId;
         init();

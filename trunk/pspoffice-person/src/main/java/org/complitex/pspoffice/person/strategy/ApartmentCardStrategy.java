@@ -4,9 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.ImmutableList.*;
@@ -26,6 +25,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
@@ -96,6 +96,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     private StringCultureBean stringBean;
     @EJB
     private StrategyFactory strategyFactory;
+    @EJB
+    private SessionBean sessionBean;
 
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
@@ -114,12 +116,14 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Override
     public String[] getEditRoles() {
-        return new String[]{SecurityRole.PERSON_MODULE_EDIT};
+        return new String[]{SecurityRole.AUTHORIZED};
     }
 
     @Override
     public ApartmentCard newInstance() {
-        return new ApartmentCard(super.newInstance());
+        ApartmentCard apartmentCard = new ApartmentCard(super.newInstance());
+        apartmentCard.getSubjectIds().clear();
+        return apartmentCard;
     }
 
     @Transactional
@@ -251,11 +255,20 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         return isLeaf;
     }
 
+    private Map<String, Object> newSearchByAddressParams(long addressId) {
+        Map<String, Object> params = newHashMap();
+        params.put("addressId", addressId);
+        if (!sessionBean.isAdmin()) {
+            params.put("userPermissionString", sessionBean.getPermissionString(getEntityTable()));
+        }
+        return params;
+    }
+
     @Transactional
     public int countByAddress(String addressEntity, long addressId) {
         checkEntity(addressEntity);
         addressEntity = Strings.capitalize(addressEntity);
-        Map<String, Long> params = ImmutableMap.of("addressId", addressId);
+        Map<String, Object> params = newSearchByAddressParams(addressId);
         return (Integer) sqlSession().selectOne(APARTMENT_CARD_MAPPING + ".countBy" + addressEntity, params);
     }
 
@@ -273,7 +286,9 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Transactional
     public List<ApartmentCard> findByAddress(String addressEntity, long addressId, int start, int size) {
         checkEntity(addressEntity);
-        Map<String, Object> params = ImmutableMap.<String, Object>of("addressId", addressId, "start", start, "size", size);
+        Map<String, Object> params = newSearchByAddressParams(addressId);
+        params.put("start", start);
+        params.put("size", size);
         addressEntity = Strings.capitalize(addressEntity);
         List<Long> apartmentCardIds = sqlSession().selectList(APARTMENT_CARD_MAPPING + ".findBy" + addressEntity, params);
         List<ApartmentCard> apartmentCards = newArrayList();
@@ -295,9 +310,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void addRegistration(long apartmentCardId, Registration registration, Date insertDate) {
+    public void addRegistration(ApartmentCard apartmentCard, Registration registration, Date insertDate) {
+        registration.setSubjectIds(apartmentCard.getSubjectIds());
         registrationStrategy.insert(registration, insertDate);
-        insertRegistrationAttribute(apartmentCardId, registration.getId(), insertDate);
+        insertRegistrationAttribute(apartmentCard.getId(), registration.getId(), insertDate);
     }
 
     @Transactional
@@ -406,17 +422,17 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void registerOwner(long apartmentCardId, RegisterOwnerCard registerOwnerCard, Person owner) {
+    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard, Person owner) {
         Date insertDate = DateUtil.getCurrentDate();
 
         //owner registration
-        addRegistration(apartmentCardId,
+        addRegistration(apartmentCard,
                 newRegistration(owner.getId(), registerOwnerCard, OwnerRelationshipStrategy.OWNER), insertDate);
 
         //children registration
         if (registerOwnerCard.isRegisterChildren()) {
             for (Attribute childAttribute : owner.getAttributes(PersonStrategy.CHILDREN)) {
-                addRegistration(apartmentCardId,
+                addRegistration(apartmentCard,
                         newRegistration(childAttribute.getValueId(), registerOwnerCard, OwnerRelationshipStrategy.CHILDREN),
                         insertDate);
             }
@@ -453,7 +469,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     public boolean validateOwnerAddressUniqueness(long addressId, long addressTypeId, long ownerId, Long apartmentCardId) {
-        Map<String, Long> params = Maps.newHashMap();
+        Map<String, Long> params = newHashMap();
         params.put("apartmentCardAddressAT", ADDRESS);
         params.put("addressId", addressId);
         params.put("addressTypeId", addressTypeId);

@@ -198,7 +198,7 @@ public class RegistrationStrategy extends Strategy {
 
     @Override
     public String[] getEditRoles() {
-        return new String[]{SecurityRole.PERSON_MODULE_EDIT};
+        return new String[]{SecurityRole.AUTHORIZED};
     }
 
     @Override

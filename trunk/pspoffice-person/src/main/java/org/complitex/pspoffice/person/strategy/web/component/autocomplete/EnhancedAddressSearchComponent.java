@@ -9,7 +9,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.UserOrganization;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
@@ -23,20 +22,20 @@ public final class EnhancedAddressSearchComponent extends WiQuerySearchComponent
 
     private EnhancedAddressAutocompleteComponent apartmentComponent;
     private EnhancedAddressAutocompleteComponent roomComponent;
-    private List<UserOrganization> userOrganizations;
+    private List<Long> userOrganizationIds;
 
     public EnhancedAddressSearchComponent(String id, SearchComponentState componentState,
             List<SearchFilterSettings> searchFilterSettings, ISearchCallback callback,
-            List<UserOrganization> userOrganizations) {
+            List<Long> userOrganizationIds) {
         super(id, componentState, searchFilterSettings, callback);
-        this.userOrganizations = userOrganizations;
+        this.userOrganizationIds = userOrganizationIds;
     }
 
     public EnhancedAddressSearchComponent(String id, SearchComponentState searchComponentState,
             List<String> searchFilters, ISearchCallback callback, ShowMode showMode, boolean enabled,
-            List<UserOrganization> userOrganizations) {
+            List<Long> userOrganizationIds) {
         super(id, searchComponentState, searchFilters, callback, showMode, enabled);
-        this.userOrganizations = userOrganizations;
+        this.userOrganizationIds = userOrganizationIds;
     }
 
     @Override
@@ -59,7 +58,7 @@ public final class EnhancedAddressSearchComponent extends WiQuerySearchComponent
     private EnhancedAddressAutocompleteComponent newEnhancedAddressAutocompleteComponent(String id, final String entity,
             boolean canCreate) {
         EnhancedAddressAutocompleteComponent enhancedFilterComponent = new EnhancedAddressAutocompleteComponent(id,
-                getModel(getIndex(entity)), newAutocompleteItemRenderer(entity), canCreate, entity, userOrganizations) {
+                getModel(getIndex(entity)), newAutocompleteItemRenderer(entity), canCreate, entity, userOrganizationIds) {
 
             @Override
             protected long getParentId() {

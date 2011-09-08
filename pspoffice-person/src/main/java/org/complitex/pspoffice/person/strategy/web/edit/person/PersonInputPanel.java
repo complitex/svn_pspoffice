@@ -81,7 +81,7 @@ import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
  *
  * @author Artem
  */
-public final class PersonInputPanel extends Panel {
+public class PersonInputPanel extends Panel {
 
     @EJB
     private StringCultureBean stringBean;

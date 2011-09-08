@@ -9,7 +9,6 @@ import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -26,7 +25,6 @@ import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.resources.WebCommonResourceInitializer;
-import org.complitex.template.web.security.SecurityRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
@@ -35,7 +33,6 @@ import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.PERSON_MODULE_EDIT)
 public abstract class PersonEditPanel extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(PersonEditPanel.class);
@@ -89,26 +86,6 @@ public abstract class PersonEditPanel extends Panel {
         personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label, personAgeType,
                 defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
         form.add(personInputPanel);
-
-        /*
-        //history
-        WebMarkupContainer historyContainer = new WebMarkupContainer("historyContainer");
-        Link history = new Link("history") {
-
-        @Override
-        public void onClick() {
-        setResponsePage(personStrategy.getHistoryPage(), personStrategy.getHistoryPageParams(newPerson.getId()));
-        }
-        };
-        historyContainer.add(history);
-        historyContainer.setVisible(!isNew());
-        form.add(historyContainer);
-
-        //permissions panel
-        DomainObjectPermissionsPanel permissionsPanel = new DomainObjectPermissionsPanel("permissionsPanel", newPerson.getSubjectIds());
-        permissionsPanel.setEnabled(canEdit(null, personStrategy.getEntityTable(), newPerson));
-        form.add(permissionsPanel);
-         */
 
         //save-cancel functional
         AjaxSubmitLink submit = new AjaxSubmitLink("submit") {

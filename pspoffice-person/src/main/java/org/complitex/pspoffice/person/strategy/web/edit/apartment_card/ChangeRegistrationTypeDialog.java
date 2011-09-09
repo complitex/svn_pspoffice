@@ -7,8 +7,9 @@ package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
@@ -61,6 +62,9 @@ final class ChangeRegistrationTypeDialog extends Panel {
         messages.setOutputMarkupId(true);
         dialog.add(messages);
 
+        Form form = new Form("form");
+        dialog.add(form);
+
         final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
         registrationTypeModel = new Model<DomainObject>(allRegistrationTypes.get(0));
 
@@ -73,18 +77,12 @@ final class ChangeRegistrationTypeDialog extends Panel {
             }
         });
         registrationType.setRequired(true);
-        registrationType.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+        form.add(registrationType);
+
+        IndicatingAjaxButton submit = new IndicatingAjaxButton("submit", form) {
 
             @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-            }
-        });
-        dialog.add(registrationType);
-
-        AjaxLink<Void> submit = new AjaxLink<Void>("submit") {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     changeRegistrationType();
                     setResponsePage(new ApartmentCardEdit(apartmentCardId));
@@ -94,8 +92,14 @@ final class ChangeRegistrationTypeDialog extends Panel {
                     target.addComponent(messages);
                 }
             }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                super.onError(target, form);
+                target.addComponent(messages);
+            }
         };
-        dialog.add(submit);
+        form.add(submit);
 
         AjaxLink<Void> cancel = new AjaxLink<Void>("cancel") {
 
@@ -104,7 +108,7 @@ final class ChangeRegistrationTypeDialog extends Panel {
                 dialog.close(target);
             }
         };
-        dialog.add(cancel);
+        form.add(cancel);
     }
 
     void open(AjaxRequestTarget target, long apartmentCardId, List<Registration> registrationsToChangeType) {
@@ -115,6 +119,7 @@ final class ChangeRegistrationTypeDialog extends Panel {
     }
 
     private void changeRegistrationType() {
-        apartmentCardStrategy.changeRegistrationType(apartmentCardId, registrationsToChangeType, registrationTypeModel.getObject().getId());
+        apartmentCardStrategy.changeRegistrationType(apartmentCardId, registrationsToChangeType,
+                registrationTypeModel.getObject().getId());
     }
 }

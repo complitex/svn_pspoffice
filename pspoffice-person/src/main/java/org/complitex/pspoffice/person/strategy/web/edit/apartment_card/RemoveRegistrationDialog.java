@@ -8,7 +8,8 @@ import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -18,6 +19,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
+import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
@@ -58,6 +60,10 @@ final class RemoveRegistrationDialog extends Panel {
         dialog.setCloseOnEscape(false);
         add(dialog);
 
+        final Label label = new Label("label", new ResourceModel("title"));
+        label.setOutputMarkupId(true);
+        dialog.add(label);
+
         messages = new FeedbackPanel("messages");
         messages.setOutputMarkupId(true);
         dialog.add(messages);
@@ -86,7 +92,7 @@ final class RemoveRegistrationDialog extends Panel {
         addressFieldset.add(new TextField<String>("buildingCorp"));
         addressFieldset.add(new TextField<String>("apartment"));
 
-        AjaxSubmitLink removeFromRegistration = new AjaxSubmitLink("removeFromRegistration") {
+        IndicatingAjaxButton removeFromRegistration = new IndicatingAjaxButton("removeFromRegistration", form) {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
@@ -97,12 +103,19 @@ final class RemoveRegistrationDialog extends Panel {
                     log.error("", e);
                     error(getString("db_error"));
                     target.addComponent(messages);
+                    scrollToMessages(target);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
+                super.onError(target, form);
                 target.addComponent(messages);
+                scrollToMessages(target);
+            }
+
+            private void scrollToMessages(AjaxRequestTarget target) {
+                target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
         form.add(removeFromRegistration);

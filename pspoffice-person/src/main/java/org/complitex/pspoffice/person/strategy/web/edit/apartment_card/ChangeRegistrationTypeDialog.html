@@ -8,22 +8,24 @@
         <wicket:panel>
             <div wicket:id="dialog" style="display: none" wicket:message="title:title">
                 <div wicket:id="messages"></div>
-                <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                        <th>
-                            <wicket:message key="registrationType"/><b class="blue">*</b>:
-                        </th>
-                        <td>
-                            <select wicket:id="registrationType">
-                                <option></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <div style="margin-top: 30px;">
-                    <input type="button" wicket:message="value:submit" wicket:id="submit" class="btnMiddle"/>
-                    <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
-                </div>
+                <form wicket:id="form">
+                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <th>
+                                <wicket:message key="registrationType"/><b class="blue">*</b>:
+                            </th>
+                            <td>
+                                <select wicket:id="registrationType">
+                                    <option></option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="margin-top: 30px;">
+                        <input type="button" wicket:message="value:submit" wicket:id="submit" class="btnMiddle"/>
+                        <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
+                    </div>
+                </form>
             </div>
         </wicket:panel>
     </body>

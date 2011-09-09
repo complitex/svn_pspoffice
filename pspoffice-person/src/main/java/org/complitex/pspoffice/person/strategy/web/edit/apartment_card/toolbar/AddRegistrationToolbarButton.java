@@ -14,20 +14,22 @@ import org.complitex.template.web.component.toolbar.ToolbarButton;
  *
  * @author Artem
  */
-abstract public class AddRegistrationToolbarButton extends ToolbarButton {
+public abstract class AddRegistrationToolbarButton extends ToolbarButton {
 
     private boolean isPostBack;
 
     public AddRegistrationToolbarButton(String id) {
         super(id, true, null);
-        add(CSSPackageResource.getHeaderContribution(AddRegistrationToolbarButton.class, AddRegistrationToolbarButton.class.getSimpleName() + ".css"));
+        add(CSSPackageResource.getHeaderContribution(AddRegistrationToolbarButton.class,
+                AddRegistrationToolbarButton.class.getSimpleName() + ".css"));
     }
 
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
         if (!isPostBack) {
-            init(new ResourceReference(AddRegistrationToolbarButton.class, "add_person.png"), new ResourceModel("add_registration_title"));
+            init(new ResourceReference(AddRegistrationToolbarButton.class, "add_person.png"),
+                    new ResourceModel("add_registration_title"));
             isPostBack = true;
         }
     }

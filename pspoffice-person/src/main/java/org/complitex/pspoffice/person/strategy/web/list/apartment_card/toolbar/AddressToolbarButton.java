@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.list.apartment_card;
+package org.complitex.pspoffice.person.strategy.web.list.apartment_card.toolbar;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -16,11 +16,11 @@ import org.complitex.template.web.component.toolbar.ToolbarButton;
  *
  * @author Artem
  */
-abstract class AddressToolbarButton extends ToolbarButton {
+abstract public class AddressToolbarButton extends ToolbarButton {
 
     private boolean isPostBack;
 
-    AddressToolbarButton(String id) {
+    public AddressToolbarButton(String id) {
         super(id, true, null);
         add(CSSPackageResource.getHeaderContribution(AddressToolbarButton.class, AddressToolbarButton.class.getSimpleName() + ".css"));
         add(JavascriptPackageResource.getHeaderContribution(AddressToolbarButton.class, AddressToolbarButton.class.getSimpleName() + ".js"));
@@ -38,7 +38,7 @@ abstract class AddressToolbarButton extends ToolbarButton {
         }
     }
 
-    abstract boolean isFullAddressEnabled();
+    protected abstract boolean isFullAddressEnabled();
 
     @Override
     protected abstract void onClick(AjaxRequestTarget target);

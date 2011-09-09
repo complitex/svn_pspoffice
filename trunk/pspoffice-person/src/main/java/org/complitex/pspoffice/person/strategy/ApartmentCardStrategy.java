@@ -412,12 +412,14 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void changeRegistrationType(long apartmentCardId, List<Registration> registrationsToChangeType, long registrationTypeId) {
+    public void changeRegistrationType(long apartmentCardId, List<Registration> registrationsToChangeType, long newRegistrationTypeId) {
         Date updateDate = DateUtil.getCurrentDate();
         for (Registration registration : registrationsToChangeType) {
-            Registration newRegistration = CloneUtil.cloneObject(registration);
-            newRegistration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registrationTypeId);
-            registrationStrategy.update(registration, newRegistration, updateDate);
+            if (!registration.getRegistrationType().getId().equals(newRegistrationTypeId)) {
+                Registration newRegistration = CloneUtil.cloneObject(registration);
+                newRegistration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(newRegistrationTypeId);
+                registrationStrategy.update(registration, newRegistration, updateDate);
+            }
         }
     }
 

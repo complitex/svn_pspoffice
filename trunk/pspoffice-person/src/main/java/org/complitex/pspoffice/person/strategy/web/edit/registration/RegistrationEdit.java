@@ -14,8 +14,8 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -215,11 +215,11 @@ public class RegistrationEdit extends FormTemplatePage {
         };
         form.add(userAttributesView);
 
-        AjaxSubmitLink submit = new AjaxSubmitLink("submit") {
+        IndicatingAjaxButton submit = new IndicatingAjaxButton("submit") {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (validate()) {
+                if (RegistrationEdit.this.validate()) {
                     save();
                 } else {
                     target.addComponent(messages);

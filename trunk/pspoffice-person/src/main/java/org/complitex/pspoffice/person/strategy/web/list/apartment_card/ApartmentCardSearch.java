@@ -4,14 +4,15 @@
  */
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card;
 
+import org.complitex.pspoffice.person.strategy.web.list.apartment_card.toolbar.AddressToolbarButton;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import static com.google.common.collect.ImmutableList.*;
 import org.apache.wicket.markup.html.basic.Label;
@@ -32,6 +33,7 @@ import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.Apartment
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
+import org.odlabs.wiquery.core.javascript.JsQuery;
 
 /**
  *
@@ -48,7 +50,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
         public void found(Component component, Map<String, Long> ids, AjaxRequestTarget target) {
             Long apartmentId = ids.get("apartment");
             if (apartmentId != null) {
-                search(target);
+                target.appendJavascript(String.valueOf(new JsQuery(submit).$().chain("click").render()));
             }
         }
     }
@@ -57,6 +59,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
     private final SearchComponentState addressSearchComponentState;
     private final FeedbackPanel messages;
     private WebMarkupContainer addressSearchComponentContainer;
+    private IndicatingAjaxLink<Void> submit;
     private IModel<Boolean> fullAddressEnabledModel;
 
     public ApartmentCardSearch() {
@@ -73,7 +76,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
         add(addressSearchComponentContainer);
         addressSearchComponentContainer.add(newSearchComponent());
 
-        AjaxLink<Void> submit = new AjaxLink<Void>("search") {
+        submit = new IndicatingAjaxLink<Void>("search") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -149,7 +152,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
             }
 
             @Override
-            boolean isFullAddressEnabled() {
+            protected boolean isFullAddressEnabled() {
                 return fullAddressEnabledModel.getObject();
             }
         });

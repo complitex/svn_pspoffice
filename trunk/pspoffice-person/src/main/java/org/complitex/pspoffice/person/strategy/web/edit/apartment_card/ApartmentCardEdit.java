@@ -21,11 +21,13 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxIndicatorAware;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.ajax.markup.html.AjaxIndicatorAppender;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -122,9 +124,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private FeedbackPanel messages;
     private Component scrollToComponent;
 
-    private class SubmitLink extends AjaxSubmitLink {
+    private class ApartmentCardSubmitLink extends AjaxSubmitLink {
 
-        SubmitLink(String id) {
+        ApartmentCardSubmitLink(String id) {
             super(id, form);
         }
 
@@ -133,7 +135,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             try {
                 if (validate()) {
                     save();
-                    action();
+                    afterSave();
                 } else {
                     target.addComponent(messages);
                     scrollToMessages(target);
@@ -148,22 +150,43 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         @Override
         protected void onError(AjaxRequestTarget target, Form<?> form) {
+            super.onError(target, form);
             target.addComponent(messages);
             scrollToMessages(target);
         }
 
-        protected void action() {
+        protected void afterSave() {
         }
     }
 
-    private class AddRegistrationLink extends SubmitLink {
+    private abstract class ApartmentCardIndicatingSubmitLink extends ApartmentCardSubmitLink implements IAjaxIndicatorAware {
 
-        AddRegistrationLink(String id) {
+        private final AjaxIndicatorAppender indicatorAppender = new AjaxIndicatorAppender();
+
+        ApartmentCardIndicatingSubmitLink(String id) {
+            super(id);
+            add(indicatorAppender);
+        }
+
+        /**
+         * @see IAjaxIndicatorAware#getAjaxIndicatorMarkupId()
+         * @return the markup id of the ajax indicator
+         *
+         */
+        @Override
+        public String getAjaxIndicatorMarkupId() {
+            return indicatorAppender.getMarkupId();
+        }
+    }
+
+    private class AddRegistrationToolbarLink extends ApartmentCardSubmitLink {
+
+        AddRegistrationToolbarLink(String id) {
             super(id);
         }
 
         @Override
-        protected void action() {
+        protected void afterSave() {
             setResponsePage(new RegistrationEdit(newApartmentCard,
                     getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
         }
@@ -439,7 +462,14 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         };
         form.add(registrations);
 
-        AddRegistrationLink addRegistration = new AddRegistrationLink("addRegistration");
+        ApartmentCardIndicatingSubmitLink addRegistration = new ApartmentCardIndicatingSubmitLink("addRegistration") {
+
+            @Override
+            protected void afterSave() {
+                setResponsePage(new RegistrationEdit(newApartmentCard,
+                        getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
+            }
+        };
         addRegistration.setVisible(canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(addRegistration);
 
@@ -482,10 +512,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         form.add(userAttributesView);
 
         //save-cancel functional
-        AjaxSubmitLink submit = new SubmitLink("submit") {
+        ApartmentCardIndicatingSubmitLink submit = new ApartmentCardIndicatingSubmitLink("submit") {
 
             @Override
-            protected void action() {
+            protected void afterSave() {
                 back();
             }
         };
@@ -770,7 +800,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                     @Override
                     protected AbstractLink newLink(String linkId) {
-                        return new AddRegistrationLink(linkId);
+                        return new AddRegistrationToolbarLink(linkId);
                     }
                 });
     }

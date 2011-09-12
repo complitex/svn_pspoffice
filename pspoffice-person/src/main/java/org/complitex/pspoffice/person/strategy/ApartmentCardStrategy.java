@@ -317,13 +317,23 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 @Override
                 public int compare(Registration o1, Registration o2) {
                     if (o1.isFinished() && o2.isFinished()) {
-                        return o1.getEndDate().compareTo(o2.getEndDate());
+                        Date d1 = o1.getDepartureDate();
+                        if (d1 == null) {
+                            d1 = o1.getEndDate();
+                        }
+                        Date d2 = o2.getDepartureDate();
+                        if (d2 == null) {
+                            d2 = o2.getEndDate();
+                        }
+                        return d1.compareTo(d2);
                     }
                     if (o1.isFinished() || o2.isFinished()) {
                         return o1.isFinished() ? 1 : -1;
                     }
 
-                    return o1.getStartDate().compareTo(o2.getStartDate());
+                    Date d1 = o1.getRegistrationDate();
+                    Date d2 = o2.getRegistrationDate();
+                    return d1.compareTo(d2);
                 }
             });
         }

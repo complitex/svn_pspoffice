@@ -35,6 +35,7 @@ import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
+import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.LogBean;
@@ -153,7 +154,7 @@ public class RegistrationEdit extends FormTemplatePage {
         form.add(initRegistrationType());
 
         CollapsibleFieldset arrivalAddressFieldset = new CollapsibleFieldset("arrivalAddressFieldset",
-                new ResourceModel("arrival_address"), false);
+                new ResourceModel("arrival_address"), !isNew());
         form.add(arrivalAddressFieldset);
         initSystemAttributeInput(arrivalAddressFieldset, "arrivalCountry", ARRIVAL_COUNTRY, true);
         initSystemAttributeInput(arrivalAddressFieldset, "arrivalRegion", ARRIVAL_REGION, true);
@@ -165,7 +166,8 @@ public class RegistrationEdit extends FormTemplatePage {
         initSystemAttributeInput(arrivalAddressFieldset, "arrivalApartment", ARRIVAL_APARTMENT, true);
         initSystemAttributeInput(arrivalAddressFieldset, "arrivalDate", ARRIVAL_DATE, true);
 
-        CollapsibleFieldset departureAddressFieldset = new CollapsibleFieldset("departureAddressFieldset", new ResourceModel("departure_address"));
+        CollapsibleFieldset departureAddressFieldset = new CollapsibleFieldset("departureAddressFieldset",
+                new ResourceModel("departure_address"), newRegistration.getStatus() == StatusType.ACTIVE);
         form.add(departureAddressFieldset);
         initSystemAttributeInput(departureAddressFieldset, "departureCountry", DEPARTURE_COUNTRY, true);
         initSystemAttributeInput(departureAddressFieldset, "departureRegion", DEPARTURE_REGION, true);

@@ -4,7 +4,13 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import com.google.common.base.Function;
+import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Maps.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -22,6 +28,7 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy.PersonApartmentCardAddress;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.resources.WebCommonResourceInitializer;
@@ -87,6 +94,16 @@ public abstract class PersonEditPanel extends Panel {
                 defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
         form.add(personInputPanel);
 
+        //register children
+        final RegisterChildrenDialog registerChildrenDialog = new RegisterChildrenDialog("registerChildrenDialog") {
+
+            @Override
+            protected void onClose(AjaxRequestTarget target) {
+                onSave(oldPerson, newPerson, target);
+            }
+        };
+        add(registerChildrenDialog);
+
         //save-cancel functional
         IndicatingAjaxButton submit = new IndicatingAjaxButton("submit", form) {
 
@@ -95,7 +112,25 @@ public abstract class PersonEditPanel extends Panel {
                 try {
                     if (PersonEditPanel.this.validate()) {
                         save();
-                        onSave(oldPerson, newPerson, target);
+
+                        // register children dialog
+                        List<Long> newChildrenIds = null;
+                        List<PersonApartmentCardAddress> personApartmentCardAddresses = null;
+                        boolean needRegisterChildren = false;
+                        if (!isNew()) {
+                            newChildrenIds = getNewChildrenIds();
+                            if (newChildrenIds != null && !newChildrenIds.isEmpty()) {
+                                personApartmentCardAddresses = getPersonApartmentCardAddresses(newChildrenIds);
+                                if (personApartmentCardAddresses != null && !personApartmentCardAddresses.isEmpty()) {
+                                    needRegisterChildren = true;
+                                }
+                            }
+                        }
+                        if (needRegisterChildren) {
+                            registerChildrenDialog.open(target, personApartmentCardAddresses, newChildrenIds);
+                        } else {
+                            onSave(oldPerson, newPerson, target);
+                        }
                     } else {
                         target.addComponent(messages);
                         scrollToMessages(target);
@@ -171,4 +206,61 @@ public abstract class PersonEditPanel extends Panel {
     }
 
     protected abstract void onBack(AjaxRequestTarget target);
+
+    private List<Long> getNewChildrenIds() {
+        List<Person> oldChildren = oldPerson.getChildren();
+        List<Person> newChildren = newPerson.getChildren();
+
+        List<Long> newChildrenIds = newArrayList();
+        for (Person newChild : newChildren) {
+            boolean isAdded = true;
+            for (Person oldChild : oldChildren) {
+                if (newChild.getId().equals(oldChild.getId())) {
+                    isAdded = false;
+                    break;
+                }
+            }
+            if (isAdded) {
+                newChildrenIds.add(newChild.getId());
+            }
+        }
+        return newChildrenIds;
+    }
+
+    private List<PersonApartmentCardAddress> getPersonApartmentCardAddresses(List<Long> childrenIds) {
+        List<PersonApartmentCardAddress> personApartmentCardAddresses = personStrategy.findPersonApartmentCardAddresses(newPerson.getId());
+        if (personApartmentCardAddresses == null || personApartmentCardAddresses.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, List<Long>> childrenRegistrationsMap = newHashMap();
+        for (long childId : childrenIds) {
+            List<PersonApartmentCardAddress> childApartmentCardAddresses = personStrategy.findPersonApartmentCardAddresses(childId);
+            childrenRegistrationsMap.put(childId, transform(childApartmentCardAddresses, new Function<PersonApartmentCardAddress, Long>() {
+
+                @Override
+                public Long apply(PersonApartmentCardAddress apartmentCardAddress) {
+                    return apartmentCardAddress.getApartmentCardId();
+                }
+            }));
+        }
+
+        if (childrenRegistrationsMap.isEmpty()) {
+            return personApartmentCardAddresses;
+        }
+
+        List<PersonApartmentCardAddress> finalApartmentCardAddresses = newArrayList();
+        for (PersonApartmentCardAddress apartmentCardAddress : personApartmentCardAddresses) {
+            boolean suit = false;
+            for (long childId : childrenRegistrationsMap.keySet()) {
+                if (!childrenRegistrationsMap.get(childId).contains(apartmentCardAddress.getApartmentCardId())) {
+                    suit = true;
+                }
+            }
+            if (suit) {
+                finalApartmentCardAddresses.add(apartmentCardAddress);
+            }
+        }
+        return finalApartmentCardAddresses;
+    }
 }

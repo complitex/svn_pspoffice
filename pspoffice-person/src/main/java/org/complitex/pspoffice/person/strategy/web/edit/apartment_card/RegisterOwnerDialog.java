@@ -132,6 +132,7 @@ final class RegisterOwnerDialog extends Panel {
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
+                super.onError(target, form);
                 target.addComponent(messages);
                 target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
@@ -150,6 +151,6 @@ final class RegisterOwnerDialog extends Panel {
     }
 
     private void register() {
-        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject(), apartmentCard.getOwner());
+        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject());
     }
 }

@@ -13,6 +13,12 @@
         <result column="addressId" property="addressId"/>
     </resultMap>
 
+    <resultMap id="PersonApartmentCardAddress" type="org.complitex.pspoffice.person.strategy.PersonStrategy$PersonApartmentCardAddress">
+        <id column="apartmentCardId" property="apartmentCardId"/>
+        <result column="addressTypeId" property="addressTypeId"/>
+        <result column="addressId" property="addressId"/>
+    </resultMap>
+
     <sql id="join">
         JOIN `locales` sys ON sys.`system` = 1
         JOIN `person_attribute` sys_lna ON (sys_lna.`status` = 'ACTIVE' AND sys_lna.`object_id` = e.`object_id` AND sys_lna.`attribute_type_id` = 2000
@@ -143,7 +149,8 @@
                     AND ra.`value_id` = #{personId}
     </sql>
 
-    <select id="findPersonRegistrations" parameterType="map" resultMap="org.complitex.pspoffice.person.strategy.Person.PersonRegistration">
+    <select id="findPersonRegistrations" parameterType="map"
+                resultMap="org.complitex.pspoffice.person.strategy.Person.PersonRegistration">
         SELECT ra.`object_id` registrationId, address.`value_id` addressId, address.`value_type_id` addressTypeId
         <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>
         ORDER BY 
@@ -156,6 +163,13 @@
     <select id="countPersonRegistrations" parameterType="map" resultType="int">
         SELECT COUNT(DISTINCT ra.`object_id`)
         <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>
+    </select>
+
+    <select id="findPersonApartmentCardAdresses" parameterType="map"
+                resultMap="org.complitex.pspoffice.person.strategy.Person.PersonApartmentCardAddress">
+        SELECT ar.`object_id` apartmentCardId, address.`value_id` addressId, address.`value_type_id` addressTypeId
+        <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>
+            AND ra.`status` = 'ACTIVE'
     </select>
 
     <select id="findParents" parameterType="map" resultType="long">

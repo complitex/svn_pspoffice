@@ -5,6 +5,8 @@
 package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Collections;
+import java.util.Comparator;
 import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
@@ -38,6 +40,7 @@ import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrat
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.RegisterChildrenCard;
 import org.complitex.pspoffice.person.strategy.entity.RegisterOwnerCard;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
@@ -300,29 +303,51 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     public void loadAllRegistrations(ApartmentCard apartmentCard) {
+        List<Registration> registrations = newArrayList();
         List<Attribute> registrationAttributes = apartmentCard.getAttributes(REGISTRATIONS);
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
             for (Attribute registrationAttribute : registrationAttributes) {
                 long registrationId = registrationAttribute.getValueId();
-                apartmentCard.addRegistration(registrationStrategy.findRegistrationById(registrationId, true, true, true, true));
+                registrations.add(registrationStrategy.findRegistrationById(registrationId, true, true, true, true));
             }
         }
+        if (!registrations.isEmpty()) {
+            Collections.sort(registrations, new Comparator<Registration>() {
+
+                @Override
+                public int compare(Registration o1, Registration o2) {
+                    if (o1.isFinished() && o2.isFinished()) {
+                        return o1.getEndDate().compareTo(o2.getEndDate());
+                    }
+                    if (o1.isFinished() || o2.isFinished()) {
+                        return o1.isFinished() ? 1 : -1;
+                    }
+
+                    return o1.getStartDate().compareTo(o2.getStartDate());
+                }
+            });
+        }
+        apartmentCard.setRegistrations(registrations);
+    }
+
+    @Transactional
+    private void addRegistration(ApartmentCard apartmentCard, Registration registration, long attributeId, Date insertDate) {
+        registration.setSubjectIds(apartmentCard.getSubjectIds());
+        registrationStrategy.insert(registration, insertDate);
+        insertRegistrationAttribute(apartmentCard, registration.getId(), attributeId, insertDate);
     }
 
     @Transactional
     public void addRegistration(ApartmentCard apartmentCard, Registration registration, Date insertDate) {
-        registration.setSubjectIds(apartmentCard.getSubjectIds());
-        registrationStrategy.insert(registration, insertDate);
-        insertRegistrationAttribute(apartmentCard.getId(), registration.getId(), insertDate);
+        long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
+        addRegistration(apartmentCard, registration, attributeId, insertDate);
     }
 
     @Transactional
-    private void insertRegistrationAttribute(long apartmentCardId, long registrationId, Date insertDate) {
+    private void insertRegistrationAttribute(ApartmentCard apartmentCard, long registrationId, long attributeId, Date insertDate) {
         Attribute registrationAttribute = new Attribute();
-        registrationAttribute.setObjectId(apartmentCardId);
-        ApartmentCard apartmentCard = findById(apartmentCardId, true, false, false, false);
-        List<Attribute> registrationAttributes = apartmentCard.getAttributes(REGISTRATIONS);
-        registrationAttribute.setAttributeId(registrationAttributes != null ? registrationAttributes.size() + 1 : 1L);
+        registrationAttribute.setObjectId(apartmentCard.getId());
+        registrationAttribute.setAttributeId(attributeId);
         registrationAttribute.setAttributeTypeId(REGISTRATIONS);
         registrationAttribute.setValueTypeId(REGISTRATIONS_TYPE);
         registrationAttribute.setValueId(registrationId);
@@ -424,19 +449,21 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard, Person owner) {
+    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard) {
         Date insertDate = DateUtil.getCurrentDate();
 
+        long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
+        Person owner = apartmentCard.getOwner();
         //owner registration
         addRegistration(apartmentCard,
-                newRegistration(owner.getId(), registerOwnerCard, OwnerRelationshipStrategy.OWNER), insertDate);
+                newRegistration(owner.getId(), registerOwnerCard, OwnerRelationshipStrategy.OWNER), attributeId++, insertDate);
 
         //children registration
         if (registerOwnerCard.isRegisterChildren()) {
             for (Attribute childAttribute : owner.getAttributes(PersonStrategy.CHILDREN)) {
                 addRegistration(apartmentCard,
                         newRegistration(childAttribute.getValueId(), registerOwnerCard, OwnerRelationshipStrategy.CHILDREN),
-                        insertDate);
+                        attributeId++, insertDate);
             }
         }
     }
@@ -479,5 +506,25 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         params.put("ownerId", ownerId);
         params.put("apartmentCardId", apartmentCardId);
         return sqlSession().selectOne(APARTMENT_CARD_MAPPING + ".validateOwnerAddressUniqueness", params) == null;
+    }
+
+    @Transactional
+    public void registerChildren(RegisterChildrenCard registerChildrenCard, List<Long> childrenIds) {
+        Date insertDate = DateUtil.getCurrentDate();
+        ApartmentCard apartmentCard = findById(registerChildrenCard.getApartmentCardId(), true, false, false, false);
+        long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
+        for (long childId : childrenIds) {
+            addRegistration(apartmentCard, newChildRegistration(childId, registerChildrenCard), attributeId++, insertDate);
+        }
+    }
+
+    private Registration newChildRegistration(long childId, RegisterChildrenCard registerChildrenCard) {
+        Registration registration = registrationStrategy.newInstance();
+        registration.getAttribute(RegistrationStrategy.PERSON).setValueId(childId);
+        registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(OwnerRelationshipStrategy.CHILDREN);
+        stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.REGISTRATION_DATE).getLocalizedValues()).
+                setValue(new DateConverter().toString(registerChildrenCard.getRegistrationDate()));
+        registration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registerChildrenCard.getRegistrationType().getId());
+        return registration;
     }
 }

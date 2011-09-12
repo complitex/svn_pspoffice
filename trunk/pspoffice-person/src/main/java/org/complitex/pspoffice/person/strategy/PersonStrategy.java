@@ -604,4 +604,54 @@ public class PersonStrategy extends TemplateStrategy {
                 "apartmentCardAddressAT", ApartmentCardStrategy.ADDRESS,
                 "personId", personId);
     }
+
+    public static class PersonApartmentCardAddress implements Serializable {
+
+        private long apartmentCardId;
+        private String addressEntity;
+        private long addressTypeId;
+        private long addressId;
+
+        public String getAddressEntity() {
+            return addressEntity;
+        }
+
+        private void setAddressEntity(String addressEntity) {
+            this.addressEntity = addressEntity;
+        }
+
+        public long getAddressId() {
+            return addressId;
+        }
+
+        public void setAddressId(long addressId) {
+            this.addressId = addressId;
+        }
+
+        public long getAddressTypeId() {
+            return addressTypeId;
+        }
+
+        public void setAddressTypeId(long addressTypeId) {
+            this.addressTypeId = addressTypeId;
+        }
+
+        public long getApartmentCardId() {
+            return apartmentCardId;
+        }
+
+        public void setApartmentCardId(long apartmentCardId) {
+            this.apartmentCardId = apartmentCardId;
+        }
+    }
+
+    @Transactional
+    public List<PersonApartmentCardAddress> findPersonApartmentCardAddresses(long personId) {
+        List<PersonApartmentCardAddress> personApartmentCardAddresses = sqlSession().selectList(PERSON_MAPPING
+                + ".findPersonApartmentCardAdresses", newFindPersonRegistrationParameters(personId));
+        for (PersonApartmentCardAddress personApartmentCardAddress : personApartmentCardAddresses) {
+            personApartmentCardAddress.setAddressEntity(ApartmentCardStrategy.getAddressEntity(personApartmentCardAddress.getAddressTypeId()));
+        }
+        return personApartmentCardAddresses;
+    }
 }

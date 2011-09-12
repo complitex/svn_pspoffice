@@ -28,6 +28,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.AjaxIndicatorAppender;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -57,6 +58,7 @@ import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
@@ -226,6 +228,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
         add(JavascriptPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js"));
+        add(CSSPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".css"));
 
         IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
@@ -458,6 +461,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     }
                 }));
                 item.add(registrationDetails);
+
+                if (registration.isFinished()) {
+                    item.add(new CssAttributeBehavior("finished_registration"));
+                }
             }
         };
         form.add(registrations);

@@ -19,7 +19,7 @@ import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
-import org.complitex.pspoffice.person.strategy.web.component.PersonNameComponent;
+import org.complitex.pspoffice.person.strategy.web.component.PersonNameAutocompleteComponent;
 
 /**
  *
@@ -73,12 +73,12 @@ class PersonFullNamePanel extends Panel {
         Attribute personNameAttribute = item.getModelObject();
         Locale locale = localeBean.getLocale(personNameAttribute.getAttributeId());
         boolean isSystemLocale = localeBean.getLocaleObject(personNameAttribute.getAttributeId()).isSystem();
-        final PersonNameComponent personNameComponent =
+        final PersonNameAutocompleteComponent personNameComponent =
                 (!Strings.isEmpty(defaultNameValue) && defaultNameLocale != null
                 && localeBean.convert(defaultNameLocale).getId().equals(personNameAttribute.getAttributeId()))
-                ? new PersonNameComponent(personNameComponentId, newNameModel(personNameAttribute), new Model<String>(defaultNameValue),
+                ? new PersonNameAutocompleteComponent(personNameComponentId, newNameModel(personNameAttribute), new Model<String>(defaultNameValue),
                 personNameType, locale, true)
-                : new PersonNameComponent(personNameComponentId, newNameModel(personNameAttribute), personNameType, locale, true);
+                : new PersonNameAutocompleteComponent(personNameComponentId, newNameModel(personNameAttribute), personNameType, locale, true);
         personNameComponent.setRequired(isSystemLocale);
         item.add(personNameComponent);
         Label language = new Label("language", locale.getDisplayLanguage(getLocale()));

@@ -19,12 +19,13 @@ import org.complitex.pspoffice.person.strategy.entity.PersonName;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.odlabs.wiquery.ui.autocomplete.AutocompleteAjaxComponent;
+import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 
 /**
  *
  * @author Artem
  */
-public class PersonNameComponent extends AutocompleteAjaxComponent<String> {
+public class PersonNameAutocompleteComponent extends AutocompleteAjaxComponent<String> {
 
     private static final int AUTOCOMPLETE_SIZE = 5;
     @EJB
@@ -88,12 +89,12 @@ public class PersonNameComponent extends AutocompleteAjaxComponent<String> {
         }
     }
 
-    public PersonNameComponent(String id, IModel<Long> personNameIdModel, PersonNameType personNameType,
+    public PersonNameAutocompleteComponent(String id, IModel<Long> personNameIdModel, PersonNameType personNameType,
             Locale locale, boolean saveIfNotFound) {
         this(id, personNameIdModel, null, personNameType, locale, saveIfNotFound);
     }
 
-    public PersonNameComponent(String id, IModel<Long> personNameIdModel, IModel<String> delegateModel, PersonNameType personNameType,
+    public PersonNameAutocompleteComponent(String id, IModel<Long> personNameIdModel, IModel<String> delegateModel, PersonNameType personNameType,
             Locale locale, boolean saveIfNotFound) {
         super(id, new Model<String>());
         this.personNameIdModel = personNameIdModel;
@@ -105,6 +106,21 @@ public class PersonNameComponent extends AutocompleteAjaxComponent<String> {
         this.delegateModel = delegateModel;
         this.defaultNameValue = defaultPersonName == null ? (delegateModel != null ? delegateModel.getObject() : null) : null;
         setModel(new PersonNameComponentModel(defaultPersonName));
+
+        //UI corrections
+        getAutocompleteField().setDelay(1000);
+         //TODO: add minLength option
+//            getAutocompleteField().setMinLength(3);
+        getAutocompleteField().setOpenEvent(JsScopeUiEvent.quickScope(
+                "var input = $(this);"+
+                "var isFocused = input.is(':focus');"+
+                "if(!isFocused){"+
+                    "input.autocomplete('close');"+
+                "}"
+        ));
+        getAutocompleteField().setSearchEvent(JsScopeUiEvent.quickScope(
+                "return $(this).is(':focus');"
+        ));
     }
 
     @Override

@@ -519,12 +519,12 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void registerChildren(RegisterChildrenCard registerChildrenCard, List<Long> childrenIds) {
+    public void registerChildren(RegisterChildrenCard registerChildrenCard, List<Person> children) {
         Date insertDate = DateUtil.getCurrentDate();
         ApartmentCard apartmentCard = findById(registerChildrenCard.getApartmentCardId(), true, false, false, false);
         long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
-        for (long childId : childrenIds) {
-            addRegistration(apartmentCard, newChildRegistration(childId, registerChildrenCard), attributeId++, insertDate);
+        for (Person child : children) {
+            addRegistration(apartmentCard, newChildRegistration(child.getId(), registerChildrenCard), attributeId++, insertDate);
         }
     }
 

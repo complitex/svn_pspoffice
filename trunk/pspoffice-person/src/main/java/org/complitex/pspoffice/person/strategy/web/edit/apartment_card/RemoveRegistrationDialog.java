@@ -4,6 +4,11 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import static com.google.common.collect.Lists.*;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -17,6 +22,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
@@ -44,6 +50,7 @@ final class RemoveRegistrationDialog extends Panel {
     private FeedbackPanel messages;
     private long apartmentCardId;
     private List<Registration> registrationsToRemove;
+    private MaskedDateInput departureDate;
 
     RemoveRegistrationDialog(String id) {
         super(id);
@@ -77,9 +84,9 @@ final class RemoveRegistrationDialog extends Panel {
         reason.setRequired(true);
         form.add(reason);
 
-        MaskedDateInput date = new MaskedDateInput("date");
-        date.setRequired(true);
-        form.add(date);
+        departureDate = new MaskedDateInput("date");
+        departureDate.setRequired(true);
+        form.add(departureDate);
 
         CollapsibleFieldset addressFieldset = new CollapsibleFieldset("addressFieldset", new ResourceModel("address"));
         form.add(addressFieldset);
@@ -97,8 +104,13 @@ final class RemoveRegistrationDialog extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    removeRegistrations();
-                    setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                    if (RemoveRegistrationDialog.this.validate()) {
+                        removeRegistrations();
+                        setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                    } else {
+                        target.addComponent(messages);
+                        scrollToMessages(target);
+                    }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
@@ -133,7 +145,19 @@ final class RemoveRegistrationDialog extends Panel {
     void open(AjaxRequestTarget target, long apartmentCardId, List<Registration> registrationsToRemove) {
         this.apartmentCardId = apartmentCardId;
         this.registrationsToRemove = registrationsToRemove;
-        model.setObject(new RemoveRegistrationCard());
+        RemoveRegistrationCard newCard = new RemoveRegistrationCard();
+        newCard.setDate(DateUtil.getCurrentDate());
+        model.setObject(newCard);
+
+        departureDate.setMinDate(Collections.max(newArrayList(Iterables.transform(registrationsToRemove,
+                new Function<Registration, Date>() {
+
+                    @Override
+                    public Date apply(Registration registration) {
+                        return registration.getRegistrationDate();
+                    }
+                }))));
+
         target.addComponent(form);
         target.addComponent(messages);
         dialog.open(target);
@@ -141,5 +165,20 @@ final class RemoveRegistrationDialog extends Panel {
 
     private void removeRegistrations() {
         apartmentCardStrategy.removeRegistrations(apartmentCardId, registrationsToRemove, model.getObject());
+    }
+
+    private boolean validate() {
+        Date maxRegistrationDate = Collections.max(newArrayList(transform(registrationsToRemove, new Function<Registration, Date>() {
+
+            @Override
+            public Date apply(Registration registration) {
+                return registration.getRegistrationDate();
+            }
+        })));
+        if (maxRegistrationDate.after(model.getObject().getDate())) {
+            error(getString("departure_date_error"));
+            return false;
+        }
+        return true;
     }
 }

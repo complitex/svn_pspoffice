@@ -4,7 +4,11 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import static com.google.common.collect.Lists.*;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -23,12 +27,14 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy.PersonApartmentCardAddress;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.RegisterChildrenCard;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.odlabs.wiquery.core.javascript.JsStatement;
@@ -54,9 +60,10 @@ abstract class RegisterChildrenDialog extends Panel {
     private Dialog dialog;
     private Form<RegisterChildrenCard> form;
     private FeedbackPanel messages;
-    private List<PersonApartmentCardAddress> personApartmentCardAddresses = Lists.newArrayList();
+    private List<PersonApartmentCardAddress> personApartmentCardAddresses = newArrayList();
     private IModel<PersonApartmentCardAddress> personApartmentCardAddressModel;
-    private List<Long> childrenIds;
+    private List<Person> children;
+    private MaskedDateInput registrationDate;
 
     RegisterChildrenDialog(String id) {
         super(id);
@@ -86,7 +93,7 @@ abstract class RegisterChildrenDialog extends Panel {
         form.setOutputMarkupId(true);
         dialog.add(form);
 
-        MaskedDateInput registrationDate = new MaskedDateInput("registrationDate");
+        registrationDate = new MaskedDateInput("registrationDate");
         registrationDate.setRequired(true);
         form.add(registrationDate);
 
@@ -144,8 +151,13 @@ abstract class RegisterChildrenDialog extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    register();
-                    close(target);
+                    if (RegisterChildrenDialog.this.validate()) {
+                        register();
+                        close(target);
+                    } else {
+                        target.addComponent(messages);
+                        scrollToMessages(target);
+                    }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
@@ -175,13 +187,24 @@ abstract class RegisterChildrenDialog extends Panel {
         });
     }
 
-    void open(AjaxRequestTarget target, List<PersonApartmentCardAddress> personApartmentCardAddresses, List<Long> newChildrenIds) {
-        this.childrenIds = newChildrenIds;
+    void open(AjaxRequestTarget target, List<PersonApartmentCardAddress> personApartmentCardAddresses, List<Person> newChildren) {
+        this.children = newChildren;
         this.personApartmentCardAddresses = personApartmentCardAddresses;
-        model.setObject(new RegisterChildrenCard());
+        RegisterChildrenCard newCard = new RegisterChildrenCard();
+        newCard.setRegistrationDate(DateUtil.getCurrentDate());
+        model.setObject(newCard);
         if (personApartmentCardAddresses.size() == 1) {
             personApartmentCardAddressModel.setObject(personApartmentCardAddresses.get(0));
         }
+
+        registrationDate.setMinDate(Collections.max(newArrayList(Iterables.transform(children, new Function<Person, Date>() {
+
+            @Override
+            public Date apply(Person person) {
+                return person.getBirthDate();
+            }
+        }))));
+
         target.addComponent(form);
         target.addComponent(messages);
         dialog.open(target);
@@ -195,6 +218,21 @@ abstract class RegisterChildrenDialog extends Panel {
     protected abstract void onClose(AjaxRequestTarget target);
 
     private void register() {
-        apartmentCardStrategy.registerChildren(model.getObject(), childrenIds);
+        apartmentCardStrategy.registerChildren(model.getObject(), children);
+    }
+
+    private boolean validate() {
+        Date maxBirthDate = Collections.max(newArrayList(Iterables.transform(children, new Function<Person, Date>() {
+
+            @Override
+            public Date apply(Person person) {
+                return person.getBirthDate();
+            }
+        })));
+        if (maxBirthDate.after(model.getObject().getRegistrationDate())) {
+            error(getString("registration_date_error"));
+            return false;
+        }
+        return true;
     }
 }

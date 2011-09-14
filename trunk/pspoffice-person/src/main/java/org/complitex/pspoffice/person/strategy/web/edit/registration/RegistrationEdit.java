@@ -32,6 +32,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
@@ -44,6 +45,7 @@ import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
+import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
@@ -60,6 +62,8 @@ import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrate
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
@@ -71,6 +75,7 @@ import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class RegistrationEdit extends FormTemplatePage {
 
+    private static final Logger log = LoggerFactory.getLogger(RegistrationEdit.class);
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB
@@ -107,6 +112,10 @@ public class RegistrationEdit extends FormTemplatePage {
 
     private boolean isNew() {
         return oldRegistration == null;
+    }
+
+    private boolean isHistory() {
+        return newRegistration.getStatus() == StatusType.ARCHIVE;
     }
 
     private void init() {
@@ -148,8 +157,14 @@ public class RegistrationEdit extends FormTemplatePage {
         personContainer.add(person);
         form.add(personContainer);
 
-        //system attributes:
-        initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, false);
+        //registration date
+        if (!isHistory()) {
+            stringBean.getSystemStringCulture(newRegistration.getAttribute(REGISTRATION_DATE).getLocalizedValues()).
+                    setValue(new DateConverter().toString(DateUtil.getCurrentDate()));
+        }
+        initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, true);
+        MaskedDateInput registrationDate = (MaskedDateInput) form.get("registrationDateContainer:input");
+        registrationDate.setMinDate(newRegistration.getPerson().getBirthDate());
 
         form.add(initRegistrationType());
 
@@ -167,7 +182,8 @@ public class RegistrationEdit extends FormTemplatePage {
         initSystemAttributeInput(arrivalAddressFieldset, "arrivalDate", ARRIVAL_DATE, true);
 
         CollapsibleFieldset departureAddressFieldset = new CollapsibleFieldset("departureAddressFieldset",
-                new ResourceModel("departure_address"), newRegistration.getStatus() == StatusType.ACTIVE);
+                new ResourceModel("departure_address"), false);
+        departureAddressFieldset.setVisible(isHistory());
         form.add(departureAddressFieldset);
         initSystemAttributeInput(departureAddressFieldset, "departureCountry", DEPARTURE_COUNTRY, true);
         initSystemAttributeInput(departureAddressFieldset, "departureRegion", DEPARTURE_REGION, true);
@@ -221,16 +237,26 @@ public class RegistrationEdit extends FormTemplatePage {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (RegistrationEdit.this.validate()) {
-                    save();
-                } else {
+                try {
+                    if (RegistrationEdit.this.validate()) {
+                        save();
+                        back();
+                    } else {
+                        target.addComponent(messages);
+                        scrollToMessages(target);
+                    }
+                } catch (Exception e) {
+                    log.error("", e);
+                    error(getString("db_error"));
                     target.addComponent(messages);
                     scrollToMessages(target);
                 }
+
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
+                super.onError(target, form);
                 target.addComponent(messages);
                 scrollToMessages(target);
             }
@@ -384,6 +410,11 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private boolean validate() {
+        //registration date must be greater than person's birth date
+        if (newRegistration.getPerson().getBirthDate().after(newRegistration.getRegistrationDate())) {
+            error(getString("registration_date_error"));
+        }
+
         //owner and owner relationship
         DomainObject ownerRelationship = newRegistration.getOwnerRelationship();
         Long ownerRelationshipId = ownerRelationship != null ? ownerRelationship.getId() : null;
@@ -410,7 +441,6 @@ public class RegistrationEdit extends FormTemplatePage {
         }
         logBean.log(Log.STATUS.OK, Module.NAME, RegistrationEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT,
                 registrationStrategy, oldRegistration, newRegistration, getLocale(), null);
-        back();
     }
 
     private void back() {

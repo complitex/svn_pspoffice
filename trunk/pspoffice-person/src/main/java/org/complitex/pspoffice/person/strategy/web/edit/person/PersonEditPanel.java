@@ -114,20 +114,20 @@ public abstract class PersonEditPanel extends Panel {
                         save();
 
                         // register children dialog
-                        List<Long> newChildrenIds = null;
+                        List<Person> newChildren = null;
                         List<PersonApartmentCardAddress> personApartmentCardAddresses = null;
                         boolean needRegisterChildren = false;
                         if (!isNew()) {
-                            newChildrenIds = getNewChildrenIds();
-                            if (newChildrenIds != null && !newChildrenIds.isEmpty()) {
-                                personApartmentCardAddresses = getPersonApartmentCardAddresses(newChildrenIds);
+                            newChildren = getNewChildren();
+                            if (newChildren != null && !newChildren.isEmpty()) {
+                                personApartmentCardAddresses = getPersonApartmentCardAddresses(newChildren);
                                 if (personApartmentCardAddresses != null && !personApartmentCardAddresses.isEmpty()) {
                                     needRegisterChildren = true;
                                 }
                             }
                         }
                         if (needRegisterChildren) {
-                            registerChildrenDialog.open(target, personApartmentCardAddresses, newChildrenIds);
+                            registerChildrenDialog.open(target, personApartmentCardAddresses, newChildren);
                         } else {
                             onSave(oldPerson, newPerson, target);
                         }
@@ -207,11 +207,11 @@ public abstract class PersonEditPanel extends Panel {
 
     protected abstract void onBack(AjaxRequestTarget target);
 
-    private List<Long> getNewChildrenIds() {
+    private List<Person> getNewChildren() {
         List<Person> oldChildren = oldPerson.getChildren();
         List<Person> newChildren = newPerson.getChildren();
 
-        List<Long> newChildrenIds = newArrayList();
+        List<Person> newChildrenList = newArrayList();
         for (Person newChild : newChildren) {
             boolean isAdded = true;
             for (Person oldChild : oldChildren) {
@@ -221,28 +221,30 @@ public abstract class PersonEditPanel extends Panel {
                 }
             }
             if (isAdded) {
-                newChildrenIds.add(newChild.getId());
+                newChildrenList.add(newChild);
             }
         }
-        return newChildrenIds;
+        return newChildrenList;
     }
 
-    private List<PersonApartmentCardAddress> getPersonApartmentCardAddresses(List<Long> childrenIds) {
+    private List<PersonApartmentCardAddress> getPersonApartmentCardAddresses(List<Person> children) {
         List<PersonApartmentCardAddress> personApartmentCardAddresses = personStrategy.findPersonApartmentCardAddresses(newPerson.getId());
         if (personApartmentCardAddresses == null || personApartmentCardAddresses.isEmpty()) {
             return Collections.emptyList();
         }
 
         Map<Long, List<Long>> childrenRegistrationsMap = newHashMap();
-        for (long childId : childrenIds) {
-            List<PersonApartmentCardAddress> childApartmentCardAddresses = personStrategy.findPersonApartmentCardAddresses(childId);
-            childrenRegistrationsMap.put(childId, transform(childApartmentCardAddresses, new Function<PersonApartmentCardAddress, Long>() {
+        for (Person child : children) {
+            List<PersonApartmentCardAddress> childApartmentCardAddresses =
+                    personStrategy.findPersonApartmentCardAddresses(child.getId());
+            childrenRegistrationsMap.put(child.getId(), transform(childApartmentCardAddresses,
+                    new Function<PersonApartmentCardAddress, Long>() {
 
-                @Override
-                public Long apply(PersonApartmentCardAddress apartmentCardAddress) {
-                    return apartmentCardAddress.getApartmentCardId();
-                }
-            }));
+                        @Override
+                        public Long apply(PersonApartmentCardAddress apartmentCardAddress) {
+                            return apartmentCardAddress.getApartmentCardId();
+                        }
+                    }));
         }
 
         if (childrenRegistrationsMap.isEmpty()) {

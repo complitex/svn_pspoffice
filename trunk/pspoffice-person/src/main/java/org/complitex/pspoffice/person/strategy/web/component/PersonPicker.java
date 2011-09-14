@@ -14,6 +14,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -45,13 +46,6 @@ import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
  */
 public final class PersonPicker extends FormComponentPanel<Person> {
 
-    private static class Dialog extends org.odlabs.wiquery.ui.dialog.Dialog {
-
-        public Dialog(String id) {
-            super(id);
-            getOptions().putLiteral("width", "auto");
-        }
-    }
     private static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
     @EJB
     private PersonStrategy personStrategy;
@@ -61,6 +55,14 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     private final boolean required;
     private final IModel<String> labelModel;
     private final PersonAgeType personAgeType;
+
+    private static class Dialog extends org.odlabs.wiquery.ui.dialog.Dialog {
+
+        public Dialog(String id) {
+            super(id);
+            getOptions().putLiteral("width", "auto");
+        }
+    }
 
     public PersonPicker(String id, PersonAgeType personAgeType, IModel<Person> model, boolean required,
             IModel<String> labelModel, boolean enabled) {
@@ -73,6 +75,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     }
 
     private void init() {
+        add(JavascriptPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName() + ".js"));
+
         setRequired(required);
         setLabel(labelModel);
 
@@ -111,20 +115,21 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
         //last name
         final IModel<String> lastNameModel = new Model<String>();
-        PersonNameComponent lastName = new PersonNameComponent("lastName", null, lastNameModel, PersonNameType.LAST_NAME,
-                getLocale(), false);
+        final PersonNameAutocompleteComponent lastName = new PersonNameAutocompleteComponent("lastName", null, lastNameModel,
+                PersonNameType.LAST_NAME, getLocale(), false);
+
         filterForm.add(lastName);
 
         //first name
         final IModel<String> firstNameModel = new Model<String>();
-        PersonNameComponent firstName = new PersonNameComponent("firstName", null, firstNameModel, PersonNameType.FIRST_NAME,
-                getLocale(), false);
+        PersonNameAutocompleteComponent firstName = new PersonNameAutocompleteComponent("firstName", null, firstNameModel,
+                PersonNameType.FIRST_NAME, getLocale(), false);
         filterForm.add(firstName);
 
         //middle name
         final IModel<String> middleNameModel = new Model<String>();
-        PersonNameComponent middleName = new PersonNameComponent("middleName", null, middleNameModel, PersonNameType.MIDDLE_NAME,
-                getLocale(), false);
+        PersonNameAutocompleteComponent middleName = new PersonNameAutocompleteComponent("middleName", null, middleNameModel,
+                PersonNameType.MIDDLE_NAME, getLocale(), false);
         filterForm.add(middleName);
 
         //personContainer
@@ -207,6 +212,9 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
                 target.addComponent(personContainer);
                 toggleSelectButton(select, target, personModel);
+                if (!isPersonsDataContainerVisible) {
+                    target.focusComponent(lastName.getAutocompleteField());
+                }
             }
         };
         filterForm.add(find);

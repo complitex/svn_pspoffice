@@ -302,7 +302,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void loadAllRegistrations(ApartmentCard apartmentCard) {
+    private void loadAllRegistrations(ApartmentCard apartmentCard) {
         List<Registration> registrations = newArrayList();
         List<Attribute> registrationAttributes = apartmentCard.getAttributes(REGISTRATIONS);
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {

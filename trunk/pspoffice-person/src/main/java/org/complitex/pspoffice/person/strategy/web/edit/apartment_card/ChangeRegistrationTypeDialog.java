@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import java.text.MessageFormat;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -14,10 +15,13 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.odlabs.wiquery.core.javascript.JsStatement;
@@ -37,14 +41,19 @@ final class ChangeRegistrationTypeDialog extends Panel {
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
-    private IModel<DomainObject> registrationTypeModel;
+    @EJB
+    private PersonStrategy personStrategy;
+    private IModel<DomainObject> model;
     private Dialog dialog;
     private FeedbackPanel messages;
+    private DisableAwareDropDownChoice<DomainObject> registrationType;
     private List<Registration> registrationsToChangeType;
     private long apartmentCardId;
+    private final DomainObject permanentRegistrationType;
 
     ChangeRegistrationTypeDialog(String id) {
         super(id);
+        permanentRegistrationType = registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true);
         init();
     }
 
@@ -66,10 +75,10 @@ final class ChangeRegistrationTypeDialog extends Panel {
         dialog.add(form);
 
         final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
-        registrationTypeModel = new Model<DomainObject>(allRegistrationTypes.get(0));
+        model = new Model<DomainObject>(permanentRegistrationType);
 
-        DisableAwareDropDownChoice<DomainObject> registrationType = new DisableAwareDropDownChoice<DomainObject>("registrationType",
-                registrationTypeModel, allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
+        registrationType = new DisableAwareDropDownChoice<DomainObject>("registrationType",
+                model, allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
 
             @Override
             public Object getDisplayValue(DomainObject object) {
@@ -77,6 +86,7 @@ final class ChangeRegistrationTypeDialog extends Panel {
             }
         });
         registrationType.setRequired(true);
+        registrationType.setOutputMarkupId(true);
         form.add(registrationType);
 
         IndicatingAjaxButton submit = new IndicatingAjaxButton("submit", form) {
@@ -84,8 +94,12 @@ final class ChangeRegistrationTypeDialog extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    changeRegistrationType();
-                    setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                    if (ChangeRegistrationTypeDialog.this.validate()) {
+                        changeRegistrationType();
+                        setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                    } else {
+                        target.addComponent(messages);
+                    }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
@@ -114,12 +128,32 @@ final class ChangeRegistrationTypeDialog extends Panel {
     void open(AjaxRequestTarget target, long apartmentCardId, List<Registration> registrationsToChangeType) {
         this.apartmentCardId = apartmentCardId;
         this.registrationsToChangeType = registrationsToChangeType;
+        model.setObject(permanentRegistrationType);
+        target.addComponent(registrationType);
         target.addComponent(messages);
         dialog.open(target);
     }
 
     private void changeRegistrationType() {
-        apartmentCardStrategy.changeRegistrationType(apartmentCardId, registrationsToChangeType,
-                registrationTypeModel.getObject().getId());
+        apartmentCardStrategy.changeRegistrationType(apartmentCardId, registrationsToChangeType, model.getObject().getId());
+    }
+
+    private boolean validate() {
+        boolean valid = true;
+
+        //permanent registration type
+        if (model.getObject().getId().equals(RegistrationTypeStrategy.PERMANENT)) {
+            for (Registration registration : registrationsToChangeType) {
+                Person person = registration.getPerson();
+                String address = personStrategy.findPermanentRegistrationAddress(person.getId(), getLocale());
+                if (!Strings.isEmpty(address)) {
+                    String personName = personStrategy.displayDomainObject(person, getLocale());
+                    error(MessageFormat.format(getString("permanent_registration_error"), personName, address));
+                    valid = false;
+                }
+            }
+        }
+
+        return valid;
     }
 }

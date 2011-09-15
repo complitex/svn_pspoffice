@@ -48,9 +48,11 @@ import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
+import org.complitex.dictionary.web.component.type.MaskedDateInputPanel;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -90,6 +92,8 @@ public class RegistrationEdit extends FormTemplatePage {
     private StringCultureBean stringBean;
     @EJB
     private LogBean logBean;
+    @EJB
+    private PersonStrategy personStrategy;
     private ApartmentCard apartmentCard;
     private Registration newRegistration;
     private Registration oldRegistration;
@@ -158,13 +162,17 @@ public class RegistrationEdit extends FormTemplatePage {
         form.add(personContainer);
 
         //registration date
+        initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, true);
         if (!isHistory()) {
             stringBean.getSystemStringCulture(newRegistration.getAttribute(REGISTRATION_DATE).getLocalizedValues()).
                     setValue(new DateConverter().toString(DateUtil.getCurrentDate()));
+
+            if (!isNew()) {
+                MaskedDateInput registrationDate = (MaskedDateInput) form.get("registrationDateContainer:input:"
+                        + MaskedDateInputPanel.DATE_INPUT_ID);
+                registrationDate.setMinDate(newRegistration.getPerson().getBirthDate());
+            }
         }
-        initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, true);
-        MaskedDateInput registrationDate = (MaskedDateInput) form.get("registrationDateContainer:input");
-        registrationDate.setMinDate(newRegistration.getPerson().getBirthDate());
 
         form.add(initRegistrationType());
 
@@ -413,6 +421,16 @@ public class RegistrationEdit extends FormTemplatePage {
         //registration date must be greater than person's birth date
         if (newRegistration.getPerson().getBirthDate().after(newRegistration.getRegistrationDate())) {
             error(getString("registration_date_error"));
+        }
+
+        //permanent registration type
+        Long oldRegistrationTypeId = oldRegistration == null ? null : oldRegistration.getRegistrationType().getId();
+        if (newRegistration.getRegistrationType().getId().equals(RegistrationTypeStrategy.PERMANENT)
+                && !newRegistration.getRegistrationType().getId().equals(oldRegistrationTypeId)) {
+            String address = personStrategy.findPermanentRegistrationAddress(newRegistration.getPerson().getId(), getLocale());
+            if (!Strings.isEmpty(address)) {
+                error(MessageFormat.format(getString("permanent_registration_error"), address));
+            }
         }
 
         //owner and owner relationship

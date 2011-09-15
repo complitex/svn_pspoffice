@@ -7,12 +7,14 @@ package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 import com.google.common.base.Function;
 import static com.google.common.collect.ImmutableList.*;
 import com.google.common.collect.Iterables;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -24,6 +26,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.util.DateUtil;
@@ -158,6 +161,14 @@ final class RegisterOwnerDialog extends Panel {
             }
         };
         form.add(register);
+        AjaxLink<Void> cancel = new AjaxLink<Void>("cancel") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
+            }
+        };
+        form.add(cancel);
     }
 
     void open(AjaxRequestTarget target, ApartmentCard apartmentCard) {
@@ -169,7 +180,7 @@ final class RegisterOwnerDialog extends Panel {
         children = newArrayList();
         List<Attribute> childrenAttributes = apartmentCard.getOwner().getAttributes(PersonStrategy.CHILDREN);
         for (Attribute childAttribute : childrenAttributes) {
-            children.add(personStrategy.findById(childAttribute.getValueId(), true, false, false, false));
+            children.add(personStrategy.findById(childAttribute.getValueId(), true, true, false, false));
         }
         registerChildrenContainer.setVisible(children != null && !children.isEmpty());
 
@@ -183,11 +194,14 @@ final class RegisterOwnerDialog extends Panel {
     }
 
     private boolean validate() {
+        boolean valid = true;
+
+        //registration date
         RegisterOwnerCard card = model.getObject();
         if (!card.isRegisterChildren()) {
             if (!card.getRegistrationDate().after(apartmentCard.getOwner().getBirthDate())) {
                 error(getString("registration_date_owner_error"));
-                return false;
+                valid = false;
             }
         } else {
             Date maxBirthDate = Collections.max(newArrayList(Iterables.transform(
@@ -201,9 +215,35 @@ final class RegisterOwnerDialog extends Panel {
                     })));
             if (!card.getRegistrationDate().after(maxBirthDate)) {
                 error(getString("registration_date_children_error"));
-                return false;
+                valid = false;
             }
         }
-        return true;
+
+        //permanent registration type
+        if (card.getRegistrationType().getId().equals(RegistrationTypeStrategy.PERMANENT)) {
+            if (!card.isRegisterChildren()) {
+                Person owner = apartmentCard.getOwner();
+                String address = personStrategy.findPermanentRegistrationAddress(owner.getId(), getLocale());
+                if (!Strings.isEmpty(address)) {
+                    String personName = personStrategy.displayDomainObject(owner, getLocale());
+                    error(MessageFormat.format(getString("permanent_registration_error"), personName, address));
+                    valid = false;
+                }
+            } else {
+                List<Person> allPersons = newArrayList();
+                allPersons.add(apartmentCard.getOwner());
+                allPersons.addAll(children);
+                for (Person person : allPersons) {
+                    String address = personStrategy.findPermanentRegistrationAddress(person.getId(), getLocale());
+                    if (!Strings.isEmpty(address)) {
+                        String personName = personStrategy.displayDomainObject(person, getLocale());
+                        error(MessageFormat.format(getString("permanent_registration_error"), personName, address));
+                        valid = false;
+                    }
+                }
+            }
+        }
+
+        return valid;
     }
 }

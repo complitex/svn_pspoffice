@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StatusType;
@@ -44,6 +45,7 @@ import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
 import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -115,6 +117,8 @@ public class PersonStrategy extends TemplateStrategy {
     private LocaleBean localeBean;
     @EJB
     private RegistrationStrategy registrationStrategy;
+    @EJB
+    private AddressRendererBean addressRendererBean;
 
     @Override
     public String getEntityTable() {
@@ -653,5 +657,20 @@ public class PersonStrategy extends TemplateStrategy {
             personApartmentCardAddress.setAddressEntity(ApartmentCardStrategy.getAddressEntity(personApartmentCardAddress.getAddressTypeId()));
         }
         return personApartmentCardAddresses;
+    }
+
+    public String findPermanentRegistrationAddress(long personId, Locale locale) {
+        Map<Object, Object> params = builder().putAll(newFindPersonRegistrationParameters(personId)).
+                put("registrationTypeAT", RegistrationStrategy.REGISTRATION_TYPE).
+                put("permanentRegistrationTypeId", RegistrationTypeStrategy.PERMANENT).
+                build();
+        List<PersonRegistration> personRegistrations = sqlSession().selectList(PERSON_MAPPING + ".findPermanentRegistrationAddress",
+                params);
+        if (!personRegistrations.isEmpty()) {
+            return addressRendererBean.displayAddress(
+                    ApartmentCardStrategy.getAddressEntity(personRegistrations.get(0).getAddressTypeId()),
+                    personRegistrations.get(0).getAddressId(), locale);
+        }
+        return null;
     }
 }

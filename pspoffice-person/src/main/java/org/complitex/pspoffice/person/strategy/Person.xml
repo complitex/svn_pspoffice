@@ -142,7 +142,8 @@
     <sql id="findPersonRegistrationsSql">
         FROM `registration_attribute` ra
             JOIN `apartment_card_attribute` ar ON (ra.`object_id` = ar.`value_id` AND ar.`status` = 'ACTIVE')
-            JOIN `apartment_card_attribute` address ON (address.`object_id` = ar.`object_id` AND address.`status` = 'ACTIVE')
+            JOIN `apartment_card` a ON (a.`object_id` = ar.`object_id` AND a.`status` = 'ACTIVE')
+            JOIN `apartment_card_attribute` address ON (address.`object_id` = a.`object_id` AND address.`status` = 'ACTIVE')
             WHERE ra.`attribute_type_id` = #{registrationPersonAT}
                     AND ar.`attribute_type_id` = #{apartmentCardRegistrationAT}
                     AND address.`attribute_type_id` = #{apartmentCardAddressAT}
@@ -186,7 +187,8 @@
         FROM `registration_attribute` ra
             JOIN `registration_attribute` rt ON (rt.`object_id` = ra.`object_id` AND rt.`status` = 'ACTIVE')
             JOIN `apartment_card_attribute` ar ON (ra.`object_id` = ar.`value_id` AND ar.`status` = 'ACTIVE')
-            JOIN `apartment_card_attribute` address ON (address.`object_id` = ar.`object_id` AND address.`status` = 'ACTIVE')
+            JOIN `apartment_card` a ON (a.`object_id` = ar.`object_id` AND a.`status` = 'ACTIVE')
+            JOIN `apartment_card_attribute` address ON (address.`object_id` = a.`object_id` AND address.`status` = 'ACTIVE')
             WHERE ra.`attribute_type_id` = #{registrationPersonAT}
                     AND rt.`attribute_type_id` = #{registrationTypeAT}
                     AND ar.`attribute_type_id` = #{apartmentCardRegistrationAT}

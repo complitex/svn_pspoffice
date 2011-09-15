@@ -75,6 +75,7 @@ import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardBut
 import org.complitex.pspoffice.person.strategy.web.component.AddressSearchPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
+import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.ArchiveApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
@@ -125,6 +126,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private Form form;
     private FeedbackPanel messages;
     private Component scrollToComponent;
+    private ArchiveApartmentCardDialog archiveApartmentCardDialog;
 
     private class ApartmentCardSubmitLink extends AjaxSubmitLink {
 
@@ -547,6 +549,11 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         back.setVisible(!canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard));
         form.add(back);
         add(form);
+
+        //archiveApartmentCardDialog
+        archiveApartmentCardDialog = new ArchiveApartmentCardDialog("archiveApartmentCardDialog");
+        archiveApartmentCardDialog.setVisible(!isNew());
+        add(archiveApartmentCardDialog);
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId) {
@@ -713,6 +720,12 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 oldApartmentCard, newApartmentCard, getLocale(), null);
     }
 
+    private void archive() {
+        apartmentCardStrategy.archive(oldApartmentCard, DateUtil.getCurrentDate());
+        logBean.logArchivation(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, apartmentCardStrategy.getEntityTable(),
+                oldApartmentCard.getId(), getString("archivation_log_message"));
+    }
+
     private void back() {
         String backAddressEntity = null;
         Long backAddressId = null;
@@ -798,9 +811,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     protected void onBeforeRender() {
                         super.onBeforeRender();
-                        if (isNew()) {
-                            setVisible(false);
-                        }
+                        setVisible(!isNew());
                     }
                 },
                 new AddRegistrationToolbarButton(id) {
@@ -808,6 +819,26 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     protected AbstractLink newLink(String linkId) {
                         return new AddRegistrationToolbarLink(linkId);
+                    }
+                },
+                new ArchiveApartmentCardButton(id) {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        if (archiveApartmentCardDialog != null) {
+                            if (oldApartmentCard.getRegisteredCount() > 0) {
+                                archiveApartmentCardDialog.open(target);
+                            } else {
+                                archive();
+                                back();
+                            }
+                        }
+                    }
+
+                    @Override
+                    protected void onBeforeRender() {
+                        super.onBeforeRender();
+                        setVisible(!isNew());
                     }
                 });
     }

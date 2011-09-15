@@ -13,6 +13,10 @@
         </if>
     </sql>
 
+    <sql id="statusFilter">
+        AND e.`status` = 'ACTIVE'
+    </sql>
+
     <sql id="findByApartmentSql">
         LEFT JOIN `apartment_card_attribute` apartment_a ON (apartment_a.`object_id` = e.`object_id` AND apartment_a.`status` = 'ACTIVE'
             AND apartment_a.`attribute_type_id` = 2402 AND apartment_a.`value_type_id` = 2403)
@@ -25,6 +29,7 @@
 
         WHERE (apartment_a.`value_id` = #{addressId} OR apartment.`object_id` = #{addressId})
         <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.permissionFilter"/>
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.statusFilter"/>
     </sql>
 
     <select id="findByApartment" parameterType="map" resultType="long">
@@ -60,7 +65,8 @@
 
         WHERE (building_a.`value_id` = #{addressId} OR building1.`object_id` = #{addressId} OR building2.`object_id` = #{addressId}
                 OR building3.`object_id` = #{addressId})
-                <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.permissionFilter"/>
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.permissionFilter"/>
+        <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.statusFilter"/>
     </sql>
 
     <select id="findByBuilding" parameterType="long" resultType="long">
@@ -75,16 +81,19 @@
     </select>
 
     <select id="validateOwnerAddressUniqueness" parameterType="map" resultType="long">
-        SELECT a.`object_id` FROM `apartment_card` a
-            JOIN `apartment_card_attribute` address ON (address.`object_id` = a.`object_id`
+        SELECT e.`object_id` FROM `apartment_card` e
+            JOIN `apartment_card_attribute` address ON (address.`object_id` = e.`object_id`
                 AND address.`attribute_type_id` = #{apartmentCardAddressAT} AND address.`status` = 'ACTIVE'
                 AND address.`value_id` = #{addressId} AND address.`value_type_id` = #{addressTypeId})
-            JOIN `apartment_card_attribute` owner ON (owner.`object_id` = a.`object_id`
+            JOIN `apartment_card_attribute` owner ON (owner.`object_id` = e.`object_id`
                 AND owner.`attribute_type_id` = #{apartmentCardOwnerAT} AND owner.`status` = 'ACTIVE'
                 AND owner.`value_id` = #{ownerId})
-            <if test="apartmentCardId != null">
-                WHERE a.`object_id` != #{apartmentCardId}
-            </if>
+                <where>
+                    <if test="apartmentCardId != null">
+                        e.`object_id` != #{apartmentCardId}
+                    </if>
+                    <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.statusFilter"/>
+                </where>
             LIMIT 0,1
     </select>
 </mapper>

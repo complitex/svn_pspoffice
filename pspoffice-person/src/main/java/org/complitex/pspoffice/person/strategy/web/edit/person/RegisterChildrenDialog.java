@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.edit.person;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import java.text.MessageFormat;
 import static com.google.common.collect.Lists.*;
 import java.util.Collections;
 import java.util.Date;
@@ -25,6 +26,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.util.DateUtil;
@@ -33,6 +35,7 @@ import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy.PersonApartmentCardAddress;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.RegisterChildrenCard;
@@ -56,6 +59,8 @@ abstract class RegisterChildrenDialog extends Panel {
     private AddressRendererBean addressRendererBean;
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
+    @EJB
+    private PersonStrategy personStrategy;
     private IModel<RegisterChildrenCard> model;
     private Dialog dialog;
     private Form<RegisterChildrenCard> form;
@@ -222,6 +227,9 @@ abstract class RegisterChildrenDialog extends Panel {
     }
 
     private boolean validate() {
+        boolean valid = true;
+
+        //registration date
         Date maxBirthDate = Collections.max(newArrayList(Iterables.transform(children, new Function<Person, Date>() {
 
             @Override
@@ -231,8 +239,21 @@ abstract class RegisterChildrenDialog extends Panel {
         })));
         if (maxBirthDate.after(model.getObject().getRegistrationDate())) {
             error(getString("registration_date_error"));
-            return false;
+            valid = false;
         }
-        return true;
+
+        //permanent registration type
+        if (model.getObject().getRegistrationType().getId().equals(RegistrationTypeStrategy.PERMANENT)) {
+            for (Person child : children) {
+                String address = personStrategy.findPermanentRegistrationAddress(child.getId(), getLocale());
+                if (!Strings.isEmpty(address)) {
+                    String childName = personStrategy.displayDomainObject(child, getLocale());
+                    error(MessageFormat.format(getString("permanent_registration_error"), childName, address));
+                    valid = false;
+                }
+            }
+        }
+
+        return valid;
     }
 }

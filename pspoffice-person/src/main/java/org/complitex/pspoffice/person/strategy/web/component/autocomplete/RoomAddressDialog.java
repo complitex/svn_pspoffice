@@ -52,7 +52,7 @@ abstract class RoomAddressDialog extends AbstractAddressCreateDialog {
         stringBean.getSystemStringCulture(room.getAttribute(RoomStrategy.NAME).getLocalizedValues()).
                 setValue(getNameModel().getObject());
         room.setParentEntityId("apartment".equals(getParentEntity()) ? 100L : 500L);
-        room.setParentId(getParentId());
+        room.setParentId(getParentObject().getId());
         return room;
     }
 

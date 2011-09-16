@@ -4,7 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.component.autocomplete;
 
-import com.google.common.collect.Sets;
+import static com.google.common.collect.Sets.*;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -16,6 +16,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -44,15 +45,18 @@ abstract class AbstractAddressCreateDialog extends Panel {
     private Dialog dialog;
     private IModel<String> nameModel;
     private WebMarkupContainer content;
+    private Form form;
     private Autocomplete<String> autocomplete;
     private String parentEntity;
-    private long parentId;
+    private DomainObject parentObject;
     private List<Long> userOrganizationIds;
+    private final Set<Long> subjectIds;
 
     AbstractAddressCreateDialog(String id, Autocomplete<String> autocomplete, List<Long> userOrganizationIds) {
         super(id);
         this.autocomplete = autocomplete;
         this.userOrganizationIds = userOrganizationIds;
+        this.subjectIds = newHashSet();
         init();
     }
 
@@ -64,21 +68,23 @@ abstract class AbstractAddressCreateDialog extends Panel {
         return nameModel;
     }
 
-    long getParentId() {
-        return parentId;
+    DomainObject getParentObject() {
+        return parentObject;
     }
 
     String getParentEntity() {
         return parentEntity;
     }
 
-    void open(AjaxRequestTarget target, String entity, String name, String parentEntity, long parentId) {
+    void open(AjaxRequestTarget target, String entity, String name, String parentEntity, DomainObject parentObject) {
         this.entity = entity;
         this.parentEntity = parentEntity;
-        this.parentId = parentId;
+        this.parentObject = parentObject;
         this.nameModel.setObject(name);
         dialog.open(target);
         content.setVisible(true);
+        subjectIds.clear();
+        form.replace(newPermissionPanel(subjectIds, parentObject.getSubjectIds()));
         target.addComponent(content);
     }
 
@@ -103,13 +109,13 @@ abstract class AbstractAddressCreateDialog extends Panel {
         messages.setOutputMarkupId(true);
         content.add(messages);
 
-        Form form = new Form("form");
+        form = new Form("form");
         content.add(form);
         form.add(new Label("address", new AbstractReadOnlyModel<String>() {
 
             @Override
             public String getObject() {
-                return addressRendererBean.displayAddress(parentEntity, parentId, getLocale());
+                return addressRendererBean.displayAddress(parentEntity, parentObject.getId(), getLocale());
             }
         }));
         IModel<String> nameLabelModel = getNameLabelModel();
@@ -120,8 +126,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
         nameField.setLabel(nameLabelModel);
         form.add(nameField);
 
-        final Set<Long> subjectIds = Sets.newHashSet();
-        form.add(new PermissionPanel("permissionPanel", userOrganizationIds, subjectIds));
+        form.add(new EmptyPanel("permissionPanel").setRenderBodyOnly(true));
 
         form.add(new IndicatingAjaxButton("submit", form) {
 
@@ -159,6 +164,10 @@ abstract class AbstractAddressCreateDialog extends Panel {
                 onCancel(target);
             }
         });
+    }
+
+    PermissionPanel newPermissionPanel(Set<Long> subjectIds, Set<Long> parentSubjectIds) {
+        return new PermissionPanel("permissionPanel", userOrganizationIds, subjectIds, parentSubjectIds);
     }
 
     abstract String getTitle();

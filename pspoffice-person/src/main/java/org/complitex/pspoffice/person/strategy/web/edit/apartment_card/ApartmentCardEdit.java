@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
@@ -127,6 +128,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private FeedbackPanel messages;
     private Component scrollToComponent;
     private ArchiveApartmentCardDialog archiveApartmentCardDialog;
+    private final List<Long> userOrganizationObjectIds = sessionBean.getUserOrganizationObjectIds();
+    private WebMarkupContainer permissionContainer;
 
     private class ApartmentCardSubmitLink extends AjaxSubmitLink {
 
@@ -261,8 +264,25 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         addressContainer.add(new WebMarkupContainer("required").setVisible(addressAttributeType.isMandatory()));
 
         addressSearchComponentState = initAddressSearchComponentState();
-        AddressSearchPanel address = new AddressSearchPanel("address", addressSearchComponentState,
-                of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, true);
+        AddressSearchPanel address = null;
+        if (isNew()) {
+            address = new AddressSearchPanel("address", addressSearchComponentState,
+                    of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, true) {
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target, String entity, DomainObject object) {
+//                    if(entity.equals("building") || entity.equals("apartment") || entity.equals("room")){
+                    if (object != null && object.getId() != null && object.getId() > 0) {
+                        permissionContainer.replace(newPermissionPanel(object.getSubjectIds()));
+                        target.addComponent(permissionContainer);
+                    }
+//                    }
+                }
+            };
+        } else {
+            address = new AddressSearchPanel("address", addressSearchComponentState,
+                    of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, false);
+        }
         addressContainer.add(address);
         form.add(addressContainer);
 
@@ -282,7 +302,14 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         form.add(initFormOfOwnership());
 
         //permission panel
-        form.add(new PermissionPanel("permissionPanel", sessionBean.getUserOrganizationObjectIds(), newApartmentCard.getSubjectIds()));
+        permissionContainer = new WebMarkupContainer("permissionContainer");
+        permissionContainer.setOutputMarkupId(true);
+        form.add(permissionContainer);
+        if (isNew()) {
+            permissionContainer.add(newPermissionPanel(addressSearchComponentState.get(getAddressEntity()).getSubjectIds()));
+        } else {
+            permissionContainer.add(new PermissionPanel("permissionPanel", newApartmentCard.getSubjectIds()));
+        }
 
         //register owner
         WebMarkupContainer registerOwnerContainer = new WebMarkupContainer("registerOwnerContainer");
@@ -580,21 +607,23 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private void beforePersist() {
         // address
-        Attribute addressAttribute = newApartmentCard.getAttribute(ADDRESS);
-        if (addressSearchComponentState.get("room") != null
-                && addressSearchComponentState.get("room").getId() > 0) {
-            addressAttribute.setValueTypeId(ADDRESS_ROOM);
-            addressAttribute.setValueId(addressSearchComponentState.get("room").getId());
-        } else if (addressSearchComponentState.get("apartment") != null
-                && addressSearchComponentState.get("apartment").getId() > 0) {
-            addressAttribute.setValueTypeId(ADDRESS_APARTMENT);
-            addressAttribute.setValueId(addressSearchComponentState.get("apartment").getId());
-        } else if (addressSearchComponentState.get("building") != null
-                && addressSearchComponentState.get("building").getId() > 0) {
-            addressAttribute.setValueTypeId(ADDRESS_BUILDING);
-            addressAttribute.setValueId(addressSearchComponentState.get("building").getId());
-        } else {
-            throw new IllegalStateException("All building, apartment and room parts of address have not been filled in.");
+        if (isNew()) {
+            Attribute addressAttribute = newApartmentCard.getAttribute(ADDRESS);
+            if (addressSearchComponentState.get("room") != null
+                    && addressSearchComponentState.get("room").getId() > 0) {
+                addressAttribute.setValueTypeId(ADDRESS_ROOM);
+                addressAttribute.setValueId(addressSearchComponentState.get("room").getId());
+            } else if (addressSearchComponentState.get("apartment") != null
+                    && addressSearchComponentState.get("apartment").getId() > 0) {
+                addressAttribute.setValueTypeId(ADDRESS_APARTMENT);
+                addressAttribute.setValueId(addressSearchComponentState.get("apartment").getId());
+            } else if (addressSearchComponentState.get("building") != null
+                    && addressSearchComponentState.get("building").getId() > 0) {
+                addressAttribute.setValueTypeId(ADDRESS_BUILDING);
+                addressAttribute.setValueId(addressSearchComponentState.get("building").getId());
+            } else {
+                throw new IllegalStateException("All building, apartment and room parts of address have not been filled in.");
+            }
         }
 
         // owner
@@ -617,35 +646,46 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         Long addressObjectId = null;
         Long addressTypeId = null;
 
-        DomainObject building = addressSearchComponentState.get("building");
-        if (building == null || building.getId() <= 0) {
-            error(getString("address_failing"));
-        } else {
-            DomainObject apartment = addressSearchComponentState.get("apartment");
-            if (apartment == null || apartment.getId() <= 0) {
-                if (!apartmentCardStrategy.isLeafAddress(building.getId(), "building")) {
-                    error(getString("address_failing"));
-                } else {
-                    addressObjectId = building.getId();
-                    addressTypeId = ADDRESS_BUILDING;
-                }
+        if (isNew()) {
+            DomainObject building = addressSearchComponentState.get("building");
+            if (building == null || building.getId() <= 0) {
+                error(getString("address_failing"));
             } else {
-                DomainObject room = addressSearchComponentState.get("room");
-                if (room == null || room.getId() <= 0) {
-                    if (!apartmentCardStrategy.isLeafAddress(apartment.getId(), "apartment")) {
+                DomainObject apartment = addressSearchComponentState.get("apartment");
+                if (apartment == null || apartment.getId() <= 0) {
+                    if (!apartmentCardStrategy.isLeafAddress(building.getId(), "building")) {
                         error(getString("address_failing"));
                     } else {
-                        addressObjectId = apartment.getId();
-                        addressTypeId = ADDRESS_APARTMENT;
+                        addressObjectId = building.getId();
+                        addressTypeId = ADDRESS_BUILDING;
                     }
                 } else {
-                    if (room.getId() == null || room.getId() <= 0) {
-                        error(getString("address_failing"));
+                    DomainObject room = addressSearchComponentState.get("room");
+                    if (room == null || room.getId() <= 0) {
+                        if (!apartmentCardStrategy.isLeafAddress(apartment.getId(), "apartment")) {
+                            error(getString("address_failing"));
+                        } else {
+                            addressObjectId = apartment.getId();
+                            addressTypeId = ADDRESS_APARTMENT;
+                        }
                     } else {
-                        addressObjectId = room.getId();
-                        addressTypeId = ADDRESS_ROOM;
+                        if (room.getId() == null || room.getId() <= 0) {
+                            error(getString("address_failing"));
+                        } else {
+                            addressObjectId = room.getId();
+                            addressTypeId = ADDRESS_ROOM;
+                        }
                     }
                 }
+            }
+        } else {
+            addressObjectId = newApartmentCard.getAddressId();
+            if (ApartmentCardStrategy.getAddressEntity(newApartmentCard).equals("building")) {
+                addressTypeId = ADDRESS_BUILDING;
+            } else if (ApartmentCardStrategy.getAddressEntity(newApartmentCard).equals("apartment")) {
+                addressTypeId = ADDRESS_APARTMENT;
+            } else if (ApartmentCardStrategy.getAddressEntity(newApartmentCard).equals("room")) {
+                addressTypeId = ADDRESS_ROOM;
             }
         }
 
@@ -791,6 +831,11 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 return model.getObject();
             }
         });
+    }
+
+    private PermissionPanel newPermissionPanel(Set<Long> inheritedSubjectIds) {
+        newApartmentCard.getSubjectIds().clear();
+        return new PermissionPanel("permissionPanel", userOrganizationObjectIds, newApartmentCard.getSubjectIds(), inheritedSubjectIds);
     }
 
     private void scrollToMessages(AjaxRequestTarget target) {

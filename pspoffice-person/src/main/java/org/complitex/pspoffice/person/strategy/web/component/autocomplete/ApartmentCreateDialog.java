@@ -52,7 +52,7 @@ abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog {
         stringBean.getSystemStringCulture(apartment.getAttribute(ApartmentStrategy.NAME).getLocalizedValues()).
                 setValue(getNameModel().getObject());
         apartment.setParentEntityId(ApartmentStrategy.PARENT_ENTITY_ID);
-        apartment.setParentId(getParentId());
+        apartment.setParentId(getParentObject().getId());
         return apartment;
     }
 

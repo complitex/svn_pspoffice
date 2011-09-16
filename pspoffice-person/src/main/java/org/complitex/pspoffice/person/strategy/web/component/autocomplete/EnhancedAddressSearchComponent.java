@@ -18,7 +18,7 @@ import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
  *
  * @author Artem
  */
-public final class EnhancedAddressSearchComponent extends WiQuerySearchComponent {
+public class EnhancedAddressSearchComponent extends WiQuerySearchComponent {
 
     private EnhancedAddressAutocompleteComponent apartmentComponent;
     private EnhancedAddressAutocompleteComponent roomComponent;
@@ -61,13 +61,13 @@ public final class EnhancedAddressSearchComponent extends WiQuerySearchComponent
                 getModel(getIndex(entity)), newAutocompleteItemRenderer(entity), canCreate, entity, userOrganizationIds) {
 
             @Override
-            protected long getParentId() {
+            protected DomainObject getParentObject() {
                 if (entity.equals("apartment")) {
-                    return EnhancedAddressSearchComponent.this.getModelObject("building").getId();
+                    return EnhancedAddressSearchComponent.this.getModelObject("building");
                 } else {
                     DomainObject apartment = EnhancedAddressSearchComponent.this.getModelObject("apartment");
-                    return (apartment != null && apartment.getId() > 0) ? apartment.getId()
-                            : EnhancedAddressSearchComponent.this.getModelObject("building").getId();
+                    return (apartment != null && apartment.getId() > 0) ? apartment
+                            : EnhancedAddressSearchComponent.this.getModelObject("building");
                 }
             }
 

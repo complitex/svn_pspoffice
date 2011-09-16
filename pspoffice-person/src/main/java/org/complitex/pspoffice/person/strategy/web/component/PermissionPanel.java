@@ -32,36 +32,113 @@ public final class PermissionPanel extends Panel {
         VISIBLE_BY_ALL.setId(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
     }
 
-    public PermissionPanel(String id, List<Long> userOrganizationIds, Set<Long> subjectIds) {
+    /**
+     * For new objects.
+     * @param id
+     * @param userOrganizationIds
+     * @param subjectIds
+     * @param inheritedSubjectIds
+     */
+    public PermissionPanel(String id, List<Long> userOrganizationIds, Set<Long> subjectIds, Set<Long> inheritedSubjectIds) {
         super(id);
-        init(userOrganizationIds, subjectIds);
+        init(userOrganizationIds, subjectIds, inheritedSubjectIds);
     }
 
-    private void init(final List<Long> userOrganizationIds, final Set<Long> subjectIds) {
+    /**
+     * For existing objects.
+     * @param id
+     * @param subjectIds
+     */
+    public PermissionPanel(String id, Set<Long> subjectIds) {
+        super(id);
+        init(subjectIds);
+    }
+
+    /**
+     * For existing objects.
+     * @param subjectIds
+     */
+    private void init(final Set<Long> subjectIds) {
         final Long existingSubjectId = subjectIds.isEmpty() ? null : subjectIds.iterator().next();
         final IModel<List<DomainObject>> userOrganizationsModel = new LoadableDetachableModel<List<DomainObject>>() {
 
             @Override
             protected List<DomainObject> load() {
                 List<DomainObject> list = Lists.newArrayList();
-                if (existingSubjectId == null) {
-                    for (Long userOrganizationId : userOrganizationIds) {
+                if (existingSubjectId == PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID) {
+                    list.add(VISIBLE_BY_ALL);
+                } else {
+                    list.add(organizationStrategy.findById(existingSubjectId, true));
+                }
+                return list;
+            }
+        };
+        IModel<DomainObject> model = newModel(subjectIds);
+        model.setObject(userOrganizationsModel.getObject().get(0));
+        DisableAwareDropDownChoice<DomainObject> organizationPicker = newOrganizationPicker(model, userOrganizationsModel);
+        organizationPicker.setEnabled(false);
+        add(organizationPicker);
+        setRenderBodyOnly(true);
+    }
+
+    /**
+     * For new objects.
+     * @param userOrganizationIds
+     * @param subjectIds
+     * @param inheritedSubjectIds
+     */
+    private void init(final List<Long> userOrganizationIds, final Set<Long> subjectIds, final Set<Long> inheritedSubjectIds) {
+        final boolean inheritedObjectVisibleByAll = inheritedSubjectIds.size() == 1
+                && inheritedSubjectIds.iterator().next().equals(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
+        final IModel<List<DomainObject>> userOrganizationsModel = new LoadableDetachableModel<List<DomainObject>>() {
+
+            @Override
+            protected List<DomainObject> load() {
+                List<DomainObject> list = Lists.newArrayList();
+                for (long userOrganizationId : userOrganizationIds) {
+                    if (inheritedObjectVisibleByAll || inheritedSubjectIds.contains(userOrganizationId)) {
                         list.add(organizationStrategy.findById(userOrganizationId, true));
                     }
-                    if (list.isEmpty()) {
-                        list.add(VISIBLE_BY_ALL);
-                    }
-                } else {
-                    if (existingSubjectId == PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID) {
+                }
+                if (list.isEmpty()) {
+                    if (inheritedObjectVisibleByAll) {
                         list.add(VISIBLE_BY_ALL);
                     } else {
-                        list.add(organizationStrategy.findById(existingSubjectId, true));
+                        for (long organizationId : inheritedSubjectIds) {
+                            list.add(organizationStrategy.findById(organizationId, true));
+                        }
                     }
                 }
                 return list;
             }
         };
-        DomainObjectDisableAwareRenderer renderer = new DomainObjectDisableAwareRenderer() {
+
+        IModel<DomainObject> model = newModel(subjectIds);
+
+        DisableAwareDropDownChoice<DomainObject> organizationPicker = newOrganizationPicker(model, userOrganizationsModel);
+        add(organizationPicker);
+
+        if (userOrganizationsModel.getObject().size() == 1) {
+            model.setObject(userOrganizationsModel.getObject().get(0));
+            organizationPicker.setEnabled(false);
+        }
+        setRenderBodyOnly(true);
+    }
+
+    private IModel<DomainObject> newModel(final Set<Long> subjectIds) {
+        return new Model<DomainObject>() {
+
+            @Override
+            public void setObject(DomainObject userOrganization) {
+                super.setObject(userOrganization);
+                subjectIds.clear();
+                subjectIds.add(userOrganization.getId());
+            }
+        };
+    }
+
+    private DomainObjectDisableAwareRenderer newRenderer() {
+        return new DomainObjectDisableAwareRenderer() {
 
             @Override
             public String getDisplayValue(DomainObject object) {
@@ -72,37 +149,14 @@ public final class PermissionPanel extends Panel {
                 }
             }
         };
+    }
 
-        IModel<DomainObject> model = new Model<DomainObject>() {
-
-            @Override
-            public void setObject(DomainObject userOrganization) {
-                super.setObject(userOrganization);
-                subjectIds.clear();
-                subjectIds.add(userOrganization.getId());
-            }
-        };
-
+    private DisableAwareDropDownChoice<DomainObject> newOrganizationPicker(IModel<DomainObject> model,
+            IModel<List<DomainObject>> userOrganizationsModel) {
         DisableAwareDropDownChoice<DomainObject> organizationPicker =
-                new DisableAwareDropDownChoice<DomainObject>("organizationPicker", model, userOrganizationsModel, renderer);
+                new DisableAwareDropDownChoice<DomainObject>("organizationPicker", model, userOrganizationsModel,
+                newRenderer());
         organizationPicker.setRequired(true);
-        add(organizationPicker);
-
-        if (existingSubjectId != null) {
-            DomainObject selected = null;
-            for (DomainObject organization : userOrganizationsModel.getObject()) {
-                if (organization.getId().equals(existingSubjectId)) {
-                    selected = organization;
-                    break;
-                }
-            }
-            model.setObject(selected);
-            organizationPicker.setEnabled(false);
-        } else if (userOrganizationsModel.getObject().size() == 1) {
-            model.setObject(userOrganizationsModel.getObject().get(0));
-            organizationPicker.setEnabled(false);
-        }
-
-        setRenderBodyOnly(true);
+        return organizationPicker;
     }
 }

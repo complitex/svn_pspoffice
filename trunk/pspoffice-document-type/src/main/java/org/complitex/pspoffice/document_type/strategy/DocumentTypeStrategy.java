@@ -111,6 +111,11 @@ public class DocumentTypeStrategy extends TemplateStrategy {
         return new String[]{SecurityRole.DOCUMENT_TYPE_MODULE_EDIT};
     }
 
+    @Override
+    public String[] getListRoles() {
+        return new String[]{SecurityRole.DOCUMENT_TYPE_MODULE_VIEW};
+    }
+
     @Transactional
     @Override
     protected void deleteChecks(long objectId, Locale locale) throws DeleteException {

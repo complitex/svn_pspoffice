@@ -238,4 +238,9 @@ public class RegistrationStrategy extends Strategy {
                 "registrationPersonAT", PERSON, "personId", personId, "apartmentCardId", apartmentCardId);
         return sqlSession().selectOne(REGISTRATION_MAPPING + ".validateDuplicatePerson", params) == null;
     }
+
+    @Override
+    public String[] getListRoles() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

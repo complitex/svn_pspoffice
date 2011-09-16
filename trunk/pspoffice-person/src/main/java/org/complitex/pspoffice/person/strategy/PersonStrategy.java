@@ -153,6 +153,11 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Override
+    public String[] getListRoles() {
+        return new String[]{SecurityRole.PERSON_MODULE_VIEW};
+    }
+
+    @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
         Person person = (Person) object;
         Locale systemLocale = localeBean.getSystemLocale();

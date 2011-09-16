@@ -8,8 +8,10 @@ import com.google.common.base.Function;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
 import javax.ejb.EJB;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.complitex.admin.service.UserBean;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.User;
 import org.complitex.dictionary.entity.UserGroup;
 import org.complitex.dictionary.entity.UserOrganization;
@@ -25,7 +27,7 @@ import org.complitex.pspoffice.person.strategy.web.component.autocomplete.Enhanc
  *
  * @author Artem
  */
-public final class AddressSearchPanel extends Panel {
+public class AddressSearchPanel extends Panel {
 
     private static final String SEARCH_COMPONENT_ID = "searchComponent";
     @EJB
@@ -39,8 +41,22 @@ public final class AddressSearchPanel extends Panel {
 
         User user = getCurrentUser();
         add(isEnhanced(user) ? new EnhancedAddressSearchComponent(SEARCH_COMPONENT_ID, searchComponentState, searchFilters,
-                callback, showMode, enabled, getUserOrganizationObjectIds(user))
-                : new WiQuerySearchComponent("searchComponent", searchComponentState, searchFilters, callback, showMode, enabled));
+                callback, showMode, enabled, getUserOrganizationObjectIds(user)) {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target, String entity) {
+                super.onUpdate(target, entity);
+                AddressSearchPanel.this.onUpdate(target, entity, getModelObject(entity));
+            }
+        }
+                : new WiQuerySearchComponent("searchComponent", searchComponentState, searchFilters, callback, showMode, enabled) {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target, String entity) {
+                super.onUpdate(target, entity);
+                AddressSearchPanel.this.onUpdate(target, entity, getModelObject(entity));
+            }
+        });
     }
 
     public AddressSearchPanel(String id, SearchComponentState searchComponentState,
@@ -48,9 +64,23 @@ public final class AddressSearchPanel extends Panel {
         super(id);
 
         User user = getCurrentUser();
-        add(isEnhanced(user) ? new EnhancedAddressSearchComponent(SEARCH_COMPONENT_ID, searchComponentState, searchFilterSettings,
-                callback, getUserOrganizationObjectIds(user))
-                : new WiQuerySearchComponent("searchComponent", searchComponentState, searchFilterSettings, callback));
+        add(isEnhanced(user) ? new EnhancedAddressSearchComponent(SEARCH_COMPONENT_ID, searchComponentState,
+                searchFilterSettings, callback, getUserOrganizationObjectIds(user)) {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target, String entity) {
+                super.onUpdate(target, entity);
+                AddressSearchPanel.this.onUpdate(target, entity, getModelObject(entity));
+            }
+        }
+                : new WiQuerySearchComponent("searchComponent", searchComponentState, searchFilterSettings, callback) {
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target, String entity) {
+                super.onUpdate(target, entity);
+                AddressSearchPanel.this.onUpdate(target, entity, getModelObject(entity));
+            }
+        });
     }
 
     private User getCurrentUser() {
@@ -82,5 +112,8 @@ public final class AddressSearchPanel extends Panel {
                 return userOrganization.getOrganizationObjectId();
             }
         }));
+    }
+
+    protected void onUpdate(AjaxRequestTarget target, String entity, DomainObject object) {
     }
 }

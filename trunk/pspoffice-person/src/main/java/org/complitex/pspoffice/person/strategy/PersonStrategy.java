@@ -181,6 +181,8 @@ public class PersonStrategy extends TemplateStrategy {
         for (Person person : persons) {
             loadAttributes(person);
             loadName(person);
+            //load subject ids
+            person.setSubjectIds(loadSubjects(person.getPermissionId()));
         }
         return persons;
     }

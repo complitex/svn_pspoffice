@@ -57,7 +57,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
             @Override
             protected void onEvent(AjaxRequestTarget target) {
                 addressCreateDialog.open(target, EnhancedAddressAutocompleteComponent.this.entity,
-                        getLastSearchTerm(), getParentEntity(), getParentId());
+                        getLastSearchTerm(), getParentEntity(), getParentObject());
             }
         });
     }
@@ -103,7 +103,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
         return openDialogButton.isVisible();
     }
 
-    abstract long getParentId();
+    abstract DomainObject getParentObject();
 
     abstract String getParentEntity();
 

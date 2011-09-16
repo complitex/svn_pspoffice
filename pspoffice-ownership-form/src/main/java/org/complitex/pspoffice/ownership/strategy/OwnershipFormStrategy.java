@@ -33,7 +33,6 @@ public class OwnershipFormStrategy extends TemplateStrategy {
      */
     public static final long NAME = 2500;
 
-
     @Override
     public String getEntityTable() {
         return "ownership_form";
@@ -76,5 +75,10 @@ public class OwnershipFormStrategy extends TemplateStrategy {
     @Override
     public String[] getEditRoles() {
         return new String[]{SecurityRole.OWNERSHIP_MODULE_EDIT};
+    }
+
+    @Override
+    public String[] getListRoles() {
+        return new String[]{SecurityRole.OWNERSHIP_MODULE_VIEW};
     }
 }

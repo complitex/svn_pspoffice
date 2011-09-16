@@ -85,6 +85,11 @@ public class RegistrationTypeStrategy extends TemplateStrategy {
         return new String[]{SecurityRole.REGISTRATION_TYPE_MODULE_EDIT};
     }
 
+    @Override
+    public String[] getListRoles() {
+        return new String[]{SecurityRole.REGISTRATION_TYPE_MODULE_VIEW};
+    }
+
     @Transactional
     @Override
     protected void deleteChecks(long objectId, Locale locale) throws DeleteException {

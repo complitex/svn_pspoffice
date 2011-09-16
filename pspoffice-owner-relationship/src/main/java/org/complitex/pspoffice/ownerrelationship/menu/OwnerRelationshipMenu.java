@@ -22,7 +22,7 @@ import org.complitex.template.web.security.SecurityRole;
  *
  * @author Artem
  */
-@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
+@AuthorizeInstantiation(SecurityRole.OWNER_RELATIONSHIP_MODULE_VIEW)
 public class OwnerRelationshipMenu extends ResourceTemplateMenu {
 
     private static IStrategy getStrategy() {

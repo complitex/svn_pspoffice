@@ -21,7 +21,7 @@ import org.odlabs.wiquery.ui.autocomplete.Autocomplete;
  *
  * @author Artem
  */
-abstract class RoomAddressDialog extends AbstractAddressCreateDialog {
+abstract class RoomCreateDialog extends AbstractAddressCreateDialog {
 
     @EJB
     private StringCultureBean stringBean;
@@ -32,7 +32,7 @@ abstract class RoomAddressDialog extends AbstractAddressCreateDialog {
     @EJB
     private RoomStrategy roomStrategy;
 
-    RoomAddressDialog(String id, Autocomplete<String> autocomplete, List<Long> userOrganizationIds) {
+    RoomCreateDialog(String id, Autocomplete<String> autocomplete, List<Long> userOrganizationIds) {
         super(id, autocomplete, userOrganizationIds);
     }
 
@@ -42,15 +42,14 @@ abstract class RoomAddressDialog extends AbstractAddressCreateDialog {
     }
 
     @Override
-    String getNameLabel() {
+    String getNumberLabel() {
         return getString("number");
     }
 
     @Override
-    DomainObject initObject() {
+    DomainObject initObject(String number) {
         DomainObject room = roomStrategy.newInstance();
-        stringBean.getSystemStringCulture(room.getAttribute(RoomStrategy.NAME).getLocalizedValues()).
-                setValue(getNameModel().getObject());
+        stringBean.getSystemStringCulture(room.getAttribute(RoomStrategy.NAME).getLocalizedValues()).setValue(number);
         room.setParentEntityId("apartment".equals(getParentEntity()) ? 100L : 500L);
         room.setParentId(getParentObject().getId());
         return room;
@@ -68,9 +67,43 @@ abstract class RoomAddressDialog extends AbstractAddressCreateDialog {
     @Override
     DomainObject save(DomainObject object) {
         roomStrategy.insert(object, DateUtil.getCurrentDate());
-        logBean.log(Log.STATUS.OK, Module.NAME, RoomAddressDialog.class,
+        logBean.log(Log.STATUS.OK, Module.NAME, RoomCreateDialog.class,
                 Log.EVENT.CREATE, roomStrategy, null, object, getLocale(), null);
 
         return roomStrategy.findById(object.getId(), true);
+    }
+
+    @Override
+    void bulkSave(DomainObject object) {
+        roomStrategy.insert(object, DateUtil.getCurrentDate());
+    }
+
+    @Override
+    void beforeBulkSave(String numbers) {
+        logBean.info(Module.NAME, RoomCreateDialog.class, null, null, Log.EVENT.CREATE,
+                getString("room_bulk_save_start"), numbers);
+    }
+
+    @Override
+    void afterBulkSave(String numbers, boolean operationSuccessed) {
+        if (operationSuccessed) {
+            logBean.info(Module.NAME, RoomCreateDialog.class, null, null, Log.EVENT.CREATE,
+                    getString("room_bulk_save_success_finish"), numbers);
+        } else {
+            logBean.error(Module.NAME, RoomCreateDialog.class, null, null, Log.EVENT.CREATE,
+                    getString("room_bulk_save_fail_finish"), numbers);
+        }
+    }
+
+    @Override
+    void onFailBulkSave(DomainObject failObject, String numbers, String failNumber) {
+        logBean.log(Log.STATUS.ERROR, Module.NAME, RoomCreateDialog.class, Log.EVENT.CREATE, roomStrategy,
+                null, failObject, getLocale(), getString("room_bulk_save_fail"), numbers, failNumber);
+    }
+
+    @Override
+    void onInvalidateBulkSave(DomainObject invalidObject, String numbers, String invalidNumber) {
+        logBean.log(Log.STATUS.WARN, Module.NAME, RoomCreateDialog.class, Log.EVENT.CREATE, roomStrategy,
+                null, invalidObject, getLocale(), getString("room_bulk_save_invalid"), numbers, invalidNumber);
     }
 }

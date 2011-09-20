@@ -42,15 +42,14 @@ abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog {
     }
 
     @Override
-    String getNameLabel() {
+    String getNumberLabel() {
         return getString("number");
     }
 
     @Override
-    DomainObject initObject() {
+    DomainObject initObject(String number) {
         DomainObject apartment = apartmentStrategy.newInstance();
-        stringBean.getSystemStringCulture(apartment.getAttribute(ApartmentStrategy.NAME).getLocalizedValues()).
-                setValue(getNameModel().getObject());
+        stringBean.getSystemStringCulture(apartment.getAttribute(ApartmentStrategy.NAME).getLocalizedValues()).setValue(number);
         apartment.setParentEntityId(ApartmentStrategy.PARENT_ENTITY_ID);
         apartment.setParentId(getParentObject().getId());
         return apartment;
@@ -72,5 +71,39 @@ abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog {
                 Log.EVENT.CREATE, apartmentStrategy, null, object, getLocale(), null);
 
         return apartmentStrategy.findById(object.getId(), true);
+    }
+
+    @Override
+    void bulkSave(DomainObject object) {
+        apartmentStrategy.insert(object, DateUtil.getCurrentDate());
+    }
+
+    @Override
+    void beforeBulkSave(String numbers) {
+        logBean.info(Module.NAME, ApartmentCreateDialog.class, null, null, Log.EVENT.CREATE,
+                getString("apartment_bulk_save_start"), numbers);
+    }
+
+    @Override
+    void afterBulkSave(String numbers, boolean operationSuccessed) {
+        if (operationSuccessed) {
+            logBean.info(Module.NAME, ApartmentCreateDialog.class, null, null, Log.EVENT.CREATE,
+                    getString("apartment_bulk_save_success_finish"), numbers);
+        } else {
+            logBean.error(Module.NAME, ApartmentCreateDialog.class, null, null, Log.EVENT.CREATE,
+                    getString("apartment_bulk_save_fail_finish"), numbers);
+        }
+    }
+
+    @Override
+    void onFailBulkSave(DomainObject failObject, String numbers, String failNumber) {
+        logBean.log(Log.STATUS.ERROR, Module.NAME, ApartmentCreateDialog.class, Log.EVENT.CREATE, apartmentStrategy,
+                null, failObject, getLocale(), getString("apartment_bulk_save_fail"), numbers, failNumber);
+    }
+
+    @Override
+    void onInvalidateBulkSave(DomainObject invalidObject, String numbers, String invalidNumber) {
+        logBean.log(Log.STATUS.WARN, Module.NAME, ApartmentCreateDialog.class, Log.EVENT.CREATE, apartmentStrategy,
+                null, invalidObject, getLocale(), getString("apartment_bulk_save_invalid"), numbers, invalidNumber);
     }
 }

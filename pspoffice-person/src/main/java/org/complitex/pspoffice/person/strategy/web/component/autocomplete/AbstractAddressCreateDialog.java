@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.component.autocomplete;
 
+import java.text.MessageFormat;
 import static com.google.common.collect.Sets.*;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +26,7 @@ import org.apache.wicket.model.Model;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
+import org.complitex.pspoffice.person.util.AddressNumberParser;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.autocomplete.Autocomplete;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
@@ -43,7 +45,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
     private AddressRendererBean addressRendererBean;
     private String entity;
     private Dialog dialog;
-    private IModel<String> nameModel;
+    private IModel<String> numberModel;
     private WebMarkupContainer content;
     private Form form;
     private Autocomplete<String> autocomplete;
@@ -64,10 +66,6 @@ abstract class AbstractAddressCreateDialog extends Panel {
         return entity;
     }
 
-    IModel<String> getNameModel() {
-        return nameModel;
-    }
-
     DomainObject getParentObject() {
         return parentObject;
     }
@@ -76,11 +74,11 @@ abstract class AbstractAddressCreateDialog extends Panel {
         return parentEntity;
     }
 
-    void open(AjaxRequestTarget target, String entity, String name, String parentEntity, DomainObject parentObject) {
+    void open(AjaxRequestTarget target, String entity, String number, String parentEntity, DomainObject parentObject) {
         this.entity = entity;
         this.parentEntity = parentEntity;
         this.parentObject = parentObject;
-        this.nameModel.setObject(name);
+        this.numberModel.setObject(number);
         dialog.open(target);
         content.setVisible(true);
         subjectIds.clear();
@@ -95,7 +93,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
                 chain("find", "'.ui-dialog-titlebar-close'").
                 chain("hide").render()));
         dialog.setCloseOnEscape(false);
-        dialog.setWidth(500);
+        dialog.setWidth(600);
         dialog.setTitle(getTitleModel());
         add(dialog);
 
@@ -118,13 +116,13 @@ abstract class AbstractAddressCreateDialog extends Panel {
                 return addressRendererBean.displayAddress(parentEntity, parentObject.getId(), getLocale());
             }
         }));
-        IModel<String> nameLabelModel = getNameLabelModel();
-        form.add(new Label("nameLabel", nameLabelModel));
-        nameModel = new Model<String>();
-        TextField<String> nameField = new RequiredTextField<String>("name", nameModel);
-        nameField.setOutputMarkupId(true);
-        nameField.setLabel(nameLabelModel);
-        form.add(nameField);
+        final IModel<String> numberLabelModel = getNumberLabelModel();
+        form.add(new Label("numberLabel", numberLabelModel));
+        numberModel = new Model<String>();
+        TextField<String> numberField = new RequiredTextField<String>("number", numberModel);
+        numberField.setOutputMarkupId(true);
+        numberField.setLabel(numberLabelModel);
+        form.add(numberField);
 
         form.add(new EmptyPanel("permissionPanel").setRenderBodyOnly(true));
 
@@ -133,13 +131,45 @@ abstract class AbstractAddressCreateDialog extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    DomainObject object = initObject();
-                    object.setSubjectIds(subjectIds);
-                    if (AbstractAddressCreateDialog.this.validate(object)) {
-                        DomainObject saved = save(object);
-                        close(target);
-                        onCreate(target, saved);
+                    if (AddressNumberParser.matches(numberModel.getObject())) {
+                        final String[] numbers = AddressNumberParser.parse(numberModel.getObject());
+                        if (numbers.length == 1) {
+                            DomainObject object = initObject(numbers[0]);
+                            object.setSubjectIds(subjectIds);
+                            if (AbstractAddressCreateDialog.this.validate(object)) {
+                                DomainObject saved = save(object);
+                                close(target);
+                                onCreate(target, saved);
+                            } else {
+                                target.addComponent(messages);
+                            }
+                        } else {
+                            beforeBulkSave(numberModel.getObject());
+                            boolean bulkOperationSuccess = true;
+                            for (String number : numbers) {
+                                DomainObject object = initObject(number);
+                                object.setSubjectIds(subjectIds);
+                                if (AbstractAddressCreateDialog.this.validate(object)) {
+                                    try {
+                                        bulkSave(object);
+                                    } catch (Exception e) {
+                                        bulkOperationSuccess = false;
+                                        log.error("", e);
+                                        onFailBulkSave(object, numberModel.getObject(), number);
+                                    }
+                                } else {
+                                    onInvalidateBulkSave(object, numberModel.getObject(), number);
+                                }
+                            }
+                            afterBulkSave(numberModel.getObject(), bulkOperationSuccess);
+
+                            getSession().getFeedbackMessages().clear();
+
+                            close(target);
+                            onCancel(target);
+                        }
                     } else {
+                        error(MessageFormat.format(getString("invalid_number_format"), numberLabelModel.getObject()));
                         target.addComponent(messages);
                     }
                 } catch (Exception e) {
@@ -196,21 +226,35 @@ abstract class AbstractAddressCreateDialog extends Panel {
         return getTitle();
     }
 
-    abstract DomainObject initObject();
+    abstract DomainObject initObject(String numbers);
 
     abstract boolean validate(DomainObject object);
 
-    abstract String getNameLabel();
+    abstract String getNumberLabel();
 
-    private IModel<String> getNameLabelModel() {
+    void beforeBulkSave(String numbers) {
+    }
+
+    void afterBulkSave(String numbers, boolean operationSuccessed) {
+    }
+
+    void onFailBulkSave(DomainObject failObject, String numbers, String failNumber) {
+    }
+
+    void onInvalidateBulkSave(DomainObject invalidObject, String numbers, String invalidNumber) {
+    }
+
+    private IModel<String> getNumberLabelModel() {
         return new AbstractReadOnlyModel<String>() {
 
             @Override
             public String getObject() {
-                return getNameLabel();
+                return getNumberLabel();
             }
         };
     }
+
+    abstract void bulkSave(DomainObject object);
 
     abstract DomainObject save(DomainObject object);
 

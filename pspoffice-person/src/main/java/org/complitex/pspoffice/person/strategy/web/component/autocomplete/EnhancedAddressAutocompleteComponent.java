@@ -72,7 +72,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
                 }
             };
         } else {
-            return new RoomAddressDialog(id, getAutocompleteField(), userOrganizationIds) {
+            return new RoomCreateDialog(id, getAutocompleteField(), userOrganizationIds) {
 
                 @Override
                 void onCreate(AjaxRequestTarget target, DomainObject saved) {

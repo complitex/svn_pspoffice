@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.converter.BooleanConverter;
+import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.StringCulture;
@@ -215,6 +216,44 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
+    public Person findPersonById(long id, boolean runAsAdmin, boolean loadName, boolean loadChildren, boolean loadDocument) {
+        Person person = findById(id, runAsAdmin, loadName, loadChildren, loadDocument);
+        if (person == null) {
+            //find history person
+            person = findHistoryPerson(id, loadName, loadChildren, loadDocument);
+        }
+        return person;
+    }
+
+    @Transactional
+    private Person findHistoryPerson(long objectId, boolean loadName, boolean loadChildren, boolean loadDocument) {
+        DomainObjectExample example = new DomainObjectExample(objectId);
+        example.setTable(getEntityTable());
+        example.setStartDate(DateUtil.getCurrentDate());
+
+        DomainObject personObject = (DomainObject) sqlSession().selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
+        if (personObject == null) {
+            return null;
+        }
+        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, DateUtil.justBefore(personObject.getEndDate()));
+        loadStringCultures(historyAttributes);
+        personObject.setAttributes(historyAttributes);
+        updateStringsForNewLocales(personObject);
+
+        Person person = new Person(personObject);
+        if (loadName) {
+            loadName(person);
+        }
+        if (loadChildren) {
+            loadChildren(person);
+        }
+        if (loadDocument) {
+            loadDocument(person);
+        }
+        return person;
+    }
+
+    @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
         return findById(id, runAsAdmin, true, true, true);
@@ -272,7 +311,7 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     private void loadDocument(Person person) {
         long documentId = person.getAttribute(DOCUMENT).getValueId();
-        Document document = documentStrategy.findById(documentId, true);
+        Document document = documentStrategy.findDocumentById(documentId);
         person.setDocument(document);
     }
 
@@ -285,8 +324,7 @@ public class PersonStrategy extends TemplateStrategy {
                 personId);
         List<Document> previousDocuments = newArrayList();
         for (Attribute previousDocumentAttribute : previousDocumentAttributes) {
-            Document previousDocument = documentStrategy.findHistoryObject(previousDocumentAttribute.getValueId(),
-                    previousDocumentAttribute.getEndDate());
+            Document previousDocument = documentStrategy.findDocumentById(previousDocumentAttribute.getValueId());
             long documentTypeId = previousDocument.getDocumentTypeId();
             DomainObject documentType = documentTypeStrategy.findById(documentTypeId, true);
             previousDocument.setDocumentType(documentType);
@@ -399,18 +437,6 @@ public class PersonStrategy extends TemplateStrategy {
         return DEFAULT_ORDER_BY_ID;
     }
 
-//    @Transactional
-//    @Override
-//    public Person findHistoryObject(long objectId, Date date) {
-//        DomainObject personObject = super.findHistoryObject(objectId, date);
-//        if (personObject == null) {
-//            return null;
-//        }
-//        Person person = new Person(personObject);
-//        loadChildren(person);
-//        loadDocument(person);
-//        return person;
-//    }
     @Override
     public int getSearchTextFieldSize() {
         return 40;
@@ -679,5 +705,42 @@ public class PersonStrategy extends TemplateStrategy {
                     personRegistrations.get(0).getAddressId(), locale);
         }
         return null;
+    }
+
+    @Transactional
+    public void registerPersonDeath(Person person, Date deathDate, List<PersonRegistration> activePersonRegistrations,
+            Locale locale) {
+        Date archiveDate = DateUtil.getCurrentDate();
+        Date updateDate = DateUtil.justBefore(archiveDate);
+        Date archiveDocumentDate = DateUtil.justAfter(archiveDate);
+
+
+
+        if (activePersonRegistrations != null && !activePersonRegistrations.isEmpty()) {
+            for (PersonRegistration personRegistration : activePersonRegistrations) {
+                final Registration oldRegistration = personRegistration.getRegistration();
+                final Registration newRegistration = CloneUtil.cloneObject(oldRegistration);
+                //departure reason
+                stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_REASON).getLocalizedValues()).
+                        setValue(ResourceUtil.getString(RESOURCE_BUNDLE, "death_departure_reason", locale));
+                //departure date
+                stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_DATE).getLocalizedValues()).
+                        setValue(new DateConverter().toString(deathDate));
+                registrationStrategy.update(oldRegistration, newRegistration, updateDate);
+                registrationStrategy.archive(newRegistration, archiveDate);
+            }
+        }
+
+        if (person.isKid()) {
+            removeKidFromParent(person.getId(), updateDate);
+        }
+
+        Person newPerson = CloneUtil.cloneObject(person);
+        stringBean.getSystemStringCulture(newPerson.getAttribute(PersonStrategy.DEATH_DATE).getLocalizedValues()).
+                setValue(new DateConverter().toString(deathDate));
+        update(person, newPerson, updateDate);
+
+        documentStrategy.archive(person.getDocument(), archiveDocumentDate);
+        archive(person, archiveDate);
     }
 }

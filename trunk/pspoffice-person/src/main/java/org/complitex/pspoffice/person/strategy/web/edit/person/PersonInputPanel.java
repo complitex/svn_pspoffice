@@ -47,6 +47,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -137,7 +138,7 @@ public class PersonInputPanel extends Panel {
     }
 
     private boolean isHistory() {
-        return date != null;
+        return person.getStatus() == StatusType.ARCHIVE;
     }
 
     private void init(Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
@@ -152,7 +153,7 @@ public class PersonInputPanel extends Panel {
         add(personFullNamePanel);
 
         //system attributes:
-        initSystemAttributeInput(this, "identityCode", IDENTITY_CODE, true);
+        initSystemAttributeInput(this, "identityCode", IDENTITY_CODE, false);
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
         final MaskedDateInput birthDateComponent = (MaskedDateInput) get("birthDateContainer:"
                 + DomainObjectInputPanel.INPUT_COMPONENT_ID + ":" + MaskedDateInputPanel.DATE_INPUT_ID);
@@ -180,7 +181,10 @@ public class PersonInputPanel extends Panel {
         initSystemAttributeInput(birthPlaceFieldset, "birthDistrict", BIRTH_DISTRICT, false);
         initSystemAttributeInput(birthPlaceFieldset, "birthCity", BIRTH_CITY, false);
         initSystemAttributeInput(this, "ukraineCitizenship", UKRAINE_CITIZENSHIP, false);
-        initSystemAttributeInput(this, "deathDate", DEATH_DATE, false);
+        final WebMarkupContainer deathDateZone = new WebMarkupContainer("deathDateZone");
+        deathDateZone.setVisible(isHistory());
+        add(deathDateZone);
+        initSystemAttributeInput(deathDateZone, "deathDate", DEATH_DATE, false);
         initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION, false);
 
         //document
@@ -594,7 +598,14 @@ public class PersonInputPanel extends Panel {
             @Override
             public List<Document> getObject() {
                 if (previousDocuments == null) {
-                    previousDocuments = personStrategy.findPreviousDocuments(person.getId());
+                    List<Document> previousDocs = personStrategy.findPreviousDocuments(person.getId());
+                    if (previousDocs != null && !previousDocs.isEmpty()) {
+                        for (Document previousDoc : previousDocs) {
+                            if (!person.getDocument().getId().equals(previousDoc.getId())) {
+                                previousDocuments.add(previousDoc);
+                            }
+                        }
+                    }
                 }
                 return previousDocuments;
             }

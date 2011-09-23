@@ -103,7 +103,7 @@ public class RegistrationStrategy extends Strategy {
     @Transactional
     private void loadPerson(Registration registration) {
         long personId = registration.getAttribute(PERSON).getValueId();
-        Person person = personStrategy.findById(personId, true);
+        Person person = personStrategy.findPersonById(personId, true, true, false, false);
         registration.setPerson(person);
     }
 
@@ -225,7 +225,7 @@ public class RegistrationStrategy extends Strategy {
         ApartmentCard apartmentCard = apartmentCardStrategy.findById(apartmentCardId, true, false, false, false);
         long ownerId = apartmentCard.getAttribute(ApartmentCardStrategy.OWNER).getValueId();
         if (ownerId != personId) {
-            Person owner = personStrategy.findById(ownerId, true, true, false, false);
+            Person owner = personStrategy.findPersonById(ownerId, true, true, false, false);
             return personStrategy.displayDomainObject(owner, locale);
         } else {
             return null;

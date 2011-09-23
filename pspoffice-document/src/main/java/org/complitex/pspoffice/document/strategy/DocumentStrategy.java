@@ -7,7 +7,6 @@ package org.complitex.pspoffice.document.strategy;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import static com.google.common.collect.Lists.*;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
@@ -16,7 +15,10 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
+import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.StringUtil;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
@@ -49,13 +51,14 @@ public class DocumentStrategy extends TemplateStrategy {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public Document findById(long id, boolean runAsAdmin) {
-        DomainObject object = super.findById(id, runAsAdmin);
-        if (object == null) {
-            return null;
+    @Transactional
+    public Document findDocumentById(long id) {
+        DomainObject object = super.findById(id, true);
+        if (object != null) {
+            return new Document(object);
+        } else {
+            return findHistoryDocument(id);
         }
-        return new Document(object);
     }
 
     public Document newInstance(long documentTypeId) {
@@ -70,10 +73,22 @@ public class DocumentStrategy extends TemplateStrategy {
         return document;
     }
 
-    @Override
-    public Document findHistoryObject(long objectId, Date date) {
-        DomainObject object = super.findHistoryObject(objectId, date);
-        return new Document(object);
+    @Transactional
+    private Document findHistoryDocument(long objectId) {
+        DomainObjectExample example = new DomainObjectExample(objectId);
+        example.setTable(getEntityTable());
+        example.setStartDate(DateUtil.getCurrentDate());
+
+        DomainObject documentObject = (DomainObject) sqlSession().selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
+        if (documentObject == null) {
+            return null;
+        }
+        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, DateUtil.justBefore(documentObject.getEndDate()));
+        loadStringCultures(historyAttributes);
+        documentObject.setAttributes(historyAttributes);
+        updateStringsForNewLocales(documentObject);
+
+        return new Document(documentObject);
     }
 
     private boolean isSupportedAttribute(long attributeTypeId, long documentTypeId) {

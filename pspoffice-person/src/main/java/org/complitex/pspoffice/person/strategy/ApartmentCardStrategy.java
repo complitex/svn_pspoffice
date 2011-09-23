@@ -164,7 +164,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Transactional
     private void loadOwner(ApartmentCard apartmentCard) {
         long ownerId = apartmentCard.getAttribute(OWNER).getValueId();
-        Person owner = personStrategy.findById(ownerId, true);
+        Person owner = personStrategy.findPersonById(ownerId, true, true, false, false);
         apartmentCard.setOwner(owner);
     }
 
@@ -366,9 +366,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void removeRegistrations(long apartmentCardId, List<Registration> removeRegistrations,
-            RemoveRegistrationCard removeRegistrationCard) {
-
+    public void removeRegistrations(List<Registration> removeRegistrations, RemoveRegistrationCard removeRegistrationCard) {
         Date archiveTime = DateUtil.getCurrentDate();
         Date updateRegistrationsTime = DateUtil.justBefore(archiveTime);
 

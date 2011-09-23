@@ -4,6 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
@@ -16,7 +18,9 @@ import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
+import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.DeathButton;
 import org.complitex.template.strategy.TemplateStrategy;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -38,6 +42,7 @@ public class PersonEdit extends FormTemplatePage {
     private Person oldPerson;
     private Person newPerson;
     private Page backPage;
+    private PersonDeathDialog personDeathDialog;
 
     public PersonEdit(PageParameters parameters) {
         Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
@@ -55,7 +60,7 @@ public class PersonEdit extends FormTemplatePage {
     }
 
     public PersonEdit(Page backPage, long personId) {
-        newPerson = personStrategy.findById(personId, false);
+        newPerson = personStrategy.findPersonById(personId, false, true, true, true);
         oldPerson = CloneUtil.cloneObject(newPerson);
         this.backPage = backPage;
         init();
@@ -83,6 +88,10 @@ public class PersonEdit extends FormTemplatePage {
                 this.onBack(target);
             }
         });
+
+        personDeathDialog = new PersonDeathDialog("personDeathDialog");
+        personDeathDialog.setVisible(oldPerson != null && backPage == null);
+        add(personDeathDialog);
     }
 
     private void back() {
@@ -94,66 +103,50 @@ public class PersonEdit extends FormTemplatePage {
             setResponsePage(backPage);
         }
     }
-//    private void delete() {
-//        try {
-//            personStrategy.delete(newPerson.getId(), getLocale());
-//            back();
-//        } catch (DeleteException e) {
-//            if (!Strings.isEmpty(e.getMessage())) {
-//                error(e.getMessage());
-//            } else {
-//                error(getString("delete_error"));
-//            }
-//        } catch (Exception e) {
-//            log.error("", e);
-//            error(getString("db_error"));
-//        }
-//    }
-//    @Override
-//    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
-//        return ImmutableList.of(
-//                //                new F3ReferenceButton(id) {
-//                //
-//                //                    @Override
-//                //                    protected void onClick() {
-//                //                        setResponsePage(new F3ReferencePage(newPerson));
-//                //                    }
-//                //
-//                //                    @Override
-//                //                    protected void onBeforeRender() {
-//                //                        if (isNew() || newPerson.getRegistration() == null) {
-//                //                            setVisibilityAllowed(false);
-//                //                        }
-//                //                        super.onBeforeRender();
-//                //                    }
-//                //                },
-//                new DeleteItemButton(id) {
-//
-//            @Override
-//            protected void onClick() {
-//                delete();
-//            }
-//
-//            @Override
-//            protected void onBeforeRender() {
-//                if (!canDelete(null, "person", newPerson)) {
-//                    setVisibilityAllowed(false);
-//                }
-//                super.onBeforeRender();
-//            }
-//        } //                new SaveButton(id, true) {
-//                //
-//                //                    @Override
-//                //                    protected void onClick(AjaxRequestTarget target) {
-//                //                        reportDownloadPanel.open(target);
-//                //                    }
-//                //
-//                //                    @Override
-//                //                    public boolean isVisible() {
-//                //                        return !isNew();
-//                //                    }
-//                //                }
-//                );
-//    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return ImmutableList.of(
+                new DeathButton(id) {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        personDeathDialog.open(target, oldPerson);
+                    }
+
+                    @Override
+                    protected void onBeforeRender() {
+                        super.onBeforeRender();
+                        setVisible(personDeathDialog.isVisible());
+                    }
+                } //                new F3ReferenceButton(id) {
+                //
+                //                    @Override
+                //                    protected void onClick() {
+                //                        setResponsePage(new F3ReferencePage(newPerson));
+                //                    }
+                //
+                //                    @Override
+                //                    protected void onBeforeRender() {
+                //                        if (isNew() || newPerson.getRegistration() == null) {
+                //                            setVisibilityAllowed(false);
+                //                        }
+                //                        super.onBeforeRender();
+                //                    }
+                //                },
+                //                new SaveButton(id, true) {
+                //
+                //                    @Override
+                //                    protected void onClick(AjaxRequestTarget target) {
+                //                        reportDownloadPanel.open(target);
+                //                    }
+                //
+                //                    @Override
+                //                    public boolean isVisible() {
+                //                        return !isNew();
+                //                    }
+                //                }
+                );
+    }
 }
 

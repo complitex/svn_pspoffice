@@ -164,7 +164,7 @@ final class RemoveRegistrationDialog extends Panel {
     }
 
     private void removeRegistrations() {
-        apartmentCardStrategy.removeRegistrations(apartmentCardId, registrationsToRemove, model.getObject());
+        apartmentCardStrategy.removeRegistrations(registrationsToRemove, model.getObject());
     }
 
     private boolean validate() {

@@ -271,12 +271,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target, String entity, DomainObject object) {
-//                    if(entity.equals("building") || entity.equals("apartment") || entity.equals("room")){
                     if (object != null && object.getId() != null && object.getId() > 0) {
                         permissionContainer.replace(newPermissionPanel(object.getSubjectIds()));
                         target.addComponent(permissionContainer);
                     }
-//                    }
                 }
             };
         } else {

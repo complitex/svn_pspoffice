@@ -8,6 +8,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import javax.ejb.EJB;
 import org.complitex.address.strategy.room.RoomStrategy;
+import org.complitex.address.strategy.room.web.edit.RoomEdit;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.service.LocaleBean;
@@ -80,30 +81,22 @@ abstract class RoomCreateDialog extends AbstractAddressCreateDialog {
 
     @Override
     void beforeBulkSave(String numbers) {
-        logBean.info(Module.NAME, RoomCreateDialog.class, null, null, Log.EVENT.CREATE,
-                getString("room_bulk_save_start"), numbers);
+        RoomEdit.beforeBulkSave(Module.NAME, RoomCreateDialog.class, numbers, getLocale());
     }
 
     @Override
     void afterBulkSave(String numbers, boolean operationSuccessed) {
-        if (operationSuccessed) {
-            logBean.info(Module.NAME, RoomCreateDialog.class, null, null, Log.EVENT.CREATE,
-                    getString("room_bulk_save_success_finish"), numbers);
-        } else {
-            logBean.error(Module.NAME, RoomCreateDialog.class, null, null, Log.EVENT.CREATE,
-                    getString("room_bulk_save_fail_finish"), numbers);
-        }
+        RoomEdit.afterBulkSave(Module.NAME, RoomCreateDialog.class, numbers, operationSuccessed, getLocale());
     }
 
     @Override
     void onFailBulkSave(DomainObject failObject, String numbers, String failNumber) {
-        logBean.log(Log.STATUS.ERROR, Module.NAME, RoomCreateDialog.class, Log.EVENT.CREATE, roomStrategy,
-                null, failObject, getLocale(), getString("room_bulk_save_fail"), numbers, failNumber);
+        RoomEdit.onFailBulkSave(Module.NAME, RoomCreateDialog.class, failObject, numbers, failNumber, getLocale());
     }
 
     @Override
     void onInvalidateBulkSave(DomainObject invalidObject, String numbers, String invalidNumber) {
-        logBean.log(Log.STATUS.WARN, Module.NAME, RoomCreateDialog.class, Log.EVENT.CREATE, roomStrategy,
-                null, invalidObject, getLocale(), getString("room_bulk_save_invalid"), numbers, invalidNumber);
+        RoomEdit.onInvalidateBulkSave(Module.NAME, RoomCreateDialog.class, invalidObject, numbers,
+                invalidNumber, getLocale());
     }
 }

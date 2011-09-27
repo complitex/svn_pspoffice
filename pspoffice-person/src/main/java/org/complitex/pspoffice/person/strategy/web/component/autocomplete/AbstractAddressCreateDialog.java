@@ -26,7 +26,7 @@ import org.apache.wicket.model.Model;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
-import org.complitex.pspoffice.person.util.AddressNumberParser;
+import org.complitex.dictionary.util.AddressNumberParser;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.autocomplete.Autocomplete;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;

@@ -8,6 +8,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import javax.ejb.EJB;
 import org.complitex.address.strategy.apartment.ApartmentStrategy;
+import org.complitex.address.strategy.apartment.web.edit.ApartmentEdit;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.service.LocaleBean;
@@ -80,30 +81,22 @@ abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog {
 
     @Override
     void beforeBulkSave(String numbers) {
-        logBean.info(Module.NAME, ApartmentCreateDialog.class, null, null, Log.EVENT.CREATE,
-                getString("apartment_bulk_save_start"), numbers);
+        ApartmentEdit.beforeBulkSave(Module.NAME, ApartmentCreateDialog.class, numbers, getLocale());
     }
 
     @Override
     void afterBulkSave(String numbers, boolean operationSuccessed) {
-        if (operationSuccessed) {
-            logBean.info(Module.NAME, ApartmentCreateDialog.class, null, null, Log.EVENT.CREATE,
-                    getString("apartment_bulk_save_success_finish"), numbers);
-        } else {
-            logBean.error(Module.NAME, ApartmentCreateDialog.class, null, null, Log.EVENT.CREATE,
-                    getString("apartment_bulk_save_fail_finish"), numbers);
-        }
+        ApartmentEdit.afterBulkSave(Module.NAME, ApartmentCreateDialog.class, numbers, operationSuccessed, getLocale());
     }
 
     @Override
     void onFailBulkSave(DomainObject failObject, String numbers, String failNumber) {
-        logBean.log(Log.STATUS.ERROR, Module.NAME, ApartmentCreateDialog.class, Log.EVENT.CREATE, apartmentStrategy,
-                null, failObject, getLocale(), getString("apartment_bulk_save_fail"), numbers, failNumber);
+        ApartmentEdit.onFailBulkSave(Module.NAME, ApartmentCreateDialog.class, failObject, numbers, failNumber, getLocale());
     }
 
     @Override
     void onInvalidateBulkSave(DomainObject invalidObject, String numbers, String invalidNumber) {
-        logBean.log(Log.STATUS.WARN, Module.NAME, ApartmentCreateDialog.class, Log.EVENT.CREATE, apartmentStrategy,
-                null, invalidObject, getLocale(), getString("apartment_bulk_save_invalid"), numbers, invalidNumber);
+        ApartmentEdit.onInvalidateBulkSave(Module.NAME, ApartmentCreateDialog.class, invalidObject, numbers,
+                invalidNumber, getLocale());
     }
 }

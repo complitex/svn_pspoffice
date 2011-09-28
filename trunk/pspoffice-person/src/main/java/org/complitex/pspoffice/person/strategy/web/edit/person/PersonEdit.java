@@ -9,6 +9,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
@@ -54,6 +55,9 @@ public class PersonEdit extends FormTemplatePage {
         } else {
             //edit existing entity
             newPerson = personStrategy.findById(objectId, false);
+            if (newPerson == null) {
+                throw new RestartResponseException(personStrategy.getObjectNotFoundPage());
+            }
             oldPerson = CloneUtil.cloneObject(newPerson);
         }
         init();

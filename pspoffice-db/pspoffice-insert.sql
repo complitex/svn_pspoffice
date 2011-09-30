@@ -253,7 +253,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2815, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2814, 2800, 0, 2815, 1);
 /* Атрибуты св-ва о рождении */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2816, 1, UPPER('Свидетельство о рождении')), (2816, 2, UPPER('Свідоцтво про нарождення'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2815, 2800, 0, 2816, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2815, 2800, 1, 2816, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2817, 1, UPPER('Дата выдачи')), (2817, 2, UPPER('Дата видачі'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2816, 2800, 0, 2817, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2818, 1, UPPER('Кем выдан')), (2818, 2, UPPER('Орган видачі'));

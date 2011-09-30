@@ -598,6 +598,7 @@ public class PersonInputPanel extends Panel {
             @Override
             public List<Document> getObject() {
                 if (previousDocuments == null) {
+                    previousDocuments = newArrayList();
                     List<Document> previousDocs = personStrategy.findPreviousDocuments(person.getId());
                     if (previousDocs != null && !previousDocs.isEmpty()) {
                         for (Document previousDoc : previousDocs) {

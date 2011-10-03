@@ -325,7 +325,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         if (Strings.isEmpty(lastName)) {
             personsModel.setObject(null);
         } else {
-            personsModel.setObject(personStrategy.findByName(personAgeType, lastName, firstName, middleName));
+            personsModel.setObject(personStrategy.findByName(personAgeType, lastName, firstName, middleName, getLocale()));
         }
         personModel.setObject(null);
     }

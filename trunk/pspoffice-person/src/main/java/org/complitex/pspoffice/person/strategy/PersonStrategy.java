@@ -45,7 +45,6 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
-import org.complitex.pspoffice.person.strategy.web.history.PersonHistoryPage;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -444,7 +443,7 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Override
     public Class<? extends WebPage> getHistoryPage() {
-        return PersonHistoryPage.class;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -453,13 +452,15 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public List<Person> findByName(PersonAgeType personAgeType, String lastName, String firstName, String middleName) {
+    public List<Person> findByName(PersonAgeType personAgeType, String lastName, String firstName, String middleName,
+            Locale locale) {
         if (Strings.isEmpty(lastName)) {
             throw new IllegalArgumentException("Last name is null or empty.");
         }
         DomainObjectExample example = new DomainObjectExample();
         example.setStatus(StatusType.ACTIVE.name());
         example.addAdditionalParam("last_name", lastName);
+        example.setLocaleId(localeBean.convert(locale).getId());
 
         firstName = firstName != null ? firstName.trim() : null;
         if (Strings.isEmpty(firstName)) {
@@ -498,13 +499,31 @@ public class PersonStrategy extends TemplateStrategy {
         person.getDocument().setSubjectIds(person.getSubjectIds());
         documentStrategy.insert(person.getDocument(), insertDate);
         updateDocumentAttribute(null, person);
+        prepareForSaveNameAttributes(person);
         super.insertDomainObject(object, insertDate);
+    }
+
+    private void prepareForSaveNameAttributes(Person person) {
+        prepareForSaveNameAttribute(person, LAST_NAME);
+        prepareForSaveNameAttribute(person, FIRST_NAME);
+        prepareForSaveNameAttribute(person, MIDDLE_NAME);
+    }
+
+    private void prepareForSaveNameAttribute(Person person, long nameAttributeTypeId) {
+        List<Attribute> nameAttributes = person.getAttributes(nameAttributeTypeId);
+        person.removeAttribute(nameAttributeTypeId);
+        for (Attribute nameAttribute : nameAttributes) {
+            if (localeBean.getSystemLocaleObject().getId().equals(nameAttribute.getAttributeId())
+                    || nameAttribute.getValueId() != null) {
+                person.addAttribute(nameAttribute);
+            }
+        }
     }
 
     @Transactional
     @Override
-    protected void insertUpdatedDomainObject(DomainObject object, Date updateDate) {
-        super.insertDomainObject(object, updateDate);
+    protected void insertUpdatedDomainObject(DomainObject person, Date updateDate) {
+        super.insertDomainObject(person, updateDate);
     }
 
     @Transactional
@@ -532,6 +551,9 @@ public class PersonStrategy extends TemplateStrategy {
         if (oldPerson.isKid() && !newPerson.isKid()) {
             removeKidFromParent(newPerson.getId(), updateDate);
         }
+
+        prepareForSaveNameAttributes(oldPerson);
+        prepareForSaveNameAttributes(newPerson);
 
         super.update(oldPerson, newPerson, updateDate);
     }

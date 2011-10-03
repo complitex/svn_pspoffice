@@ -26,21 +26,21 @@
         JOIN `person_last_name` sys_ln ON sys_ln.`id` = sys_lna.`value_id`
         LEFT JOIN `person_attribute` lna ON (lna.`status` = 'ACTIVE' AND lna.`object_id` = e.`object_id` AND lna.`attribute_type_id` = 2000
             AND lna.`attribute_id` = #{localeId})
-        LEFT JOIN `person_last_name` ln ON (ln.`id` = lna.`value_id` AND ln.`locale_id` = #{localeId})
+        LEFT JOIN `person_last_name` ln ON ln.`id` = lna.`value_id`
 
         JOIN `person_attribute` sys_fna ON (sys_fna.`status` = 'ACTIVE' AND sys_fna.`object_id` = e.`object_id` AND sys_fna.`attribute_type_id` = 2001
             AND sys_fna.`attribute_id` = sys.`id`)
         JOIN `person_first_name` sys_fn ON sys_fn.`id` = sys_fna.`value_id`
         LEFT JOIN `person_attribute` fna ON (fna.`status` = 'ACTIVE' AND fna.`object_id` = e.`object_id` AND fna.`attribute_type_id` = 2001
             AND fna.`attribute_id` = #{localeId})
-        LEFT JOIN `person_first_name` fn ON (fn.`id` = fna.`value_id` AND fn.`locale_id` = #{localeId})
+        LEFT JOIN `person_first_name` fn ON fn.`id` = fna.`value_id`
         
         JOIN `person_attribute` sys_mna ON (sys_mna.`status` = 'ACTIVE' AND sys_mna.`object_id` = e.`object_id` AND sys_mna.`attribute_type_id` = 2002
             AND sys_mna.`attribute_id` = sys.`id`)
         JOIN `person_middle_name` sys_mn ON sys_mn.`id` = sys_mna.`value_id`
         LEFT JOIN `person_attribute` mna ON (mna.`status` = 'ACTIVE' AND mna.`object_id` = e.`object_id` AND mna.`attribute_type_id` = 2002
             AND mna.`attribute_id` = #{localeId})
-        LEFT JOIN `person_middle_name` mn ON (mn.`id` = mna.`value_id` AND mn.`locale_id` = #{localeId})
+        LEFT JOIN `person_middle_name` mn ON mn.`id` = mna.`value_id`
     </sql>
 
     <sql id="filter">

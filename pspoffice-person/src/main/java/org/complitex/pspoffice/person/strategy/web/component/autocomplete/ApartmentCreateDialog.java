@@ -69,7 +69,7 @@ abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog {
     DomainObject save(DomainObject object) {
         apartmentStrategy.insert(object, DateUtil.getCurrentDate());
         logBean.log(Log.STATUS.OK, Module.NAME, ApartmentCreateDialog.class,
-                Log.EVENT.CREATE, apartmentStrategy, null, object, getLocale(), null);
+                Log.EVENT.CREATE, apartmentStrategy, null, object, null);
 
         return apartmentStrategy.findById(object.getId(), true);
     }

@@ -196,7 +196,7 @@ public abstract class PersonEditPanel extends Panel {
             personStrategy.update(oldPerson, newPerson, DateUtil.getCurrentDate());
         }
         logBean.log(Log.STATUS.OK, Module.NAME, PersonEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, personStrategy,
-                oldPerson, newPerson, getLocale(), null);
+                oldPerson, newPerson, null);
     }
 
     protected abstract void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target);

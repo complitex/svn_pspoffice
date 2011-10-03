@@ -755,7 +755,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             apartmentCardStrategy.update(oldApartmentCard, newApartmentCard, DateUtil.getCurrentDate());
         }
         logBean.log(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, apartmentCardStrategy,
-                oldApartmentCard, newApartmentCard, getLocale(), null);
+                oldApartmentCard, newApartmentCard, null);
     }
 
     private void archive() {

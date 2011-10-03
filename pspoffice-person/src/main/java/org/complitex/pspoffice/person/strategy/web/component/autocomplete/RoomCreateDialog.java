@@ -69,7 +69,7 @@ abstract class RoomCreateDialog extends AbstractAddressCreateDialog {
     DomainObject save(DomainObject object) {
         roomStrategy.insert(object, DateUtil.getCurrentDate());
         logBean.log(Log.STATUS.OK, Module.NAME, RoomCreateDialog.class,
-                Log.EVENT.CREATE, roomStrategy, null, object, getLocale(), null);
+                Log.EVENT.CREATE, roomStrategy, null, object, null);
 
         return roomStrategy.findById(object.getId(), true);
     }

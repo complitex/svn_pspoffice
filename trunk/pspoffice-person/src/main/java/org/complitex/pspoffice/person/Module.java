@@ -5,7 +5,7 @@ import org.complitex.dictionary.service.LogManager;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.template.strategy.TemplateStrategy;
 
@@ -21,6 +21,6 @@ public class Module {
 
     @PostConstruct
     public void init() {
-       LogManager.get().registerLink(Person.class.getName(), PersonEdit.class, null, TemplateStrategy.OBJECT_ID);
+        LogManager.get().registerLink(DomainObject.class.getName(), "person", PersonEdit.class, null, TemplateStrategy.OBJECT_ID);
     }
 }

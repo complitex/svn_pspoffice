@@ -458,7 +458,7 @@ public class RegistrationEdit extends FormTemplatePage {
             registrationStrategy.update(oldRegistration, newRegistration, DateUtil.getCurrentDate());
         }
         logBean.log(Log.STATUS.OK, Module.NAME, RegistrationEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT,
-                registrationStrategy, oldRegistration, newRegistration, getLocale(), null);
+                registrationStrategy, oldRegistration, newRegistration, null);
     }
 
     private void back() {

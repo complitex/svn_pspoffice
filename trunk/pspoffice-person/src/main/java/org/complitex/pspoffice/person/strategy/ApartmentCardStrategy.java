@@ -411,18 +411,28 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Transactional
     public SearchComponentState restoreSearchState(DictionaryFwSession session) {
         SearchComponentState globalSearchComponentState = session.getGlobalSearchComponentState();
-        SearchComponentState searchComponentState = new SearchComponentState();
+        DomainObject defaultStreetObject = session.getPreferenceDomainObject(DictionaryFwSession.DEFAULT_STATE_PAGE, "street");
         boolean useDefault = session.getPreferenceBoolean(DictionaryFwSession.GLOBAL_PAGE, DictionaryFwSession.IS_USE_DEFAULT_STATE_KEY);
+        SearchComponentState searchComponentState = new SearchComponentState();
         for (Map.Entry<String, DomainObject> searchFilterEntry : globalSearchComponentState.entrySet()) {
             String searchFilter = searchFilterEntry.getKey();
-            if (SEARCH_STATE_ENTITES.contains(searchFilter) || (searchFilter.equals("street") && useDefault)) {
-                DomainObject filterObject = searchFilterEntry.getValue();
-                if (filterObject != null && filterObject.getId() > 0) {
+            DomainObject filterObject = searchFilterEntry.getValue();
+            if (SEARCH_STATE_ENTITES.contains(searchFilter)
+                    || (searchFilter.equals("street") && useDefault && isEqualStreet(defaultStreetObject, filterObject))) {
+                if (filterObject != null && filterObject.getId() != null && filterObject.getId() > 0) {
                     searchComponentState.put(searchFilter, filterObject);
                 }
             }
         }
         return searchComponentState;
+    }
+
+    private boolean isEqualStreet(DomainObject street1, DomainObject street2) {
+        if (street1 == null || street1.getId() == null || street1.getId() <= 0
+                || street2 == null || street2.getId() == null || street2.getId() <= 0) {
+            return false;
+        }
+        return street1.getId().equals(street2.getId());
     }
 
     @Transactional

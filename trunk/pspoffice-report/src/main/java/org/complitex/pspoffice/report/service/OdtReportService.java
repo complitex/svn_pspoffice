@@ -8,7 +8,6 @@ import org.odftoolkit.simple.TextDocument;
 import org.w3c.dom.NodeList;
 
 import javax.ejb.Stateless;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -17,7 +16,7 @@ import java.util.Map;
  *         Date: 19.05.11 14:58
  */
 @Stateless
-public class OdfReportService extends AbstractReportService{
+public class OdtReportService extends AbstractReportService {
 
     @Override
     public void createReport(String templateName, Map<String, String> values, OutputStream out) throws CreateReportException {
@@ -27,15 +26,15 @@ public class OdfReportService extends AbstractReportService{
 
             NodeList formTexts = contentRoot.getElementsByTagName("form:text");
 
-            for (int i=0; i < formTexts.getLength(); ++i){
+            for (int i = 0; i < formTexts.getLength(); ++i) {
                 FormTextElement formTextElement = (FormTextElement) formTexts.item(i);
 
-                String formId  = formTextElement.getFormIdAttribute();
+                String formId = formTextElement.getFormIdAttribute();
                 String name = formTextElement.getFormNameAttribute();
 
                 NodeList drawControls = contentRoot.getElementsByTagName("draw:control");
 
-                for (int j=0; j < drawControls.getLength(); ++j){
+                for (int j = 0; j < drawControls.getLength(); ++j) {
                     DrawControlElement drawControlElement = (DrawControlElement) drawControls.item(j);
 
                     if (drawControlElement != null && drawControlElement.getDrawControlAttribute().equals(formId)) {

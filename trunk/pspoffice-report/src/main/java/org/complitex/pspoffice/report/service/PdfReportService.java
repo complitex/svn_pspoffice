@@ -1,7 +1,5 @@
 package org.complitex.pspoffice.report.service;
 
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfReader;
@@ -16,7 +14,8 @@ import java.util.Map;
  *         Date: 17.05.11 18:07
  */
 @Stateless
-public class PdfReportService extends AbstractReportService{
+public class PdfReportService extends AbstractReportService {
+
     private final static String FONT = "org/complitex/pspoffice/report/font/times.ttf";
 
     @Override
@@ -29,7 +28,7 @@ public class PdfReportService extends AbstractReportService{
 
             acroFields.addSubstitutionFont(BaseFont.createFont(getFontURLPath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED));
 
-            for (String key : values.keySet()){
+            for (String key : values.keySet()) {
                 acroFields.setField(key.toLowerCase(), values.get(key));
             }
 
@@ -39,7 +38,7 @@ public class PdfReportService extends AbstractReportService{
         }
     }
 
-    private String getFontURLPath(){
+    private String getFontURLPath() {
         return getClass().getClassLoader().getResource(FONT).getFile();
     }
 }

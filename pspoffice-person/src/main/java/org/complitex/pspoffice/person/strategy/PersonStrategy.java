@@ -308,10 +308,12 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    private void loadDocument(Person person) {
-        long documentId = person.getAttribute(DOCUMENT).getValueId();
-        Document document = documentStrategy.findDocumentById(documentId);
-        person.setDocument(document);
+    public void loadDocument(Person person) {
+        if (person.getDocument() == null) {
+            long documentId = person.getAttribute(DOCUMENT).getValueId();
+            Document document = documentStrategy.findDocumentById(documentId);
+            person.setDocument(document);
+        }
     }
 
     @Transactional
@@ -735,8 +737,6 @@ public class PersonStrategy extends TemplateStrategy {
         Date archiveDate = DateUtil.getCurrentDate();
         Date updateDate = DateUtil.justBefore(archiveDate);
         Date archiveDocumentDate = DateUtil.justAfter(archiveDate);
-
-
 
         if (activePersonRegistrations != null && !activePersonRegistrations.isEmpty()) {
             for (PersonRegistration personRegistration : activePersonRegistrations) {

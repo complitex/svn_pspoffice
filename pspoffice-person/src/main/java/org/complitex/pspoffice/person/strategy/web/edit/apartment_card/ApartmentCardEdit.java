@@ -43,6 +43,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
@@ -60,11 +61,14 @@ import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
+import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.Module;
+import org.complitex.pspoffice.person.registration.report.web.FamilyAndApartmentInfoPage;
+import org.complitex.pspoffice.person.registration.report.web.FamilyAndHousingPaymentsPage;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -544,6 +548,24 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             }
         };
         form.add(userAttributesView);
+
+        //reports
+        CollapsibleFieldset reports = new CollapsibleFieldset("reports", new ResourceModel("reports"));
+        reports.add(new Link<Void>("family_and_housing_payments_report") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new FamilyAndHousingPaymentsPage(apartmentCard));
+            }
+        });
+        reports.add(new Link<Void>("family_and_apartment_info_report") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new FamilyAndApartmentInfoPage(apartmentCard));
+            }
+        });
+        form.add(reports);
 
         //save-cancel functional
         ApartmentCardIndicatingSubmitLink submit = new ApartmentCardIndicatingSubmitLink("submit") {

@@ -33,49 +33,49 @@ public class FamilyAndHousingPaymentsDownload extends AbstractReportDownload<Fam
                     map.put(NAME0, member.getName());
                     map.put(RELATION0, member.getRelation());
                     map.put(BIRTH_DATE0, member.getBirthDate());
-                    map.put(REGISTRATION_DATE0, member.getRegistrationDate());
+                    map.put(PASSPORT0, member.getPassport());
                 }
                 break;
                 case 1: {
                     map.put(NAME1, member.getName());
                     map.put(RELATION1, member.getRelation());
                     map.put(BIRTH_DATE1, member.getBirthDate());
-                    map.put(REGISTRATION_DATE1, member.getRegistrationDate());
+                    map.put(PASSPORT1, member.getPassport());
                 }
                 break;
                 case 2: {
                     map.put(NAME2, member.getName());
                     map.put(RELATION2, member.getRelation());
                     map.put(BIRTH_DATE2, member.getBirthDate());
-                    map.put(REGISTRATION_DATE2, member.getRegistrationDate());
+                    map.put(PASSPORT2, member.getPassport());
                 }
                 break;
                 case 3: {
                     map.put(NAME3, member.getName());
                     map.put(RELATION3, member.getRelation());
                     map.put(BIRTH_DATE3, member.getBirthDate());
-                    map.put(REGISTRATION_DATE3, member.getRegistrationDate());
+                    map.put(PASSPORT3, member.getPassport());
                 }
                 break;
                 case 4: {
                     map.put(NAME4, member.getName());
                     map.put(RELATION4, member.getRelation());
                     map.put(BIRTH_DATE4, member.getBirthDate());
-                    map.put(REGISTRATION_DATE4, member.getRegistrationDate());
+                    map.put(PASSPORT4, member.getPassport());
                 }
                 break;
                 case 5: {
                     map.put(NAME5, member.getName());
                     map.put(RELATION5, member.getRelation());
                     map.put(BIRTH_DATE5, member.getBirthDate());
-                    map.put(REGISTRATION_DATE5, member.getRegistrationDate());
+                    map.put(PASSPORT5, member.getPassport());
                 }
                 break;
                 case 6: {
                     map.put(NAME6, member.getName());
                     map.put(RELATION6, member.getRelation());
                     map.put(BIRTH_DATE6, member.getBirthDate());
-                    map.put(REGISTRATION_DATE6, member.getRegistrationDate());
+                    map.put(PASSPORT6, member.getPassport());
                 }
                 break;
             }
@@ -84,6 +84,7 @@ public class FamilyAndHousingPaymentsDownload extends AbstractReportDownload<Fam
                 break;
             }
         }
+        map.put(COUNT, String.valueOf(counter));
 
         map.put(APARTMENT_AREA, report.getApartmentArea());
         map.put(HEATED_AREA, report.getHeatedArea());

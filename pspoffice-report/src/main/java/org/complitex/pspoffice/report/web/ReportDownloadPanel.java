@@ -44,7 +44,7 @@ public class ReportDownloadPanel extends Panel {
 
         public DownloadPage(PageParameters parameters) {
             String sessionKey = parameters.getString("key");
-            String type = parameters.getString("type") != null ? parameters.getString("type") : "pdf";
+            String type = parameters.getString("type") != null ? parameters.getString("type").toLowerCase() : "pdf";
             String locale = parameters.getString("locale") != null ? "_" + parameters.getString("locale") : "";
 
             AbstractReportDownload reportDownload = retrieveReportDownload(sessionKey);
@@ -93,7 +93,7 @@ public class ReportDownloadPanel extends Panel {
                         }
 
                         IReportService reportService = getReportService(type);
-                        reportService.createReport(reportDownload.getReportName() + locale + ".pdf", map, output);
+                        reportService.createReport(reportDownload.getReportName() + locale + "." + type, map, output);
                     } catch (CreateReportException e) {
                         log.error("Ошибка создания документа", e);
                     }
@@ -102,8 +102,7 @@ public class ReportDownloadPanel extends Panel {
         }
 
         private IReportService getReportService(String type) {
-            String beanName = type.toLowerCase();
-            beanName = Strings.capitalize(beanName) + "ReportService";
+            String beanName = Strings.capitalize(type) + "ReportService";
             return EjbBeanLocator.getBean(beanName, true);
         }
 

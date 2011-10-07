@@ -8,7 +8,6 @@ import static com.google.common.collect.Lists.*;
 import java.util.Collection;
 import javax.ejb.EJB;
 
-import java.text.MessageFormat;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.feedback.FeedbackMessage;
@@ -20,7 +19,6 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import static org.complitex.dictionary.util.StringUtil.*;
@@ -94,13 +92,7 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
                 }
             };
             add(familyMembers);
-            add(new Label("total", new AbstractReadOnlyModel<String>() {
-
-                @Override
-                public String getObject() {
-                    return MessageFormat.format(getString("total"), payments.getFamilyMembers().size());
-                }
-            }));
+            add(new Label("total", new StringResourceModel("total", null, new Object[]{payments.getFamilyMembers().size()})));
 
             add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null, new Object[]{
                         valueOf(payments.getFormOfOwnership())

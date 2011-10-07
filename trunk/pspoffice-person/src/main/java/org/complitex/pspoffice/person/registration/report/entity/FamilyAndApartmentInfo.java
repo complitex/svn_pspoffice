@@ -23,7 +23,7 @@ public class FamilyAndApartmentInfo implements Serializable {
     private String toiletArea;
     private String hallArea;
     private String verandaArea;
-    private String embeddedArae;
+    private String embeddedArea;
     private String balconyArea;
     private String loggiaArea;
     private String fullApartmentArea;
@@ -81,12 +81,12 @@ public class FamilyAndApartmentInfo implements Serializable {
         this.bathroomArea = bathroomArea;
     }
 
-    public String getEmbeddedArae() {
-        return embeddedArae;
+    public String getEmbeddedArea() {
+        return embeddedArea;
     }
 
-    public void setEmbeddedArae(String embeddedArae) {
-        this.embeddedArae = embeddedArae;
+    public void setEmbeddedArea(String embeddedArea) {
+        this.embeddedArea = embeddedArea;
     }
 
     public List<FamilyMember> getFamilyMembers() {

@@ -93,7 +93,7 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
             add(new Label("apartmentPartsInfo", new StringResourceModel("apartmentPartsInfo", null, new Object[]{
                         valueOf(info.getRooms()), valueOf(info.getRoomsArea()), valueOf(info.getKitchenArea()),
                         valueOf(info.getBathroomArea()), valueOf(info.getToiletArea()), valueOf(info.getHallArea()),
-                        valueOf(info.getVerandaArea()), valueOf(info.getEmbeddedArae()), valueOf(info.getBalconyArea()),
+                        valueOf(info.getVerandaArea()), valueOf(info.getEmbeddedArea()), valueOf(info.getBalconyArea()),
                         valueOf(info.getLoggiaArea())
                     })));
             add(new Label("fullApartmentArea", new StringResourceModel("fullApartmentArea", null, new Object[]{

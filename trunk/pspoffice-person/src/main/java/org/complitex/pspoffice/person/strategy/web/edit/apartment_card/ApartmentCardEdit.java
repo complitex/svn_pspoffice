@@ -69,6 +69,7 @@ import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.registration.report.web.FamilyAndApartmentInfoPage;
 import org.complitex.pspoffice.person.registration.report.web.FamilyAndHousingPaymentsPage;
+import org.complitex.pspoffice.person.registration.report.web.HousingPaymentsPage;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -551,6 +552,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         //reports
         CollapsibleFieldset reports = new CollapsibleFieldset("reports", new ResourceModel("reports"));
+        reports.add(new Link<Void>("family_and_apartment_info_report") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new FamilyAndApartmentInfoPage(apartmentCard));
+            }
+        });
         reports.add(new Link<Void>("family_and_housing_payments_report") {
 
             @Override
@@ -558,11 +566,11 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 setResponsePage(new FamilyAndHousingPaymentsPage(apartmentCard));
             }
         });
-        reports.add(new Link<Void>("family_and_apartment_info_report") {
+        reports.add(new Link<Void>("housing_payments_report") {
 
             @Override
             public void onClick() {
-                setResponsePage(new FamilyAndApartmentInfoPage(apartmentCard));
+                setResponsePage(new HousingPaymentsPage(apartmentCard));
             }
         });
         form.add(reports);

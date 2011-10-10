@@ -69,9 +69,6 @@ public final class HousingPaymentsPage extends WebPage {
 
         public ReportFragment(String id, final HousingPayments payments) {
             super(id, "report", HousingPaymentsPage.this);
-            final FeedbackPanel messages = new FeedbackPanel("messages");
-            messages.setOutputMarkupId(true);
-            add(messages);
             add(new Label("label", new ResourceModel("label")));
             add(new Label("headInfo", new StringResourceModel("headInfo", null, new Object[]{
                         payments.getName(), payments.getPersonalAccount(), payments.getAddress()

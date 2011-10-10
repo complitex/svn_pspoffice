@@ -70,9 +70,6 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
 
         public ReportFragment(String id, final FamilyAndApartmentInfo info) {
             super(id, "report", FamilyAndApartmentInfoPage.this);
-            final FeedbackPanel messages = new FeedbackPanel("messages");
-            messages.setOutputMarkupId(true);
-            add(messages);
             add(new Label("label", new ResourceModel("label")));
             add(new Label("labelDetails", new ResourceModel("labelDetails")));
             add(new Label("addressInfo", new StringResourceModel("addressInfo", null, new Object[]{info.getAddress()})));

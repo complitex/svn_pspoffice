@@ -2,24 +2,41 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml"  xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd">
-<wicket:panel>
-    <div wicket:id="dialog">
-        <form action="#" wicket:id="form">
-            <table>
-                <tr>
-                    <td><wicket:message key="type"/></td>
-                    <td><select wicket:id="type"></select></td>
-                </tr>
-                <tr>
-                    <td><wicket:message key="locale"/></td>
-                    <td><select wicket:id="locale"></select></td>
-                </tr>
-            </table>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <wicket:panel>
+            <div wicket:id="dialog">
+                <form action="#" wicket:id="form">
+                    <table>
+                        <tr>
+                            <td>
+                                <wicket:message key="type"/>
+                            </td>
+                            <td>
+                                <select wicket:id="type">
+                                    <option></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <wicket:message key="locale"/>
+                            </td>
+                            <td>
+                                <select wicket:id="locale">
+                                    <option></option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
 
-            <br/>
-            <input type="submit" class="btnBig" wicket:message="value:download" wicket:id="download"/>
-            <input type="submit" class="btnMiddle" wicket:message="value:cancel" wicket:id="cancel"/>
-        </form>
-    </div>
-</wicket:panel>
+                    <br/>
+                    <input type="submit" class="btnBig" wicket:message="value:download" wicket:id="download"/>
+                    <input type="button" class="btnMiddle" wicket:message="value:cancel" wicket:id="cancel"/>
+                </form>
+            </div>
+        </wicket:panel>
+    </body>
 </html>

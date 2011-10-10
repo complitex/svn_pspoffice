@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.protocol.http.WebRequestCycle;
 import org.apache.wicket.request.target.resource.ResourceStreamRequestTarget;
 import org.apache.wicket.util.resource.AbstractResourceStreamWriter;
@@ -187,14 +188,10 @@ public class ReportDownloadPanel extends Panel {
         });
 
         //Отмена
-        form.add(new AjaxButton("cancel") {
-
-            {
-                setDefaultFormProcessing(false);
-            }
+        form.add(new AjaxLink<Void>("cancel") {
 
             @Override
-            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            public void onClick(AjaxRequestTarget target) {
                 dialog.close(target);
             }
         });

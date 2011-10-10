@@ -68,6 +68,7 @@ import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrat
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.registration.report.web.FamilyAndApartmentInfoPage;
+import org.complitex.pspoffice.person.registration.report.web.FamilyAndCommunalApartmentInfoPage;
 import org.complitex.pspoffice.person.registration.report.web.FamilyAndHousingPaymentsPage;
 import org.complitex.pspoffice.person.registration.report.web.HousingPaymentsPage;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
@@ -573,6 +574,14 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 setResponsePage(new HousingPaymentsPage(apartmentCard));
             }
         });
+        reports.add(new Link<Void>("family_and_communal_apartment_info_report") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new FamilyAndCommunalApartmentInfoPage(apartmentCard));
+            }
+        });
+        reports.setVisible(!isNew());
         form.add(reports);
 
         //save-cancel functional

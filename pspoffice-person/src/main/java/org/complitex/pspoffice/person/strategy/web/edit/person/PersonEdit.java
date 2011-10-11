@@ -16,10 +16,12 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
+import org.complitex.pspoffice.person.registration.report.web.PersonCardPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.DeathButton;
+import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.PersonCardButton;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
@@ -122,6 +124,19 @@ public class PersonEdit extends FormTemplatePage {
                     protected void onBeforeRender() {
                         super.onBeforeRender();
                         setVisible(personDeathDialog.isVisible());
+                    }
+                },
+                new PersonCardButton(id) {
+
+                    @Override
+                    protected void onClick() {
+                        setResponsePage(new PersonCardPage(newPerson));
+                    }
+
+                    @Override
+                    protected void onBeforeRender() {
+                        super.onBeforeRender();
+                        setVisible(oldPerson != null);
                     }
                 } //                new F3ReferenceButton(id) {
                 //

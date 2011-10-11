@@ -22,6 +22,7 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.StringUtil;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
+import org.complitex.pspoffice.document.strategy.entity.Passport;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -55,7 +56,12 @@ public class DocumentStrategy extends TemplateStrategy {
     public Document findDocumentById(long id) {
         DomainObject object = super.findById(id, true);
         if (object != null) {
-            return new Document(object);
+            Document doc = new Document(object);
+            if (doc.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
+                return new Passport(doc);
+            } else {
+                return doc;
+            }
         } else {
             return findHistoryDocument(id);
         }
@@ -70,7 +76,12 @@ public class DocumentStrategy extends TemplateStrategy {
         documentTypeAttribute.setValueTypeId(DOCUMENT_TYPE);
         document.addAttribute(documentTypeAttribute);
         fillAttributes(document);
-        return document;
+
+        if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
+            return new Passport(document);
+        } else {
+            return document;
+        }
     }
 
     @Transactional
@@ -88,7 +99,12 @@ public class DocumentStrategy extends TemplateStrategy {
         documentObject.setAttributes(historyAttributes);
         updateStringsForNewLocales(documentObject);
 
-        return new Document(documentObject);
+        Document document = new Document(documentObject);
+        if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
+            return new Passport(document);
+        } else {
+            return document;
+        }
     }
 
     private boolean isSupportedAttribute(long attributeTypeId, long documentTypeId) {
@@ -131,7 +147,8 @@ public class DocumentStrategy extends TemplateStrategy {
 
         long documentTypeId = document.getDocumentTypeId();
         if (documentTypeId == DocumentTypeStrategy.PASSPORT) {
-            return getStringValue(document, 2811) + " " + getStringValue(document, 2812);
+            Passport passport = (Passport) document;
+            return passport.getSeries() + " " + passport.getNumber();
         } else if (documentTypeId == DocumentTypeStrategy.BIRTH_CERTIFICATE) {
             return StringUtil.valueOf(getStringValue(document, 2815));
         } else {

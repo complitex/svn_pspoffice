@@ -4,12 +4,17 @@
  */
 package org.complitex.pspoffice.person.registration.report.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.strategy.IStrategy;
+import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyAndCommunalApartmentInfo;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
@@ -33,6 +38,10 @@ public class FamilyAndCommunalApartmentInfoBean extends AbstractBean {
     private AddressRendererBean addressRendererBean;
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
+    @EJB
+    private ApartmentCardStrategy apartmentCardStrategy;
+    @EJB
+    private StrategyFactory strategyFactory;
 
     @Transactional
     public FamilyAndCommunalApartmentInfo get(ApartmentCard apartmentCard, Locale locale) {
@@ -43,9 +52,21 @@ public class FamilyAndCommunalApartmentInfoBean extends AbstractBean {
         String ownerName = personStrategy.displayDomainObject(apartmentCard.getOwner(), locale);
         info.setName(ownerName);
 
-        {
+        Long apartmentId = apartmentCardStrategy.getApartmentId(apartmentCard);
+        String apartmentNumber = "";
+        if (apartmentId != null) {
+            IStrategy apartmentStrategy = strategyFactory.getStrategy("apartment");
+            DomainObject apartmentObject = apartmentStrategy.findById(apartmentId, true);
+            apartmentNumber = apartmentStrategy.displayDomainObject(apartmentObject, locale);
+        }
+        //neighbors
+        List<ApartmentCard> allApartmentCards = new ArrayList<ApartmentCard>();
+        allApartmentCards.add(apartmentCard);
+        allApartmentCards.addAll(apartmentCardStrategy.getNeighbourApartmentCards(apartmentCard));
+        for (ApartmentCard neighbourCard : allApartmentCards) {
             NeighbourFamily family = new NeighbourFamily();
-            family.setName(ownerName);
+            family.setName(personStrategy.displayDomainObject(neighbourCard.getOwner(), locale));
+            family.setApartmentNumber(apartmentNumber);
             info.addNeighbourFamily(family);
         }
 

@@ -82,7 +82,7 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
                 @Override
                 protected void populateItem(ListItem<NeighbourFamily> item) {
                     final NeighbourFamily neighbourFamily = item.getModelObject();
-                    item.add(new Label("neighbourFamilyRoomNumber", neighbourFamily.getRoomNumber()));
+                    item.add(new Label("neighbourFamilyApartmentNumber", neighbourFamily.getApartmentNumber()));
                     item.add(new Label("neighbourFamilyName", neighbourFamily.getName()));
                     item.add(new Label("neighbourFamilyRoomsAndArea", neighbourFamily.getRoomsAndAreaInfo()));
                     item.add(new Label("neighbourFamilyOtherBuildingsAndArea", neighbourFamily.getOtherBuildingsAndAreaInfo()));

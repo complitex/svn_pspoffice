@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.PermissionBean;
@@ -60,10 +60,11 @@ public final class PermissionPanel extends Panel {
      */
     private void init(final Set<Long> subjectIds) {
         final Long existingSubjectId = subjectIds.isEmpty() ? null : subjectIds.iterator().next();
-        final IModel<List<DomainObject>> userOrganizationsModel = new LoadableDetachableModel<List<DomainObject>>() {
+        final IModel<List<DomainObject>> userOrganizationsModel = new AbstractReadOnlyModel<List<DomainObject>>() {
 
-            @Override
-            protected List<DomainObject> load() {
+            private List<DomainObject> userOrganizations;
+
+            private List<DomainObject> load() {
                 List<DomainObject> list = Lists.newArrayList();
                 if (existingSubjectId == PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID) {
                     list.add(VISIBLE_BY_ALL);
@@ -71,6 +72,14 @@ public final class PermissionPanel extends Panel {
                     list.add(organizationStrategy.findById(existingSubjectId, true));
                 }
                 return list;
+            }
+
+            @Override
+            public List<DomainObject> getObject() {
+                if (userOrganizations == null) {
+                    userOrganizations = load();
+                }
+                return userOrganizations;
             }
         };
         IModel<DomainObject> model = newModel(subjectIds);
@@ -90,10 +99,11 @@ public final class PermissionPanel extends Panel {
     private void init(final List<Long> userOrganizationIds, final Set<Long> subjectIds, final Set<Long> inheritedSubjectIds) {
         final boolean inheritedObjectVisibleByAll = inheritedSubjectIds.size() == 1
                 && inheritedSubjectIds.iterator().next().equals(PermissionBean.VISIBLE_BY_ALL_PERMISSION_ID);
-        final IModel<List<DomainObject>> userOrganizationsModel = new LoadableDetachableModel<List<DomainObject>>() {
+        final IModel<List<DomainObject>> userOrganizationsModel = new AbstractReadOnlyModel<List<DomainObject>>() {
 
-            @Override
-            protected List<DomainObject> load() {
+            private List<DomainObject> userOrganizations;
+
+            private List<DomainObject> load() {
                 List<DomainObject> list = Lists.newArrayList();
                 for (long userOrganizationId : userOrganizationIds) {
                     if (inheritedObjectVisibleByAll || inheritedSubjectIds.contains(userOrganizationId)) {
@@ -111,9 +121,17 @@ public final class PermissionPanel extends Panel {
                 }
                 return list;
             }
+
+            @Override
+            public List<DomainObject> getObject() {
+                if (userOrganizations == null) {
+                    userOrganizations = load();
+                }
+                return userOrganizations;
+            }
         };
 
-        IModel<DomainObject> model = newModel(subjectIds);
+        final IModel<DomainObject> model = newModel(subjectIds);
 
         DisableAwareDropDownChoice<DomainObject> organizationPicker = newOrganizationPicker(model, userOrganizationsModel);
         add(organizationPicker);

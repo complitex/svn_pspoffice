@@ -16,18 +16,17 @@ public class NeighbourFamily implements Serializable {
     private Integer amount;
     private Integer takeRooms;
     private String takeArea;
-    private String roomNumber;
-    private Long internalRoomId;
+    private String apartmentNumber;
     private String roomsAndAreaInfo;
     private String otherBuildingsAndAreaInfo;
     private String loggiaAndAreaInfo;
 
-    public String getRoomNumber() {
-        return roomNumber;
+    public String getApartmentNumber() {
+        return apartmentNumber;
     }
 
-    public void setRoomNumber(String roomNumber) {
-        this.roomNumber = roomNumber;
+    public void setApartmentNumber(String apartmentNumber) {
+        this.apartmentNumber = apartmentNumber;
     }
 
     public String getName() {
@@ -60,14 +59,6 @@ public class NeighbourFamily implements Serializable {
 
     public void setAmount(Integer amount) {
         this.amount = amount;
-    }
-
-    public Long getInternalRoomId() {
-        return internalRoomId;
-    }
-
-    public void setInternalRoomId(Long internalRoomId) {
-        this.internalRoomId = internalRoomId;
     }
 
     public String getRoomsAndAreaInfo() {

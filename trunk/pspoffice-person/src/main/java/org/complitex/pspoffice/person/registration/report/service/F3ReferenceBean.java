@@ -14,6 +14,7 @@ import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrat
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
 import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
+import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -69,6 +70,14 @@ public class F3ReferenceBean extends AbstractBean {
                 member.setRelation(ownerRelationshipStrategy.displayDomainObject(registration.getOwnerRelationship(), locale));
                 f3.addFamilyMember(member);
             }
+        }
+
+        //neighbors
+        for (ApartmentCard neighbourCard : apartmentCardStrategy.getNeighbourApartmentCards(apartmentCard)) {
+            NeighbourFamily family = new NeighbourFamily();
+            family.setName(personStrategy.displayDomainObject(neighbourCard.getOwner(), locale));
+            family.setAmount(neighbourCard.getRegisteredCount());
+            f3.addNeighbourFamily(family);
         }
 
         return f3;

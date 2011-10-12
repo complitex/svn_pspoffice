@@ -78,6 +78,7 @@ import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.service.CommunalApartmentService;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.AddressSearchPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
@@ -125,6 +126,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private RegistrationTypeStrategy registrationTypeStrategy;
     @EJB
     private SessionBean sessionBean;
+    @EJB
+    private CommunalApartmentService communalApartmentService;
     private String addressEntity;
     private Long addressId;
     private ApartmentCard oldApartmentCard;
@@ -553,13 +556,17 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         //reports
         CollapsibleFieldset reports = new CollapsibleFieldset("reports", new ResourceModel("reports"));
-        reports.add(new Link<Void>("family_and_apartment_info_report") {
+        WebMarkupContainer familyAndApartmentInfoReportContainer =
+                new WebMarkupContainer("family_and_apartment_info_report_container");
+        familyAndApartmentInfoReportContainer.setVisible(!communalApartmentService.isCommunalApartmentCard(apartmentCard));
+        familyAndApartmentInfoReportContainer.add(new Link<Void>("family_and_apartment_info_report") {
 
             @Override
             public void onClick() {
                 setResponsePage(new FamilyAndApartmentInfoPage(apartmentCard));
             }
         });
+        reports.add(familyAndApartmentInfoReportContainer);
         reports.add(new Link<Void>("family_and_housing_payments_report") {
 
             @Override
@@ -574,13 +581,18 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 setResponsePage(new HousingPaymentsPage(apartmentCard));
             }
         });
-        reports.add(new Link<Void>("family_and_communal_apartment_info_report") {
+        WebMarkupContainer familyAndCommunalApartmentInfoReportContainer =
+                new WebMarkupContainer("family_and_communal_apartment_info_report_container");
+        familyAndCommunalApartmentInfoReportContainer.setVisible(communalApartmentService.isCommunalApartmentCard(apartmentCard));
+        familyAndCommunalApartmentInfoReportContainer.add(
+                new Link<Void>("family_and_communal_apartment_info_report") {
 
-            @Override
-            public void onClick() {
-                setResponsePage(new FamilyAndCommunalApartmentInfoPage(apartmentCard));
-            }
-        });
+                    @Override
+                    public void onClick() {
+                        setResponsePage(new FamilyAndCommunalApartmentInfoPage(apartmentCard));
+                    }
+                });
+        reports.add(familyAndCommunalApartmentInfoReportContainer);
         reports.setVisible(!isNew());
         form.add(reports);
 

@@ -301,6 +301,47 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         return apartmentCards;
     }
 
+    /**
+     * Util method to get apartment for apartment and room based apartment cards.
+     * @param apartmentCard
+     * @return
+     */
+    @Transactional
+    public Long getApartmentId(ApartmentCard apartmentCard) {
+        Long apartmentId = null;
+
+        String addressEntity = getAddressEntity(apartmentCard);
+        long addressId = apartmentCard.getAddressId();
+        if (addressEntity.equals("room")) {
+            DomainObject room = strategyFactory.getStrategy("room").findById(addressId, true);
+            if (room.getParentEntityId().equals(100L)) { //parent is apartment
+                apartmentId = room.getParentId();
+            }
+        } else if (addressEntity.equals("apartment")) {
+            apartmentId = addressId;
+        }
+
+        return apartmentId;
+    }
+
+    @Transactional
+    public List<ApartmentCard> getNeighbourApartmentCards(ApartmentCard apartmentCard) {
+        Long apartmentId = getApartmentId(apartmentCard);
+
+        if (apartmentId == null) {
+            return null;
+        }
+
+        List<ApartmentCard> neighbourApartmentCards = newArrayList();
+        int count = countByAddress("apartment", apartmentId);
+        for (ApartmentCard neighbourCard : findByAddress("apartment", apartmentId, 0, count)) {
+            if (!neighbourCard.getId().equals(apartmentCard.getId())) {
+                neighbourApartmentCards.add(neighbourCard);
+            }
+        }
+        return neighbourApartmentCards;
+    }
+
     @Transactional
     private void loadAllRegistrations(ApartmentCard apartmentCard) {
         List<Registration> registrations = newArrayList();

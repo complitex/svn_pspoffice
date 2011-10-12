@@ -29,7 +29,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
         for (NeighbourFamily family : report.getNeighbourFamilies()) {
             switch (counter) {
                 case 0: {
-                    map.put(ROOM0, family.getRoomNumber());
+                    map.put(APARTMENT0, family.getApartmentNumber());
                     map.put(OWNER_NAME0, family.getName());
                     map.put(ROOMS_AND_AREA_INFO0, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO0, family.getOtherBuildingsAndAreaInfo());
@@ -37,7 +37,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 1: {
-                    map.put(ROOM1, family.getRoomNumber());
+                    map.put(APARTMENT1, family.getApartmentNumber());
                     map.put(OWNER_NAME1, family.getName());
                     map.put(ROOMS_AND_AREA_INFO1, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO1, family.getOtherBuildingsAndAreaInfo());
@@ -45,7 +45,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 2: {
-                    map.put(ROOM2, family.getRoomNumber());
+                    map.put(APARTMENT2, family.getApartmentNumber());
                     map.put(OWNER_NAME2, family.getName());
                     map.put(ROOMS_AND_AREA_INFO2, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO2, family.getOtherBuildingsAndAreaInfo());
@@ -53,7 +53,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 3: {
-                    map.put(ROOM3, family.getRoomNumber());
+                    map.put(APARTMENT3, family.getApartmentNumber());
                     map.put(OWNER_NAME3, family.getName());
                     map.put(ROOMS_AND_AREA_INFO3, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO3, family.getOtherBuildingsAndAreaInfo());
@@ -61,7 +61,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 4: {
-                    map.put(ROOM4, family.getRoomNumber());
+                    map.put(APARTMENT4, family.getApartmentNumber());
                     map.put(OWNER_NAME4, family.getName());
                     map.put(ROOMS_AND_AREA_INFO4, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO4, family.getOtherBuildingsAndAreaInfo());
@@ -69,7 +69,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 5: {
-                    map.put(ROOM5, family.getRoomNumber());
+                    map.put(APARTMENT5, family.getApartmentNumber());
                     map.put(OWNER_NAME5, family.getName());
                     map.put(ROOMS_AND_AREA_INFO5, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO5, family.getOtherBuildingsAndAreaInfo());
@@ -77,7 +77,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 6: {
-                    map.put(ROOM6, family.getRoomNumber());
+                    map.put(APARTMENT6, family.getApartmentNumber());
                     map.put(OWNER_NAME6, family.getName());
                     map.put(ROOMS_AND_AREA_INFO6, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO6, family.getOtherBuildingsAndAreaInfo());
@@ -85,7 +85,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 7: {
-                    map.put(ROOM7, family.getRoomNumber());
+                    map.put(APARTMENT7, family.getApartmentNumber());
                     map.put(OWNER_NAME7, family.getName());
                     map.put(ROOMS_AND_AREA_INFO7, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO7, family.getOtherBuildingsAndAreaInfo());
@@ -93,7 +93,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
                 }
                 break;
                 case 8: {
-                    map.put(ROOM8, family.getRoomNumber());
+                    map.put(APARTMENT8, family.getApartmentNumber());
                     map.put(OWNER_NAME8, family.getName());
                     map.put(ROOMS_AND_AREA_INFO8, family.getRoomsAndAreaInfo());
                     map.put(OTHER_BUILDINGS_AND_AREA_INFO8, family.getOtherBuildingsAndAreaInfo());
@@ -172,7 +172,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
 
         map.put(STOREROOM_AREA, report.getStoreroomArea());
         map.put(BARN_AREA, report.getBarnArea());
-        map.put(OTHER_BUILDINGS, report.getOtherBuildings());
+        putMultilineValue(map, report.getOtherBuildings(), 50, OTHER_BUILDINGS0, OTHER_BUILDINGS1);
 
         return map;
     }

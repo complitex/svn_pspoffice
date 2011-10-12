@@ -16,11 +16,13 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
+import org.complitex.pspoffice.person.registration.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.registration.report.web.PersonCardPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.DeathButton;
+import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.F3ReferenceButton;
 import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.PersonCardButton;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -138,34 +140,20 @@ public class PersonEdit extends FormTemplatePage {
                         super.onBeforeRender();
                         setVisible(oldPerson != null);
                     }
-                } //                new F3ReferenceButton(id) {
-                //
-                //                    @Override
-                //                    protected void onClick() {
-                //                        setResponsePage(new F3ReferencePage(newPerson));
-                //                    }
-                //
-                //                    @Override
-                //                    protected void onBeforeRender() {
-                //                        if (isNew() || newPerson.getRegistration() == null) {
-                //                            setVisibilityAllowed(false);
-                //                        }
-                //                        super.onBeforeRender();
-                //                    }
-                //                },
-                //                new SaveButton(id, true) {
-                //
-                //                    @Override
-                //                    protected void onClick(AjaxRequestTarget target) {
-                //                        reportDownloadPanel.open(target);
-                //                    }
-                //
-                //                    @Override
-                //                    public boolean isVisible() {
-                //                        return !isNew();
-                //                    }
-                //                }
-                );
+                },
+                new F3ReferenceButton(id) {
+
+                    @Override
+                    protected void onClick() {
+                        setResponsePage(new F3ReferencePage(newPerson));
+                    }
+
+                    @Override
+                    protected void onBeforeRender() {
+                        super.onBeforeRender();
+                        setVisible(oldPerson != null);
+                    }
+                });
     }
 }
 

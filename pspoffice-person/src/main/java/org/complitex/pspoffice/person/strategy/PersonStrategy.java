@@ -716,17 +716,32 @@ public class PersonStrategy extends TemplateStrategy {
         return personApartmentCardAddresses;
     }
 
+    @Transactional
     public String findPermanentRegistrationAddress(long personId, Locale locale) {
-        Map<Object, Object> params = builder().putAll(newFindPersonRegistrationParameters(personId)).
-                put("registrationTypeAT", RegistrationStrategy.REGISTRATION_TYPE).
-                put("permanentRegistrationTypeId", RegistrationTypeStrategy.PERMANENT).
-                build();
-        List<PersonRegistration> personRegistrations = sqlSession().selectList(PERSON_MAPPING + ".findPermanentRegistrationAddress",
-                params);
+        List<PersonRegistration> personRegistrations = sqlSession().selectList(
+                PERSON_MAPPING + ".findPermanentRegistrationAddress", newFindPermanentRegistrationParameters(personId));
         if (!personRegistrations.isEmpty()) {
             return addressRendererBean.displayAddress(
                     ApartmentCardStrategy.getAddressEntity(personRegistrations.get(0).getAddressTypeId()),
                     personRegistrations.get(0).getAddressId(), locale);
+        }
+        return null;
+    }
+
+    private Map<Object, Object> newFindPermanentRegistrationParameters(long personId) {
+        return builder().putAll(newFindPersonRegistrationParameters(personId)).
+                put("registrationTypeAT", RegistrationStrategy.REGISTRATION_TYPE).
+                put("permanentRegistrationTypeId", RegistrationTypeStrategy.PERMANENT).
+                build();
+    }
+
+    @Transactional
+    public Long findApartmentCardIdByPermanentRegistration(long personId) {
+        List<Long> apartmentCardIds = sqlSession().selectList(
+                PERSON_MAPPING + ".findApartmentCardIdByPermanentRegistration",
+                newFindPermanentRegistrationParameters(personId));
+        if (!apartmentCardIds.isEmpty()) {
+            return apartmentCardIds.get(0);
         }
         return null;
     }

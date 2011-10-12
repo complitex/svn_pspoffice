@@ -1,207 +1,159 @@
-///*
-// * To change this template, choose Tools | Templates
-// * and open the template in the editor.
-// */
-//package org.complitex.pspoffice.person.registration.report.web;
-//
-//import static com.google.common.collect.Lists.*;
-//import java.util.Collection;
-//import java.util.Date;
-//import javax.ejb.EJB;
-//import org.apache.wicket.ajax.AjaxRequestTarget;
-//import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-//import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-//import org.apache.wicket.feedback.FeedbackMessage;
-//import static org.apache.wicket.feedback.FeedbackMessage.*;
-//import org.apache.wicket.markup.html.WebMarkupContainer;
-//import org.apache.wicket.markup.html.basic.Label;
-//import org.apache.wicket.markup.html.form.Form;
-//import org.apache.wicket.markup.html.form.TextField;
-//import org.apache.wicket.markup.html.list.ListItem;
-//import org.apache.wicket.markup.html.panel.FeedbackPanel;
-//import org.apache.wicket.markup.html.panel.Fragment;
-//import org.apache.wicket.model.AbstractReadOnlyModel;
-//import org.apache.wicket.model.IModel;
-//import org.apache.wicket.model.PropertyModel;
-//import org.apache.wicket.model.ResourceModel;
-//import org.apache.wicket.model.StringResourceModel;
-//import static org.complitex.dictionary.util.StringUtil.*;
-//import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
-//import org.complitex.dictionary.web.component.type.Date2Panel;
-//import org.complitex.dictionary.web.component.type.DatePanel;
-//import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
-//import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
-//import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
-//import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
-//import org.complitex.pspoffice.person.registration.report.service.F3ReferenceBean;
-//import org.complitex.pspoffice.person.strategy.entity.Person;
-//import org.complitex.template.web.security.SecurityRole;
-//import org.complitex.template.web.template.TemplatePage;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//
-///**
-// *
-// * @author Artem
-// */
-//@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-//public final class F3ReferencePage extends TemplatePage {
-//
-//    private static final Logger log = LoggerFactory.getLogger(F3ReferencePage.class);
-//    @EJB
-//    private F3ReferenceBean f3ReferenceBean;
-//
-//    private class MessagesFragment extends Fragment {
-//
-//        private Collection<FeedbackMessage> messages;
-//
-//        public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
-//            super(id, "messages", F3ReferencePage.this);
-//            this.messages = messages;
-//            add(new FeedbackPanel("messages"));
-//        }
-//
-//        @Override
-//        protected void onBeforeRender() {
-//            super.onBeforeRender();
-//            for (FeedbackMessage message : messages) {
-//                getSession().getFeedbackMessages().add(message);
-//            }
-//        }
-//    }
-//
-//    private class ReportFragment extends Fragment {
-//
-//        public ReportFragment(String id, final F3Reference f3) {
-//            super(id, "report", F3ReferencePage.this);
-//            final FeedbackPanel messages = new FeedbackPanel("messages");
-//            messages.setOutputMarkupId(true);
-//            add(messages);
-//            add(new Label("label", new ResourceModel("label")));
-//            add(new Label("name", new StringResourceModel("name", null, new Object[]{valueOf(f3.getName())})));
-//            add(new Label("address", new StringResourceModel("address", null, new Object[]{valueOf(f3.getAddress())})));
-//            add(new Label("livingArea", new StringResourceModel("livingArea", null, new Object[]{valueOf(f3.getLivingArea())})));
-//            add(new Label("apartmentArea", new StringResourceModel("apartmentArea", null, new Object[]{valueOf(f3.getApartmentArea())})));
-//            add(new Label("roomsInfo", new StringResourceModel("roomsInfo", null,
-//                    new Object[]{valueOf(f3.getTakesRooms()), valueOf(f3.getRooms())})));
-//            add(new Label("floorInfo", new StringResourceModel("floorInfo", null,
-//                    new Object[]{valueOf(f3.getFloor()), valueOf(f3.getFloors())})));
-//            add(new Label("balance", new ResourceModel("balance")));
-//            add(new Label("personalAccountOwner", new StringResourceModel("personalAccountOwner", null,
-//                    new Object[]{valueOf(f3.getPersonalAccountOwnerName())})));
-//            add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null,
-//                    new Object[]{valueOf(f3.getFormOfOwnership())})));
-//            add(new Label("facilities", new StringResourceModel("facilities", null, new Object[]{valueOf(f3.getFacilities())})));
-//            add(new Label("technicalState", new StringResourceModel("technicalState", null, new Object[]{valueOf(f3.getTechnicalState())})));
-//            final Form form = new Form("form");
-//            add(form);
-//            form.add(new Label("familyInfo", new ResourceModel("familyInfo")));
-//            final WebMarkupContainer familyContainer = new WebMarkupContainer("familyContainer");
-//            familyContainer.setOutputMarkupId(true);
-//            form.add(familyContainer);
-//            AjaxRemovableListView<FamilyMember> familyMembers =
-//                    new AjaxRemovableListView<FamilyMember>("familyMembers", f3.getFamilyMembers()) {
-//
-//                        @Override
-//                        protected void populateItem(ListItem<FamilyMember> item) {
-//                            final Label familyMemberNumber = new Label("familyMemberNumber");
-//                            IModel<Integer> familyMemberNumberModel = new AbstractReadOnlyModel<Integer>() {
-//
-//                                @Override
-//                                public Integer getObject() {
-//                                    return getCurrentIndex(familyMemberNumber) + 1;
-//                                }
-//                            };
-//                            familyMemberNumber.setDefaultModel(familyMemberNumberModel);
-//                            item.add(familyMemberNumber);
-//                            final FamilyMember member = item.getModelObject();
-//                            item.add(new TextField<String>("familyMemberLastName", new PropertyModel<String>(member, "lastName")));
-//                            item.add(new TextField<String>("familyMemberFirstName", new PropertyModel<String>(member, "firstName")));
-//                            item.add(new TextField<String>("familyMemberMiddleName", new PropertyModel<String>(member, "middleName")));
-//                            item.add(new Date2Panel("familyMemberBirthDate", new PropertyModel<Date>(member, "birthDate"), false,
-//                                    new ResourceModel("familyMemberBirthDateHeader"), true));
-//                            item.add(new TextField<String>("familyMemberRelation", new PropertyModel<String>(member, "relation")));
-//                            item.add(new DatePanel("familyMemberRegistrationDate", new PropertyModel<Date>(member, "registrationDate"),
-//                                    false, new ResourceModel("familyMemberRegistrationDateHeader"), true));
-//                            addRemoveSubmitLink("removeFamilyMember", form, item, null, familyContainer);
-//                        }
-//                    };
-//            familyContainer.add(familyMembers);
-//            form.add(new AjaxSubmitLink("addFamilyMember", form) {
-//
-//                @Override
-//                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-//                    FamilyMember member = new FamilyMember();
-//                    f3.addFamilyMember(member);
-//                    target.addComponent(familyContainer);
-//                    target.addComponent(messages);
-//                }
-//
-//                @Override
-//                protected void onError(AjaxRequestTarget target, Form<?> form) {
-//                    target.addComponent(messages);
-//                }
-//            });
-//
-//            form.add(new Label("neighboursInfo", new ResourceModel("neighboursInfo")));
-//            final WebMarkupContainer neighboursContainer = new WebMarkupContainer("neighboursContainer");
-//            neighboursContainer.setOutputMarkupId(true);
-//            form.add(neighboursContainer);
-//            AjaxRemovableListView<NeighbourFamily> neighbourFamilies =
-//                    new AjaxRemovableListView<NeighbourFamily>("neighbourFamilies", f3.getNeighbourFamilies()) {
-//
-//                        @Override
-//                        protected void populateItem(ListItem<NeighbourFamily> item) {
-//                            final Label neighbourFamilyNumber = new Label("neighbourFamilyNumber");
-//                            IModel<Integer> neighbourFamilyNumberModel = new AbstractReadOnlyModel<Integer>() {
-//
-//                                @Override
-//                                public Integer getObject() {
-//                                    return getCurrentIndex(neighbourFamilyNumber) + 1;
-//                                }
-//                            };
-//                            neighbourFamilyNumber.setDefaultModel(neighbourFamilyNumberModel);
-//                            item.add(neighbourFamilyNumber);
-//                            final NeighbourFamily neighbourFamily = item.getModelObject();
-//                            item.add(new TextField<String>("neighbourFamilyName", new PropertyModel<String>(neighbourFamily, "name")));
-//                            item.add(new TextField<Integer>("neighbourFamilyAmount", new PropertyModel<Integer>(neighbourFamily, "amount")));
-//                            item.add(new TextField<Integer>("neighbourFamilyTakesRooms", new PropertyModel<Integer>(neighbourFamily, "takeRooms")));
-//                            item.add(new TextField<String>("neighbourFamilyTakesArea", new PropertyModel<String>(neighbourFamily, "takeArea")));
-//                            addRemoveSubmitLink("removeNeighbourFamily", form, item, null, neighboursContainer);
-//                        }
-//                    };
-//            neighboursContainer.add(neighbourFamilies);
-//            form.add(new AjaxSubmitLink("addNeighbourFamily", form) {
-//
-//                @Override
-//                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-//                    NeighbourFamily neighbourFamily = new NeighbourFamily();
-//                    f3.addNeighbourFamily(neighbourFamily);
-//                    target.addComponent(neighboursContainer);
-//                    target.addComponent(messages);
-//                }
-//
-//                @Override
-//                protected void onError(AjaxRequestTarget target, Form<?> form) {
-//                    target.addComponent(messages);
-//                }
-//            });
-//        }
-//    }
-//
-//    public F3ReferencePage(Person person) {
-//        add(new Label("title", new ResourceModel("title")));
-//        Collection<FeedbackMessage> messages = newArrayList();
-//        F3Reference f3 = null;
-//        try {
-//            f3 = f3ReferenceBean.get(person, getLocale());
-//        } catch (UnregisteredPersonException e) {
-//            messages.add(new FeedbackMessage(this, getString("personNotRegistered"), ERROR));
-//        } catch (Exception e) {
-//            messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
-//            log.error("", e);
-//        }
-//        add(f3 == null ? new MessagesFragment("content", messages) : new ReportFragment("content", f3));
-//    }
-//}
-//
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.complitex.pspoffice.person.registration.report.web;
+
+import java.text.MessageFormat;
+import static com.google.common.collect.Lists.*;
+import java.util.Collection;
+import javax.ejb.EJB;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.markup.html.CSSPackageResource;
+import static org.apache.wicket.feedback.FeedbackMessage.*;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.markup.html.panel.Fragment;
+import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
+import org.complitex.pspoffice.person.download.F3ReferenceDownload;
+import static org.complitex.dictionary.util.StringUtil.*;
+import org.complitex.pspoffice.person.registration.report.entity.F3Reference;
+import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
+import org.complitex.pspoffice.person.registration.report.entity.NeighbourFamily;
+import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
+import org.complitex.pspoffice.person.registration.report.service.F3ReferenceBean;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.util.PersonDateFormatter;
+import org.complitex.pspoffice.report.web.ReportDownloadPanel;
+import org.complitex.resources.WebCommonResourceInitializer;
+import org.complitex.template.web.component.toolbar.SaveButton;
+import org.complitex.template.web.security.SecurityRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author Artem
+ */
+@AuthorizeInstantiation(SecurityRole.AUTHORIZED)
+public final class F3ReferencePage extends WebPage {
+
+    private static final Logger log = LoggerFactory.getLogger(F3ReferencePage.class);
+    @EJB
+    private F3ReferenceBean f3ReferenceBean;
+    @EJB
+    private PersonStrategy personStrategy;
+
+    private class MessagesFragment extends Fragment {
+
+        private Collection<FeedbackMessage> messages;
+
+        public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
+            super(id, "messages", F3ReferencePage.this);
+            this.messages = messages;
+            add(new FeedbackPanel("messages"));
+        }
+
+        @Override
+        protected void onBeforeRender() {
+            super.onBeforeRender();
+            for (FeedbackMessage message : messages) {
+                getSession().getFeedbackMessages().add(message);
+            }
+        }
+    }
+
+    private class ReportFragment extends Fragment {
+
+        public ReportFragment(String id, final F3Reference f3) {
+            super(id, "report", F3ReferencePage.this);
+            add(new Label("label", new ResourceModel("label")));
+            add(new Label("name", new StringResourceModel("name", null, new Object[]{valueOf(f3.getName())})));
+            add(new Label("address", new StringResourceModel("address", null, new Object[]{valueOf(f3.getAddress())})));
+            add(new Label("livingArea", new StringResourceModel("livingArea", null, new Object[]{valueOf(f3.getLivingArea())})));
+            add(new Label("apartmentArea", new StringResourceModel("apartmentArea", null, new Object[]{valueOf(f3.getApartmentArea())})));
+            add(new Label("roomsInfo", new StringResourceModel("roomsInfo", null,
+                    new Object[]{valueOf(f3.getTakesRooms()), valueOf(f3.getRooms())})));
+            add(new Label("floorInfo", new StringResourceModel("floorInfo", null,
+                    new Object[]{valueOf(f3.getFloor()), valueOf(f3.getFloors())})));
+            add(new Label("balance", new ResourceModel("balance")));
+            add(new Label("personalAccountOwner", new StringResourceModel("personalAccountOwner", null,
+                    new Object[]{valueOf(f3.getPersonalAccountOwnerName())})));
+            add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null,
+                    new Object[]{valueOf(f3.getFormOfOwnership())})));
+            add(new Label("facilities", new StringResourceModel("facilities", null, new Object[]{valueOf(f3.getFacilities())})));
+            add(new Label("technicalState", new StringResourceModel("technicalState", null, new Object[]{valueOf(f3.getTechnicalState())})));
+            add(new Label("familyInfo", new StringResourceModel("familyInfo", null, new Object[]{String.valueOf(f3.getFamilyMembers().size())})));
+            ListView<FamilyMember> familyMembers = new ListView<FamilyMember>("familyMembers", f3.getFamilyMembers()) {
+
+                @Override
+                protected void populateItem(ListItem<FamilyMember> item) {
+                    item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
+                    final FamilyMember member = item.getModelObject();
+                    item.add(new Label("familyMemberName", member.getName()));
+                    item.add(new Label("familyMemberBirthDate", PersonDateFormatter.format(member.getBirthDate())));
+                    item.add(new Label("familyMemberRelation", member.getRelation()));
+                    item.add(new Label("familyMemberRegistrationDate", PersonDateFormatter.format(member.getRegistrationDate())));
+                }
+            };
+            add(familyMembers);
+
+            add(new Label("neighboursInfo", new ResourceModel("neighboursInfo")));
+            ListView<NeighbourFamily> neighbourFamilies = new ListView<NeighbourFamily>("neighbourFamilies", f3.getNeighbourFamilies()) {
+
+                @Override
+                protected void populateItem(ListItem<NeighbourFamily> item) {
+                    item.add(new Label("neighbourFamilyNumber", String.valueOf(item.getIndex() + 1)));
+                    final NeighbourFamily neighbourFamily = item.getModelObject();
+                    item.add(new Label("neighbourFamilyName", neighbourFamily.getName()));
+                    item.add(new Label("neighbourFamilyAmount", valueOf(neighbourFamily.getAmount())));
+                    item.add(new Label("neighbourFamilyTakesRooms", valueOf(neighbourFamily.getTakeRooms())));
+                    item.add(new Label("neighbourFamilyTakesArea", valueOf(neighbourFamily.getTakeArea())));
+                }
+            };
+            add(neighbourFamilies);
+        }
+    }
+
+    public F3ReferencePage(Person person) {
+        add(CSSPackageResource.getHeaderContribution(WebCommonResourceInitializer.STYLE_CSS));
+
+        add(new Label("title", new ResourceModel("title")));
+        Collection<FeedbackMessage> messages = newArrayList();
+        F3Reference f3 = null;
+        try {
+            f3 = f3ReferenceBean.get(person, getLocale());
+        } catch (UnregisteredPersonException e) {
+            String personName = personStrategy.displayDomainObject(person, getLocale());
+            messages.add(new FeedbackMessage(this, MessageFormat.format(getString("personNotRegistered"), personName), ERROR));
+        } catch (Exception e) {
+            messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
+            log.error("", e);
+        }
+        add(f3 == null ? new MessagesFragment("content", messages) : new ReportFragment("content", f3));
+
+        //Загрузка отчетов
+        final ReportDownloadPanel reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
+                new F3ReferenceDownload(f3));
+        reportDownloadPanel.setVisible(f3 != null);
+        add(reportDownloadPanel);
+
+        SaveButton saveReportButton = new SaveButton("saveReportButton", true) {
+
+            @Override
+            protected void onClick(AjaxRequestTarget target) {
+                reportDownloadPanel.open(target);
+            }
+        };
+        saveReportButton.setVisible(reportDownloadPanel.isVisible());
+        add(saveReportButton);
+    }
+}
+

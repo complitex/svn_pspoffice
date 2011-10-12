@@ -45,7 +45,6 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(FamilyAndApartmentInfoPage.class);
     @EJB
     private FamilyAndApartmentInfoBean familyAndApartmentInfoBean;
-    private ReportDownloadPanel reportDownloadPanel;
 
     private class MessagesFragment extends Fragment {
 
@@ -126,7 +125,7 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
         add(info == null ? new MessagesFragment("content", messages) : new ReportFragment("content", info));
 
         //Загрузка отчетов
-        reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
+        final ReportDownloadPanel reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
                 new FamilyAndApartmentInfoDownload(info));
         reportDownloadPanel.setVisible(info != null);
         add(reportDownloadPanel);

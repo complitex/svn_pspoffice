@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.edit.person;
+package org.complitex.pspoffice.person.strategy.web.edit.person.toolbar;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.ComponentTag;

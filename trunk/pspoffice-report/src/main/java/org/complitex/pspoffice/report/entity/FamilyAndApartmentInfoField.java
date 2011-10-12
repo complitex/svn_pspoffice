@@ -24,6 +24,5 @@ public enum FamilyAndApartmentInfoField implements IReportField{
     @Override
     public String getFieldName() {
         return name().toLowerCase();
-
     }
 }

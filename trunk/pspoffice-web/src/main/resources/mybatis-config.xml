@@ -50,7 +50,6 @@
         <mapper resource="org/complitex/pspoffice/person/strategy/Person.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/ApartmentCard.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/Registration.xml"/>
-        <mapper resource="org/complitex/pspoffice/person/registration/report/service/RegistrationStopCouponBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/service/PersonNameBean.xml"/>
     </mappers>
 </configuration>

@@ -27,7 +27,7 @@ import org.complitex.pspoffice.person.registration.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.registration.report.entity.HousingPayments;
 import org.complitex.pspoffice.person.registration.report.service.HousingPaymentsBean;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
-import org.complitex.pspoffice.person.util.PersonDateFormatter;
+import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.SaveButton;
@@ -81,7 +81,7 @@ public final class HousingPaymentsPage extends WebPage {
                     final FamilyMember member = item.getModelObject();
                     item.add(new Label("familyMemberName", member.getName()));
                     item.add(new Label("familyMemberRelation", member.getRelation()));
-                    item.add(new Label("familyMemberBirthDate", PersonDateFormatter.format(member.getBirthDate())));
+                    item.add(new Label("familyMemberBirthDate", format(member.getBirthDate())));
                     item.add(new Label("familyMemberPassport", member.getPassport()));
                 }
             };

@@ -1,7 +1,6 @@
 package org.complitex.pspoffice.report.web;
 
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
@@ -29,16 +28,17 @@ import org.apache.wicket.util.resource.AbstractResourceStreamWriter;
 import org.apache.wicket.util.resource.IResourceStream;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.util.EjbBeanLocator;
+import org.complitex.dictionary.util.StringUtil;
 import org.complitex.pspoffice.report.entity.IReportField;
 import org.complitex.pspoffice.report.service.CreateReportException;
 import org.complitex.pspoffice.report.service.IReportService;
+import org.complitex.pspoffice.report.util.ReportDateFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ReportDownloadPanel extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(ReportDownloadPanel.class);
-    private static final SimpleDateFormat REPORT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     private Dialog dialog;
 
     public static class DownloadPage extends Page {
@@ -90,13 +90,13 @@ public class ReportDownloadPanel extends Panel {
                         Map<String, String> map = new HashMap<String, String>();
 
                         for (IReportField key : reportDownload.getReportFields()) {
-                            map.put(key.getFieldName(), getString(values.get(key)));
+                            map.put(key.getFieldName(), displayValue(values.get(key)));
                         }
 
                         IReportService reportService = getReportService(type);
                         reportService.createReport(reportDownload.getReportName() + locale + "." + type, map, output);
                     } catch (CreateReportException e) {
-                        log.error("Ошибка создания документа", e);
+                        log.error("Couldn't create report.", e);
                     }
                 }
             };
@@ -107,11 +107,11 @@ public class ReportDownloadPanel extends Panel {
             return EjbBeanLocator.getBean(beanName, true);
         }
 
-        private String getString(Object object) {
-            if (object instanceof Date) {
-                return REPORT_DATE_FORMAT.format((Date) object);
+        private String displayValue(Object value) {
+            if (value instanceof Date) {
+                return ReportDateFormatter.format((Date) value);
             }
-            return object != null ? object.toString() : "";
+            return StringUtil.valueOf(value);
         }
     }
 

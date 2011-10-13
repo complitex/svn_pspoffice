@@ -22,7 +22,7 @@ import org.complitex.pspoffice.person.download.PersonCardDownload;
 import org.complitex.pspoffice.person.registration.report.entity.PersonCard;
 import org.complitex.pspoffice.person.registration.report.service.PersonCardBean;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import static org.complitex.pspoffice.person.util.PersonDateFormatter.*;
+import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.SaveButton;

@@ -18,7 +18,7 @@ import org.complitex.pspoffice.document.strategy.entity.Passport;
 import org.complitex.pspoffice.person.registration.report.entity.PersonCard;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.util.PersonDateFormatter;
+import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 
 /**
  *
@@ -64,7 +64,7 @@ public class PersonCardBean extends AbstractBean {
                 issued += organizationIssued;
                 if (dateIssued != null) {
                     issued += ", ";
-                    issued += PersonDateFormatter.format(dateIssued);
+                    issued += format(dateIssued);
                 }
             }
             card.setPassportIssued(issued);
@@ -77,17 +77,17 @@ public class PersonCardBean extends AbstractBean {
             switch (counter) {
                 case 0: {
                     card.setChild0(personStrategy.displayDomainObject(child, locale) + ", "
-                            + PersonDateFormatter.format(child.getBirthDate()) + birthDateSuffix);
+                            + format(child.getBirthDate()) + birthDateSuffix);
                 }
                 break;
                 case 1: {
                     card.setChild1(personStrategy.displayDomainObject(child, locale) + ", "
-                            + PersonDateFormatter.format(child.getBirthDate()) + birthDateSuffix);
+                            + format(child.getBirthDate()) + birthDateSuffix);
                 }
                 break;
                 case 2: {
                     card.setChild2(personStrategy.displayDomainObject(child, locale) + ", "
-                            + PersonDateFormatter.format(child.getBirthDate()) + birthDateSuffix);
+                            + format(child.getBirthDate()) + birthDateSuffix);
                 }
                 break;
             }

@@ -30,7 +30,7 @@ import org.complitex.pspoffice.person.registration.report.exception.Unregistered
 import org.complitex.pspoffice.person.registration.report.service.F3ReferenceBean;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.util.PersonDateFormatter;
+import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.SaveButton;
@@ -98,9 +98,9 @@ public final class F3ReferencePage extends WebPage {
                     item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
                     final FamilyMember member = item.getModelObject();
                     item.add(new Label("familyMemberName", member.getName()));
-                    item.add(new Label("familyMemberBirthDate", PersonDateFormatter.format(member.getBirthDate())));
+                    item.add(new Label("familyMemberBirthDate", format(member.getBirthDate())));
                     item.add(new Label("familyMemberRelation", member.getRelation()));
-                    item.add(new Label("familyMemberRegistrationDate", PersonDateFormatter.format(member.getRegistrationDate())));
+                    item.add(new Label("familyMemberRegistrationDate", format(member.getRegistrationDate())));
                 }
             };
             add(familyMembers);

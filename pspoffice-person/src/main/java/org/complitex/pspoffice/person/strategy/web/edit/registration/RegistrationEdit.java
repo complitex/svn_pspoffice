@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.edit.registration;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import static com.google.common.collect.ImmutableList.*;
 import java.text.MessageFormat;
 import java.util.List;
 import static com.google.common.collect.Lists.*;
@@ -51,6 +52,7 @@ import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.type.MaskedDateInputPanel;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
+import org.complitex.pspoffice.person.report.web.RegistrationStopCouponPage;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -60,8 +62,10 @@ import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
+import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.RegistrationStopCouponButton;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
 import org.slf4j.Logger;
@@ -99,6 +103,7 @@ public class RegistrationEdit extends FormTemplatePage {
     private Registration oldRegistration;
     private String addressEntity;
     private long addressId;
+    private IModel<String> addressModel;
 
     public RegistrationEdit(ApartmentCard apartmentCard, String addressEntity, long addressId, Registration registration) {
         this.apartmentCard = apartmentCard;
@@ -127,7 +132,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
         final Entity entity = registrationStrategy.getEntity();
 
-        IModel<String> addressModel = new LoadableDetachableModel<String>() {
+        addressModel = new LoadableDetachableModel<String>() {
 
             @Override
             protected String load() {
@@ -463,6 +468,23 @@ public class RegistrationEdit extends FormTemplatePage {
 
     private void back() {
         setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return of(new RegistrationStopCouponButton(id) {
+
+            @Override
+            protected void onClick() {
+                setResponsePage(new RegistrationStopCouponPage(oldRegistration, addressModel.getObject()));
+            }
+
+            @Override
+            protected void onBeforeRender() {
+                super.onBeforeRender();
+                setVisible(isHistory());
+            }
+        });
     }
 }
 

@@ -165,7 +165,7 @@ public class PersonStrategy extends TemplateStrategy {
                 person.getLastName(locale, systemLocale));
     }
 
-    private String displayPerson(String firstName, String middleName, String lastName) {
+    public String displayPerson(String firstName, String middleName, String lastName) {
         // return in format 'last_name fisrt_name middle_name'
         return lastName + " " + firstName + " " + middleName;
     }
@@ -335,9 +335,9 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    private void loadChildren(Person person) {
+    public void loadChildren(Person person) {
         List<Attribute> childrenAttributes = person.getAttributes(CHILDREN);
-        if (childrenAttributes != null && !childrenAttributes.isEmpty()) {
+        if (childrenAttributes != null && !childrenAttributes.isEmpty() && person.getChildren().isEmpty()) {
             for (Attribute childAttribute : childrenAttributes) {
                 Long childId = childAttribute.getValueId();
                 DomainObjectExample example = new DomainObjectExample(childId);

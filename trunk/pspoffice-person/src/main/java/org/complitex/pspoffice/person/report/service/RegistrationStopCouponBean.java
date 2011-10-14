@@ -1,179 +1,174 @@
 package org.complitex.pspoffice.person.report.service;
 
-///*
-// * To change this template, choose Tools | Templates
-// * and open the template in the editor.
-// */
-//package org.complitex.pspoffice.person.registration.report.service;
-//
-//import com.google.common.base.Predicate;
-//import java.text.DateFormat;
-//import java.text.SimpleDateFormat;
-//import static com.google.common.collect.Iterables.*;
-//import static com.google.common.collect.Sets.*;
-//import java.util.Collection;
-//import java.util.Date;
-//import java.util.List;
-//import java.util.Locale;
-//import java.util.TreeSet;
-//import javax.ejb.EJB;
-//import javax.ejb.Stateless;
-//import org.complitex.dictionary.entity.Attribute;
-//import org.complitex.dictionary.entity.example.DomainObjectExample;
-//import org.complitex.dictionary.mybatis.Transactional;
-//import org.complitex.dictionary.service.AbstractBean;
-//import org.complitex.dictionary.service.NameBean;
-//import org.complitex.dictionary.service.SessionBean;
-//import org.complitex.dictionary.util.ResourceUtil;
-//import org.complitex.pspoffice.person.registration.report.entity.RegistrationStopCoupon;
-//import org.complitex.pspoffice.person.registration.report.exception.UnregisteredPersonException;
-//import org.complitex.pspoffice.person.strategy.PersonStrategy;
-//import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
-//import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
-//import org.complitex.pspoffice.person.strategy.entity.Person;
-//import org.complitex.pspoffice.person.strategy.entity.Registration;
-//
-///**
-// *
-// * @author Artem
-// */
-//@Stateless
-//public class RegistrationStopCouponBean extends AbstractBean {
-//
-//    private static final String RESOURCE_BUNDLE = RegistrationStopCouponBean.class.getName();
-//    private static final String MAPPING_NAMESPACE = RegistrationStopCouponBean.class.getName();
-//    private static final String DATE_PATTERN = "dd.MM.yyyy";
-//    @EJB
-//    private PersonStrategy personStrategy;
-//    @EJB
-//    private NameBean nameBean;
-//    @EJB
-//    private SessionBean sessionBean;
-//
-//    @Transactional
-//    public RegistrationStopCoupon get(Person person, Locale locale, String clientLineSeparator)
-//            throws UnregisteredPersonException {
-//        if (person == null) {
-//            throw new IllegalArgumentException("Person is null.");
-//        }
-//        if (person.getRegistration() == null) {
-//            throw new UnregisteredPersonException();
-//        }
-//        RegistrationStopCoupon coupon = new RegistrationStopCoupon();
-//
-//        //name
-//        personStrategy.loadName(person);
-//
-//        //address
-//        Registration registration = person.getRegistration();
-//        coupon.setFirstName(person.getFirstName());
-//        coupon.setLastName(person.getLastName());
-//        coupon.setMiddleName(person.getMiddleName());
-//        coupon.setPreviousNames(getPreviousNames(person.getId(), clientLineSeparator));
-//        coupon.setBirthDate(person.getBirthDate());
-//        coupon.setBirthCountry(person.getBirthCountry());
-//        coupon.setBirthRegion(person.getBirthRegion());
-//        coupon.setBirthDistrict(person.getBirthDistrict());
-//        coupon.setBirthCity(person.getBirthCity());
-//        coupon.setGender(person.getGender());
-//        coupon.setAddressCountry(registration.getCountry(locale));
-//        coupon.setAddressRegion(registration.getRegion(locale));
-//        coupon.setAddressDistrict(registration.getDistrict(locale));
-//        coupon.setAddressCity(registration.getCity(locale));
-//        coupon.setAddressStreet(registration.getStreet(locale));
-//        coupon.setAddressBuildingNumber(registration.getBuildingNumber(locale));
-//        coupon.setAddressBuildingCorp(registration.getBuildingCorp(locale));
-//        coupon.setAddressApartment(registration.getApartment(locale));
-//        coupon.setDepartureCountry(registration.getDepartureCountry());
-//        coupon.setDepartureRegion(registration.getDepartureRegion());
-//        coupon.setDepartureDistrict(registration.getDepartureDistrict());
-//        coupon.setDepartureCity(registration.getDepartureCity());
-//        coupon.setDepartureStreet(registration.getDepartureStreet());
-//        coupon.setDepartureBuildingNumber(registration.getDepartureBuildingNumber());
-//        coupon.setDepartureBuildingCorp(registration.getDepartureBuildingCorp());
-//        coupon.setDepartureApartment(registration.getDepartureApartment());
-//        coupon.setDepartureDate(registration.getDepartureDate());
-//        coupon.setPassportSerialNumber(person.getPassportSerialNumber());
-//        coupon.setPassportNumber(person.getPassportNumber());
-//        coupon.setPassportAcquisitionOrganization(person.getPassportAcquisitionOrganization());
-//        coupon.setPassportAcquisitionDate(person.getPassportAcquisitionDate());
-//
-//        coupon.setBirthCertificateInfo(getBirthCertificateInfo(person.getBirthCertificateInfo(),
-//                person.getBirthCertificateAcquisitionDate(), person.getBirthCertificateAcquisitionOrganization(), locale));
-//        coupon.setUkraineCitizenship(person.isUkraineCitizen());
-//        coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale, clientLineSeparator));
-//        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganizationName(locale));
-//        return coupon;
-//    }
-//
-//    private String getBirthCertificateInfo(String birthCertificateInfo, Date birthCertificateAcquisitionDate,
-//            String birthCertificateAcquisitionOrganization, Locale locale) {
-//        if (birthCertificateInfo != null && birthCertificateAcquisitionDate != null && birthCertificateAcquisitionOrganization != null) {
-//            DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
-//            String birthCertificateAcquisitionDateAsString = dateFormat.format(birthCertificateAcquisitionDate);
-//            return birthCertificateInfo + ", " + birthCertificateAcquisitionDateAsString + ", " + birthCertificateAcquisitionOrganization;
-//        }
-//        return null;
-//    }
-//
-//    private String getChildrenInfo(Collection<Person> children, Locale locale, String lineSeparator) {
-//        StringBuilder childrenInfo = new StringBuilder();
-//        for (Person child : children) {
-//            String childFullName = personStrategy.displayDomainObject(child, locale);
-//            Date birthDate = child.getBirthDate();
-//            String birthDateAsString = null;
-//            if (birthDate != null) {
-//                DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, locale);
-//                birthDateAsString = dateFormat.format(birthDate);
-//            }
-//            String birthCity = child.getBirthCity();
-//            String birthDistrict = child.getBirthDistrict();
-//            childrenInfo.append(childFullName);
-//            if (birthDateAsString != null && birthCity != null && birthDistrict != null) {
-//                childrenInfo.append(", ").append(ResourceUtil.getString(RESOURCE_BUNDLE, "birth_info", locale)).
-//                        append(birthDateAsString).append(", ").append(birthCity).append(", ").append(birthDistrict);
-//            }
-//            childrenInfo.append(lineSeparator != null ? lineSeparator : " ");
-//        }
-//        return childrenInfo.toString();
-//    }
-//
-//    @Transactional
-//    private String getPreviousNames(long personId, String lineSeparator) {
-//        TreeSet<Date> previousNameStartDates = newTreeSet(sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNameStartDates", personId));
-//        if (previousNameStartDates.isEmpty()) {
-//            return null;
-//        }
-//        previousNameStartDates.remove(previousNameStartDates.last());
-//        StringBuilder previousNamesBuilder = new StringBuilder();
-//        for (Date startDate : previousNameStartDates) {
-//            DomainObjectExample example = new DomainObjectExample(personId);
-//            example.setStartDate(startDate);
-//            List<Attribute> nameAttributes = sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNames", example);
-//            String firstName = nameBean.getFirstName(find(nameAttributes, new Predicate<Attribute>() {
-//
-//                @Override
-//                public boolean apply(Attribute input) {
-//                    return input.getAttributeTypeId().equals(FIRST_NAME);
-//                }
-//            }).getValueId());
-//            String middleName = nameBean.getMiddleName(find(nameAttributes, new Predicate<Attribute>() {
-//
-//                @Override
-//                public boolean apply(Attribute input) {
-//                    return input.getAttributeTypeId().equals(MIDDLE_NAME);
-//                }
-//            }).getValueId());
-//            String lastName = nameBean.getLastName(find(nameAttributes, new Predicate<Attribute>() {
-//
-//                @Override
-//                public boolean apply(Attribute input) {
-//                    return input.getAttributeTypeId().equals(LAST_NAME);
-//                }
-//            }).getValueId());
-//            previousNamesBuilder.append(personStrategy.displayPerson(firstName, middleName, lastName)).
-//                    append(lineSeparator != null ? lineSeparator : " ");
-//        }
-//        return previousNamesBuilder.toString();
-//    }
-//}
+import com.google.common.collect.ImmutableMap;
+import org.complitex.dictionary.service.LocaleBean;
+import org.complitex.pspoffice.person.report.entity.RegistrationStopCoupon;
+import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
+import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
+import static com.google.common.collect.Sets.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.service.SessionBean;
+import org.complitex.dictionary.util.ResourceUtil;
+import org.complitex.pspoffice.document.strategy.DocumentStrategy;
+import org.complitex.pspoffice.document.strategy.entity.Document;
+import org.complitex.pspoffice.document.strategy.entity.Passport;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
+import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
+
+/**
+ *
+ * @author Artem
+ */
+@Stateless
+public class RegistrationStopCouponBean extends AbstractBean {
+
+    private static final String RESOURCE_BUNDLE = RegistrationStopCouponBean.class.getName();
+    private static final String MAPPING_NAMESPACE = RegistrationStopCouponBean.class.getName();
+    @EJB
+    private PersonStrategy personStrategy;
+    @EJB
+    private PersonNameBean personNameBean;
+    @EJB
+    private SessionBean sessionBean;
+    @EJB
+    private LocaleBean localeBean;
+    @EJB
+    private DocumentStrategy documentStrategy;
+
+    @Transactional
+    public RegistrationStopCoupon get(Registration registration, String address, Locale locale) {
+        final Locale systmeLocale = localeBean.getSystemLocale();
+
+        RegistrationStopCoupon coupon = new RegistrationStopCoupon();
+        Person person = registration.getPerson();
+
+        //name
+        coupon.setLastName(person.getLastName(locale, systmeLocale));
+        coupon.setFirstName(person.getFirstName(locale, systmeLocale));
+        coupon.setMiddleName(person.getMiddleName(locale, systmeLocale));
+        coupon.setPreviousNames(getPreviousNames(person.getId(), locale));
+        coupon.setBirthDate(person.getBirthDate());
+        coupon.setBirthCountry(person.getBirthCountry());
+        coupon.setBirthRegion(person.getBirthRegion());
+        coupon.setBirthDistrict(person.getBirthDistrict());
+        coupon.setBirthCity(person.getBirthCity());
+        coupon.setGender(person.getGender() != null
+                ? ResourceUtil.getString(RESOURCE_BUNDLE, person.getGender().name(), locale) : "");
+        coupon.setAddress(address);
+        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganizationName(locale));
+        coupon.setDepartureCountry(registration.getDepartureCountry());
+        coupon.setDepartureRegion(registration.getDepartureRegion());
+        coupon.setDepartureDistrict(registration.getDepartureDistrict());
+        coupon.setDepartureCity(registration.getDepartureCity());
+        coupon.setDepartureDate(registration.getDepartureDate());
+        personStrategy.loadDocument(person);
+
+        Document document = person.getDocument();
+        if (document instanceof Passport) {
+            Passport passport = (Passport) document;
+            String passportInfo = passport.getSeries() + " " + passport.getNumber();
+            Date dateIssued = passport.getDateIssued();
+            String organizationIssued = passport.getOrganizationIssued();
+            if (!Strings.isEmpty(organizationIssued)) {
+                passportInfo += ", " + ResourceUtil.getString(RESOURCE_BUNDLE, "passport_issued", locale) + " " + organizationIssued;
+                if (dateIssued != null) {
+                    passportInfo += " " + format(dateIssued);
+                }
+            }
+            coupon.setPassport(passportInfo);
+        } else if (document.getDocumentTypeId() == DocumentTypeStrategy.BIRTH_CERTIFICATE) {
+            coupon.setBirthCertificateInfo(documentStrategy.displayDomainObject(document, locale));
+        }
+
+        personStrategy.loadChildren(person);
+        coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale));
+
+        return coupon;
+    }
+
+    private String getChildrenInfo(Collection<Person> children, Locale locale) {
+        StringBuilder childrenInfo = new StringBuilder();
+        int counter = 0;
+        for (Person child : children) {
+            String childFullName = personStrategy.displayDomainObject(child, locale);
+            String birthDate = format(child.getBirthDate());
+            childrenInfo.append(childFullName).append(" ").
+                    append(birthDate).append(" ").
+                    append(ResourceUtil.getString(RESOURCE_BUNDLE, "birth_date_suffix", locale)).
+                    append(counter < children.size() - 1 ? ", " : "");
+            counter++;
+        }
+        return childrenInfo.toString();
+    }
+
+    @Transactional
+    private String getPreviousNames(long personId, Locale locale) {
+        final long localeId = localeBean.convert(locale).getId();
+        TreeSet<Date> previousNameStartDates = newTreeSet(sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNameStartDates",
+                ImmutableMap.of("personId", personId, "localeId", localeId)));
+        if (previousNameStartDates.isEmpty()) {
+            return null;
+        }
+        previousNameStartDates.remove(previousNameStartDates.last());
+        StringBuilder previousNamesBuilder = new StringBuilder();
+        int counter = 0;
+        for (Date startDate : previousNameStartDates) {
+            List<Attribute> nameAttributes = sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNames",
+                    ImmutableMap.<String, Object>of("personId", personId, "startDate", startDate, "localeId", localeId));
+
+            //first name
+            String firstName = null;
+            for (Attribute a : nameAttributes) {
+                if (a.getAttributeTypeId().equals(PersonStrategy.FIRST_NAME)) {
+                    Long nameId = a.getValueId();
+                    if (nameId != null) {
+                        firstName = personNameBean.findById(PersonNameType.FIRST_NAME, nameId).getName();
+                        break;
+                    }
+                }
+            }
+
+            //last name
+            String lastName = null;
+            for (Attribute a : nameAttributes) {
+                if (a.getAttributeTypeId().equals(PersonStrategy.LAST_NAME)) {
+                    Long nameId = a.getValueId();
+                    if (nameId != null) {
+                        lastName = personNameBean.findById(PersonNameType.LAST_NAME, nameId).getName();
+                        break;
+                    }
+                }
+            }
+
+            //middle name
+            String middleName = null;
+            for (Attribute a : nameAttributes) {
+                if (a.getAttributeTypeId().equals(PersonStrategy.MIDDLE_NAME)) {
+                    Long nameId = a.getValueId();
+                    if (nameId != null) {
+                        middleName = personNameBean.findById(PersonNameType.MIDDLE_NAME, nameId).getName();
+                        break;
+                    }
+                }
+            }
+
+            previousNamesBuilder.append(personStrategy.displayPerson(firstName, middleName, lastName)).
+                    append(counter < previousNameStartDates.size() - 1 ? ", " : "");
+            counter++;
+        }
+        return previousNamesBuilder.toString();
+    }
+}

@@ -9,10 +9,6 @@ import org.complitex.pspoffice.person.report.entity.HousingPayments;
 
 import static org.complitex.pspoffice.report.entity.HousingPaymentsField.*;
 
-/**
- * @author Anatoly A. Ivanov java@inheaven.ru
- *         Date: 15.06.11 16:51
- */
 public class HousingPaymentsDownload extends AbstractReportDownload<HousingPayments> {
 
     public HousingPaymentsDownload(HousingPayments report) {

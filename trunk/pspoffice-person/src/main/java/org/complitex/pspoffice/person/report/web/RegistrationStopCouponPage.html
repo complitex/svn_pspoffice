@@ -7,357 +7,284 @@
         </wicket:head>
     </head>
     <body>
-        <wicket:extend>
-            <wicket:fragment wicket:id="messages">
-                <h3>
-                    <div wicket:id="messages"></div>
-                </h3>
-            </wicket:fragment>
-
-            <wicket:fragment wicket:id="report">
-                <h2 wicket:id="label" style="margin-bottom: 20px;"></h2>
-                <div wicket:id="messages"></div>
-                <form wicket:id="form">
-                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <th>
-                                <span wicket:id="lastNameLabel"></span> :
-                            </th>
-                            <td>
-                                <input type="text" wicket:id="lastName"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <span wicket:id="firstNameLabel"></span> :
-                            </th>
-                            <td>
-                                <input type="text" wicket:id="firstName"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <span wicket:id="middleNameLabel"></span> :
-                            </th>
-                            <td>
-                                <input type="text" wicket:id="middleName"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <span wicket:id="previousNamesLabel"></span> :
-                            </th>
-                            <td>
-                                <textarea wicket:id="previousNames" cols="40" rows="2"></textarea>
-                            </td>
-                        </tr>
-                    </table>
-
+        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td id="Header">
+                </td>
+            </tr>
+            <tr>
+                <td id="TopPanel">
                     <div>
-                        <fieldset>
-                            <legend>
-                                <span>
-                                    <h3>
-                                        <wicket:message key="birthLabel"/>
-                                    </h3>
-                                </span>
-                            </legend>
-                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <th>
-                                        <span wicket:id="birthCountryLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="birthCountry"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="birthRegionLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="birthRegion"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="birthDistrictLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="birthDistrict"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="birthCityLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="birthCity"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="birthDateLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <div wicket:id="birthDate"></div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </fieldset>
+                        <span wicket:id="saveReportButton"></span>
                     </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div align="center">
+                        <table border="0" cellspacing="0" cellpadding="0" class="formFrame">
+                            <tr valign="top">
+                                <td class="ff_l"><img src="resources/org.apache.wicket.Application/images/formFrame-tl.gif" width="4" height="180" alt=""/>
+                                </td>
+                                <td class="ff_t">
+                                    <wicket:fragment wicket:id="messages">
+                                        <h3>
+                                            <div wicket:id="messages"></div>
+                                        </h3>
+                                    </wicket:fragment>
 
-                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <th>
-                                <span wicket:id="genderLabel"></span> :
-                            </th>
-                            <td>
-                                <div wicket:id="gender"></div>
-                            </td>
-                        </tr>
-                    </table>
+                                    <wicket:fragment wicket:id="report">
+                                        <h2 wicket:id="label" style="margin-bottom: 20px;"></h2>
+                                        <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="lastName"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="lastName"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="firstName"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="firstName"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="middleName"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="middleName"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="previousNames"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="previousNames"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="birthDate"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="birthDate"/>
+                                                </td>
+                                            </tr>
+                                        </table>
 
-                    <div>
-                        <fieldset>
-                            <legend>
-                                <span>
-                                    <h3>
-                                        <wicket:message key="addressLabel"/>
-                                    </h3>
-                                </span>
-                            </legend>
-                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <th>
-                                        <span wicket:id="addressCountryLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressCountry"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="addressStreetLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressStreet"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="addressRegionLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressRegion"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="addressBuildingNumberLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressBuildingNumber"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="addressDistrictLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressDistrict"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="addressBuildingCorpLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressBuildingCorp"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="addressCityLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressCity"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="addressApartmentLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="addressApartment"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </fieldset>
+                                        <fieldset>
+                                            <legend>
+                                                <wicket:message key="birthPlace"/>
+                                            </legend>
+                                            <div>
+                                                <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="birthCountry"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="birthCountry"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="birthRegion"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="birthRegion"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="birthDistrict"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="birthDistrict"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="birthCity"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="birthCity"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </fieldset>
+
+                                        <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="gender"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="gender"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="address"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="address"></span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="registrationOrganization"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="registrationOrganization"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+
+                                        <fieldset>
+                                            <legend>
+                                                <wicket:message key="departurePlaceAndDate"/>
+                                            </legend>
+                                            <div>
+                                                <table border="0" cellpadding="0" cellspacing="0" class="tbForm">
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="departureCountry"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="departureCountry"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="departureRegion"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="departureRegion"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="departureDistrict"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="departureDistrict"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="departureCity"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="departureCity"></span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <wicket:message key="departureDate"/>
+                                                        </th>
+                                                        <td>
+                                                            <span wicket:id="departureDate"></span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </fieldset>
+
+                                        <table class="tbForm" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="theSameStreet"/>
+                                                </th>
+                                                <td></td>
+                                                <th>
+                                                    <wicket:message key="theSameBuildingNumber"/>
+                                                </th>
+                                                <td></td>
+                                                <th>
+                                                    <wicket:message key="theSameBuildingCorp"/>
+                                                </th>
+                                                <td></td>
+                                                <th>
+                                                    <wicket:message key="theSameApartment"/>
+                                                </th>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                        <table class="tbForm" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="passport"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="passport"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="birthCertificateInfo"/>
+                                                </th>
+                                                <td>
+                                                    <span wicket:id="birthCertificateInfo"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <wicket:message key="ukraineCitizenshipInfo"/>
+                                                </th>
+                                                <td>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <fieldset>
+                                            <legend>
+                                                <wicket:message key="childrenInfo"/>
+                                            </legend>
+                                            <div>
+                                                <span wicket:id="childrenInfo"></span>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset>
+                                            <legend>
+                                                <wicket:message key="additionalInfo"/>
+                                            </legend>
+                                            <div>
+                                                <span wicket:id="additionalInfo"></span>
+                                            </div>
+                                        </fieldset>
+                                    </wicket:fragment>
+
+                                    <div wicket:id="content"></div>
+                                    <div wicket:id="report_download"></div>
+                                </td>
+                                <td class="ff_r"><img src="resources/org.apache.wicket.Application/images/formFrame-tr.gif" width="4" height="180" alt=""/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="ff_bl"><img src="resources/org.apache.wicket.Application/images/formFrame-bl.gif" width="4" height="4" alt=""/>
+                                </td>
+                                <td class="ff_b"><img src="resources/org.apache.wicket.Application/images/spacer.gif" width="4" height="4" alt=""/>
+                                </td>
+                                <td class="ff_br"><img src="resources/org.apache.wicket.Application/images/formFrame-br.gif" width="4" height="4" alt=""/>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <th>
-                                <span wicket:id="registrationOrganizationLabel"></span> :
-                            </th>
-                            <td>
-                                <input type="text" wicket:id="registrationOrganization" size="50"/>
-                            </td>
-                        </tr>
-                    </table>
-                    <div>
-                        <fieldset>
-                            <legend>
-                                <span>
-                                    <h3>
-                                        <wicket:message key="departureLabel"/>
-                                    </h3>
-                                </span>
-                            </legend>
-                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <th>
-                                        <span wicket:id="departureCountryLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureCountry"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="departureStreetLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureStreet"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="departureRegionLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureRegion"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="departureBuildingNumberLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureBuildingNumber"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="departureDistrictLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureDistrict"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="departureBuildingCorpLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureBuildingCorp"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="departureCityLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureCity"/>
-                                    </td>
-                                    <th>
-                                        <span wicket:id="departureApartmentLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="departureApartment"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="departureDateLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <div wicket:id="departureDate"></div>
-                                    </td>
-                                    <th></th><td></td>
-                                </tr>
-                            </table>
-                        </fieldset>
-                    </div>
-                    <div>
-                        <fieldset>
-                            <legend>
-                                <span>
-                                    <h3>
-                                        <wicket:message key="passportLabel"/>
-                                    </h3>
-                                </span>
-                            </legend>
-                            <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <th>
-                                        <span wicket:id="passportSerialNumberLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="passportSerialNumber"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="passportNumberLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <input type="text" wicket:id="passportNumber"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="passportAcquisitionDateLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <div wicket:id="passportAcquisitionDate"></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <span wicket:id="passportAcquisitionOrganizationLabel"></span> :
-                                    </th>
-                                    <td>
-                                        <textarea wicket:id="passportAcquisitionOrganization" cols="40" rows="2"></textarea>
-                                    </td>
-                                </tr>
-                            </table>
-                        </fieldset>
-                    </div>
-                    <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
-                        <tr>
-                            <th>
-                                <span wicket:id="birthCertificateInfoLabel"></span> :
-                            </th>
-                            <td>
-                                <input type="text" wicket:id="birthCertificateInfo" size="50"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <span wicket:id="ukraineCitizenshipLabel"></span> :
-                            </th>
-                            <td>
-                                <div wicket:id="ukraineCitizenship"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <span wicket:id="childrenInfoLabel"></span> :
-                            </th>
-                            <td>
-                                <textarea wicket:id="childrenInfo" cols="60" rows="2"></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <span wicket:id="additionalInfoLabel"></span> :
-                            </th>
-                            <td>
-                                <textarea wicket:id="additionalInfo" cols="60" rows="2"></textarea>
-                            </td>
-                        </tr>
-                    </table>
-                </form>
-            </wicket:fragment>
-            <div wicket:id="content"></div>
-            <div wicket:id="report_download"></div>
-        </wicket:extend>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div><img src="resources/org.apache.wicket.Application/images/spacer.gif" width="800" height="1" alt=""/></div>
+                </td>
+            </tr>
+        </table>
     </body>
 </html>

@@ -15,7 +15,6 @@ import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.report.entity.F3Reference;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.entity.NeighbourFamily;
-import org.complitex.pspoffice.person.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
@@ -41,17 +40,11 @@ public class F3ReferenceBean extends AbstractBean {
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
 
     @Transactional
-    public F3Reference get(Person person, Locale locale) throws UnregisteredPersonException {
-        Long apartmentCardId = personStrategy.findApartmentCardIdByPermanentRegistration(person.getId());
-        if (apartmentCardId == null) {
-            throw new UnregisteredPersonException();
-        }
-        ApartmentCard apartmentCard = apartmentCardStrategy.findById(apartmentCardId, true);
-
+    public F3Reference get(Registration registration, ApartmentCard apartmentCard, Locale locale) {
         F3Reference f3 = new F3Reference();
 
         //name
-        f3.setName(personStrategy.displayDomainObject(person, locale));
+        f3.setName(personStrategy.displayDomainObject(registration.getPerson(), locale));
 
         //address
         long addressId = apartmentCard.getAddressId();
@@ -60,14 +53,14 @@ public class F3ReferenceBean extends AbstractBean {
         f3.setPersonalAccountOwnerName(personStrategy.displayDomainObject(apartmentCard.getOwner(), locale));
         f3.setFormOfOwnership(ownershipFormStrategy.displayDomainObject(apartmentCard.getOwnershipForm(), locale));
 
-        for (Registration registration : apartmentCard.getRegistrations()) {
-            if (!registration.isFinished()) {
+        for (Registration r : apartmentCard.getRegistrations()) {
+            if (!r.isFinished()) {
                 FamilyMember member = new FamilyMember();
-                Person memberPerson = registration.getPerson();
+                Person memberPerson = r.getPerson();
                 member.setName(personStrategy.displayDomainObject(memberPerson, locale));
                 member.setBirthDate(memberPerson.getBirthDate());
-                member.setRegistrationDate(registration.getRegistrationDate());
-                member.setRelation(ownerRelationshipStrategy.displayDomainObject(registration.getOwnerRelationship(), locale));
+                member.setRegistrationDate(r.getRegistrationDate());
+                member.setRelation(ownerRelationshipStrategy.displayDomainObject(r.getOwnerRelationship(), locale));
                 f3.addFamilyMember(member);
             }
         }

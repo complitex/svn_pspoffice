@@ -16,21 +16,15 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
-import org.complitex.pspoffice.person.report.web.F3ReferencePage;
-import org.complitex.pspoffice.person.report.web.PersonCardPage;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.DeathButton;
-import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.F3ReferenceButton;
-import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.PersonCardButton;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.DomainObjectList;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -39,7 +33,6 @@ import org.slf4j.LoggerFactory;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class PersonEdit extends FormTemplatePage {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonEdit.class);
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -126,32 +119,6 @@ public class PersonEdit extends FormTemplatePage {
                     protected void onBeforeRender() {
                         super.onBeforeRender();
                         setVisible(personDeathDialog.isVisible());
-                    }
-                },
-                new PersonCardButton(id) {
-
-                    @Override
-                    protected void onClick() {
-                        setResponsePage(new PersonCardPage(newPerson));
-                    }
-
-                    @Override
-                    protected void onBeforeRender() {
-                        super.onBeforeRender();
-                        setVisible(oldPerson != null);
-                    }
-                },
-                new F3ReferenceButton(id) {
-
-                    @Override
-                    protected void onClick() {
-                        setResponsePage(new F3ReferencePage(newPerson));
-                    }
-
-                    @Override
-                    protected void onBeforeRender() {
-                        super.onBeforeRender();
-                        setVisible(oldPerson != null);
                     }
                 });
     }

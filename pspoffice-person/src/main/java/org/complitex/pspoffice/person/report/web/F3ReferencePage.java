@@ -4,7 +4,6 @@
  */
 package org.complitex.pspoffice.person.report.web;
 
-import java.text.MessageFormat;
 import static com.google.common.collect.Lists.*;
 import java.util.Collection;
 import javax.ejb.EJB;
@@ -26,10 +25,9 @@ import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.pspoffice.person.report.entity.F3Reference;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.entity.NeighbourFamily;
-import org.complitex.pspoffice.person.report.exception.UnregisteredPersonException;
 import org.complitex.pspoffice.person.report.service.F3ReferenceBean;
-import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
@@ -48,8 +46,6 @@ public final class F3ReferencePage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(F3ReferencePage.class);
     @EJB
     private F3ReferenceBean f3ReferenceBean;
-    @EJB
-    private PersonStrategy personStrategy;
 
     private class MessagesFragment extends Fragment {
 
@@ -122,17 +118,14 @@ public final class F3ReferencePage extends WebPage {
         }
     }
 
-    public F3ReferencePage(Person person) {
+    public F3ReferencePage(Registration registration, ApartmentCard apartmentCard) {
         add(CSSPackageResource.getHeaderContribution(WebCommonResourceInitializer.STYLE_CSS));
 
         add(new Label("title", new ResourceModel("title")));
         Collection<FeedbackMessage> messages = newArrayList();
         F3Reference f3 = null;
         try {
-            f3 = f3ReferenceBean.get(person, getLocale());
-        } catch (UnregisteredPersonException e) {
-            String personName = personStrategy.displayDomainObject(person, getLocale());
-            messages.add(new FeedbackMessage(this, MessageFormat.format(getString("personNotRegistered"), personName), ERROR));
+            f3 = f3ReferenceBean.get(registration, apartmentCard, getLocale());
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);

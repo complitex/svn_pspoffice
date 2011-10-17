@@ -1,6 +1,6 @@
 package org.complitex.pspoffice.report.entity;
 
-public enum PersonCardField implements IReportField {
+public enum RegistrationCardField implements IReportField {
     FIRST_NAME, LAST_NAME, MIDDLE_NAME, NATIONALITY,
     BIRTH_DATE, BIRTH_REGION, BIRTH_DISTRICT, BIRTH_CITY,
     ARRIVAL_REGION, ARRIVAL_DISTRICT, ARRIVAL_CITY, ARRIVAL_DATE,

@@ -52,6 +52,8 @@ import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.type.MaskedDateInputPanel;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
+import org.complitex.pspoffice.person.report.web.F3ReferencePage;
+import org.complitex.pspoffice.person.report.web.RegistrationCardPage;
 import org.complitex.pspoffice.person.report.web.RegistrationStopCouponPage;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -62,6 +64,8 @@ import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
+import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.F3ReferenceButton;
+import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.RegistrationCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.RegistrationStopCouponButton;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
@@ -483,6 +487,24 @@ public class RegistrationEdit extends FormTemplatePage {
             protected void onBeforeRender() {
                 super.onBeforeRender();
                 setVisible(isHistory());
+            }
+        }, new RegistrationCardButton(id) {
+
+            @Override
+            protected void onClick() {
+                setResponsePage(new RegistrationCardPage(oldRegistration, addressModel.getObject()));
+            }
+        }, new F3ReferenceButton(id) {
+
+            @Override
+            protected void onClick() {
+                setResponsePage(new F3ReferencePage(oldRegistration, apartmentCard));
+            }
+
+            @Override
+            protected void onBeforeRender() {
+                super.onBeforeRender();
+                setVisible(!isHistory());
             }
         });
     }

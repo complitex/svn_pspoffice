@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * @author Artem
  */
-public class PersonCard implements Serializable {
+public class RegistrationCard implements Serializable {
 
     private String lastName;
     private String firstName;

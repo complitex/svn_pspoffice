@@ -2,23 +2,23 @@ package org.complitex.pspoffice.person.report.download;
 
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.pspoffice.report.entity.IReportField;
-import org.complitex.pspoffice.report.entity.PersonCardField;
+import org.complitex.pspoffice.report.entity.RegistrationCardField;
 import org.complitex.pspoffice.report.web.AbstractReportDownload;
 
 import java.util.Map;
-import org.complitex.pspoffice.person.report.entity.PersonCard;
+import org.complitex.pspoffice.person.report.entity.RegistrationCard;
 
-import static org.complitex.pspoffice.report.entity.PersonCardField.*;
+import static org.complitex.pspoffice.report.entity.RegistrationCardField.*;
 
-public class PersonCardDownload extends AbstractReportDownload<PersonCard> {
+public class RegistrationCardDownload extends AbstractReportDownload<RegistrationCard> {
 
-    public PersonCardDownload(PersonCard report) {
-        super("PersonCard", PersonCardField.values(), report);
+    public RegistrationCardDownload(RegistrationCard report) {
+        super("RegistrationCard", RegistrationCardField.values(), report);
     }
 
     @Override
     protected Map<IReportField, Object> getValues() {
-        PersonCard report = getReport();
+        RegistrationCard report = getReport();
         Map<IReportField, Object> map = newValuesMap();
 
         map.put(FIRST_NAME, report.getFirstName());
@@ -61,6 +61,6 @@ public class PersonCardDownload extends AbstractReportDownload<PersonCard> {
 
     @Override
     protected String getFileName() {
-        return "PersonCard";
+        return "RegistrationCard";
     }
 }

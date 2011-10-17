@@ -4,17 +4,13 @@
  */
 package org.complitex.pspoffice.person.report.service;
 
-import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
-import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
-import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.report.entity.FamilyAndHousingPayments;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
@@ -33,36 +29,28 @@ public class FamilyAndHousingPaymentsBean extends AbstractBean {
     @EJB
     private PersonStrategy personStrategy;
     @EJB
-    private OwnershipFormStrategy ownershipFormStrategy;
-    @EJB
     private DocumentStrategy documentStrategy;
-    @EJB
-    private OwnerRelationshipStrategy ownerRelationshipStrategy;
-    @EJB
-    private AddressRendererBean addressRendererBean;
 
     @Transactional
-    public FamilyAndHousingPayments get(ApartmentCard apartmentCard, Locale locale) {
+    public FamilyAndHousingPayments get(ApartmentCard apartmentCard) {
         FamilyAndHousingPayments payments = new FamilyAndHousingPayments();
-        String addressEntity = ApartmentCardStrategy.getAddressEntity(apartmentCard);
-        long addressId = apartmentCard.getAddressId();
-        payments.setAddress(addressRendererBean.displayAddress(addressEntity, addressId, locale));
-        payments.setName(personStrategy.displayDomainObject(apartmentCard.getOwner(), locale));
+        payments.setAddressEntity(ApartmentCardStrategy.getAddressEntity(apartmentCard));
+        payments.setAddressId(apartmentCard.getAddressId());
+        payments.setOwner(apartmentCard.getOwner());
         payments.setPersonalAccount("");
-        payments.setFormOfOwnership(ownershipFormStrategy.displayDomainObject(apartmentCard.getOwnershipForm(), locale));
+        payments.setOwnershipForm(apartmentCard.getOwnershipForm());
 
         for (Registration registration : apartmentCard.getRegistrations()) {
             if (!registration.isFinished()) {
                 FamilyMember member = new FamilyMember();
                 Person person = registration.getPerson();
-                member.setName(personStrategy.displayDomainObject(person, locale));
-                member.setBirthDate(person.getBirthDate());
+                member.setPerson(person);
                 personStrategy.loadDocument(person);
                 Document document = person.getDocument();
                 if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
-                    member.setPassport(documentStrategy.displayDomainObject(document, locale));
+                    member.setPassport(documentStrategy.displayDomainObject(document, null));
                 }
-                member.setRelation(ownerRelationshipStrategy.displayDomainObject(registration.getOwnerRelationship(), locale));
+                member.setRelation(registration.getOwnerRelationship());
                 payments.addFamilyMember(member);
             }
         }

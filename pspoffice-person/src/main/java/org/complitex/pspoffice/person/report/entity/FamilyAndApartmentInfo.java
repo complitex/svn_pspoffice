@@ -14,7 +14,8 @@ import java.util.List;
  */
 public class FamilyAndApartmentInfo implements Serializable {
 
-    private String address;
+    private String addressEntity;
+    private long addressId;
     private List<FamilyMember> familyMembers = newArrayList();
     private Integer rooms;
     private String roomsArea;
@@ -41,12 +42,20 @@ public class FamilyAndApartmentInfo implements Serializable {
         this.additionalInformation = additionalInformation;
     }
 
-    public String getAddress() {
-        return address;
+    public String getAddressEntity() {
+        return addressEntity;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setAddressEntity(String addressEntity) {
+        this.addressEntity = addressEntity;
+    }
+
+    public long getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(long addressId) {
+        this.addressId = addressId;
     }
 
     public String getAnotherBuildingsInfo() {

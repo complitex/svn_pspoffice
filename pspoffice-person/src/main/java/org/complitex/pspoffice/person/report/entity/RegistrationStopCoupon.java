@@ -5,7 +5,8 @@
 package org.complitex.pspoffice.person.report.entity;
 
 import java.io.Serializable;
-import java.util.Date;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 /**
  *
@@ -13,35 +14,13 @@ import java.util.Date;
  */
 public class RegistrationStopCoupon implements Serializable {
 
-    private String firstName;
-    private String middleName;
-    private String lastName;
-    private String previousNames;
-    private Date birthDate;
-    private String birthCountry;
-    private String birthRegion;
-    private String birthDistrict;
-    private String birthCity;
-    private String gender;
-    private String address;
-    private String registrationOrganization;
-    private String departureCountry;
-    private String departureRegion;
-    private String departureDistrict;
-    private String departureCity;
-    private Date departureDate;
-    private String passport;
+    private Registration registration;
+    private long addressId;
+    private String addressEntity;
+    private DomainObject registrationOrganization;
+    private String passportInfo;
     private String birthCertificateInfo;
-    private String childrenInfo;
     private String additionalInfo;
-
-    public String getDepartureRegion() {
-        return departureRegion;
-    }
-
-    public void setDepartureRegion(String departureRegion) {
-        this.departureRegion = departureRegion;
-    }
 
     public String getAdditionalInfo() {
         return additionalInfo;
@@ -49,6 +28,22 @@ public class RegistrationStopCoupon implements Serializable {
 
     public void setAdditionalInfo(String additionalInfo) {
         this.additionalInfo = additionalInfo;
+    }
+
+    public String getAddressEntity() {
+        return addressEntity;
+    }
+
+    public void setAddressEntity(String addressEntity) {
+        this.addressEntity = addressEntity;
+    }
+
+    public long getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(long addressId) {
+        this.addressId = addressId;
     }
 
     public String getBirthCertificateInfo() {
@@ -59,147 +54,27 @@ public class RegistrationStopCoupon implements Serializable {
         this.birthCertificateInfo = birthCertificateInfo;
     }
 
-    public String getBirthCity() {
-        return birthCity;
+    public String getPassportInfo() {
+        return passportInfo;
     }
 
-    public void setBirthCity(String birthCity) {
-        this.birthCity = birthCity;
+    public void setPassportInfo(String passportInfo) {
+        this.passportInfo = passportInfo;
     }
 
-    public String getBirthRegion() {
-        return birthRegion;
+    public Registration getRegistration() {
+        return registration;
     }
 
-    public void setBirthRegion(String birthRegion) {
-        this.birthRegion = birthRegion;
+    public void setRegistration(Registration registration) {
+        this.registration = registration;
     }
 
-    public Date getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public String getBirthDistrict() {
-        return birthDistrict;
-    }
-
-    public void setBirthDistrict(String birthDistrict) {
-        this.birthDistrict = birthDistrict;
-    }
-
-    public String getBirthCountry() {
-        return birthCountry;
-    }
-
-    public void setBirthCountry(String birthCountry) {
-        this.birthCountry = birthCountry;
-    }
-
-    public String getChildrenInfo() {
-        return childrenInfo;
-    }
-
-    public void setChildrenInfo(String childrenInfo) {
-        this.childrenInfo = childrenInfo;
-    }
-
-    public String getDepartureCity() {
-        return departureCity;
-    }
-
-    public void setDepartureCity(String departureCity) {
-        this.departureCity = departureCity;
-    }
-
-    public Date getDepartureDate() {
-        return departureDate;
-    }
-
-    public void setDepartureDate(Date departureDate) {
-        this.departureDate = departureDate;
-    }
-
-    public String getDepartureDistrict() {
-        return departureDistrict;
-    }
-
-    public void setDepartureDistrict(String departureDistrict) {
-        this.departureDistrict = departureDistrict;
-    }
-
-    public String getDepartureCountry() {
-        return departureCountry;
-    }
-
-    public void setDepartureCountry(String departureCountry) {
-        this.departureCountry = departureCountry;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getMiddleName() {
-        return middleName;
-    }
-
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
-    }
-
-    public String getPreviousNames() {
-        return previousNames;
-    }
-
-    public void setPreviousNames(String previousNames) {
-        this.previousNames = previousNames;
-    }
-
-    public String getRegistrationOrganization() {
+    public DomainObject getRegistrationOrganization() {
         return registrationOrganization;
     }
 
-    public void setRegistrationOrganization(String registrationOrganization) {
+    public void setRegistrationOrganization(DomainObject registrationOrganization) {
         this.registrationOrganization = registrationOrganization;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPassport() {
-        return passport;
-    }
-
-    public void setPassport(String passport) {
-        this.passport = passport;
     }
 }

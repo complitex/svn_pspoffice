@@ -7,6 +7,8 @@ package org.complitex.pspoffice.person.report.entity;
 import static com.google.common.collect.Lists.*;
 import java.io.Serializable;
 import java.util.List;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 
 /**
  *
@@ -14,10 +16,11 @@ import java.util.List;
  */
 public class HousingPayments implements Serializable {
 
-    private String name;
+    private Person owner;
     private String personalAccount;
-    private String address;
-    private String formOfOwnership;
+    private long addressId;
+    private String addressEntity;
+    private DomainObject ownershipForm;
     private String floors;
     private String lift;
     private String hostel;
@@ -56,12 +59,36 @@ public class HousingPayments implements Serializable {
         this.countersPresence = countersPresence;
     }
 
-    public String getAddress() {
-        return address;
+    public String getAddressEntity() {
+        return addressEntity;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setAddressEntity(String addressEntity) {
+        this.addressEntity = addressEntity;
+    }
+
+    public long getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(long addressId) {
+        this.addressId = addressId;
+    }
+
+    public Person getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Person owner) {
+        this.owner = owner;
+    }
+
+    public DomainObject getOwnershipForm() {
+        return ownershipForm;
+    }
+
+    public void setOwnershipForm(DomainObject ownershipForm) {
+        this.ownershipForm = ownershipForm;
     }
 
     public String getApartmentArea() {
@@ -172,14 +199,6 @@ public class HousingPayments implements Serializable {
         this.floors = floors;
     }
 
-    public String getFormOfOwnership() {
-        return formOfOwnership;
-    }
-
-    public void setFormOfOwnership(String formOfOwnership) {
-        this.formOfOwnership = formOfOwnership;
-    }
-
     public String getGasPayments() {
         return gasPayments;
     }
@@ -242,14 +261,6 @@ public class HousingPayments implements Serializable {
 
     public void setLift(String lift) {
         this.lift = lift;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getNormativeArea() {

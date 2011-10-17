@@ -5,6 +5,8 @@
 package org.complitex.pspoffice.person.report.entity;
 
 import java.io.Serializable;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 
 /**
  *
@@ -12,29 +14,29 @@ import java.io.Serializable;
  */
 public class NeighbourFamily implements Serializable {
 
-    private String name;
+    private Person person;
     private Integer amount;
     private Integer takeRooms;
     private String takeArea;
-    private String apartmentNumber;
+    private DomainObject apartment;
     private String roomsAndAreaInfo;
     private String otherBuildingsAndAreaInfo;
     private String loggiaAndAreaInfo;
 
-    public String getApartmentNumber() {
-        return apartmentNumber;
+    public DomainObject getApartment() {
+        return apartment;
     }
 
-    public void setApartmentNumber(String apartmentNumber) {
-        this.apartmentNumber = apartmentNumber;
+    public void setApartment(DomainObject apartment) {
+        this.apartment = apartment;
     }
 
-    public String getName() {
-        return name;
+    public Person getPerson() {
+        return person;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPerson(Person person) {
+        this.person = person;
     }
 
     public String getTakeArea() {

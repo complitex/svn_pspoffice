@@ -480,7 +480,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
             @Override
             protected void onClick() {
-                setResponsePage(new RegistrationStopCouponPage(oldRegistration, addressModel.getObject()));
+                setResponsePage(new RegistrationStopCouponPage(oldRegistration, addressEntity, addressId));
             }
 
             @Override
@@ -492,7 +492,13 @@ public class RegistrationEdit extends FormTemplatePage {
 
             @Override
             protected void onClick() {
-                setResponsePage(new RegistrationCardPage(oldRegistration, addressModel.getObject()));
+                setResponsePage(new RegistrationCardPage(oldRegistration, addressEntity, addressId));
+            }
+
+            @Override
+            protected void onBeforeRender() {
+                super.onBeforeRender();
+                setVisible(!isNew());
             }
         }, new F3ReferenceButton(id) {
 
@@ -504,7 +510,7 @@ public class RegistrationEdit extends FormTemplatePage {
             @Override
             protected void onBeforeRender() {
                 super.onBeforeRender();
-                setVisible(!isHistory());
+                setVisible(!isHistory() && !isNew());
             }
         });
     }

@@ -1,11 +1,17 @@
 package org.complitex.pspoffice.person.report.download;
 
+import java.util.Locale;
 import org.complitex.pspoffice.report.entity.IReportField;
 import org.complitex.pspoffice.report.web.AbstractReportDownload;
 
 import java.util.Map;
+import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.util.EjbBeanLocator;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.report.entity.FamilyAndHousingPayments;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 
 import static org.complitex.pspoffice.report.entity.FamilyAndHousingPaymentsField.*;
 
@@ -16,65 +22,70 @@ public class FamilyAndHousingPaymentsDownload extends AbstractReportDownload<Fam
     }
 
     @Override
-    protected Map<IReportField, Object> getValues() {
+    protected Map<IReportField, Object> getValues(Locale locale) {
         FamilyAndHousingPayments report = getReport();
         Map<IReportField, Object> map = newValuesMap();
 
-        map.put(NAME, report.getName());
+        PersonStrategy personStrategy = EjbBeanLocator.getBean(PersonStrategy.class);
+        AddressRendererBean addressRendererBean = EjbBeanLocator.getBean(AddressRendererBean.class);
+        OwnershipFormStrategy ownershipFormStrategy = EjbBeanLocator.getBean(OwnershipFormStrategy.class);
+        OwnerRelationshipStrategy ownerRelationshipStrategy = EjbBeanLocator.getBean(OwnerRelationshipStrategy.class);
+
+        map.put(NAME, personStrategy.displayDomainObject(report.getOwner(), locale));
         map.put(PERSONAL_ACCOUNT, report.getPersonalAccount());
-        map.put(ADDRESS, report.getAddress());
-        map.put(FORM_OF_OWNERSHIP, report.getFormOfOwnership());
+        map.put(ADDRESS, addressRendererBean.displayAddress(report.getAddressEntity(), report.getAddressId(), locale));
+        map.put(FORM_OF_OWNERSHIP, ownershipFormStrategy.displayDomainObject(report.getOwnershipForm(), locale));
         map.put(STOVE_TYPE, report.getStoveType());
 
         int counter = 0;
         for (FamilyMember member : report.getFamilyMembers()) {
             switch (counter) {
                 case 0: {
-                    map.put(NAME0, member.getName());
-                    map.put(RELATION0, member.getRelation());
-                    map.put(BIRTH_DATE0, member.getBirthDate());
+                    map.put(NAME0, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION0, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE0, member.getPerson().getBirthDate());
                     map.put(PASSPORT0, member.getPassport());
                 }
                 break;
                 case 1: {
-                    map.put(NAME1, member.getName());
-                    map.put(RELATION1, member.getRelation());
-                    map.put(BIRTH_DATE1, member.getBirthDate());
+                    map.put(NAME1, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION1, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE1, member.getPerson().getBirthDate());
                     map.put(PASSPORT1, member.getPassport());
                 }
                 break;
                 case 2: {
-                    map.put(NAME2, member.getName());
-                    map.put(RELATION2, member.getRelation());
-                    map.put(BIRTH_DATE2, member.getBirthDate());
+                    map.put(NAME2, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION2, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE2, member.getPerson().getBirthDate());
                     map.put(PASSPORT2, member.getPassport());
                 }
                 break;
                 case 3: {
-                    map.put(NAME3, member.getName());
-                    map.put(RELATION3, member.getRelation());
-                    map.put(BIRTH_DATE3, member.getBirthDate());
+                    map.put(NAME3, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION3, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE3, member.getPerson().getBirthDate());
                     map.put(PASSPORT3, member.getPassport());
                 }
                 break;
                 case 4: {
-                    map.put(NAME4, member.getName());
-                    map.put(RELATION4, member.getRelation());
-                    map.put(BIRTH_DATE4, member.getBirthDate());
+                    map.put(NAME4, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION4, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE4, member.getPerson().getBirthDate());
                     map.put(PASSPORT4, member.getPassport());
                 }
                 break;
                 case 5: {
-                    map.put(NAME5, member.getName());
-                    map.put(RELATION5, member.getRelation());
-                    map.put(BIRTH_DATE5, member.getBirthDate());
+                    map.put(NAME5, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION5, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE5, member.getPerson().getBirthDate());
                     map.put(PASSPORT5, member.getPassport());
                 }
                 break;
                 case 6: {
-                    map.put(NAME6, member.getName());
-                    map.put(RELATION6, member.getRelation());
-                    map.put(BIRTH_DATE6, member.getBirthDate());
+                    map.put(NAME6, personStrategy.displayDomainObject(member.getPerson(), locale));
+                    map.put(RELATION6, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(BIRTH_DATE6, member.getPerson().getBirthDate());
                     map.put(PASSPORT6, member.getPassport());
                 }
                 break;
@@ -105,7 +116,7 @@ public class FamilyAndHousingPaymentsDownload extends AbstractReportDownload<Fam
     }
 
     @Override
-    protected String getFileName() {
+    protected String getFileName(Locale locale) {
         return "FamilyAndHousingPayments";
     }
 }

@@ -5,6 +5,7 @@ import org.complitex.pspoffice.report.entity.IReportField;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.complitex.dictionary.util.StringUtil;
 
@@ -51,7 +52,7 @@ public abstract class AbstractReportDownload<T extends Serializable> implements 
         }
     }
 
-    protected abstract Map<IReportField, Object> getValues();
+    protected abstract Map<IReportField, Object> getValues(Locale locale);
 
-    protected abstract String getFileName();
+    protected abstract String getFileName(Locale locale);
 }

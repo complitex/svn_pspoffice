@@ -6,7 +6,6 @@ import org.complitex.pspoffice.person.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import static com.google.common.collect.Sets.*;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -18,7 +17,6 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.service.SessionBean;
-import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document.strategy.entity.Passport;
@@ -35,7 +33,6 @@ import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 @Stateless
 public class RegistrationStopCouponBean extends AbstractBean {
 
-    private static final String RESOURCE_BUNDLE = RegistrationStopCouponBean.class.getName();
     private static final String MAPPING_NAMESPACE = RegistrationStopCouponBean.class.getName();
     @EJB
     private PersonStrategy personStrategy;
@@ -49,31 +46,15 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private DocumentStrategy documentStrategy;
 
     @Transactional
-    public RegistrationStopCoupon get(Registration registration, String address, Locale locale) {
-        final Locale systmeLocale = localeBean.getSystemLocale();
-
+    public RegistrationStopCoupon get(Registration registration, String addressEntity, long addressId) {
         RegistrationStopCoupon coupon = new RegistrationStopCoupon();
         Person person = registration.getPerson();
 
         //name
-        coupon.setLastName(person.getLastName(locale, systmeLocale));
-        coupon.setFirstName(person.getFirstName(locale, systmeLocale));
-        coupon.setMiddleName(person.getMiddleName(locale, systmeLocale));
-        coupon.setPreviousNames(getPreviousNames(person.getId(), locale));
-        coupon.setBirthDate(person.getBirthDate());
-        coupon.setBirthCountry(person.getBirthCountry());
-        coupon.setBirthRegion(person.getBirthRegion());
-        coupon.setBirthDistrict(person.getBirthDistrict());
-        coupon.setBirthCity(person.getBirthCity());
-        coupon.setGender(person.getGender() != null
-                ? ResourceUtil.getString(RESOURCE_BUNDLE, person.getGender().name(), locale) : "");
-        coupon.setAddress(address);
-        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganizationName(locale));
-        coupon.setDepartureCountry(registration.getDepartureCountry());
-        coupon.setDepartureRegion(registration.getDepartureRegion());
-        coupon.setDepartureDistrict(registration.getDepartureDistrict());
-        coupon.setDepartureCity(registration.getDepartureCity());
-        coupon.setDepartureDate(registration.getDepartureDate());
+        coupon.setRegistration(registration);
+        coupon.setAddressEntity(addressEntity);
+        coupon.setAddressId(addressId);
+        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganization());
         personStrategy.loadDocument(person);
 
         Document document = person.getDocument();
@@ -83,39 +64,22 @@ public class RegistrationStopCouponBean extends AbstractBean {
             Date dateIssued = passport.getDateIssued();
             String organizationIssued = passport.getOrganizationIssued();
             if (!Strings.isEmpty(organizationIssued)) {
-                passportInfo += ", " + ResourceUtil.getString(RESOURCE_BUNDLE, "passport_issued", locale) + " " + organizationIssued;
+                passportInfo += ", " + organizationIssued;
                 if (dateIssued != null) {
                     passportInfo += " " + format(dateIssued);
                 }
             }
-            coupon.setPassport(passportInfo);
+            coupon.setPassportInfo(passportInfo);
         } else if (document.getDocumentTypeId() == DocumentTypeStrategy.BIRTH_CERTIFICATE) {
-            coupon.setBirthCertificateInfo(documentStrategy.displayDomainObject(document, locale));
+            coupon.setBirthCertificateInfo(documentStrategy.displayDomainObject(document, null));
         }
-
         personStrategy.loadChildren(person);
-        coupon.setChildrenInfo(getChildrenInfo(person.getChildren(), locale));
 
         return coupon;
     }
 
-    private String getChildrenInfo(Collection<Person> children, Locale locale) {
-        StringBuilder childrenInfo = new StringBuilder();
-        int counter = 0;
-        for (Person child : children) {
-            String childFullName = personStrategy.displayDomainObject(child, locale);
-            String birthDate = format(child.getBirthDate());
-            childrenInfo.append(childFullName).append(" ").
-                    append(birthDate).append(" ").
-                    append(ResourceUtil.getString(RESOURCE_BUNDLE, "birth_date_suffix", locale)).
-                    append(counter < children.size() - 1 ? ", " : "");
-            counter++;
-        }
-        return childrenInfo.toString();
-    }
-
     @Transactional
-    private String getPreviousNames(long personId, Locale locale) {
+    public String getPreviousNames(long personId, Locale locale) {
         final long localeId = localeBean.convert(locale).getId();
         TreeSet<Date> previousNameStartDates = newTreeSet(sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNameStartDates",
                 ImmutableMap.of("personId", personId, "localeId", localeId)));

@@ -21,11 +21,14 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.address.service.AddressRendererBean;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.pspoffice.person.report.download.FamilyAndApartmentInfoDownload;
 import org.complitex.pspoffice.person.report.entity.FamilyAndApartmentInfo;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.service.FamilyAndApartmentInfoBean;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
@@ -45,6 +48,12 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(FamilyAndApartmentInfoPage.class);
     @EJB
     private FamilyAndApartmentInfoBean familyAndApartmentInfoBean;
+    @EJB
+    private PersonStrategy personStrategy;
+    @EJB
+    private AddressRendererBean addressRendererBean;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
 
     private class MessagesFragment extends Fragment {
 
@@ -71,16 +80,17 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
             super(id, "report", FamilyAndApartmentInfoPage.this);
             add(new Label("label", new ResourceModel("label")));
             add(new Label("labelDetails", new ResourceModel("labelDetails")));
-            add(new Label("addressInfo", new StringResourceModel("addressInfo", null, new Object[]{info.getAddress()})));
+            add(new Label("addressInfo", new StringResourceModel("addressInfo", null,
+                    new Object[]{addressRendererBean.displayAddress(info.getAddressEntity(), info.getAddressId(), getLocale())})));
             ListView<FamilyMember> familyMembers = new ListView<FamilyMember>("familyMembers", info.getFamilyMembers()) {
 
                 @Override
                 protected void populateItem(ListItem<FamilyMember> item) {
                     item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
                     final FamilyMember member = item.getModelObject();
-                    item.add(new Label("familyMemberName", member.getName()));
-                    item.add(new Label("familyMemberRelation", member.getRelation()));
-                    item.add(new Label("familyMemberBirthDate", format(member.getBirthDate())));
+                    item.add(new Label("familyMemberName", personStrategy.displayDomainObject(member.getPerson(), getLocale())));
+                    item.add(new Label("familyMemberRelation", ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale())));
+                    item.add(new Label("familyMemberBirthDate", format(member.getPerson().getBirthDate())));
                     item.add(new Label("familyMemberRegistrationDate", format(member.getRegistrationDate())));
                 }
             };
@@ -117,7 +127,7 @@ public final class FamilyAndApartmentInfoPage extends WebPage {
         Collection<FeedbackMessage> messages = newArrayList();
         FamilyAndApartmentInfo info = null;
         try {
-            info = familyAndApartmentInfoBean.get(apartmentCard, getLocale());
+            info = familyAndApartmentInfoBean.get(apartmentCard);
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);

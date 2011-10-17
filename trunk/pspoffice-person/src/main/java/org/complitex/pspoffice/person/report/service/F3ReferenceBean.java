@@ -4,21 +4,15 @@
  */
 package org.complitex.pspoffice.person.report.service;
 
-import java.util.Locale;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
-import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
-import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.report.entity.F3Reference;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
-import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
-import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 
 /**
@@ -29,38 +23,27 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 public class F3ReferenceBean extends AbstractBean {
 
     @EJB
-    private PersonStrategy personStrategy;
-    @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
-    @EJB
-    private AddressRendererBean addressRendererBean;
-    @EJB
-    private OwnershipFormStrategy ownershipFormStrategy;
-    @EJB
-    private OwnerRelationshipStrategy ownerRelationshipStrategy;
 
     @Transactional
-    public F3Reference get(Registration registration, ApartmentCard apartmentCard, Locale locale) {
+    public F3Reference get(Registration registration, ApartmentCard apartmentCard) {
         F3Reference f3 = new F3Reference();
 
         //name
-        f3.setName(personStrategy.displayDomainObject(registration.getPerson(), locale));
+        f3.setPerson(registration.getPerson());
 
         //address
-        long addressId = apartmentCard.getAddressId();
-        String addressEntity = ApartmentCardStrategy.getAddressEntity(apartmentCard);
-        f3.setAddress(addressRendererBean.displayAddress(addressEntity, addressId, locale));
-        f3.setPersonalAccountOwnerName(personStrategy.displayDomainObject(apartmentCard.getOwner(), locale));
-        f3.setFormOfOwnership(ownershipFormStrategy.displayDomainObject(apartmentCard.getOwnershipForm(), locale));
+        f3.setAddressId(apartmentCard.getAddressId());
+        f3.setAddressEntity(ApartmentCardStrategy.getAddressEntity(apartmentCard));
+        f3.setPersonalAccountOwner(apartmentCard.getOwner());
+        f3.setOwnershipForm(apartmentCard.getOwnershipForm());
 
         for (Registration r : apartmentCard.getRegistrations()) {
             if (!r.isFinished()) {
                 FamilyMember member = new FamilyMember();
-                Person memberPerson = r.getPerson();
-                member.setName(personStrategy.displayDomainObject(memberPerson, locale));
-                member.setBirthDate(memberPerson.getBirthDate());
+                member.setPerson(r.getPerson());
                 member.setRegistrationDate(r.getRegistrationDate());
-                member.setRelation(ownerRelationshipStrategy.displayDomainObject(r.getOwnerRelationship(), locale));
+                member.setRelation(r.getOwnerRelationship());
                 f3.addFamilyMember(member);
             }
         }
@@ -68,7 +51,7 @@ public class F3ReferenceBean extends AbstractBean {
         //neighbors
         for (ApartmentCard neighbourCard : apartmentCardStrategy.getNeighbourApartmentCards(apartmentCard)) {
             NeighbourFamily family = new NeighbourFamily();
-            family.setName(personStrategy.displayDomainObject(neighbourCard.getOwner(), locale));
+            family.setPerson(neighbourCard.getOwner());
             family.setAmount(neighbourCard.getRegisteredCount());
             f3.addNeighbourFamily(family);
         }

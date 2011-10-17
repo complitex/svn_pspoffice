@@ -21,11 +21,15 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.address.service.AddressRendererBean;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.pspoffice.person.report.download.FamilyAndHousingPaymentsDownload;
 import org.complitex.pspoffice.person.report.entity.FamilyAndHousingPayments;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.service.FamilyAndHousingPaymentsBean;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
@@ -45,6 +49,14 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(FamilyAndHousingPaymentsPage.class);
     @EJB
     private FamilyAndHousingPaymentsBean familyAndHousingPaymentsBean;
+    @EJB
+    private OwnershipFormStrategy ownershipFormStrategy;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
+    @EJB
+    private AddressRendererBean addressRendererBean;
+    @EJB
+    private PersonStrategy personStrategy;
 
     private class MessagesFragment extends Fragment {
 
@@ -71,10 +83,12 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
             super(id, "report", FamilyAndHousingPaymentsPage.this);
             add(new Label("label", new ResourceModel("label")));
             add(new Label("labelDetails", new ResourceModel("labelDetails")));
-            add(new Label("nameInfo", new StringResourceModel("nameInfo", null, new Object[]{payments.getName()})));
+            add(new Label("nameInfo", new StringResourceModel("nameInfo", null,
+                    new Object[]{personStrategy.displayDomainObject(payments.getOwner(), getLocale())})));
             add(new Label("personalAccount", new StringResourceModel("personalAccount", null,
                     new Object[]{valueOf(payments.getPersonalAccount())})));
-            add(new Label("addressInfo", new StringResourceModel("addressInfo", null, new Object[]{payments.getAddress()})));
+            add(new Label("addressInfo", new StringResourceModel("addressInfo", null,
+                    new Object[]{addressRendererBean.displayAddress(payments.getAddressEntity(), payments.getAddressId(), getLocale())})));
 
             ListView<FamilyMember> familyMembers = new ListView<FamilyMember>("familyMembers", payments.getFamilyMembers()) {
 
@@ -82,9 +96,9 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
                 protected void populateItem(ListItem<FamilyMember> item) {
                     item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
                     final FamilyMember member = item.getModelObject();
-                    item.add(new Label("familyMemberName", member.getName()));
-                    item.add(new Label("familyMemberRelation", member.getRelation()));
-                    item.add(new Label("familyMemberBirthDate", format(member.getBirthDate())));
+                    item.add(new Label("familyMemberName", personStrategy.displayDomainObject(member.getPerson(), getLocale())));
+                    item.add(new Label("familyMemberRelation", ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale())));
+                    item.add(new Label("familyMemberBirthDate", format(member.getPerson().getBirthDate())));
                     item.add(new Label("familyMemberPassport", member.getPassport()));
                 }
             };
@@ -92,7 +106,7 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
             add(new Label("total", new StringResourceModel("total", null, new Object[]{payments.getFamilyMembers().size()})));
 
             add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null, new Object[]{
-                        valueOf(payments.getFormOfOwnership())
+                        valueOf(ownershipFormStrategy.displayDomainObject(payments.getOwnershipForm(), getLocale()))
                     })));
             add(new Label("stoveType", new StringResourceModel("stoveType", null, new Object[]{
                         valueOf(payments.getStoveType())
@@ -126,7 +140,7 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
         Collection<FeedbackMessage> messages = newArrayList();
         FamilyAndHousingPayments payments = null;
         try {
-            payments = familyAndHousingPaymentsBean.get(apartmentCard, getLocale());
+            payments = familyAndHousingPaymentsBean.get(apartmentCard);
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);

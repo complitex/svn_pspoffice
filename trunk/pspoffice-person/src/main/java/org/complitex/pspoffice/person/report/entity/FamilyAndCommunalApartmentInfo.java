@@ -7,6 +7,7 @@ package org.complitex.pspoffice.person.report.entity;
 import java.io.Serializable;
 import static com.google.common.collect.Lists.*;
 import java.util.List;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 
 /**
  *
@@ -14,8 +15,9 @@ import java.util.List;
  */
 public class FamilyAndCommunalApartmentInfo implements Serializable {
 
-    private String name;
-    private String address;
+    private Person owner;
+    private String addressEntity;
+    private long addressId;
     private List<NeighbourFamily> neighbourFamilies = newArrayList();
     private List<FamilyMember> familyMembers = newArrayList();
     private String kitchenArea;
@@ -30,14 +32,6 @@ public class FamilyAndCommunalApartmentInfo implements Serializable {
     private String barnArea;
     private String otherBuildings;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getOtherBuildings() {
         return otherBuildings;
     }
@@ -46,12 +40,28 @@ public class FamilyAndCommunalApartmentInfo implements Serializable {
         this.otherBuildings = otherBuildings;
     }
 
-    public String getAddress() {
-        return address;
+    public String getAddressEntity() {
+        return addressEntity;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setAddressEntity(String addressEntity) {
+        this.addressEntity = addressEntity;
+    }
+
+    public long getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(long addressId) {
+        this.addressId = addressId;
+    }
+
+    public Person getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Person owner) {
+        this.owner = owner;
     }
 
     public String getBarnArea() {

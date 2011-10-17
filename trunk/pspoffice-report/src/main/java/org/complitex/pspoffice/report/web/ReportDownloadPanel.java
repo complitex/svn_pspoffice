@@ -16,6 +16,7 @@ import org.odlabs.wiquery.ui.dialog.Dialog;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
 import org.apache.wicket.Page;
@@ -46,7 +47,7 @@ public class ReportDownloadPanel extends Panel {
         public DownloadPage(PageParameters parameters) {
             String sessionKey = parameters.getString("key");
             String type = parameters.getString("type") != null ? parameters.getString("type").toLowerCase() : "pdf";
-            String locale = parameters.getString("locale") != null ? "_" + parameters.getString("locale") : "";
+            String locale = parameters.getString("locale") != null ? parameters.getString("locale") : "";
 
             AbstractReportDownload reportDownload = retrieveReportDownload(sessionKey);
             getRequestCycle().setRequestTarget(getResourceStreamRequestTarget(reportDownload, type, locale));
@@ -63,7 +64,7 @@ public class ReportDownloadPanel extends Panel {
         private ResourceStreamRequestTarget getResourceStreamRequestTarget(AbstractReportDownload reportDownload,
                 String type, String locale) {
             return new ResourceStreamRequestTarget(getResourceStreamWriter(reportDownload, type, locale),
-                    reportDownload.getFileName() + "." + type);
+                    reportDownload.getFileName(ReportDownloadPanel.getLocale(locale)) + "." + type);
         }
 
         private IResourceStream getResourceStreamWriter(final AbstractReportDownload reportDownload, final String type,
@@ -86,7 +87,7 @@ public class ReportDownloadPanel extends Panel {
                 @Override
                 public void write(OutputStream output) {
                     try {
-                        Map<IReportField, Object> values = reportDownload.getValues();
+                        Map<IReportField, Object> values = reportDownload.getValues(ReportDownloadPanel.getLocale(locale));
                         Map<String, String> map = new HashMap<String, String>();
 
                         for (IReportField key : reportDownload.getReportFields()) {
@@ -94,7 +95,7 @@ public class ReportDownloadPanel extends Panel {
                         }
 
                         IReportService reportService = getReportService(type);
-                        reportService.createReport(reportDownload.getReportName() + locale + "." + type, map, output);
+                        reportService.createReport(reportDownload.getReportName() + "_" + locale + "." + type, map, output);
                     } catch (CreateReportException e) {
                         log.error("Couldn't create report.", e);
                     }
@@ -170,7 +171,7 @@ public class ReportDownloadPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 dialog.close(target);
 
-                String sessionKey = reportDownload.getFileName();
+                String sessionKey = reportDownload.getFileName(ReportDownloadPanel.getLocale(localeModel.getObject()));
                 storeReportDownload(reportDownload, sessionKey);
 
                 PageParameters params = new PageParameters();
@@ -195,6 +196,16 @@ public class ReportDownloadPanel extends Panel {
                 dialog.close(target);
             }
         });
+    }
+
+    private static Locale getLocale(String locale) {
+        if ("ru_RU".equals(locale)) {
+            return new Locale("ru");
+        }
+        if ("uk_UA".equals(locale)) {
+            return new Locale("uk");
+        }
+        return null;
     }
 
     public void open(AjaxRequestTarget target) {

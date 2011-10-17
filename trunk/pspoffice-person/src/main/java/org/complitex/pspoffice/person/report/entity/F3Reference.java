@@ -7,6 +7,8 @@ package org.complitex.pspoffice.person.report.entity;
 import static com.google.common.collect.Lists.*;
 import java.io.Serializable;
 import java.util.List;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 
 /**
  *
@@ -14,28 +16,21 @@ import java.util.List;
  */
 public class F3Reference implements Serializable {
 
-    private String name;
-    private String address;
+    private Person person;
+    private long addressId;
+    private String addressEntity;
     private String livingArea;
     private String apartmentArea;
     private Integer takesRooms;
     private Integer rooms;
     private Integer floor;
     private Integer floors;
-    private String personalAccountOwnerName;
-    private String formOfOwnership;
+    private Person personalAccountOwner;
+    private DomainObject ownershipForm;
     private String facilities;
     private String technicalState;
     private List<FamilyMember> familyMembers = newArrayList();
     private List<NeighbourFamily> neighbourFamilies = newArrayList();
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
 
     public String getApartmentArea() {
         return apartmentArea;
@@ -81,28 +76,12 @@ public class F3Reference implements Serializable {
         this.floors = floors;
     }
 
-    public String getFormOfOwnership() {
-        return formOfOwnership;
-    }
-
-    public void setFormOfOwnership(String formOfOwnership) {
-        this.formOfOwnership = formOfOwnership;
-    }
-
     public String getLivingArea() {
         return livingArea;
     }
 
     public void setLivingArea(String livingArea) {
         this.livingArea = livingArea;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public List<NeighbourFamily> getNeighbourFamilies() {
@@ -115,14 +94,6 @@ public class F3Reference implements Serializable {
 
     public void addNeighbourFamily(NeighbourFamily neighbourFamily) {
         neighbourFamilies.add(neighbourFamily);
-    }
-
-    public String getPersonalAccountOwnerName() {
-        return personalAccountOwnerName;
-    }
-
-    public void setPersonalAccountOwnerName(String personalAccountOwnerName) {
-        this.personalAccountOwnerName = personalAccountOwnerName;
     }
 
     public Integer getRooms() {
@@ -147,5 +118,45 @@ public class F3Reference implements Serializable {
 
     public void setTechnicalState(String technicalState) {
         this.technicalState = technicalState;
+    }
+
+    public String getAddressEntity() {
+        return addressEntity;
+    }
+
+    public void setAddressEntity(String addressEntity) {
+        this.addressEntity = addressEntity;
+    }
+
+    public long getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(long addressId) {
+        this.addressId = addressId;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public Person getPersonalAccountOwner() {
+        return personalAccountOwner;
+    }
+
+    public void setPersonalAccountOwner(Person personalAccountOwner) {
+        this.personalAccountOwner = personalAccountOwner;
+    }
+
+    public DomainObject getOwnershipForm() {
+        return ownershipForm;
+    }
+
+    public void setOwnershipForm(DomainObject ownershipForm) {
+        this.ownershipForm = ownershipForm;
     }
 }

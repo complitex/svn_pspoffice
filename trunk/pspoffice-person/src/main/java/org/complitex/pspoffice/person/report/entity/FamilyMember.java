@@ -6,6 +6,8 @@ package org.complitex.pspoffice.person.report.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 
 /**
  *
@@ -13,19 +15,10 @@ import java.util.Date;
  */
 public class FamilyMember implements Serializable {
 
-    private String name;
-    private Date birthDate;
-    private String relation;
+    private Person person;
+    private DomainObject relation;
     private Date registrationDate;
     private String passport;
-
-    public Date getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
-    }
 
     public Date getRegistrationDate() {
         return registrationDate;
@@ -35,20 +28,20 @@ public class FamilyMember implements Serializable {
         this.registrationDate = registrationDate;
     }
 
-    public String getRelation() {
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public DomainObject getRelation() {
         return relation;
     }
 
-    public void setRelation(String relation) {
+    public void setRelation(DomainObject relation) {
         this.relation = relation;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getPassport() {

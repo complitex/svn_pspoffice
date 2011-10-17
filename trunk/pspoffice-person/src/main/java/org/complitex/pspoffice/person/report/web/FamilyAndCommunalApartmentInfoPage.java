@@ -21,12 +21,16 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.report.download.FamilyAndCommunalApartmentInfoDownload;
 import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.pspoffice.person.report.entity.FamilyAndCommunalApartmentInfo;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.report.service.FamilyAndCommunalApartmentInfoBean;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
@@ -46,6 +50,14 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(FamilyAndCommunalApartmentInfoPage.class);
     @EJB
     private FamilyAndCommunalApartmentInfoBean familyAndCommunalApartmentInfoBean;
+    @EJB
+    private PersonStrategy personStrategy;
+    @EJB
+    private AddressRendererBean addressRendererBean;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
+    @EJB
+    private StrategyFactory strategyFactory;
 
     private class MessagesFragment extends Fragment {
 
@@ -74,7 +86,8 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
             add(new Label("labelDetails", new StringResourceModel("labelDetails", null,
                     new Object[]{info.getNeighbourFamilies().size()})));
             add(new Label("addressInfo", new StringResourceModel("addressInfo", null,
-                    new Object[]{info.getAddress(), info.getNeighbourFamilies().size()})));
+                    new Object[]{addressRendererBean.displayAddress(info.getAddressEntity(), info.getAddressId(), getLocale()),
+                        info.getNeighbourFamilies().size()})));
 
             ListView<NeighbourFamily> neighbourFamilies = new ListView<NeighbourFamily>("neighbourFamilies",
                     info.getNeighbourFamilies()) {
@@ -82,8 +95,11 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
                 @Override
                 protected void populateItem(ListItem<NeighbourFamily> item) {
                     final NeighbourFamily neighbourFamily = item.getModelObject();
-                    item.add(new Label("neighbourFamilyApartmentNumber", neighbourFamily.getApartmentNumber()));
-                    item.add(new Label("neighbourFamilyName", neighbourFamily.getName()));
+                    item.add(new Label("neighbourFamilyApartmentNumber",
+                            neighbourFamily.getApartment() != null
+                            ? strategyFactory.getStrategy("apartment").displayDomainObject(neighbourFamily.getApartment(), getLocale())
+                            : ""));
+                    item.add(new Label("neighbourFamilyName", personStrategy.displayDomainObject(neighbourFamily.getPerson(), getLocale())));
                     item.add(new Label("neighbourFamilyRoomsAndArea", neighbourFamily.getRoomsAndAreaInfo()));
                     item.add(new Label("neighbourFamilyOtherBuildingsAndArea", neighbourFamily.getOtherBuildingsAndAreaInfo()));
                     item.add(new Label("neighbourFamilyLoggiaPresenceAndArea", neighbourFamily.getLoggiaAndAreaInfo()));
@@ -102,7 +118,7 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
                         valueOf(info.getFloor()), valueOf(info.getNumberOfStoreys())
                     })));
             add(new Label("familyLabel", new StringResourceModel("familyLabel", null, new Object[]{
-                        valueOf(info.getName())
+                        valueOf(personStrategy.displayDomainObject(info.getOwner(), getLocale()))
                     })));
 
             ListView<FamilyMember> familyMembers = new ListView<FamilyMember>("familyMembers", info.getFamilyMembers()) {
@@ -111,9 +127,9 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
                 protected void populateItem(ListItem<FamilyMember> item) {
                     item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
                     final FamilyMember member = item.getModelObject();
-                    item.add(new Label("familyMemberName", member.getName()));
-                    item.add(new Label("familyMemberRelation", member.getRelation()));
-                    item.add(new Label("familyMemberBirthDate", format(member.getBirthDate())));
+                    item.add(new Label("familyMemberName", personStrategy.displayDomainObject(member.getPerson(), getLocale())));
+                    item.add(new Label("familyMemberRelation", ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale())));
+                    item.add(new Label("familyMemberBirthDate", format(member.getPerson().getBirthDate())));
                     item.add(new Label("familyMemberRegistrationDate", format(member.getRegistrationDate())));
                 }
             };
@@ -136,7 +152,7 @@ public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
         Collection<FeedbackMessage> messages = newArrayList();
         FamilyAndCommunalApartmentInfo info = null;
         try {
-            info = familyAndCommunalApartmentInfoBean.get(apartmentCard, getLocale());
+            info = familyAndCommunalApartmentInfoBean.get(apartmentCard);
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);

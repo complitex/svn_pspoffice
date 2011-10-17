@@ -20,12 +20,16 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.address.service.AddressRendererBean;
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.report.download.F3ReferenceDownload;
 import static org.complitex.dictionary.util.StringUtil.*;
 import org.complitex.pspoffice.person.report.entity.F3Reference;
 import org.complitex.pspoffice.person.report.entity.FamilyMember;
 import org.complitex.pspoffice.person.report.entity.NeighbourFamily;
 import org.complitex.pspoffice.person.report.service.F3ReferenceBean;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
@@ -46,6 +50,14 @@ public final class F3ReferencePage extends WebPage {
     private static final Logger log = LoggerFactory.getLogger(F3ReferencePage.class);
     @EJB
     private F3ReferenceBean f3ReferenceBean;
+    @EJB
+    private AddressRendererBean addressRendererBean;
+    @EJB
+    private OwnershipFormStrategy ownershipFormStrategy;
+    @EJB
+    private PersonStrategy personStrategy;
+    @EJB
+    private OwnerRelationshipStrategy ownerRelationshipStrategy;
 
     private class MessagesFragment extends Fragment {
 
@@ -71,8 +83,10 @@ public final class F3ReferencePage extends WebPage {
         public ReportFragment(String id, final F3Reference f3) {
             super(id, "report", F3ReferencePage.this);
             add(new Label("label", new ResourceModel("label")));
-            add(new Label("name", new StringResourceModel("name", null, new Object[]{valueOf(f3.getName())})));
-            add(new Label("address", new StringResourceModel("address", null, new Object[]{valueOf(f3.getAddress())})));
+            add(new Label("name", new StringResourceModel("name", null,
+                    new Object[]{valueOf(personStrategy.displayDomainObject(f3.getPerson(), getLocale()))})));
+            add(new Label("address", new StringResourceModel("address", null,
+                    new Object[]{valueOf(addressRendererBean.displayAddress(f3.getAddressEntity(), f3.getAddressId(), getLocale()))})));
             add(new Label("livingArea", new StringResourceModel("livingArea", null, new Object[]{valueOf(f3.getLivingArea())})));
             add(new Label("apartmentArea", new StringResourceModel("apartmentArea", null, new Object[]{valueOf(f3.getApartmentArea())})));
             add(new Label("roomsInfo", new StringResourceModel("roomsInfo", null,
@@ -81,9 +95,9 @@ public final class F3ReferencePage extends WebPage {
                     new Object[]{valueOf(f3.getFloor()), valueOf(f3.getFloors())})));
             add(new Label("balance", new ResourceModel("balance")));
             add(new Label("personalAccountOwner", new StringResourceModel("personalAccountOwner", null,
-                    new Object[]{valueOf(f3.getPersonalAccountOwnerName())})));
+                    new Object[]{valueOf(personStrategy.displayDomainObject(f3.getPersonalAccountOwner(), getLocale()))})));
             add(new Label("formOfOwnership", new StringResourceModel("formOfOwnership", null,
-                    new Object[]{valueOf(f3.getFormOfOwnership())})));
+                    new Object[]{valueOf(ownershipFormStrategy.displayDomainObject(f3.getOwnershipForm(), getLocale()))})));
             add(new Label("facilities", new StringResourceModel("facilities", null, new Object[]{valueOf(f3.getFacilities())})));
             add(new Label("technicalState", new StringResourceModel("technicalState", null, new Object[]{valueOf(f3.getTechnicalState())})));
             add(new Label("familyInfo", new StringResourceModel("familyInfo", null, new Object[]{String.valueOf(f3.getFamilyMembers().size())})));
@@ -93,9 +107,9 @@ public final class F3ReferencePage extends WebPage {
                 protected void populateItem(ListItem<FamilyMember> item) {
                     item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
                     final FamilyMember member = item.getModelObject();
-                    item.add(new Label("familyMemberName", member.getName()));
-                    item.add(new Label("familyMemberBirthDate", format(member.getBirthDate())));
-                    item.add(new Label("familyMemberRelation", member.getRelation()));
+                    item.add(new Label("familyMemberName", personStrategy.displayDomainObject(member.getPerson(), getLocale())));
+                    item.add(new Label("familyMemberBirthDate", format(member.getPerson().getBirthDate())));
+                    item.add(new Label("familyMemberRelation", ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale())));
                     item.add(new Label("familyMemberRegistrationDate", format(member.getRegistrationDate())));
                 }
             };
@@ -108,7 +122,7 @@ public final class F3ReferencePage extends WebPage {
                 protected void populateItem(ListItem<NeighbourFamily> item) {
                     item.add(new Label("neighbourFamilyNumber", String.valueOf(item.getIndex() + 1)));
                     final NeighbourFamily neighbourFamily = item.getModelObject();
-                    item.add(new Label("neighbourFamilyName", neighbourFamily.getName()));
+                    item.add(new Label("neighbourFamilyName", personStrategy.displayDomainObject(neighbourFamily.getPerson(), getLocale())));
                     item.add(new Label("neighbourFamilyAmount", valueOf(neighbourFamily.getAmount())));
                     item.add(new Label("neighbourFamilyTakesRooms", valueOf(neighbourFamily.getTakeRooms())));
                     item.add(new Label("neighbourFamilyTakesArea", valueOf(neighbourFamily.getTakeArea())));
@@ -125,7 +139,7 @@ public final class F3ReferencePage extends WebPage {
         Collection<FeedbackMessage> messages = newArrayList();
         F3Reference f3 = null;
         try {
-            f3 = f3ReferenceBean.get(registration, apartmentCard, getLocale());
+            f3 = f3ReferenceBean.get(registration, apartmentCard);
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);

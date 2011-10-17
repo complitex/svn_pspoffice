@@ -8,6 +8,7 @@ package org.complitex.pspoffice.person.report.exception;
  *
  * @author Artem
  */
+@Deprecated
 public class UnregisteredPersonException extends Exception {
 
     private String address;

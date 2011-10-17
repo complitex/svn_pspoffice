@@ -18,10 +18,10 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.complitex.pspoffice.person.report.download.PersonCardDownload;
-import org.complitex.pspoffice.person.report.entity.PersonCard;
-import org.complitex.pspoffice.person.report.service.PersonCardBean;
-import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.report.download.RegistrationCardDownload;
+import org.complitex.pspoffice.person.report.entity.RegistrationCard;
+import org.complitex.pspoffice.person.report.service.RegistrationCardBean;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
@@ -35,18 +35,18 @@ import org.slf4j.LoggerFactory;
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public class PersonCardPage extends WebPage {
+public class RegistrationCardPage extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonCardPage.class);
+    private static final Logger log = LoggerFactory.getLogger(RegistrationCardPage.class);
     @EJB
-    private PersonCardBean registrationCardBean;
+    private RegistrationCardBean registrationCardBean;
 
     private class MessagesFragment extends Fragment {
 
         private Collection<FeedbackMessage> messages;
 
         public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
-            super(id, "messages", PersonCardPage.this);
+            super(id, "messages", RegistrationCardPage.this);
             this.messages = messages;
             add(new FeedbackPanel("messages"));
         }
@@ -62,8 +62,8 @@ public class PersonCardPage extends WebPage {
 
     private class ReportFragment extends Fragment {
 
-        public ReportFragment(String id, final PersonCard card) {
-            super(id, "report", PersonCardPage.this);
+        public ReportFragment(String id, final RegistrationCard card) {
+            super(id, "report", RegistrationCardPage.this);
             add(new Label("label", new StringResourceModel("label", null,
                     new Object[]{card.getLastName() + " " + card.getFirstName() + " " + card.getMiddleName()})));
 
@@ -102,15 +102,15 @@ public class PersonCardPage extends WebPage {
         }
     }
 
-    public PersonCardPage(Person person) {
+    public RegistrationCardPage(Registration registration, String address) {
         add(CSSPackageResource.getHeaderContribution(WebCommonResourceInitializer.STYLE_CSS));
-        add(CSSPackageResource.getHeaderContribution(PersonCardPage.class, PersonCardPage.class.getSimpleName() + ".css"));
+        add(CSSPackageResource.getHeaderContribution(RegistrationCardPage.class, RegistrationCardPage.class.getSimpleName() + ".css"));
 
         add(new Label("title", new ResourceModel("title")));
         Collection<FeedbackMessage> messages = newArrayList();
-        PersonCard card = null;
+        RegistrationCard card = null;
         try {
-            card = registrationCardBean.get(person, getLocale());
+            card = registrationCardBean.get(registration, address, getLocale());
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);
@@ -119,7 +119,7 @@ public class PersonCardPage extends WebPage {
 
         //Загрузка отчетов
         final ReportDownloadPanel reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
-                new PersonCardDownload(card));
+                new RegistrationCardDownload(card));
         reportDownloadPanel.setVisible(card != null);
         add(reportDownloadPanel);
 

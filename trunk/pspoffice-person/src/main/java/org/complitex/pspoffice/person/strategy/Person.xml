@@ -184,10 +184,6 @@
     <select id="findPermanentRegistrationAddress" parameterType="map"
                 resultMap="org.complitex.pspoffice.person.strategy.Person.PersonRegistration">
         SELECT ra.`object_id` registrationId, address.`value_id` addressId, address.`value_type_id` addressTypeId
-        <include refid="org.complitex.pspoffice.person.strategy.Person.findPermanentRegistrationInfoSql"/>
-    </select>
-    
-    <sql id="findPermanentRegistrationInfoSql">
         FROM `registration_attribute` ra
             JOIN `registration_attribute` rt ON (rt.`object_id` = ra.`object_id` AND rt.`status` = 'ACTIVE')
             JOIN `apartment_card_attribute` ar ON (ra.`object_id` = ar.`value_id` AND ar.`status` = 'ACTIVE')
@@ -198,13 +194,8 @@
                     AND ar.`attribute_type_id` = #{apartmentCardRegistrationAT}
                     AND address.`attribute_type_id` = #{apartmentCardAddressAT}
                     AND ra.`value_id` = #{personId}
-                    AND ra.`status` = 'ACTIVE' 
+                    AND ra.`status` = 'ACTIVE'
                     AND rt.`value_id` = #{permanentRegistrationTypeId}
-    </sql>
-
-    <select id="findApartmentCardIdByPermanentRegistration" parameterType="map" resultType="long">
-        SELECT DISTINCT a.`object_id`
-        <include refid="org.complitex.pspoffice.person.strategy.Person.findPermanentRegistrationInfoSql"/>
     </select>
 
 </mapper>

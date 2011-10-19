@@ -46,18 +46,9 @@ public class HousingPayments implements Serializable {
     private String hotWaterTariff;
     private String outletPayments;
     private String outletTariff;
-    private String countersPresence;
     private String debt;
     private Integer debtMonth;
     private List<FamilyMember> familyMembers = newArrayList();
-
-    public String getCountersPresence() {
-        return countersPresence;
-    }
-
-    public void setCountersPresence(String countersPresence) {
-        this.countersPresence = countersPresence;
-    }
 
     public String getAddressEntity() {
         return addressEntity;

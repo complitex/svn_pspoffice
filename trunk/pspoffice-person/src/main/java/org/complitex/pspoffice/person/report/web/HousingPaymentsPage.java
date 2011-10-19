@@ -141,8 +141,7 @@ public final class HousingPaymentsPage extends WebPage {
                         valueOf(payments.getGasPayments()), valueOf(payments.getGasTariff()),
                         valueOf(payments.getColdWaterPayments()), valueOf(payments.getColdWaterTariff()),
                         valueOf(payments.getHotWaterPayments()), valueOf(payments.getHotWaterTariff()),
-                        valueOf(payments.getOutletPayments()), valueOf(payments.getOutletTariff()),
-                        valueOf(payments.getCountersPresence())
+                        valueOf(payments.getOutletPayments()), valueOf(payments.getOutletTariff())
                     })));
             add(new Label("debt", new StringResourceModel("debt", null, new Object[]{
                         valueOf(payments.getDebt()), valueOf(payments.getDebtMonth())

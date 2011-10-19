@@ -121,7 +121,6 @@ public class HousingPaymentsDownload extends AbstractReportDownload<HousingPayme
         map.put(HOT_WATER_TARIFF, report.getHotWaterTariff());
         map.put(OUTLET_PAYMENTS, report.getOutletPayments());
         map.put(OUTLET_TARIFF, report.getOutletTariff());
-        map.put(COUNTERS_PRESENCE, report.getCountersPresence());
         map.put(DEBT, report.getDebt());
         map.put(DEBT_MONTH, report.getDebtMonth());
 

@@ -84,6 +84,7 @@ public final class HousingPaymentsPage extends WebPage {
             add(new Label("label", new ResourceModel("label")));
             add(new Label("headInfo", new StringResourceModel("headInfo", null, new Object[]{
                         personStrategy.displayDomainObject(payments.getOwner(), getLocale()),
+                        payments.getPersonalAccount(),
                         addressRendererBean.displayAddress(payments.getAddressEntity(), payments.getAddressId(), getLocale())
                     })));
             ListView<FamilyMember> familyMembers = new ListView<FamilyMember>("familyMembers", payments.getFamilyMembers()) {

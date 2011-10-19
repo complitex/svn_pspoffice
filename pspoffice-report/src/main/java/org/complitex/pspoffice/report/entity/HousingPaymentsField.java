@@ -4,7 +4,8 @@ package org.complitex.pspoffice.report.entity;
  * @author Anatoly A. Ivanov java@inheaven.ru
  *         Date: 15.06.11 16:49
  */
-public enum HousingPaymentsField implements IReportField{
+public enum HousingPaymentsField implements IReportField {
+
     NAME, PERSONAL_ACCOUNT, ADDRESS, FORM_OF_OWNERSHIP,
     NAME0, RELATION0, BIRTH_DATE0, PASSPORT0,
     NAME1, RELATION1, BIRTH_DATE1, PASSPORT1,
@@ -21,7 +22,7 @@ public enum HousingPaymentsField implements IReportField{
     HEAT_PAYMENTS, HEAT_TARIFF, GAS_PAYMENTS, GAS_TARIFF,
     COLD_WATER_PAYMENTS, COLD_WATER_TARIFF, HOT_WATER_PAYMENTS,
     HOT_WATER_TARIFF, OUTLET_PAYMENTS, OUTLET_TARIFF,
-    COUNTERS_PRESENCE, DEBT, DEBT_MONTH;
+    DEBT, DEBT_MONTH;
 
     @Override
     public String getFieldName() {

@@ -366,7 +366,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                         if (d2 == null) {
                             d2 = o2.getEndDate();
                         }
-                        return d1.compareTo(d2);
+                        return d2.compareTo(d1);
                     }
                     if (o1.isFinished() || o2.isFinished()) {
                         return o1.isFinished() ? 1 : -1;
@@ -374,7 +374,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
                     Date d1 = o1.getRegistrationDate();
                     Date d2 = o2.getRegistrationDate();
-                    return d1.compareTo(d2);
+                    return d2.compareTo(d1);
                 }
             });
         }

@@ -94,8 +94,8 @@ public class PersonNameAutocompleteComponent extends AutocompleteAjaxComponent<S
         this(id, personNameIdModel, null, personNameType, locale, saveIfNotFound);
     }
 
-    public PersonNameAutocompleteComponent(String id, IModel<Long> personNameIdModel, IModel<String> delegateModel, PersonNameType personNameType,
-            Locale locale, boolean saveIfNotFound) {
+    public PersonNameAutocompleteComponent(String id, IModel<Long> personNameIdModel, IModel<String> delegateModel,
+            PersonNameType personNameType, Locale locale, boolean saveIfNotFound) {
         super(id, new Model<String>());
         this.personNameIdModel = personNameIdModel;
         this.locale = locale;
@@ -109,8 +109,10 @@ public class PersonNameAutocompleteComponent extends AutocompleteAjaxComponent<S
 
         //UI corrections
         getAutocompleteField().setDelay(1000);
-         //TODO: add minLength option
-//            getAutocompleteField().setMinLength(3);
+
+        //TODO: add minLength option
+        //getAutocompleteField().setMinLength(3);
+
         getAutocompleteField().setOpenEvent(JsScopeUiEvent.quickScope(
                 "var input = $(this);"+
                 "var isFocused = input.is(':focus');"+

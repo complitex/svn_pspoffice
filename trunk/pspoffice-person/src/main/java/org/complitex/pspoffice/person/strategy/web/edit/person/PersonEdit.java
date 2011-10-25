@@ -7,7 +7,6 @@ package org.complitex.pspoffice.person.strategy.web.edit.person;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.ejb.EJB;
-import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -19,6 +18,7 @@ import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
+import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.DeathButton;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -39,10 +39,12 @@ public class PersonEdit extends FormTemplatePage {
     private StringCultureBean stringBean;
     private Person oldPerson;
     private Person newPerson;
-    private Page backPage;
+    private final boolean isBackPage;
+    private long backApartmentCardId;
     private PersonDeathDialog personDeathDialog;
 
     public PersonEdit(PageParameters parameters) {
+        this.isBackPage = false;
         Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
         if (objectId == null) {
             //create new entity
@@ -60,10 +62,14 @@ public class PersonEdit extends FormTemplatePage {
         init();
     }
 
-    public PersonEdit(Page backPage, long personId) {
+    /**
+     * Constructor for traverses from ApartmentCardEdit. It backs to ApartmentCardEdit page after person editing.
+     */
+    public PersonEdit(long apartmentCardId, long personId) {
+        this.isBackPage = true;
         newPerson = personStrategy.findPersonById(personId, false, true, true, true);
         oldPerson = CloneUtil.cloneObject(newPerson);
-        this.backPage = backPage;
+        this.backApartmentCardId = apartmentCardId;
         init();
     }
 
@@ -91,17 +97,17 @@ public class PersonEdit extends FormTemplatePage {
         });
 
         personDeathDialog = new PersonDeathDialog("personDeathDialog");
-        personDeathDialog.setVisible(oldPerson != null && backPage == null);
+        personDeathDialog.setVisible(oldPerson != null && !isBackPage);
         add(personDeathDialog);
     }
 
     private void back() {
-        if (backPage == null) {
+        if (!isBackPage) {
             PageParameters listPageParams = personStrategy.getListPageParams();
             listPageParams.put(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
             setResponsePage(personStrategy.getListPage(), listPageParams);
         } else {
-            setResponsePage(backPage);
+            setResponsePage(new ApartmentCardEdit(backApartmentCardId));
         }
     }
 

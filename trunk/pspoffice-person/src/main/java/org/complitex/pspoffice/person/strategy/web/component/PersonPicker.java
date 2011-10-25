@@ -4,9 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.component;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
@@ -28,7 +25,6 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
@@ -37,6 +33,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
+import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 
@@ -46,7 +43,6 @@ import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
  */
 public final class PersonPicker extends FormComponentPanel<Person> {
 
-    private static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd.MM.yyyy");
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -159,8 +155,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                     throw new IllegalStateException("Oops...");
                 } else {
                     PersonPicker.this.getModel().setObject(personModel.getObject());
-                    clearAndCloseLookupDialog(personModel, personsModel, target, lookupDialog, content,
-                            personNotFoundContainer, personsDataContainer, this);
+                    clearAndCloseLookupDialog(personModel, personsModel,
+                            target, lookupDialog, content, personNotFoundContainer, personsDataContainer, this);
                     target.addComponent(personLabel);
                 }
             }
@@ -188,12 +184,10 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 Person person = item.getModelObject();
                 item.add(new Radio<Person>("radio", item.getModel(), radioGroup));
                 item.add(new Label("fullName", personStrategy.displayDomainObject(person, getLocale())));
-                Date birthDate = person.getBirthDate();
-                item.add(new Label("birthDate", birthDate != null ? DATE_FORMATTER.format(birthDate) : null));
-                Gender gender = person.getGender();
-                item.add(new Label("gender", gender != null ? GenderPanel.display(person.getGender(), getLocale()) : null));
+                item.add(new Label("birthDate", PersonDateFormatter.format(person.getBirthDate())));
+                item.add(new Label("gender", GenderPanel.display(person.getGender(), getLocale())));
                 item.add(new Label("idCode", StringUtil.valueOf(person.getIdentityCode())));
-                item.add(new Label("document", documentStrategy.displayDomainObject(person.getDocument(), getLocale())));
+                item.add(new Label("document", documentStrategy.displayDomainObject(person.getDocument(), null)));
             }
         };
         radioGroup.add(persons);

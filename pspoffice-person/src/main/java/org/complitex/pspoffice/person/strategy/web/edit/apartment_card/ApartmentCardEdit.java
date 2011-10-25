@@ -29,6 +29,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.AjaxIndicatorAppender;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -379,7 +380,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         final ChangeRegistrationTypeDialog changeRegistrationTypeDialog = new ChangeRegistrationTypeDialog("changeRegistrationTypeDialog");
         add(changeRegistrationTypeDialog);
 
-        final AjaxLink<Void> removeRegistration = new AjaxLink<Void>("removeRegistration") {
+        final IndicatingAjaxLink<Void> removeRegistration = new IndicatingAjaxLink<Void>("removeRegistration") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -464,7 +465,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                     @Override
                     public void onClick() {
-                        setResponsePage(new PersonEdit(ApartmentCardEdit.this, registration.getPerson().getId()));
+                        setResponsePage(new PersonEdit(apartmentCard.getId(), registration.getPerson().getId()));
                     }
                 };
                 personLink.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));

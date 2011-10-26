@@ -100,7 +100,7 @@ public class Person extends DomainObject {
     }
 
     public String getMilitaryServiceRelation() {
-        return getStringValue(this, MILITARY_SERVISE_RELATION);
+        return getStringValue(this, MILITARY_SERVICE_RELATION);
     }
 
     public Gender getGender() {
@@ -141,7 +141,7 @@ public class Person extends DomainObject {
     public boolean isKid() {
         Date birthDate = getBirthDate();
         Date currentDate = getCurrentDate();
-        return birthDate == null || (!isValidDateInterval(currentDate, birthDate, AGE_THRESHOLD));
+        return birthDate != null && !isValidDateInterval(currentDate, birthDate, AGE_THRESHOLD);
     }
 
     public boolean hasChildren() {

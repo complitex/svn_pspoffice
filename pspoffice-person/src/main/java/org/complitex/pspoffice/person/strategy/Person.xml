@@ -166,7 +166,7 @@
         <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>
     </select>
 
-    <select id="findPersonApartmentCardAdresses" parameterType="map"
+    <select id="findPersonApartmentCardAddresses" parameterType="map"
                 resultMap="org.complitex.pspoffice.person.strategy.Person.PersonApartmentCardAddress">
         SELECT ar.`object_id` apartmentCardId, address.`value_id` addressId, address.`value_type_id` addressTypeId
         <include refid="org.complitex.pspoffice.person.strategy.Person.findPersonRegistrationsSql"/>

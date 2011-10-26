@@ -185,7 +185,9 @@ public class PersonInputPanel extends Panel {
         deathDateZone.setVisible(isHistory());
         add(deathDateZone);
         initSystemAttributeInput(deathDateZone, "deathDate", DEATH_DATE, false);
-        initSystemAttributeInput(this, "militaryServiceRelation", MILITARY_SERVISE_RELATION, false);
+
+        //military service
+        add(initMilitaryServiceRelation());
 
         //document
         add(initDocument());
@@ -196,20 +198,19 @@ public class PersonInputPanel extends Panel {
         //children
         final Component childrentComponent = initChildren();
         childrentComponent.setOutputMarkupPlaceholderTag(true);
-        if (personAgeType == PersonAgeType.KID || (personAgeType == PersonAgeType.ANY && !isNew() && person.isKid())) {
-            childrentComponent.setVisible(false);
-        }
+        childrentComponent.setVisible(
+                (personAgeType == PersonAgeType.ADULT) || (personAgeType == PersonAgeType.ANY && !person.isKid()));
         add(childrentComponent);
 
         birthDateComponent.add(new AjaxFormComponentUpdatingBehavior("onblur") {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                boolean showChildrenContainer = true;
-                showChildrenContainer = (personAgeType == PersonAgeType.ADULT)
+                boolean showAdultComponents = (personAgeType == PersonAgeType.ADULT)
                         || (personAgeType == PersonAgeType.ANY && !person.isKid())
                         || person.hasChildren();
-                updateChildrenComponent(target, showChildrenContainer);
+                updateChildrenComponent(target, showAdultComponents);
+                updateMilitaryServiceRelationComponent(target, showAdultComponents);
             }
 
             @Override
@@ -227,7 +228,7 @@ public class PersonInputPanel extends Panel {
             private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {
                 boolean wasVisible = childrentComponent.isVisible();
                 childrentComponent.setVisible(visible);
-                if (wasVisible ^ childrentComponent.isVisible()) {
+                if (wasVisible ^ visible) {
                     target.addComponent(childrentComponent);
                 }
             }
@@ -734,5 +735,58 @@ public class PersonInputPanel extends Panel {
         };
         content.add(registrations);
         return registrationsFieldset;
+    }
+    /**
+     * military service relation UI fields.
+     */
+    private WebMarkupContainer militaryServiceRelationHead;
+    private WebMarkupContainer militaryServiceRelationBody;
+
+    private Component initMilitaryServiceRelation() {
+        WebMarkupContainer militaryServiceRelationContainer = new WebMarkupContainer("militaryServiceRelationContainer");
+
+        militaryServiceRelationHead = new WebMarkupContainer("militaryServiceRelationHead");
+        militaryServiceRelationHead.setOutputMarkupPlaceholderTag(true);
+        militaryServiceRelationContainer.add(militaryServiceRelationHead);
+
+        EntityAttributeType militaryAttruibuteType = personStrategy.getEntity().getAttributeType(MILITARY_SERVICE_RELATION);
+        //label
+        militaryServiceRelationHead.add(new Label("label", labelModel(militaryAttruibuteType.getAttributeNames(), getLocale())));
+
+        //required container
+        WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
+        requiredContainer.setVisible(militaryAttruibuteType.isMandatory());
+        militaryServiceRelationHead.add(requiredContainer);
+
+        militaryServiceRelationBody = new WebMarkupContainer("militaryServiceRelationBody");
+        militaryServiceRelationBody.setOutputMarkupPlaceholderTag(true);
+        militaryServiceRelationContainer.add(militaryServiceRelationBody);
+
+        //input component
+        Attribute attribute = person.getAttribute(MILITARY_SERVICE_RELATION);
+        if (attribute == null) {
+            attribute = new Attribute();
+            attribute.setLocalizedValues(stringBean.newStringCultures());
+            attribute.setAttributeTypeId(MILITARY_SERVICE_RELATION);
+            militaryServiceRelationContainer.setVisible(false);
+        }
+        militaryServiceRelationBody.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute,
+                getLocale(), isHistory()));
+
+        boolean initialVisibility = personAgeType == PersonAgeType.ADULT || (personAgeType == PersonAgeType.ANY && !person.isKid());
+        militaryServiceRelationHead.setVisible(initialVisibility);
+        militaryServiceRelationBody.setVisible(initialVisibility);
+
+        return militaryServiceRelationContainer;
+    }
+
+    private void updateMilitaryServiceRelationComponent(AjaxRequestTarget target, boolean visible) {
+        boolean wasVisible = militaryServiceRelationHead.isVisible();
+        militaryServiceRelationHead.setVisible(visible);
+        militaryServiceRelationBody.setVisible(visible);
+        if (wasVisible ^ visible) {
+            target.addComponent(militaryServiceRelationHead);
+            target.addComponent(militaryServiceRelationBody);
+        }
     }
 }

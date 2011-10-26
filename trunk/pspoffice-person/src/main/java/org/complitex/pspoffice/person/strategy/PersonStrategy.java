@@ -76,7 +76,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long BIRTH_CITY = 2008;
     public static final long DOCUMENT = 2009;
     public static final long DEATH_DATE = 2013;
-    public static final long MILITARY_SERVISE_RELATION = 2014;
+    public static final long MILITARY_SERVICE_RELATION = 2014;
     public static final long CHILDREN = 2015;
     public static final long GENDER = 2016;
     public static final long UKRAINE_CITIZENSHIP = 2020;
@@ -709,7 +709,7 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     public List<PersonApartmentCardAddress> findPersonApartmentCardAddresses(long personId) {
         List<PersonApartmentCardAddress> personApartmentCardAddresses = sqlSession().selectList(PERSON_MAPPING
-                + ".findPersonApartmentCardAdresses", newFindPersonRegistrationParameters(personId));
+                + ".findPersonApartmentCardAddresses", newFindPersonRegistrationParameters(personId));
         for (PersonApartmentCardAddress personApartmentCardAddress : personApartmentCardAddresses) {
             personApartmentCardAddress.setAddressEntity(ApartmentCardStrategy.getAddressEntity(personApartmentCardAddress.getAddressTypeId()));
         }

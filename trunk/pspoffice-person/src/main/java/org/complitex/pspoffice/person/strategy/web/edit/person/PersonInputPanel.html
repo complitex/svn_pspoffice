@@ -64,13 +64,17 @@
                 <tr>
                     <wicket:container wicket:id="militaryServiceRelationContainer">
                         <th>
-                            <wicket:container wicket:id="label"/>
-                            <wicket:container wicket:id="required">
-                                <b class="blue">*</b>
-                            </wicket:container>:
+                            <div wicket:id="militaryServiceRelationHead">
+                                <wicket:container wicket:id="label"/>
+                                <wicket:container wicket:id="required">
+                                    <b class="blue">*</b>
+                                </wicket:container>:
+                            </div>
                         </th>
                         <td>
-                            <div wicket:id="input"></div>
+                            <div wicket:id="militaryServiceRelationBody">
+                                <div wicket:id="input"></div>
+                            </div>
                         </td>
                     </wicket:container>
                 </tr>

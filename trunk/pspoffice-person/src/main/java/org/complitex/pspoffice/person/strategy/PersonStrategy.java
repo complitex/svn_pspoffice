@@ -754,9 +754,7 @@ public class PersonStrategy extends TemplateStrategy {
             }
         }
 
-        if (person.isKid()) {
-            removeKidFromParent(person.getId(), updateDate);
-        }
+        removeKidFromParent(person.getId(), updateDate);
 
         Person newPerson = CloneUtil.cloneObject(person);
         stringBean.getSystemStringCulture(newPerson.getAttribute(PersonStrategy.DEATH_DATE).getLocalizedValues()).

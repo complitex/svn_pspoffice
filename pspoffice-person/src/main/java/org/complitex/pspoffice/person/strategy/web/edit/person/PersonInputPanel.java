@@ -44,7 +44,6 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.StatusType;
@@ -587,10 +586,6 @@ public class PersonInputPanel extends Panel {
         };
         previousDocumentsDialog.setModal(true);
         add(previousDocumentsDialog);
-
-
-        previousDocumentsDialog.add(new Label("previousDocumentsLabel", new StringResourceModel("previous_documents_dialog_label", null,
-                new Object[]{personStrategy.displayDomainObject(person, getLocale())})));
 
         IModel<List<Document>> previousDocumentsModel = new AbstractReadOnlyModel<List<Document>>() {
 

@@ -74,7 +74,7 @@ public final class PersonList extends ScrollListPage {
         @Override
         public String getObject() {
             EntityAttributeType attributeType = personStrategy.getEntity().getAttributeType(attributeTypeId);
-            return stringBean.displayValue(attributeType.getAttributeNames(), getLocale());
+            return Strings.capitalize(stringBean.displayValue(attributeType.getAttributeNames(), getLocale()).toLowerCase(getLocale()));
         }
     }
 
@@ -207,7 +207,7 @@ public final class PersonList extends ScrollListPage {
                 item.add(new Label("firstName", person.getFirstName(getLocale(), systemLocale)));
                 item.add(new Label("middleName", person.getMiddleName(getLocale(), systemLocale)));
 
-                ScrollBookmarkablePageLink<WebPage> detailsLink = new ScrollBookmarkablePageLink<WebPage>("detailsLink", 
+                ScrollBookmarkablePageLink<WebPage> detailsLink = new ScrollBookmarkablePageLink<WebPage>("detailsLink",
                         personStrategy.getEditPage(), personStrategy.getEditPageParams(person.getId(), null, null),
                         String.valueOf(person.getId()));
                 detailsLink.add(new Label("editMessage", new AbstractReadOnlyModel<String>() {

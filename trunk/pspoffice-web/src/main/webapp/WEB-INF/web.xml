@@ -35,6 +35,13 @@
         <role-name>ADDRESS_MODULE_EDIT</role-name>
     </security-role>
     <security-role>
+        <role-name>APARTMENT_EDIT</role-name>
+    </security-role>
+    <security-role>
+        <role-name>ROOM_EDIT</role-name>
+    </security-role>
+    
+    <security-role>
         <role-name>ORGANIZATION_MODULE_VIEW</role-name>
     </security-role>
     <security-role>

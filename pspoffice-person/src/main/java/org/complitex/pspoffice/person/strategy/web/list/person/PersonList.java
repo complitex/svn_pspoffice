@@ -25,7 +25,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionary.entity.PreferenceKey;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.LocaleBean;
@@ -33,7 +32,6 @@ import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.strategy.web.model.DomainObjectIdModel;
 import org.complitex.dictionary.util.StringUtil;
-import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.ShowModePanel;
 import org.complitex.dictionary.web.component.datatable.ArrowOrderByBorder;
@@ -61,13 +59,12 @@ public final class PersonList extends ScrollListPage {
     @EJB
     private StringCultureBean stringBean;
     private DomainObjectExample example;
-    private static final String PAGE = PersonList.class.getName();
 
     private class ColumnLabelModel extends AbstractReadOnlyModel<String> {
 
         private long attributeTypeId;
 
-        public ColumnLabelModel(long attributeTypeId) {
+        private ColumnLabelModel(long attributeTypeId) {
             this.attributeTypeId = attributeTypeId;
         }
 
@@ -104,15 +101,15 @@ public final class PersonList extends ScrollListPage {
         add(content);
 
         //Example
-        example = (DomainObjectExample) getTemplateSession().getPreferenceObject(PAGE, PreferenceKey.FILTER_OBJECT, null);
+        example = (DomainObjectExample) getFilterObject(null);
 
         if (example == null) {
             example = new DomainObjectExample();
-            getTemplateSession().putPreferenceObject(PAGE, PreferenceKey.FILTER_OBJECT, example);
+            setFilterObject(example);
         }
 
         //Form
-        final Form filterForm = new Form("filterForm");
+        final Form<Void> filterForm = new Form<Void>("filterForm");
         content.add(filterForm);
 
         //Show Mode
@@ -128,11 +125,9 @@ public final class PersonList extends ScrollListPage {
                 boolean asc = getSort().isAscending();
                 String sortProperty = getSort().getProperty();
 
-                //store preference
-                DictionaryFwSession session = getTemplateSession();
-                session.putPreference(PAGE, PreferenceKey.SORT_PROPERTY, getSort().getProperty(), true);
-                session.putPreference(PAGE, PreferenceKey.SORT_ORDER, getSort().isAscending(), true);
-                session.putPreferenceObject(PAGE, PreferenceKey.FILTER_OBJECT, example);
+                setSortProperty(sortProperty);
+                setSortOrder(asc);
+                setFilterObject(example);
 
                 if (!Strings.isEmpty(sortProperty)) {
                     example.setOrderByAttributeTypeId(Long.valueOf(sortProperty));
@@ -152,8 +147,7 @@ public final class PersonList extends ScrollListPage {
                 return personStrategy.count(example);
             }
         };
-        dataProvider.setSort(getTemplateSession().getPreferenceString(PAGE, PreferenceKey.SORT_PROPERTY, ""),
-                getTemplateSession().getPreferenceBoolean(PAGE, PreferenceKey.SORT_ORDER, true));
+        dataProvider.setSort(getSortProperty(""), getSortOrder(true));
 
         //Filters
         filterForm.add(new TextField<String>("id", new DomainObjectIdModel(new PropertyModel<Long>(example, "id"))));
@@ -234,7 +228,7 @@ public final class PersonList extends ScrollListPage {
                 dataProvider, dataView, content).add(new Label("middle_name", new ColumnLabelModel(PersonStrategy.MIDDLE_NAME))));
 
         //Reset Action
-        AjaxLink reset = new AjaxLink("reset") {
+        AjaxLink<Void> reset = new AjaxLink<Void>("reset") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -258,8 +252,7 @@ public final class PersonList extends ScrollListPage {
         };
         filterForm.add(submit);
 
-        //Navigator
-        content.add(new PagingNavigator("navigator", dataView, getClass().getName(), content));
+        content.add(new PagingNavigator("navigator", dataView, getPreferencesPage(), content));
     }
 
     @Override
@@ -281,4 +274,3 @@ public final class PersonList extends ScrollListPage {
         });
     }
 }
-

@@ -4,8 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
-import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.AddRegistrationToolbarButton;
-import org.apache.wicket.markup.html.link.AbstractLink;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -909,13 +907,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                         setVisible(!isNew());
                     }
                 },
-                new AddRegistrationToolbarButton(id) {
-
-                    @Override
-                    protected AbstractLink newLink(String linkId) {
-                        return new AddRegistrationToolbarLink(linkId);
-                    }
-                },
                 new ArchiveApartmentCardButton(id) {
 
                     @Override
@@ -938,4 +929,3 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 });
     }
 }
-

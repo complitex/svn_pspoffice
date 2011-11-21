@@ -1,0 +1,2 @@
+--insert into config(`name`, `value`) values ('DEFAULT_IMPORT_FILE_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada');
+--insert into config(`name`, `value`) values ('DEFAULT_IMPORT_FILE_ERRORS_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada\\errors');

@@ -52,5 +52,9 @@
         <mapper resource="org/complitex/pspoffice/person/strategy/Registration.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/service/PersonNameBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/report/service/RegistrationStopCouponBean.xml"/>
+        
+        <!-- import -->
+        <mapper resource="org/complitex/pspoffice/imp/service/StreetCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/imp/service/BuildingCorrectionBean.xml"/>
     </mappers>
 </configuration>

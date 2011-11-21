@@ -589,6 +589,46 @@ CREATE TABLE `person_last_name` (
   UNIQUE KEY `key_name` (`name`, `locale_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT 'Фамилия персоны';
 
+
+-- ------------------------------
+-- Import temporal tables
+-- ------------------------------
+
+-- Street correction --
+DROP TABLE IF EXISTS `street_correction`;
+
+CREATE TABLE `street_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `utype` VARCHAR(100),
+  `nkod` VARCHAR(100),
+  `rtype` VARCHAR(100),
+  `nkod1` VARCHAR(100),
+  `system_street_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `street_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Building correction --
+DROP TABLE IF EXISTS `building_correction`;
+
+CREATE TABLE `building_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `idul` VARCHAR(100),
+  `dom` VARCHAR(100),
+  `korpus` VARCHAR(100),
+  `system_building_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `building_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

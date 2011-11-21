@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * @author Anatoly A. Ivanov java@inheaven.ru
- *         Date: 24.03.11 16:40
+ * @author Artem
  */
 public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu {
 
@@ -18,7 +17,8 @@ public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu
     public List<ITemplateLink> getTemplateLinks(Locale locale) {
         List<ITemplateLink> links = super.getTemplateLinks(locale);
 
-        links.add(new ITemplateLink(){
+        links.add(new ITemplateLink() {
+
             @Override
             public String getLabel(Locale locale) {
                 return getString(ImportPage.class, locale, "title");
@@ -37,7 +37,30 @@ public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu
 
             @Override
             public String getTagId() {
-                return "ImportPage";
+                return "complitex_import";
+            }
+        });
+
+        links.add(new ITemplateLink() {
+
+            @Override
+            public String getLabel(Locale locale) {
+                return getString(org.complitex.pspoffice.imp.web.ImportPage.class, locale, "title");
+            }
+
+            @Override
+            public Class<? extends Page> getPage() {
+                return org.complitex.pspoffice.imp.web.ImportPage.class;
+            }
+
+            @Override
+            public PageParameters getParameters() {
+                return PageParameters.NULL;
+            }
+
+            @Override
+            public String getTagId() {
+                return "psp_import";
             }
         });
 

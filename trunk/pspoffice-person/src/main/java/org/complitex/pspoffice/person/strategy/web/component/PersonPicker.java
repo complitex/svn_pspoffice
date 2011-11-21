@@ -11,6 +11,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -51,10 +52,11 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     private final boolean required;
     private final IModel<String> labelModel;
     private final PersonAgeType personAgeType;
+    private AjaxLink<Void> createNew;
 
     private static class Dialog extends org.odlabs.wiquery.ui.dialog.Dialog {
 
-        public Dialog(String id) {
+        private Dialog(String id) {
             super(id);
             getOptions().putLiteral("width", "auto");
         }
@@ -72,6 +74,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
     private void init() {
         add(JavascriptPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName() + ".js"));
+        add(CSSPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName()+".css"));
 
         setRequired(required);
         setLabel(labelModel);
@@ -145,7 +148,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
         final IModel<List<? extends Person>> personsModel = Model.ofList(null);
         final IModel<Person> personModel = new Model<Person>();
-
+        
         //select
         final AjaxLink<Void> select = new AjaxLink<Void>("select") {
 
@@ -164,6 +167,42 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         select.setOutputMarkupPlaceholderTag(true);
         select.setVisible(false);
         content.add(select);
+        
+        //person creation dialog
+        final Dialog personCreationDialog = new Dialog("personCreationDialog");
+        personCreationDialog.setModal(true);
+        personCreationDialog.setOpenEvent(JsScopeUiEvent.quickScope(new JsStatement().self().chain("parents", "'.ui-dialog:first'").
+                chain("find", "'.ui-dialog-titlebar-close'").
+                chain("hide").render()));
+        personCreationDialog.setCloseOnEscape(false);
+        add(personCreationDialog);
+
+        //person edit container
+        final WebMarkupContainer personEditContainer = new WebMarkupContainer("personEditContainer");
+        personEditContainer.setOutputMarkupId(true);
+        personCreationDialog.add(personEditContainer);
+
+        //person edit panel
+        personEditContainer.add(new EmptyPanel("personEditPanel"));
+        
+        //create new
+        createNew = new AjaxLink<Void>("createNew") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                clearAndCloseLookupDialog(personModel, personsModel,
+                        target, lookupDialog, content, personNotFoundContainer, personsDataContainer, select);
+
+                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel,
+                        lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject()));
+
+                target.addComponent(personEditContainer);
+                personCreationDialog.open(target);
+            }
+        };
+        createNew.setOutputMarkupPlaceholderTag(true);
+        createNew.setVisible(false);
+        content.add(createNew);
 
         //radio group
         final RadioGroup<Person> radioGroup = new RadioGroup<Person>("radioGroup", personModel);
@@ -209,6 +248,8 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 if (!isPersonsDataContainerVisible) {
                     target.focusComponent(lastName.getAutocompleteField());
                 }
+                createNew.setVisible(true);
+                target.addComponent(createNew);
             }
         };
         filterForm.add(find);
@@ -235,39 +276,9 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         choose.setVisible(enabled);
         add(choose);
 
-        //person creation dialog
-        final Dialog personCreationDialog = new Dialog("personCreationDialog");
-        personCreationDialog.setModal(true);
-        personCreationDialog.setOpenEvent(JsScopeUiEvent.quickScope(new JsStatement().self().chain("parents", "'.ui-dialog:first'").
-                chain("find", "'.ui-dialog-titlebar-close'").
-                chain("hide").render()));
-        personCreationDialog.setCloseOnEscape(false);
-        add(personCreationDialog);
+        
 
-        //person edit container
-        final WebMarkupContainer personEditContainer = new WebMarkupContainer("personEditContainer");
-        personEditContainer.setOutputMarkupId(true);
-        personCreationDialog.add(personEditContainer);
-
-        //person edit panel
-        personEditContainer.add(new EmptyPanel("personEditPanel"));
-
-        //create new
-        AjaxLink<Void> createNew = new AjaxLink<Void>("createNew") {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                clearAndCloseLookupDialog(personModel, personsModel,
-                        target, lookupDialog, content, personNotFoundContainer, personsDataContainer, select);
-
-                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel,
-                        lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject()));
-
-                target.addComponent(personEditContainer);
-                personCreationDialog.open(target);
-            }
-        };
-        content.add(createNew);
+        
     }
 
     private PersonEditPanel newPersonEditPanel(final Dialog personCreationDialog, final WebMarkupContainer personEditContainer,
@@ -299,6 +310,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         personsModel.setObject(null);
         personModel.setObject(null);
         select.setVisible(false);
+        createNew.setVisible(false);
         personNotFoundContainer.setVisible(false);
         personsDataContainer.setVisible(false);
 

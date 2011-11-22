@@ -132,7 +132,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private ApartmentCard oldApartmentCard;
     private ApartmentCard newApartmentCard;
     private SearchComponentState addressSearchComponentState;
-    private Form form;
+    private Form<Void> form;
     private FeedbackPanel messages;
     private Component scrollToComponent;
     private ArchiveApartmentCardDialog archiveApartmentCardDialog;
@@ -194,19 +194,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         }
     }
 
-    private class AddRegistrationToolbarLink extends ApartmentCardSubmitLink {
-
-        AddRegistrationToolbarLink(String id) {
-            super(id);
-        }
-
-        @Override
-        protected void afterSave() {
-            setResponsePage(new RegistrationEdit(newApartmentCard,
-                    getAddressEntity(), getAddressId(), registrationStrategy.newInstance()));
-        }
-    }
-
     /**
      * Edit existing apartment card.
      * @param apartmentCard
@@ -261,7 +248,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         messages.setOutputMarkupId(true);
         add(messages);
 
-        form = new Form("form");
+        form = new Form<Void>("form");
 
         final Entity entity = apartmentCardStrategy.getEntity();
 
@@ -299,8 +286,11 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         ownerContainer.add(new Label("label", ownerLabelModel));
         ownerContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
 
-        PersonPicker owner = new PersonPicker("owner", PersonAgeType.ADULT, new PropertyModel<Person>(newApartmentCard, "owner"),
-                true, ownerLabelModel, true);
+        PersonPicker owner = isNew()
+                ? new PersonPicker("owner", PersonAgeType.ADULT, new PropertyModel<Person>(newApartmentCard, "owner"),
+                true, ownerLabelModel, true)
+                : new PersonPicker("owner", PersonAgeType.ADULT, new PropertyModel<Person>(newApartmentCard, "owner"),
+                true, ownerLabelModel, true, newApartmentCard.getId());
         ownerContainer.add(owner);
         form.add(ownerContainer);
 

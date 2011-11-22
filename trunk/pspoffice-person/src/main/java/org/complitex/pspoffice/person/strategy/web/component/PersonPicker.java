@@ -19,6 +19,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
@@ -33,6 +34,7 @@ import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
+import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.odlabs.wiquery.core.javascript.JsStatement;
@@ -52,6 +54,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
     private final boolean required;
     private final IModel<String> labelModel;
     private final PersonAgeType personAgeType;
+    private final Long apartmentCardId;
     private AjaxLink<Void> createNew;
 
     private static class Dialog extends org.odlabs.wiquery.ui.dialog.Dialog {
@@ -69,30 +72,83 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         this.enabled = enabled;
         this.labelModel = labelModel;
         this.personAgeType = personAgeType;
+        this.apartmentCardId = null;
+        init();
+    }
+
+    public PersonPicker(String id, PersonAgeType personAgeType, IModel<Person> model, boolean required,
+            IModel<String> labelModel, boolean enabled, long apartmentCardId) {
+        super(id, model);
+        this.required = required;
+        this.enabled = enabled;
+        this.labelModel = labelModel;
+        this.personAgeType = personAgeType;
+        this.apartmentCardId = apartmentCardId;
         init();
     }
 
     private void init() {
         add(JavascriptPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName() + ".js"));
-        add(CSSPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName()+".css"));
+        add(CSSPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName() + ".css"));
 
         setRequired(required);
         setLabel(labelModel);
 
-        final Label personLabel = new Label("personLabel", new AbstractReadOnlyModel<String>() {
+        final Link<Void> personLink = new Link<Void>("personLink") {
 
             @Override
-            public String getObject() {
+            public void onClick() {
+                Person person = PersonPicker.this.getModelObject();
+                setResponsePage(new PersonEdit(apartmentCardId, person.getId()));
+            }
+        };
+        personLink.setOutputMarkupPlaceholderTag(true);
+
+        final Label personLabel = new Label("personLabel",
+                new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        Person person = getModelObject();
+                        if (person != null) {
+                            return personStrategy.displayDomainObject(person, getLocale());
+                        } else {
+                            return getString("person_not_selected");
+                        }
+                    }
+                });
+        personLabel.setOutputMarkupPlaceholderTag(true);
+
+        final Label personLinkLabel = new Label("personLinkLabel",
+                new AbstractReadOnlyModel<String>() {
+
+                    @Override
+                    public String getObject() {
+                        Person person = getModelObject();
+                        return personStrategy.displayDomainObject(person, getLocale());
+                    }
+                });
+        personLink.add(personLinkLabel);
+
+        final WebMarkupContainer personLabelContainer = new WebMarkupContainer("personLabelContainer") {
+
+            @Override
+            protected void onBeforeRender() {
+                super.onBeforeRender();
                 Person person = getModelObject();
-                if (person != null) {
-                    return personStrategy.displayDomainObject(person, getLocale());
+                if (person == null || apartmentCardId == null) {
+                    personLink.setVisible(false);
+                    personLabel.setVisible(true);
                 } else {
-                    return getString("person_not_selected");
+                    personLabel.setVisible(false);
+                    personLink.setVisible(true);
                 }
             }
-        });
-        personLabel.setOutputMarkupId(true);
-        add(personLabel);
+        };
+        personLabelContainer.setOutputMarkupId(true);
+        personLabelContainer.add(personLabel);
+        personLabelContainer.add(personLink);
+        add(personLabelContainer);
 
         //lookup dialog
         final Dialog lookupDialog = new Dialog("lookupDialog");
@@ -148,7 +204,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
         final IModel<List<? extends Person>> personsModel = Model.ofList(null);
         final IModel<Person> personModel = new Model<Person>();
-        
+
         //select
         final AjaxLink<Void> select = new AjaxLink<Void>("select") {
 
@@ -160,14 +216,14 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                     PersonPicker.this.getModel().setObject(personModel.getObject());
                     clearAndCloseLookupDialog(personModel, personsModel,
                             target, lookupDialog, content, personNotFoundContainer, personsDataContainer, this);
-                    target.addComponent(personLabel);
+                    target.addComponent(personLabelContainer);
                 }
             }
         };
         select.setOutputMarkupPlaceholderTag(true);
         select.setVisible(false);
         content.add(select);
-        
+
         //person creation dialog
         final Dialog personCreationDialog = new Dialog("personCreationDialog");
         personCreationDialog.setModal(true);
@@ -184,7 +240,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
         //person edit panel
         personEditContainer.add(new EmptyPanel("personEditPanel"));
-        
+
         //create new
         createNew = new AjaxLink<Void>("createNew") {
 
@@ -193,7 +249,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 clearAndCloseLookupDialog(personModel, personsModel,
                         target, lookupDialog, content, personNotFoundContainer, personsDataContainer, select);
 
-                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabel,
+                personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabelContainer,
                         lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject()));
 
                 target.addComponent(personEditContainer);
@@ -275,14 +331,10 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         };
         choose.setVisible(enabled);
         add(choose);
-
-        
-
-        
     }
 
     private PersonEditPanel newPersonEditPanel(final Dialog personCreationDialog, final WebMarkupContainer personEditContainer,
-            final Label personLabel, String lastName, String firstName, String middleName) {
+            final WebMarkupContainer personLabelContainer, String lastName, String firstName, String middleName) {
         return new PersonEditPanel("personEditPanel", personStrategy.newInstance(), personAgeType,
                 getLocale(), lastName, firstName, middleName) {
 
@@ -291,7 +343,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 Person createdPerson = personStrategy.findById(newPerson.getId(), false, true, false, false);
                 PersonPicker.this.getModel().setObject(createdPerson);
 
-                target.addComponent(personLabel);
+                target.addComponent(personLabelContainer);
                 this.onBack(target);
             }
 

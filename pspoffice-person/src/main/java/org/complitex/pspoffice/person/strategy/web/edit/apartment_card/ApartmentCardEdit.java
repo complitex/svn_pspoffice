@@ -79,7 +79,6 @@ import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.CommunalApartmentService;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
-import org.complitex.pspoffice.person.strategy.web.component.AddressSearchPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.ArchiveApartmentCardButton;
@@ -259,9 +258,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         addressContainer.add(new WebMarkupContainer("required").setVisible(addressAttributeType.isMandatory()));
 
         addressSearchComponentState = initAddressSearchComponentState();
-        AddressSearchPanel address = null;
+        ApartmentCardAddressSearchPanel address = null;
         if (isNew()) {
-            address = new AddressSearchPanel("address", addressSearchComponentState,
+            address = new ApartmentCardAddressSearchPanel("address", addressSearchComponentState,
                     of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, true) {
 
                 @Override
@@ -273,7 +272,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 }
             };
         } else {
-            address = new AddressSearchPanel("address", addressSearchComponentState,
+            address = new ApartmentCardAddressSearchPanel("address", addressSearchComponentState,
                     of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, false);
         }
         addressContainer.add(address);

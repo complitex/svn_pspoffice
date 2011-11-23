@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.converter.StringConverter;
@@ -80,15 +79,6 @@ public class ApartmentCardStrategy extends TemplateStrategy {
      * Set of persistable search state entities
      */
     private static final Set<String> SEARCH_STATE_ENTITES = ImmutableSet.of("country", "region", "city", "street", "building");
-    /**
-     * Full address search component state enabled key
-     */
-    private static final MetaDataKey<Boolean> FULL_ADDRESS_ENABLED_KEY = new MetaDataKey<Boolean>() {
-    };
-    /**
-     * Apartment card full address enabled page
-     */
-    private static final String FULL_ADDRESS_ENABLED_PAGE = "APARTMENT_CARD_FULL_ADDRESS_ENABLED_PAGE";
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -462,25 +452,6 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             }
         }
         return searchComponentState;
-    }
-
-    @Transactional
-    public boolean isFullAddressEnabled(DictionaryFwSession session) {
-        Boolean fullAddressSearchStateEnabled = session.getMetaData(FULL_ADDRESS_ENABLED_KEY);
-        if (fullAddressSearchStateEnabled == null) {
-            fullAddressSearchStateEnabled = session.getPreferenceBoolean(FULL_ADDRESS_ENABLED_PAGE, FULL_ADDRESS_ENABLED_PAGE);
-            if (fullAddressSearchStateEnabled != null) {
-                session.setMetaData(FULL_ADDRESS_ENABLED_KEY, fullAddressSearchStateEnabled);
-            }
-        }
-        return fullAddressSearchStateEnabled != null ? fullAddressSearchStateEnabled : true;
-    }
-
-    @Transactional
-    public void storeFullAddressEnabled(DictionaryFwSession session, boolean fullAddressSearchStateEnabled) {
-        session.setMetaData(FULL_ADDRESS_ENABLED_KEY, fullAddressSearchStateEnabled);
-        session.putPreference(FULL_ADDRESS_ENABLED_PAGE, FULL_ADDRESS_ENABLED_PAGE,
-                String.valueOf(fullAddressSearchStateEnabled), true);
     }
 
     @Transactional

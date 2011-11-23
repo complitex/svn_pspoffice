@@ -10,26 +10,19 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.search.CollapsibleSearchComponent;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
-import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 
 /**
  *
  * @author Artem
  */
-public class EnhancedAddressSearchComponent extends WiQuerySearchComponent {
+public class EnhancedAddressSearchComponent extends CollapsibleSearchComponent {
 
     private EnhancedAddressAutocompleteComponent apartmentComponent;
     private EnhancedAddressAutocompleteComponent roomComponent;
     private List<Long> userOrganizationIds;
-
-    public EnhancedAddressSearchComponent(String id, SearchComponentState componentState,
-            List<SearchFilterSettings> searchFilterSettings, ISearchCallback callback,
-            List<Long> userOrganizationIds) {
-        super(id, componentState, searchFilterSettings, callback);
-        this.userOrganizationIds = userOrganizationIds;
-    }
 
     public EnhancedAddressSearchComponent(String id, SearchComponentState searchComponentState,
             List<String> searchFilters, ISearchCallback callback, ShowMode showMode, boolean enabled,

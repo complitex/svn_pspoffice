@@ -16,6 +16,8 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import static com.google.common.collect.ImmutableList.*;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.SessionBean;
@@ -69,9 +71,10 @@ public class ApartmentCardSearch extends FormTemplatePage {
         WebMarkupContainer searchPanelContainer = new WebMarkupContainer("searchPanelContainer");
         searchPanelContainer.setOutputMarkupId(true);
         add(searchPanelContainer);
+        final IModel<ShowMode> showmodeModel = new Model<ShowMode>(ShowMode.ACTIVE);
         searchPanel = new CollapsibleSearchPanel("searchPanel", addressSearchComponentState,
                 of("country", "region", "city", "street", "building", "apartment"), new AddressSearchCallback(),
-                ShowMode.ACTIVE, true) {
+                ShowMode.ACTIVE, true, showmodeModel) {
 
             @EJB
             private SessionBean sessionBean;

@@ -33,15 +33,16 @@ import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.strategy.web.model.DomainObjectIdModel;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.ShowMode;
-import org.complitex.dictionary.web.component.ShowModePanel;
 import org.complitex.dictionary.web.component.datatable.ArrowOrderByBorder;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
 import org.complitex.dictionary.web.component.paging.PagingNavigator;
 import org.complitex.dictionary.web.component.scroll.ScrollBookmarkablePageLink;
+import org.complitex.dictionary.web.component.search.CollapsibleSearchPanel;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.template.web.component.toolbar.AddItemButton;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
+import org.complitex.template.web.component.toolbar.search.CollapsibleSearchToolbarButton;
 import org.complitex.template.web.pages.ScrollListPage;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -59,6 +60,7 @@ public final class PersonList extends ScrollListPage {
     @EJB
     private StringCultureBean stringBean;
     private DomainObjectExample example;
+    private CollapsibleSearchPanel searchPanel;
 
     private class ColumnLabelModel extends AbstractReadOnlyModel<String> {
 
@@ -96,6 +98,11 @@ public final class PersonList extends ScrollListPage {
         add(new Label("title", labelModel));
         add(new Label("label", labelModel));
 
+        final IModel<ShowMode> showModeModel = new Model<ShowMode>(ShowMode.ACTIVE);
+        searchPanel = new CollapsibleSearchPanel("searchPanel", showModeModel);
+        add(searchPanel);
+        searchPanel.initialize();
+
         final WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
         add(content);
@@ -111,11 +118,6 @@ public final class PersonList extends ScrollListPage {
         //Form
         final Form<Void> filterForm = new Form<Void>("filterForm");
         content.add(filterForm);
-
-        //Show Mode
-        final IModel<ShowMode> showModeModel = new Model<ShowMode>(ShowMode.ACTIVE);
-        ShowModePanel showModePanel = new ShowModePanel("showModePanel", showModeModel);
-        filterForm.add(showModePanel);
 
         //Data Provider
         final DataProvider<Person> dataProvider = new DataProvider<Person>() {
@@ -271,6 +273,6 @@ public final class PersonList extends ScrollListPage {
                 }
                 super.onBeforeRender();
             }
-        });
+        }, new CollapsibleSearchToolbarButton(id, searchPanel));
     }
 }

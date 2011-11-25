@@ -22,7 +22,7 @@ public class HousingPaymentsDownload extends AbstractReportDownload<HousingPayme
     }
 
     @Override
-    protected Map<IReportField, Object> getValues(Locale locale) {
+    public Map<IReportField, Object> getValues(Locale locale) {
         HousingPayments report = getReport();
         Map<IReportField, Object> map = newValuesMap();
 
@@ -128,7 +128,7 @@ public class HousingPaymentsDownload extends AbstractReportDownload<HousingPayme
     }
 
     @Override
-    protected String getFileName(Locale locale) {
+    public String getFileName(Locale locale) {
         return "HousingPayments";
     }
 }

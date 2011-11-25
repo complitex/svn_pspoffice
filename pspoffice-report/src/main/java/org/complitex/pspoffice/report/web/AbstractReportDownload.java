@@ -3,7 +3,6 @@ package org.complitex.pspoffice.report.web;
 import org.complitex.pspoffice.report.entity.IReportField;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -11,7 +10,6 @@ import org.complitex.dictionary.util.StringUtil;
 
 public abstract class AbstractReportDownload<T extends Serializable> implements Serializable {
 
-    private static final SimpleDateFormat FILE_POSTFIX_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private final String reportName;
     private final IReportField[] reportFields;
     private final T report;
@@ -26,11 +24,11 @@ public abstract class AbstractReportDownload<T extends Serializable> implements 
         return report;
     }
 
-    protected final IReportField[] getReportFields() {
+    public final IReportField[] getReportFields() {
         return reportFields;
     }
 
-    protected final String getReportName() {
+    public final String getReportName() {
         return reportName;
     }
 
@@ -52,7 +50,7 @@ public abstract class AbstractReportDownload<T extends Serializable> implements 
         }
     }
 
-    protected abstract Map<IReportField, Object> getValues(Locale locale);
+    public abstract Map<IReportField, Object> getValues(Locale locale);
 
-    protected abstract String getFileName(Locale locale);
+    public abstract String getFileName(Locale locale);
 }

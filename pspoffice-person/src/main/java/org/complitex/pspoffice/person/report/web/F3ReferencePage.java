@@ -35,6 +35,7 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
+import org.complitex.template.web.component.toolbar.PrintButton;
 import org.complitex.template.web.component.toolbar.SaveButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.slf4j.Logger;
@@ -63,7 +64,7 @@ public final class F3ReferencePage extends WebPage {
 
         private Collection<FeedbackMessage> messages;
 
-        public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
+        private MessagesFragment(String id, Collection<FeedbackMessage> messages) {
             super(id, "messages", F3ReferencePage.this);
             this.messages = messages;
             add(new FeedbackPanel("messages"));
@@ -80,7 +81,7 @@ public final class F3ReferencePage extends WebPage {
 
     private class ReportFragment extends Fragment {
 
-        public ReportFragment(String id, final F3Reference f3) {
+        private ReportFragment(String id, final F3Reference f3) {
             super(id, "report", F3ReferencePage.this);
             add(new Label("label", new ResourceModel("label")));
             add(new Label("name", new StringResourceModel("name", null,
@@ -147,20 +148,34 @@ public final class F3ReferencePage extends WebPage {
         add(f3 == null ? new MessagesFragment("content", messages) : new ReportFragment("content", f3));
 
         //Загрузка отчетов
-        final ReportDownloadPanel reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
-                new F3ReferenceDownload(f3));
-        reportDownloadPanel.setVisible(f3 != null);
-        add(reportDownloadPanel);
+        final ReportDownloadPanel saveReportDownload = new ReportDownloadPanel("saveReportDownload", getString("report_download"),
+                new F3ReferenceDownload(f3), false);
+        saveReportDownload.setVisible(f3 != null);
+        add(saveReportDownload);
+
+        final ReportDownloadPanel printReportDownload = new ReportDownloadPanel("printReportDownload", getString("report_download"),
+                new F3ReferenceDownload(f3), true);
+        printReportDownload.setVisible(f3 != null);
+        add(printReportDownload);
 
         SaveButton saveReportButton = new SaveButton("saveReportButton", true) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                reportDownloadPanel.open(target);
+                saveReportDownload.open(target);
             }
         };
-        saveReportButton.setVisible(reportDownloadPanel.isVisible());
+        saveReportButton.setVisible(saveReportDownload.isVisible());
         add(saveReportButton);
+
+        PrintButton printReportButton = new PrintButton("printReportButton", true) {
+
+            @Override
+            protected void onClick(AjaxRequestTarget target) {
+                printReportDownload.open(target);
+            }
+        };
+        printReportButton.setVisible(printReportDownload.isVisible());
+        add(printReportButton);
     }
 }
-

@@ -28,7 +28,7 @@ public class RegistrationCardDownload extends AbstractReportDownload<Registratio
     }
 
     @Override
-    protected Map<IReportField, Object> getValues(Locale locale) {
+    public Map<IReportField, Object> getValues(Locale locale) {
         RegistrationCard report = getReport();
         Map<IReportField, Object> map = newValuesMap();
 
@@ -99,7 +99,7 @@ public class RegistrationCardDownload extends AbstractReportDownload<Registratio
     }
 
     @Override
-    protected String getFileName(Locale locale) {
+    public String getFileName(Locale locale) {
         return "RegistrationCard";
     }
 }

@@ -24,7 +24,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
     }
 
     @Override
-    protected Map<IReportField, Object> getValues(Locale locale) {
+    public Map<IReportField, Object> getValues(Locale locale) {
         FamilyAndCommunalApartmentInfo report = getReport();
         Map<IReportField, Object> map = newValuesMap();
 
@@ -200,7 +200,7 @@ public class FamilyAndCommunalApartmentInfoDownload extends AbstractReportDownlo
     }
 
     @Override
-    protected String getFileName(Locale locale) {
+    public String getFileName(Locale locale) {
         return "FamilyAndCommunalApartmentInfo";
     }
 }

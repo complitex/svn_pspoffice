@@ -30,7 +30,7 @@ public class RegistrationStopCouponDownload extends AbstractReportDownload<Regis
     }
 
     @Override
-    protected Map<IReportField, Object> getValues(Locale locale) {
+    public Map<IReportField, Object> getValues(Locale locale) {
         RegistrationStopCoupon report = getReport();
         Map<IReportField, Object> map = new HashMap<IReportField, Object>();
 
@@ -107,7 +107,7 @@ public class RegistrationStopCouponDownload extends AbstractReportDownload<Regis
     }
 
     @Override
-    protected String getFileName(Locale locale) {
+    public String getFileName(Locale locale) {
         return "RegistrationStopCoupon";
     }
 }

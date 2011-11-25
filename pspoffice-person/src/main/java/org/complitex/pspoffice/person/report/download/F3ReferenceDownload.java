@@ -29,7 +29,7 @@ public class F3ReferenceDownload extends AbstractReportDownload<F3Reference> {
     }
 
     @Override
-    protected Map<IReportField, Object> getValues(Locale locale) {
+    public Map<IReportField, Object> getValues(Locale locale) {
         F3Reference report = getReport();
         Map<IReportField, Object> map = newValuesMap();
 
@@ -202,7 +202,7 @@ public class F3ReferenceDownload extends AbstractReportDownload<F3Reference> {
     }
 
     @Override
-    protected String getFileName(Locale locale) {
+    public String getFileName(Locale locale) {
         return "F3Reference";
     }
 }

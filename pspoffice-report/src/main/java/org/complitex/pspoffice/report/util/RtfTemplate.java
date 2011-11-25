@@ -57,7 +57,7 @@ public class RtfTemplate {
             try {
                 reader.close();
             } catch (IOException e) {
-                log.debug("Ошибка закрытия потока", e);
+                log.error("Ошибка закрытия потока", e);
             }
         }
     }
@@ -115,7 +115,7 @@ public class RtfTemplate {
             try {
                 outputStream.close();
             } catch (IOException e) {
-                log.debug("Ошибка закрытия потока", e);
+                log.error("Ошибка закрытия потока", e);
             }
         }
     }

@@ -30,6 +30,7 @@ import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.SaveButton;
 import org.complitex.template.web.security.SecurityRole;
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
+import org.complitex.template.web.component.toolbar.PrintButton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,7 @@ public class RegistrationStopCouponPage extends WebPage {
 
         private Collection<FeedbackMessage> messages;
 
-        public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
+        private MessagesFragment(String id, Collection<FeedbackMessage> messages) {
             super(id, "messages", RegistrationStopCouponPage.this);
             this.messages = messages;
             add(new FeedbackPanel("messages"));
@@ -73,7 +74,7 @@ public class RegistrationStopCouponPage extends WebPage {
 
     private class ReportFragment extends Fragment {
 
-        public ReportFragment(String id, final RegistrationStopCoupon coupon) {
+        private ReportFragment(String id, final RegistrationStopCoupon coupon) {
             super(id, "report", RegistrationStopCouponPage.this);
             add(new Label("label", new ResourceModel("label")));
 
@@ -132,20 +133,34 @@ public class RegistrationStopCouponPage extends WebPage {
         add(coupon == null ? new MessagesFragment("content", messages) : new ReportFragment("content", coupon));
 
         //Загрузка отчетов
-        final ReportDownloadPanel reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
-                new RegistrationStopCouponDownload(coupon));
-        reportDownloadPanel.setVisible(coupon != null);
-        add(reportDownloadPanel);
+        final ReportDownloadPanel saveReportDownload = new ReportDownloadPanel("saveReportDownload", getString("report_download"),
+                new RegistrationStopCouponDownload(coupon), false);
+        saveReportDownload.setVisible(coupon != null);
+        add(saveReportDownload);
+
+        final ReportDownloadPanel printReportDownload = new ReportDownloadPanel("printReportDownload", getString("report_download"),
+                new RegistrationStopCouponDownload(coupon), true);
+        printReportDownload.setVisible(coupon != null);
+        add(printReportDownload);
 
         SaveButton saveReportButton = new SaveButton("saveReportButton", true) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                reportDownloadPanel.open(target);
+                saveReportDownload.open(target);
             }
         };
-        saveReportButton.setVisible(reportDownloadPanel.isVisible());
+        saveReportButton.setVisible(saveReportDownload.isVisible());
         add(saveReportButton);
+
+        PrintButton printReportButton = new PrintButton("printReportButton", true) {
+
+            @Override
+            protected void onClick(AjaxRequestTarget target) {
+                printReportDownload.open(target);
+            }
+        };
+        printReportButton.setVisible(printReportDownload.isVisible());
+        add(printReportButton);
     }
 }
-

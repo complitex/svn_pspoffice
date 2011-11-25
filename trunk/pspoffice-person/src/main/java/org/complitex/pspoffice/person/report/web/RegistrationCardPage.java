@@ -33,6 +33,7 @@ import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrate
 import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
+import org.complitex.template.web.component.toolbar.PrintButton;
 import org.complitex.template.web.component.toolbar.SaveButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class RegistrationCardPage extends WebPage {
 
         private Collection<FeedbackMessage> messages;
 
-        public MessagesFragment(String id, Collection<FeedbackMessage> messages) {
+        private MessagesFragment(String id, Collection<FeedbackMessage> messages) {
             super(id, "messages", RegistrationCardPage.this);
             this.messages = messages;
             add(new FeedbackPanel("messages"));
@@ -78,7 +79,7 @@ public class RegistrationCardPage extends WebPage {
 
     private class ReportFragment extends Fragment {
 
-        public ReportFragment(String id, final RegistrationCard card) {
+        private ReportFragment(String id, final RegistrationCard card) {
             super(id, "report", RegistrationCardPage.this);
             Registration registration = card.getRegistration();
             Person person = registration.getPerson();
@@ -142,20 +143,34 @@ public class RegistrationCardPage extends WebPage {
         add(card == null ? new MessagesFragment("content", messages) : new ReportFragment("content", card));
 
         //Загрузка отчетов
-        final ReportDownloadPanel reportDownloadPanel = new ReportDownloadPanel("report_download", getString("report_download"),
-                new RegistrationCardDownload(card));
-        reportDownloadPanel.setVisible(card != null);
-        add(reportDownloadPanel);
+        final ReportDownloadPanel saveReportDownload = new ReportDownloadPanel("saveReportDownload", getString("report_download"),
+                new RegistrationCardDownload(card), false);
+        saveReportDownload.setVisible(card != null);
+        add(saveReportDownload);
+
+        final ReportDownloadPanel printReportDownload = new ReportDownloadPanel("printReportDownload", getString("report_download"),
+                new RegistrationCardDownload(card), true);
+        printReportDownload.setVisible(card != null);
+        add(printReportDownload);
 
         SaveButton saveReportButton = new SaveButton("saveReportButton", true) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                reportDownloadPanel.open(target);
+                saveReportDownload.open(target);
             }
         };
-        saveReportButton.setVisible(reportDownloadPanel.isVisible());
+        saveReportButton.setVisible(saveReportDownload.isVisible());
         add(saveReportButton);
+
+        PrintButton printReportButton = new PrintButton("printReportButton", true) {
+
+            @Override
+            protected void onClick(AjaxRequestTarget target) {
+                printReportDownload.open(target);
+            }
+        };
+        printReportButton.setVisible(printReportDownload.isVisible());
+        add(printReportButton);
     }
 }
-

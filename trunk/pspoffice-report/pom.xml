@@ -23,7 +23,7 @@
     <dependencies>
         <dependency>
             <groupId>org.complitex</groupId>
-            <artifactId>complitex-dictionary</artifactId>
+            <artifactId>complitex-template</artifactId>
         </dependency>
 
         <dependency>

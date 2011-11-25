@@ -4,7 +4,6 @@ import java.io.OutputStream;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
@@ -14,26 +13,25 @@ import org.apache.wicket.model.Model;
 import org.odlabs.wiquery.ui.dialog.Dialog;
 
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import javax.servlet.http.HttpSession;
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.behavior.AbstractBehavior;
+import org.apache.wicket.behavior.SimpleAttributeModifier;
+import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.protocol.http.WebRequestCycle;
 import org.apache.wicket.request.target.resource.ResourceStreamRequestTarget;
 import org.apache.wicket.util.resource.AbstractResourceStreamWriter;
 import org.apache.wicket.util.resource.IResourceStream;
-import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionary.util.EjbBeanLocator;
-import org.complitex.dictionary.util.StringUtil;
-import org.complitex.pspoffice.report.entity.IReportField;
 import org.complitex.pspoffice.report.service.CreateReportException;
-import org.complitex.pspoffice.report.service.IReportService;
-import org.complitex.pspoffice.report.util.ReportDateFormatter;
+import org.complitex.pspoffice.report.util.ReportGenerationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,33 +40,52 @@ public class ReportDownloadPanel extends Panel {
     private static final Logger log = LoggerFactory.getLogger(ReportDownloadPanel.class);
     private Dialog dialog;
 
+    private class AttributeModifier extends AbstractBehavior {
+
+        private final String attribute;
+        private final String valueKey;
+
+        private AttributeModifier(String attribute, String valueKey) {
+            this.attribute = attribute;
+            this.valueKey = valueKey;
+        }
+
+        @Override
+        public void onComponentTag(final Component component, final ComponentTag tag) {
+            if (isEnabled(component)) {
+                tag.getAttributes().put(attribute, ReportDownloadPanel.this.getString(valueKey));
+            }
+        }
+    }
+
     public static class DownloadPage extends Page {
 
         public DownloadPage(PageParameters parameters) {
             String sessionKey = parameters.getString("key");
             String type = parameters.getString("type") != null ? parameters.getString("type").toLowerCase() : "pdf";
-            String locale = parameters.getString("locale") != null ? parameters.getString("locale") : "";
+            String locale = parameters.getString("locale") != null ? parameters.getString("locale") : "ru_RU";
 
-            AbstractReportDownload reportDownload = retrieveReportDownload(sessionKey);
+            AbstractReportDownload<?> reportDownload = retrieveReportDownload(sessionKey);
             getRequestCycle().setRequestTarget(getResourceStreamRequestTarget(reportDownload, type, locale));
         }
 
-        private AbstractReportDownload retrieveReportDownload(String key) {
+        private AbstractReportDownload<?> retrieveReportDownload(String key) {
             WebRequestCycle webRequestCycle = (WebRequestCycle) RequestCycle.get();
             HttpSession session = webRequestCycle.getWebRequest().getHttpServletRequest().getSession();
-            AbstractReportDownload reportDownload = (AbstractReportDownload) session.getAttribute(key);
-            session.setAttribute(key, null);
+            AbstractReportDownload<?> reportDownload = (AbstractReportDownload) session.getAttribute(key);
+            session.removeAttribute(key);
             return reportDownload;
         }
 
-        private ResourceStreamRequestTarget getResourceStreamRequestTarget(AbstractReportDownload reportDownload,
+        private ResourceStreamRequestTarget getResourceStreamRequestTarget(AbstractReportDownload<?> reportDownload,
                 String type, String locale) {
-            return new ResourceStreamRequestTarget(getResourceStreamWriter(reportDownload, type, locale),
-                    reportDownload.getFileName(ReportDownloadPanel.getLocale(locale)) + "." + type);
+            Locale l = ReportGenerationUtil.getLocale(locale);
+            return new ResourceStreamRequestTarget(getResourceStreamWriter(reportDownload, type, l),
+                    reportDownload.getFileName(l));
         }
 
-        private IResourceStream getResourceStreamWriter(final AbstractReportDownload reportDownload, final String type,
-                final String locale) {
+        private IResourceStream getResourceStreamWriter(final AbstractReportDownload<?> reportDownload, final String type,
+                final Locale locale) {
             return new AbstractResourceStreamWriter() {
 
                 @Override
@@ -77,61 +94,43 @@ public class ReportDownloadPanel extends Panel {
                         return "application/pdf";
                     } else if ("rtf".equals(type)) {
                         return "application/rtf";
-                    } else if ("odt".equals(type)) {
-                        return "application/vnd.oasis.opendocument.text";
                     }
-
                     return null;
                 }
 
                 @Override
                 public void write(OutputStream output) {
                     try {
-                        Map<IReportField, Object> values = reportDownload.getValues(ReportDownloadPanel.getLocale(locale));
-                        Map<String, String> map = new HashMap<String, String>();
-
-                        for (IReportField key : reportDownload.getReportFields()) {
-                            map.put(key.getFieldName(), displayValue(values.get(key)));
-                        }
-
-                        IReportService reportService = getReportService(type);
-                        reportService.createReport(reportDownload.getReportName() + "_" + locale + "." + type, map, output);
+                        ReportGenerationUtil.write(type, reportDownload, output, locale);
                     } catch (CreateReportException e) {
                         log.error("Couldn't create report.", e);
                     }
                 }
             };
         }
-
-        private IReportService getReportService(String type) {
-            String beanName = Strings.capitalize(type) + "ReportService";
-            return EjbBeanLocator.getBean(beanName, true);
-        }
-
-        private String displayValue(Object value) {
-            if (value instanceof Date) {
-                return ReportDateFormatter.format((Date) value);
-            }
-            return StringUtil.valueOf(value);
-        }
     }
 
-    public ReportDownloadPanel(String id, String title, final AbstractReportDownload reportDownload) {
+    public ReportDownloadPanel(String id, String title, final AbstractReportDownload<?> reportDownload, final boolean print) {
         super(id);
 
         dialog = new Dialog("dialog");
         dialog.setModal(true);
         dialog.setWidth(420);
         dialog.setTitle(title);
+        dialog.setMinHeight(0);
         add(dialog);
 
-        Form form = new Form("form");
+        final Form<Void> form = new Form<Void>("form");
         dialog.add(form);
+
+        final WebMarkupContainer typeContainer = new WebMarkupContainer("typeContainer");
+        typeContainer.setVisible(!print);
+        form.add(typeContainer);
 
         final IModel<String> typeModel = new Model<String>("PDF");
         final IModel<String> localeModel = new Model<String>("ru_RU");
 
-        form.add(new DropDownChoice<String>("type", typeModel, Arrays.asList("PDF", "RTF")));
+        typeContainer.add(new DropDownChoice<String>("type", typeModel, Arrays.asList("PDF", "RTF")));
 
         form.add(new DropDownChoice<String>("locale", localeModel, Arrays.asList("ru_RU", "uk_UA"),
                 new IChoiceRenderer<String>() {
@@ -153,8 +152,16 @@ public class ReportDownloadPanel extends Panel {
                     }
                 }));
 
+        final WebMarkupContainer printContainer = new WebMarkupContainer("printContainer");
+        printContainer.setOutputMarkupId(true);
+        printContainer.setVisible(print);
+        add(printContainer);
+        final IModel<String> printKeyModel = new Model<String>();
+        printContainer.add(new HiddenField<String>("printKey", printKeyModel).add(new SimpleAttributeModifier("name", "key")));
+        printContainer.add(new HiddenField<String>("printLocale", localeModel).add(new SimpleAttributeModifier("name", "locale")));
+
         //Загрузить
-        form.add(new AjaxButton("download") {
+        AjaxButton download = new AjaxButton("download", form) {
 
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
@@ -169,24 +176,30 @@ public class ReportDownloadPanel extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                dialog.close(target);
-
-                String sessionKey = reportDownload.getFileName(ReportDownloadPanel.getLocale(localeModel.getObject()));
+                final String sessionKey = reportDownload.getFileName(ReportGenerationUtil.getLocale(localeModel.getObject()));
                 storeReportDownload(reportDownload, sessionKey);
 
-                PageParameters params = new PageParameters();
-                params.put("key", sessionKey);
-                params.put("type", typeModel.getObject());
-                params.put("locale", localeModel.getObject());
-                setResponsePage(DownloadPage.class, params);
+                if (!print) {
+                    PageParameters params = new PageParameters();
+                    params.put("key", sessionKey);
+                    params.put("type", typeModel.getObject());
+                    params.put("locale", localeModel.getObject());
+                    setResponsePage(DownloadPage.class, params);
+                } else {
+                    printKeyModel.setObject(sessionKey);
+                    target.addComponent(printContainer);
+                    target.appendJavascript("(function(){ $('#printForm').submit();})()");
+                }
             }
 
-            protected void storeReportDownload(AbstractReportDownload reportDownload, String key) {
+            private void storeReportDownload(AbstractReportDownload<?> reportDownload, String key) {
                 WebRequestCycle webRequestCycle = (WebRequestCycle) RequestCycle.get();
                 HttpSession session = webRequestCycle.getWebRequest().getHttpServletRequest().getSession();
                 session.setAttribute(key, reportDownload);
             }
-        });
+        };
+        download.add(new AttributeModifier("value", print ? "print" : "download"));
+        form.add(download);
 
         //Отмена
         form.add(new AjaxLink<Void>("cancel") {
@@ -196,16 +209,6 @@ public class ReportDownloadPanel extends Panel {
                 dialog.close(target);
             }
         });
-    }
-
-    private static Locale getLocale(String locale) {
-        if ("ru_RU".equals(locale)) {
-            return new Locale("ru");
-        }
-        if ("uk_UA".equals(locale)) {
-            return new Locale("uk");
-        }
-        return null;
     }
 
     public void open(AjaxRequestTarget target) {

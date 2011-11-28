@@ -1,6 +1,7 @@
 package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import static com.google.common.collect.ImmutableMap.*;
 import com.google.common.collect.ImmutableSet;
 import static com.google.common.collect.Iterables.*;
@@ -215,44 +216,6 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public Person findPersonById(long id, boolean runAsAdmin, boolean loadName, boolean loadChildren, boolean loadDocument) {
-        Person person = findById(id, runAsAdmin, loadName, loadChildren, loadDocument);
-        if (person == null) {
-            //find history person
-            person = findHistoryPerson(id, loadName, loadChildren, loadDocument);
-        }
-        return person;
-    }
-
-    @Transactional
-    private Person findHistoryPerson(long objectId, boolean loadName, boolean loadChildren, boolean loadDocument) {
-        DomainObjectExample example = new DomainObjectExample(objectId);
-        example.setTable(getEntityTable());
-        example.setStartDate(DateUtil.getCurrentDate());
-
-        DomainObject personObject = (DomainObject) sqlSession().selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
-        if (personObject == null) {
-            return null;
-        }
-        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, DateUtil.justBefore(personObject.getEndDate()));
-        loadStringCultures(historyAttributes);
-        personObject.setAttributes(historyAttributes);
-        updateStringsForNewLocales(personObject);
-
-        Person person = new Person(personObject);
-        if (loadName) {
-            loadName(person);
-        }
-        if (loadChildren) {
-            loadChildren(person);
-        }
-        if (loadDocument) {
-            loadDocument(person);
-        }
-        return person;
-    }
-
-    @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
         return findById(id, runAsAdmin, true, true, true);
@@ -311,7 +274,7 @@ public class PersonStrategy extends TemplateStrategy {
     public void loadDocument(Person person) {
         if (person.getDocument() == null) {
             long documentId = person.getAttribute(DOCUMENT).getValueId();
-            Document document = documentStrategy.findDocumentById(documentId);
+            Document document = documentStrategy.findById(documentId);
             person.setDocument(document);
         }
     }
@@ -322,10 +285,10 @@ public class PersonStrategy extends TemplateStrategy {
             return null;
         }
         List<Attribute> previousDocumentAttributes = sqlSession().selectList(PERSON_MAPPING + ".findPreviousDocumentAttributes",
-                personId);
+                ImmutableMap.of("personId", personId, "personDocumentAT", DOCUMENT));
         List<Document> previousDocuments = newArrayList();
         for (Attribute previousDocumentAttribute : previousDocumentAttributes) {
-            Document previousDocument = documentStrategy.findDocumentById(previousDocumentAttribute.getValueId());
+            Document previousDocument = documentStrategy.findById(previousDocumentAttribute.getValueId());
             long documentTypeId = previousDocument.getDocumentTypeId();
             DomainObject documentType = documentTypeStrategy.findById(documentTypeId, true);
             previousDocument.setDocumentType(documentType);
@@ -535,21 +498,18 @@ public class PersonStrategy extends TemplateStrategy {
         Person newPerson = (Person) newObject;
 
         //document altering
-        Date archiveDocumentDate = DateUtil.justAfter(updateDate);
-        Date updateDocumentDate = DateUtil.justBefore(updateDate);
-
         newPerson.getDocument().setSubjectIds(newPerson.getSubjectIds());
-        documentStrategy.update(oldPerson.getDocument(), newPerson.getDocument(), updateDocumentDate);
+        documentStrategy.update(oldPerson.getDocument(), newPerson.getDocument(), updateDate);
 
         if (newPerson.getReplacedDocument() != null) {
-            documentStrategy.archive(newPerson.getDocument(), archiveDocumentDate);
+            documentStrategy.disable(newPerson.getDocument(), updateDate);
             newPerson.getReplacedDocument().setSubjectIds(newPerson.getSubjectIds());
             documentStrategy.insert(newPerson.getReplacedDocument(), updateDate);
         }
 
         updateDocumentAttribute(oldPerson, newPerson);
 
-        // if person was a kid but birth date has changed or time go on then it is need to update parent
+        // if person was a kid but birth date has changed or time was then it is need to update parent
         if (oldPerson.isKid() && !newPerson.isKid()) {
             removeKidFromParent(newPerson.getId(), updateDate);
         }
@@ -653,7 +613,7 @@ public class PersonStrategy extends TemplateStrategy {
                 newFindPersonRegistrationParameters(personId));
         for (PersonRegistration personRegistration : personRegistrations) {
             personRegistration.setRegistration(
-                    registrationStrategy.findRegistrationById(personRegistration.getRegistrationId(), true, false, true, true));
+                    registrationStrategy.findById(personRegistration.getRegistrationId(), true, false, true, true));
             personRegistration.setAddressEntity(ApartmentCardStrategy.getAddressEntity(personRegistration.getAddressTypeId()));
         }
         return personRegistrations;
@@ -735,9 +695,7 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     public void registerPersonDeath(Person person, Date deathDate, List<PersonRegistration> activePersonRegistrations,
             Locale locale) {
-        Date archiveDate = DateUtil.getCurrentDate();
-        Date updateDate = DateUtil.justBefore(archiveDate);
-        Date archiveDocumentDate = DateUtil.justAfter(archiveDate);
+        Date updateDate = DateUtil.getCurrentDate();
 
         if (activePersonRegistrations != null && !activePersonRegistrations.isEmpty()) {
             for (PersonRegistration personRegistration : activePersonRegistrations) {
@@ -750,7 +708,7 @@ public class PersonStrategy extends TemplateStrategy {
                 stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_DATE).getLocalizedValues()).
                         setValue(new DateConverter().toString(deathDate));
                 registrationStrategy.update(oldRegistration, newRegistration, updateDate);
-                registrationStrategy.archive(newRegistration, archiveDate);
+                registrationStrategy.disable(newRegistration, updateDate);
             }
         }
 
@@ -761,7 +719,14 @@ public class PersonStrategy extends TemplateStrategy {
                 setValue(new DateConverter().toString(deathDate));
         update(person, newPerson, updateDate);
 
-        documentStrategy.archive(person.getDocument(), archiveDocumentDate);
-        archive(person, archiveDate);
+        documentStrategy.disable(person.getDocument(), updateDate);
+
+        disable(person, updateDate);
+    }
+
+    @Transactional
+    private void disable(Person person, Date endDate) {
+        person.setEndDate(endDate);
+        changeActivity(person, false);
     }
 }

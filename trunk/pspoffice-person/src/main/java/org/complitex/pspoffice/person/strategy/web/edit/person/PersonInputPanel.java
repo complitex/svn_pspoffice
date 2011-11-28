@@ -137,7 +137,7 @@ public class PersonInputPanel extends Panel {
     }
 
     private boolean isHistory() {
-        return person.getStatus() == StatusType.ARCHIVE;
+        return person.getStatus() != StatusType.ACTIVE;
     }
 
     private void init(Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {

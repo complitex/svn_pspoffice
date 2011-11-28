@@ -128,7 +128,7 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private boolean isHistory() {
-        return newRegistration.getStatus() == StatusType.ARCHIVE;
+        return newRegistration.getStatus() != StatusType.ACTIVE;
     }
 
     private void init() {

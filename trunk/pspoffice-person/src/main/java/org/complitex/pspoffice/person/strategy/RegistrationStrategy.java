@@ -4,8 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import java.util.Date;
 import static com.google.common.collect.ImmutableMap.*;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -13,12 +13,9 @@ import javax.ejb.Stateless;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
-import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.Strategy;
-import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -81,7 +78,7 @@ public class RegistrationStrategy extends Strategy {
     }
 
     @Transactional
-    private Registration findById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship,
+    public Registration findById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship,
             boolean loadRegistrationType) {
         DomainObject registrationObject = super.findById(id, runAsAdmin);
         if (registrationObject == null) {
@@ -103,7 +100,7 @@ public class RegistrationStrategy extends Strategy {
     @Transactional
     private void loadPerson(Registration registration) {
         long personId = registration.getAttribute(PERSON).getValueId();
-        Person person = personStrategy.findPersonById(personId, true, true, false, false);
+        Person person = personStrategy.findById(personId, true, true, false, false);
         registration.setPerson(person);
     }
 
@@ -119,46 +116,6 @@ public class RegistrationStrategy extends Strategy {
         long registrationTypeId = registration.getAttribute(REGISTRATION_TYPE).getValueId();
         DomainObject registrationType = registrationTypeStrategy.findById(registrationTypeId, true);
         registration.setRegistrationType(registrationType);
-    }
-
-    @Transactional
-    private Registration findFinishedRegistration(long objectId, boolean loadPerson, boolean loadOwnerRelationship,
-            boolean loadRegistrationType) {
-        DomainObjectExample example = new DomainObjectExample(objectId);
-        example.setTable(getEntityTable());
-        example.setStartDate(DateUtil.getCurrentDate());
-
-        DomainObject registrationObject = (DomainObject) sqlSession().selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
-        if (registrationObject == null) {
-            return null;
-        }
-        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, DateUtil.justBefore(registrationObject.getEndDate()));
-        loadStringCultures(historyAttributes);
-        registrationObject.setAttributes(historyAttributes);
-        updateStringsForNewLocales(registrationObject);
-
-        Registration registration = new Registration(registrationObject);
-        if (loadPerson) {
-            loadPerson(registration);
-        }
-        if (loadOwnerRelationship) {
-            loadOwnerRelationship(registration);
-        }
-        if (loadRegistrationType) {
-            loadRegistrationType(registration);
-        }
-        return registration;
-    }
-
-    @Transactional
-    public Registration findRegistrationById(long id, boolean runAsAdmin, boolean loadPerson, boolean loadOwnerRelationship,
-            boolean loadRegistrationType) {
-        Registration registration = findById(id, runAsAdmin, loadPerson, loadOwnerRelationship, loadRegistrationType);
-        if (registration == null) {
-            //find history registration
-            registration = findFinishedRegistration(id, loadPerson, loadOwnerRelationship, loadRegistrationType);
-        }
-        return registration;
     }
 
     @Override
@@ -225,11 +182,17 @@ public class RegistrationStrategy extends Strategy {
         ApartmentCard apartmentCard = apartmentCardStrategy.findById(apartmentCardId, true, false, false, false);
         long ownerId = apartmentCard.getAttribute(ApartmentCardStrategy.OWNER).getValueId();
         if (ownerId != personId) {
-            Person owner = personStrategy.findPersonById(ownerId, true, true, false, false);
+            Person owner = personStrategy.findById(ownerId, true, true, false, false);
             return personStrategy.displayDomainObject(owner, locale);
         } else {
             return null;
         }
+    }
+
+    @Transactional
+    public void disable(Registration registration, Date endDate) {
+        registration.setEndDate(endDate);
+        changeActivity(registration, false);
     }
 
     @Transactional

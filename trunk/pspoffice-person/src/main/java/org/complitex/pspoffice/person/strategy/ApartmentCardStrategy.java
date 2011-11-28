@@ -154,7 +154,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Transactional
     private void loadOwner(ApartmentCard apartmentCard) {
         long ownerId = apartmentCard.getAttribute(OWNER).getValueId();
-        Person owner = personStrategy.findPersonById(ownerId, true, true, false, false);
+        Person owner = personStrategy.findById(ownerId, true, true, false, false);
         apartmentCard.setOwner(owner);
     }
 
@@ -339,7 +339,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
             for (Attribute registrationAttribute : registrationAttributes) {
                 long registrationId = registrationAttribute.getValueId();
-                registrations.add(registrationStrategy.findRegistrationById(registrationId, true, true, true, true));
+                registrations.add(registrationStrategy.findById(registrationId, true, true, true, true));
             }
         }
         if (!registrations.isEmpty()) {
@@ -398,8 +398,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     public void removeRegistrations(List<Registration> removeRegistrations, RemoveRegistrationCard removeRegistrationCard) {
-        Date archiveTime = DateUtil.getCurrentDate();
-        Date updateRegistrationsTime = DateUtil.justBefore(archiveTime);
+        Date updateDate = DateUtil.getCurrentDate();
 
         for (Registration registration : removeRegistrations) {
             Registration newRegistration = CloneUtil.cloneObject(registration);
@@ -427,8 +426,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_APARTMENT).getLocalizedValues()).
                     setValue(removeRegistrationCard.getApartment());
 
-            registrationStrategy.update(registration, newRegistration, updateRegistrationsTime);
-            registrationStrategy.archive(newRegistration, archiveTime);
+            registrationStrategy.update(registration, newRegistration, updateDate);
+            registrationStrategy.disable(registration, updateDate);
         }
     }
 
@@ -544,5 +543,11 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 setValue(new DateConverter().toString(registerChildrenCard.getRegistrationDate()));
         registration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registerChildrenCard.getRegistrationType().getId());
         return registration;
+    }
+
+    @Transactional
+    public void disable(ApartmentCard apartmentCard, Date endDate) {
+        apartmentCard.setEndDate(endDate);
+        changeActivity(apartmentCard, false);
     }
 }

@@ -67,7 +67,7 @@ public class PersonEdit extends FormTemplatePage {
      */
     public PersonEdit(long apartmentCardId, long personId) {
         this.isBackPage = true;
-        newPerson = personStrategy.findPersonById(personId, false, true, true, true);
+        newPerson = personStrategy.findById(personId, false, true, true, true);
         oldPerson = CloneUtil.cloneObject(newPerson);
         this.backApartmentCardId = apartmentCardId;
         init();
@@ -97,7 +97,7 @@ public class PersonEdit extends FormTemplatePage {
         });
 
         personDeathDialog = new PersonDeathDialog("personDeathDialog");
-        personDeathDialog.setVisible(oldPerson != null && !isBackPage);
+        personDeathDialog.setVisible(oldPerson != null && !oldPerson.isDead());
         add(personDeathDialog);
     }
 

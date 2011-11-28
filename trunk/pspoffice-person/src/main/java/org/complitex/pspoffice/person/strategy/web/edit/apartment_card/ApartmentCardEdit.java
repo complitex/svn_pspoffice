@@ -81,7 +81,7 @@ import org.complitex.pspoffice.person.strategy.service.CommunalApartmentService;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
-import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.ArchiveApartmentCardButton;
+import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.DisableApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
@@ -134,7 +134,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private Form<Void> form;
     private FeedbackPanel messages;
     private Component scrollToComponent;
-    private ArchiveApartmentCardDialog archiveApartmentCardDialog;
+    private DisableApartmentCardDialog disableApartmentCardDialog;
     private final List<Long> userOrganizationObjectIds = sessionBean.getUserOrganizationObjectIds();
     private WebMarkupContainer permissionContainer;
 
@@ -614,10 +614,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         form.add(back);
         add(form);
 
-        //archiveApartmentCardDialog
-        archiveApartmentCardDialog = new ArchiveApartmentCardDialog("archiveApartmentCardDialog");
-        archiveApartmentCardDialog.setVisible(!isNew());
-        add(archiveApartmentCardDialog);
+        //disableApartmentCardDialog
+        disableApartmentCardDialog = new DisableApartmentCardDialog("archiveApartmentCardDialog");
+        disableApartmentCardDialog.setVisible(!isNew());
+        add(disableApartmentCardDialog);
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId) {
@@ -797,10 +797,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 oldApartmentCard, newApartmentCard, null);
     }
 
-    private void archive() {
-        apartmentCardStrategy.archive(oldApartmentCard, DateUtil.getCurrentDate());
+    private void disable() {
+        apartmentCardStrategy.disable(oldApartmentCard, DateUtil.getCurrentDate());
         logBean.logArchivation(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, apartmentCardStrategy.getEntityTable(),
-                oldApartmentCard.getId(), getString("archivation_log_message"));
+                oldApartmentCard.getId(), getString("disabling_log_message"));
     }
 
     private void back() {
@@ -896,15 +896,15 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                         setVisible(!isNew());
                     }
                 },
-                new ArchiveApartmentCardButton(id) {
+                new DisableApartmentCardButton(id) {
 
                     @Override
                     protected void onClick(AjaxRequestTarget target) {
-                        if (archiveApartmentCardDialog != null) {
+                        if (disableApartmentCardDialog.isVisible()) {
                             if (oldApartmentCard.getRegisteredCount() > 0) {
-                                archiveApartmentCardDialog.open(target);
+                                disableApartmentCardDialog.open(target);
                             } else {
-                                archive();
+                                disable();
                                 back();
                             }
                         }
@@ -913,7 +913,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     protected void onBeforeRender() {
                         super.onBeforeRender();
-                        setVisible(!isNew());
+                        setVisible(disableApartmentCardDialog.isVisible());
                     }
                 });
     }

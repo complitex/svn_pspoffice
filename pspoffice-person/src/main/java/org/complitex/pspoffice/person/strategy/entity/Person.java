@@ -14,6 +14,7 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.GenderConverter;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Gender;
+import org.complitex.dictionary.entity.StatusType;
 import static org.complitex.dictionary.util.DateUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import static org.complitex.dictionary.util.AttributeUtil.*;
@@ -146,5 +147,9 @@ public class Person extends DomainObject {
 
     public boolean hasChildren() {
         return children.size() > 0;
+    }
+
+    public boolean isDead() {
+        return getStatus() == StatusType.INACTIVE && getDeathDate() != null;
     }
 }

@@ -11,12 +11,12 @@ import org.complitex.template.web.component.toolbar.ToolbarButton;
  *
  * @author Artem
  */
-public abstract class ArchiveApartmentCardButton extends ToolbarButton {
+public abstract class DisableApartmentCardButton extends ToolbarButton {
 
     private static final String IMAGE_SRC = "images/icon-deleteDocument.gif";
-    private static final String TITLE_KEY = "archive";
+    private static final String TITLE_KEY = "disable";
 
-    public ArchiveApartmentCardButton(String id) {
+    public DisableApartmentCardButton(String id) {
         super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY, true);
     }
 }

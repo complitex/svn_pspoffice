@@ -13,11 +13,11 @@ import org.odlabs.wiquery.ui.dialog.Dialog;
  *
  * @author Artem
  */
-final class ArchiveApartmentCardDialog extends Panel {
+final class DisableApartmentCardDialog extends Panel {
 
     private Dialog dialog;
 
-    ArchiveApartmentCardDialog(String id) {
+    DisableApartmentCardDialog(String id) {
         super(id);
 
         dialog = new Dialog("dialog");

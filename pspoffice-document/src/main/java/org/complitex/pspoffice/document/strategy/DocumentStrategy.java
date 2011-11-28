@@ -7,6 +7,7 @@ package org.complitex.pspoffice.document.strategy;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import static com.google.common.collect.Lists.*;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
@@ -15,10 +16,8 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
-import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.StringCultureBean;
-import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.StringUtil;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
@@ -53,7 +52,13 @@ public class DocumentStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public Document findDocumentById(long id) {
+    public void disable(Document document, Date endDate) {
+        document.setEndDate(endDate);
+        changeActivity(document, false);
+    }
+
+    @Transactional
+    public Document findById(long id) {
         DomainObject object = super.findById(id, true);
         if (object != null) {
             Document doc = new Document(object);
@@ -63,7 +68,7 @@ public class DocumentStrategy extends TemplateStrategy {
                 return doc;
             }
         } else {
-            return findHistoryDocument(id);
+            return null;
         }
     }
 
@@ -77,29 +82,6 @@ public class DocumentStrategy extends TemplateStrategy {
         document.addAttribute(documentTypeAttribute);
         fillAttributes(document);
 
-        if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
-            return new Passport(document);
-        } else {
-            return document;
-        }
-    }
-
-    @Transactional
-    private Document findHistoryDocument(long objectId) {
-        DomainObjectExample example = new DomainObjectExample(objectId);
-        example.setTable(getEntityTable());
-        example.setStartDate(DateUtil.getCurrentDate());
-
-        DomainObject documentObject = (DomainObject) sqlSession().selectOne(DOMAIN_OBJECT_NAMESPACE + "." + FIND_HISTORY_OBJECT_OPERATION, example);
-        if (documentObject == null) {
-            return null;
-        }
-        List<Attribute> historyAttributes = loadHistoryAttributes(objectId, DateUtil.justBefore(documentObject.getEndDate()));
-        loadStringCultures(historyAttributes);
-        documentObject.setAttributes(historyAttributes);
-        updateStringsForNewLocales(documentObject);
-
-        Document document = new Document(documentObject);
         if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
             return new Passport(document);
         } else {

@@ -155,7 +155,7 @@ public class RegistrationEdit extends FormTemplatePage {
         messages.setOutputMarkupId(true);
         add(messages);
 
-        Form form = new Form("form");
+        Form<Void> form = new Form<Void>("form");
 
         //address
         form.add(new Label("address", addressModel));
@@ -173,8 +173,10 @@ public class RegistrationEdit extends FormTemplatePage {
         //registration date
         initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, true);
         if (!isHistory()) {
-            stringBean.getSystemStringCulture(newRegistration.getAttribute(REGISTRATION_DATE).getLocalizedValues()).
-                    setValue(new DateConverter().toString(DateUtil.getCurrentDate()));
+            if (newRegistration.getRegistrationDate() == null) {
+                stringBean.getSystemStringCulture(newRegistration.getAttribute(REGISTRATION_DATE).getLocalizedValues()).
+                        setValue(new DateConverter().toString(DateUtil.getCurrentDate()));
+            }
 
             if (!isNew()) {
                 MaskedDateInput registrationDate = (MaskedDateInput) form.get("registrationDateContainer:input:"
@@ -515,4 +517,3 @@ public class RegistrationEdit extends FormTemplatePage {
         });
     }
 }
-

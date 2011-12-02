@@ -4,58 +4,52 @@
  */
 package org.complitex.pspoffice.person.strategy.web.history.apartment_card;
 
-import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.complitex.pspoffice.person.strategy.entity.ApartmentCardModification;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import static com.google.common.collect.Sets.*;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
-import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
-import org.apache.wicket.model.IModel;
-import org.complitex.dictionary.web.component.search.CollapsibleSearchComponent;
-import static com.google.common.collect.ImmutableList.*;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
-import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.util.string.Strings;
+import org.apache.wicket.model.StringResourceModel;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
+import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
+import org.complitex.dictionary.web.component.search.CollapsibleSearchComponent;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCardModification;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
 import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
-import org.complitex.template.web.template.TemplatePage;
 
-import org.odlabs.wiquery.core.javascript.JsQuery;
+import static com.google.common.collect.ImmutableList.*;
+import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Sets.*;
+
 import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 
@@ -63,7 +57,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
  *
  * @author Artem
  */
-public final class ApartmentCardHistory extends TemplatePage {
+final class ApartmentCardHistoryPanel extends Panel {
 
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
@@ -76,117 +70,9 @@ public final class ApartmentCardHistory extends TemplatePage {
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
     private final Entity ENTITY = apartmentCardStrategy.getEntity();
-    private final WebMarkupContainer historyContainer;
-    private final long apartmentCardId;
-    private Date currentEndDate;
 
-    private abstract class HistoryLink extends AjaxLink<Void> {
-
-        private boolean isPostBack;
-        private final boolean initiallyVisible;
-
-        private HistoryLink(String id, boolean initiallyVisible) {
-            super(id);
-
-            this.initiallyVisible = initiallyVisible;
-        }
-
-        @Override
-        protected IAjaxCallDecorator getAjaxCallDecorator() {
-            return new AjaxCallDecorator() {
-
-                @Override
-                public CharSequence decorateScript(CharSequence script) {
-                    return "(function(){$(this).attr('disabled', true); $('#load_indicator').show();})();" + script;
-                }
-            };
-        }
-
-        @Override
-        public void onClick(AjaxRequestTarget target) {
-            String enableButtonScript = new JsQuery(this).$().render(false) + ".attr('disabled', false);";
-            target.appendJavascript("(function(){" + enableButtonScript + "$('#load_indicator').hide()})();");
-            historyContainer.replace(newHistoryContent());
-            target.addComponent(historyContainer);
-            setHistoryButtonsVisibility(target);
-        }
-
-        @Override
-        protected void onComponentTag(ComponentTag tag) {
-            super.onComponentTag(tag);
-            if (!isPostBack) {
-                isPostBack = true;
-                if (!initiallyVisible) {
-                    String style = "";
-                    CharSequence styleCS = tag.getString("style");
-                    if (!Strings.isEmpty(styleCS)) {
-                        style = styleCS.toString();
-                    }
-                    if (!Strings.isEmpty(style) && !style.endsWith(";")) {
-                        style += ";";
-                    }
-                    tag.put("style", style + "visibility: hidden;");
-                }
-            }
-        }
-    }
-
-    public ApartmentCardHistory(final long apartmentCardId) {
-        this.apartmentCardId = apartmentCardId;
-
-        add(CSSPackageResource.getHeaderContribution(ApartmentCardHistory.class, ApartmentCardHistory.class.getSimpleName() + ".css"));
-        add(new Label("title", getStringFormat("title", apartmentCardId)));
-
-        //history container and content.
-        historyContainer = new WebMarkupContainer("historyContainer");
-        historyContainer.setOutputMarkupId(true);
-        historyContainer.add(newHistoryContent());
-        add(historyContainer);
-
-        //history
-        add(new HistoryLink("back", isBackButtonVisible()) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                Date newEndDate = apartmentCardStrategy.getPreviousModificationDate(apartmentCardId, currentEndDate);
-                if (apartmentCardStrategy.getPreviousModificationDate(apartmentCardId, newEndDate) != null) {
-                    currentEndDate = newEndDate;
-                    super.onClick(target);
-                }
-            }
-        });
-        add(new HistoryLink("forward", isForwardButtonVisible()) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                if (currentEndDate != null) {
-                    currentEndDate = apartmentCardStrategy.getNextModificationDate(apartmentCardId, currentEndDate);
-                    super.onClick(target);
-                }
-            }
-        });
-    }
-
-    private boolean isBackButtonVisible() {
-        return apartmentCardStrategy.getPreviousModificationDate(apartmentCardId,
-                apartmentCardStrategy.getPreviousModificationDate(apartmentCardId, currentEndDate)) != null;
-    }
-
-    private boolean isForwardButtonVisible() {
-        return currentEndDate != null;
-    }
-
-    private void setHistoryButtonsVisibility(AjaxRequestTarget target) {
-        target.appendJavascript("(function(){ $('.history_back_button').css('visibility', '" + getCssVisibility(isBackButtonVisible()) + "');"
-                + "$('.history_forward_button').css('visibility', '" + getCssVisibility(isForwardButtonVisible()) + "'); })()");
-    }
-
-    private String getCssVisibility(boolean visible) {
-        return visible ? "visible" : "hidden";
-    }
-
-    private Component newHistoryContent() {
-        WebMarkupContainer historyContent = new WebMarkupContainer("historyContent");
+    ApartmentCardHistoryPanel(String id, long apartmentCardId, Date currentEndDate) {
+        super(id);
 
         final Date startDate = apartmentCardStrategy.getPreviousModificationDate(apartmentCardId, currentEndDate);
         final ApartmentCard card = apartmentCardStrategy.getHistoryApartmentCard(apartmentCardId, startDate);
@@ -196,8 +82,15 @@ public final class ApartmentCardHistory extends TemplatePage {
         }
         final ApartmentCardModification modification = apartmentCardStrategy.getDistinctions(card, startDate);
 
-        historyContent.add(new Label("label", getStringFormat("label", apartmentCardId, HistoryDateFormatter.format(startDate),
-                currentEndDate != null ? HistoryDateFormatter.format(currentEndDate) : getString("current_time"))));
+        add(CSSPackageResource.getHeaderContribution(ApartmentCardHistoryPanel.class,
+                ApartmentCardHistoryPanel.class.getSimpleName() + ".css"));
+
+        add(new Label("title", new StringResourceModel("title", null, new Object[]{apartmentCardId})));
+        add(new Label("label", currentEndDate != null ? new StringResourceModel("label", null,
+                new Object[]{apartmentCardId, HistoryDateFormatter.format(startDate),
+                    HistoryDateFormatter.format(currentEndDate)})
+                : new StringResourceModel("label_current", null, new Object[]{apartmentCardId,
+                    HistoryDateFormatter.format(startDate)})));
 
         //address
         WebMarkupContainer addressContainer = new WebMarkupContainer("addressContainer");
@@ -209,7 +102,7 @@ public final class ApartmentCardHistory extends TemplatePage {
                 of("city", "street", "building", "apartment", "room"), null, ShowMode.ALL, false);
         address.add(new CssAttributeBehavior(modification.getModificationType(ADDRESS).getCssClass()));
         addressContainer.add(address);
-        historyContent.add(addressContainer);
+        add(addressContainer);
 
         //owner
         WebMarkupContainer ownerContainer = new WebMarkupContainer("ownerContainer");
@@ -220,7 +113,7 @@ public final class ApartmentCardHistory extends TemplatePage {
         final Component owner = new Label("owner", personStrategy.displayDomainObject(card.getOwner(), getLocale()));
         owner.add(new CssAttributeBehavior(modification.getModificationType(OWNER).getCssClass()));
         ownerContainer.add(owner);
-        historyContent.add(ownerContainer);
+        add(ownerContainer);
 
         //form of ownership
         final EntityAttributeType formOfOwnershipAttributeType = apartmentCardStrategy.getEntity().getAttributeType(FORM_OF_OWNERSHIP);
@@ -241,7 +134,7 @@ public final class ApartmentCardHistory extends TemplatePage {
         formOfOwnership.setEnabled(false);
         formOfOwnership.add(new CssAttributeBehavior(modification.getModificationType(FORM_OF_OWNERSHIP).getCssClass()));
         formOfOwnershipContainer.add(formOfOwnership);
-        historyContent.add(formOfOwnershipContainer);
+        add(formOfOwnershipContainer);
 
         //registrations
         ListView<Registration> registrations = new ListView<Registration>("registrations", card.getRegistrations()) {
@@ -297,7 +190,7 @@ public final class ApartmentCardHistory extends TemplatePage {
                 }
             }
         };
-        historyContent.add(registrations);
+        add(registrations);
 
         //user attributes and housing rights:
         List<Long> userAttributeTypeIds = newArrayList(transform(filter(ENTITY.getEntityAttributeTypes(),
@@ -332,8 +225,7 @@ public final class ApartmentCardHistory extends TemplatePage {
                 initAttributeInput(card, modification, item, userAttributeTypeId);
             }
         };
-        historyContent.add(userAttributesView);
-        return historyContent;
+        add(userAttributesView);
     }
 
     private void initAttributeInput(ApartmentCard card, ApartmentCardModification modification, MarkupContainer parent,

@@ -82,7 +82,6 @@ import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.DisableApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
-import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistory;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -589,7 +588,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 //
 //            @Override
 //            public void onClick() {
-//                setResponsePage(new ApartmentCardHistory(newApartmentCard.getId()));
+//                setResponsePage(new ApartmentCardHistoryPage(newApartmentCard.getId()));
 //            }
 //        });
 

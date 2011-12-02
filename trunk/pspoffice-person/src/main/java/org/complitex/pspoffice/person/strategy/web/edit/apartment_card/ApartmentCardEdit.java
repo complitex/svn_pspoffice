@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistoryPage;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -51,7 +52,6 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
-import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.StringUtil;
@@ -114,8 +114,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB
-    private StrategyFactory strategyFactory;
-    @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     @EJB
     private OwnershipFormStrategy ownershipFormStrategy;
@@ -147,7 +145,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             try {
                 if (validate()) {
-                    save();
+                    save(DateUtil.getCurrentDate());
                     afterSave();
                 } else {
                     target.addComponent(messages);
@@ -324,8 +322,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 if (registerOwnerCheckBox.getModelObject()) {
                     try {
                         if (validate()) {
-                            save();
-                            registerOwnerDialog.open(target, newApartmentCard);
+                            Date saveDate = DateUtil.getCurrentDate();
+                            save(saveDate);
+                            registerOwnerDialog.open(target, newApartmentCard, saveDate);
                         } else {
                             registerOwnerCheckBox.setModelObject(false);
                             target.addComponent(registerOwnerCheckBox);
@@ -584,13 +583,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         form.add(reports);
 
         //history
-//        form.add(new Link<Void>("history") {
-//
-//            @Override
-//            public void onClick() {
-//                setResponsePage(new ApartmentCardHistoryPage(newApartmentCard.getId()));
-//            }
-//        });
+        form.add(new Link<Void>("history") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new ApartmentCardHistoryPage(newApartmentCard.getId()));
+            }
+        }.setVisible(!isNew()));
 
         //save-cancel functional
         ApartmentCardIndicatingSubmitLink submit = new ApartmentCardIndicatingSubmitLink("submit") {
@@ -623,7 +622,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         add(form);
 
         //disableApartmentCardDialog
-        disableApartmentCardDialog = new DisableApartmentCardDialog("archiveApartmentCardDialog");
+        disableApartmentCardDialog = new DisableApartmentCardDialog("disableApartmentCardDialog");
         disableApartmentCardDialog.setVisible(!isNew());
         add(disableApartmentCardDialog);
     }
@@ -768,12 +767,12 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         return oldApartmentCard == null;
     }
 
-    private void save() {
+    private void save(Date saveDate) {
         beforePersist();
         if (isNew()) {
-            apartmentCardStrategy.insert(newApartmentCard, DateUtil.getCurrentDate());
+            apartmentCardStrategy.insert(newApartmentCard, saveDate);
         } else {
-            apartmentCardStrategy.update(oldApartmentCard, newApartmentCard, DateUtil.getCurrentDate());
+            apartmentCardStrategy.update(oldApartmentCard, newApartmentCard, saveDate);
         }
         logBean.log(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, apartmentCardStrategy,
                 oldApartmentCard, newApartmentCard, null);

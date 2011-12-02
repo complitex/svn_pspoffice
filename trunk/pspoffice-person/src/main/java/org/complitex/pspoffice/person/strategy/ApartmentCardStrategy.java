@@ -472,9 +472,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard) {
-        Date insertDate = DateUtil.getCurrentDate();
-
+    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard, Date insertDate) {
         long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
         Person owner = apartmentCard.getOwner();
         //owner registration
@@ -613,6 +611,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 if (!current.getAttributeTypeId().equals(REGISTRATIONS)) {
                     m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
                 }
+            }
+            for (Registration reg : historyCard.getRegistrations()) {
+                m.addRegistrationModification(reg.getId(),
+                        new RegistrationModification().setModificationType(ModificationType.ADD));
             }
         } else {
             //changes

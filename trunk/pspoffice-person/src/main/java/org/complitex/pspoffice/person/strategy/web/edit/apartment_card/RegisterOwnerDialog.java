@@ -67,6 +67,7 @@ final class RegisterOwnerDialog extends Panel {
     private ApartmentCard apartmentCard;
     private WebMarkupContainer registerChildrenContainer;
     private List<Person> children;
+    private Date saveDate;
 
     RegisterOwnerDialog(String id) {
         super(id);
@@ -171,8 +172,10 @@ final class RegisterOwnerDialog extends Panel {
         form.add(cancel);
     }
 
-    void open(AjaxRequestTarget target, ApartmentCard apartmentCard) {
+    void open(AjaxRequestTarget target, ApartmentCard apartmentCard, Date saveDate) {
         this.apartmentCard = apartmentCard;
+        this.saveDate = saveDate;
+
         RegisterOwnerCard newCard = new RegisterOwnerCard();
         newCard.setRegistrationDate(DateUtil.getCurrentDate());
         model.setObject(newCard);
@@ -190,7 +193,7 @@ final class RegisterOwnerDialog extends Panel {
     }
 
     private void register() {
-        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject());
+        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject(), saveDate);
     }
 
     private boolean validate() {

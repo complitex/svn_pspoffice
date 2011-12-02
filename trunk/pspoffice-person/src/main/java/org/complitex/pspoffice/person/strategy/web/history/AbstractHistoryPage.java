@@ -52,11 +52,14 @@ public abstract class AbstractHistoryPage extends TemplatePage {
 
         @Override
         public void onClick(AjaxRequestTarget target) {
-            String enableButtonScript = new JsQuery(this).$().render(false) + ".attr('disabled', false);";
-            target.appendJavascript("(function(){" + enableButtonScript + "$('#load_indicator').hide()})();");
             historyContainer.replace(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
             target.addComponent(historyContainer);
             setHistoryButtonsVisibility(target);
+        }
+
+        protected final void postOnClick(AjaxRequestTarget target) {
+            String enableButtonScript = new JsQuery(this).$().render(false) + ".attr('disabled', false);";
+            target.appendJavascript("(function(){" + enableButtonScript + "$('#load_indicator').hide()})();");
         }
 
         @Override
@@ -90,8 +93,15 @@ public abstract class AbstractHistoryPage extends TemplatePage {
         historyContainer.add(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
         add(historyContainer);
 
-        //history
-        add(new HistoryLink("back", isBackButtonVisible()) {
+        //history buttons
+        boolean backButtonVisibleInitially = isBackButtonVisible();
+        boolean forwardButtonVisibleInitially = isForwardButtonVisible();
+
+        WebMarkupContainer historyButtonsContainer = new WebMarkupContainer("historyButtonsContainer");
+        historyButtonsContainer.setVisible(backButtonVisibleInitially || forwardButtonVisibleInitially);
+        add(historyButtonsContainer);
+
+        historyButtonsContainer.add(new HistoryLink("back", backButtonVisibleInitially) {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -100,9 +110,11 @@ public abstract class AbstractHistoryPage extends TemplatePage {
                     currentEndDate = newEndDate;
                     super.onClick(target);
                 }
+                postOnClick(target);
             }
         });
-        add(new HistoryLink("forward", isForwardButtonVisible()) {
+
+        historyButtonsContainer.add(new HistoryLink("forward", forwardButtonVisibleInitially) {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -110,6 +122,7 @@ public abstract class AbstractHistoryPage extends TemplatePage {
                     currentEndDate = getNextModificationDate(objectId, currentEndDate);
                     super.onClick(target);
                 }
+                postOnClick(target);
             }
         });
     }

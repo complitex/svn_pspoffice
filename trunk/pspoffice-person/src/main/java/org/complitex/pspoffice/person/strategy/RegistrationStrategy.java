@@ -4,9 +4,9 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import com.google.common.collect.ImmutableMap;
 import static com.google.common.collect.ImmutableSet.*;
 import java.util.Date;
-import static com.google.common.collect.ImmutableMap.*;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +19,7 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.Strategy;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
@@ -202,7 +203,7 @@ public class RegistrationStrategy extends Strategy {
 
     @Transactional
     public boolean validateDuplicatePerson(long apartmentCardId, long personId) {
-        Map<String, Long> params = of("apartmentCardRegistrationAT", ApartmentCardStrategy.REGISTRATIONS,
+        Map<String, Long> params = ImmutableMap.of("apartmentCardRegistrationAT", ApartmentCardStrategy.REGISTRATIONS,
                 "registrationPersonAT", PERSON, "personId", personId, "apartmentCardId", apartmentCardId);
         return sqlSession().selectOne(REGISTRATION_MAPPING + ".validateDuplicatePerson", params) == null;
     }
@@ -213,25 +214,44 @@ public class RegistrationStrategy extends Strategy {
     }
 
     /* History */
-    @Transactional
-    @Override
-    public Registration findHistoryObject(long objectId, Date date) {
-        DomainObject histotyObject = super.findHistoryObject(objectId, date);
-        if (histotyObject == null) {
+    private Map<String, Object> newModificationDateParams(long registrationId, Date date) {
+        return ImmutableMap.<String, Object>of("registrationId", registrationId, "date", date);
+    }
+
+    public Date getPreviousModificationDate(long registrationId, Date date) {
+        if (date == null) {
+            date = DateUtil.getCurrentDate();
+        }
+        return (Date) sqlSession().selectOne(REGISTRATION_MAPPING + ".getPreviousModificationDate",
+                newModificationDateParams(registrationId, date));
+    }
+
+    public Date getNextModificationDate(long registrationId, Date date) {
+        if (date == null) {
             return null;
         }
-        Registration registration = new Registration(histotyObject);
+        return (Date) sqlSession().selectOne(REGISTRATION_MAPPING + ".getNextModificationDate",
+                newModificationDateParams(registrationId, date));
+    }
+
+    public Registration getHistoryRegistration(long registrationId, Date date) {
+        DomainObject historyObject = super.findHistoryObject(registrationId, date);
+        if (historyObject == null) {
+            return null;
+        }
+        Registration registration = new Registration(historyObject);
         loadPerson(registration);
-        loadRegistrationType(registration);
         loadOwnerRelationship(registration);
+        loadRegistrationType(registration);
         return registration;
     }
     private static final Set<Long> DISTINGUISH_ATTRIBUTES = of(REGISTRATION_TYPE, REGISTRATION_DATE, OWNER_RELATIONSHIP);
 
-    public RegistrationModification getDistinctions(Registration historyRegistration, Date startDate, Date previousStartDate) {
+    public RegistrationModification getDistinctionsForApartmentCardHistory(Registration historyRegistration,
+            Date startDate, Date previousStartDate) {
         RegistrationModification m = new RegistrationModification();
         Registration previousRegistration = previousStartDate == null ? null
-                : findHistoryObject(historyRegistration.getId(), previousStartDate);
+                : getHistoryRegistration(historyRegistration.getId(), previousStartDate);
         if (previousRegistration == null) {
             m.setModificationType(ModificationType.ADD);
         } else {
@@ -295,6 +315,58 @@ public class RegistrationStrategy extends Strategy {
         }
         if (m.getModificationType() == null) {
             m.setModificationType(ModificationType.NONE);
+        }
+        return m;
+    }
+
+    public RegistrationModification getDistinctions(Registration historyRegistration, Date startDate) {
+        RegistrationModification m = new RegistrationModification();
+        final Date previousStartDate = getPreviousModificationDate(historyRegistration.getId(), startDate);
+        Registration previousRegistration = previousStartDate == null ? null
+                : getHistoryRegistration(historyRegistration.getId(), previousStartDate);
+        if (previousRegistration == null) {
+            for (Attribute current : historyRegistration.getAttributes()) {
+                m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+            }
+        } else {
+            //changes
+            for (Attribute current : historyRegistration.getAttributes()) {
+                for (Attribute prev : previousRegistration.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        m.addAttributeModification(current.getAttributeTypeId(),
+                                !current.getValueId().equals(prev.getValueId()) ? ModificationType.CHANGE
+                                : ModificationType.NONE);
+                    }
+                }
+            }
+
+            //added
+            for (Attribute current : historyRegistration.getAttributes()) {
+                boolean added = true;
+                for (Attribute prev : previousRegistration.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        added = false;
+                        break;
+                    }
+                }
+                if (added) {
+                    m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                }
+            }
+
+            //removed
+            for (Attribute prev : previousRegistration.getAttributes()) {
+                boolean removed = true;
+                for (Attribute current : historyRegistration.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        removed = false;
+                        break;
+                    }
+                }
+                if (removed) {
+                    m.addAttributeModification(prev.getAttributeTypeId(), ModificationType.REMOVE);
+                }
+            }
         }
         return m;
     }

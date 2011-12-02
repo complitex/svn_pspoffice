@@ -95,6 +95,8 @@
             LIMIT 0,1
     </select>
     
+    <!-- History -->
+    
     <select id="getPreviousModificationDate" parameterType="map" resultType="date">
         SELECT MAX(d.`date`) FROM (
             SELECT a.`start_date` `date` FROM `apartment_card_attribute` a WHERE a.`object_id` = #{apartmentCardId} 

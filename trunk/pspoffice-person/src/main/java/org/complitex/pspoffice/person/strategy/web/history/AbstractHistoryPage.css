@@ -47,3 +47,10 @@
     height: 50px;
     background: url('loadImage.gif') no-repeat;
 }
+
+#objectLink {
+    position:fixed; 
+    right: 200px; 
+    bottom: 10px; 
+    z-index:1000001; 
+}

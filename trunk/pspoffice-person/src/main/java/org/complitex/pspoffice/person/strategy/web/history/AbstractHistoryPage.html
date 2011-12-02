@@ -2,6 +2,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:wicket="http://wicket.apache.org">
     <head>
+        <wicket:head>
+            <title wicket:id="title"></title>
+        </wicket:head>
     </head>
     <body>
         <wicket:extend>
@@ -16,6 +19,10 @@
 
             <div id="load_indicator" style="display: none;">
             </div>
+            
+            <a wicket:id="objectLink" id="objectLink">
+                <span wicket:id="objectLinkMessage"></span>
+            </a>
         </wicket:extend>
     </body>
 </html>

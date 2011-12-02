@@ -14,5 +14,27 @@
              WHERE a.`status` = 'ACTIVE' AND a.`object_id` = #{apartmentCardId}
              LIMIT 0,1
     </select>
+    
+    <!-- History -->
+    
+    <select id="getPreviousModificationDate" parameterType="map" resultType="date">
+        SELECT MAX(d.`date`) FROM (
+            SELECT a.`start_date` `date` FROM `registration_attribute` a WHERE a.`object_id` = #{registrationId} 
+                AND a.`start_date` <![CDATA[ < ]]> #{date}
+            UNION
+            SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ < ]]> #{date} 
+                AND r.`object_id` = #{registrationId}
+        ) d
+    </select>
+    
+    <select id="getNextModificationDate" parameterType="map" resultType="date">
+        SELECT MIN(d.`date`) FROM (
+            SELECT a.`start_date` `date` FROM `registration_attribute` a WHERE a.`object_id` = #{registrationId} 
+                AND a.`start_date` <![CDATA[ > ]]> #{date}
+            UNION
+            SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ > ]]> #{date} 
+                AND r.`object_id` = #{registrationId}
+        ) d
+    </select>
 
 </mapper>

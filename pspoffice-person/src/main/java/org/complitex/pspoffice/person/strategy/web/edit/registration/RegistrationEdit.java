@@ -67,6 +67,7 @@ import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.Apartment
 import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.F3ReferenceButton;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.RegistrationCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.RegistrationStopCouponButton;
+import org.complitex.pspoffice.person.strategy.web.history.registration.RegistrationHistoryPage;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -102,12 +103,11 @@ public class RegistrationEdit extends FormTemplatePage {
     private LogBean logBean;
     @EJB
     private PersonStrategy personStrategy;
-    private ApartmentCard apartmentCard;
-    private Registration newRegistration;
-    private Registration oldRegistration;
-    private String addressEntity;
-    private long addressId;
-    private IModel<String> addressModel;
+    private final ApartmentCard apartmentCard;
+    private final Registration newRegistration;
+    private final Registration oldRegistration;
+    private final String addressEntity;
+    private final long addressId;
 
     public RegistrationEdit(ApartmentCard apartmentCard, String addressEntity, long addressId, Registration registration) {
         this.apartmentCard = apartmentCard;
@@ -116,6 +116,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
         if (registration.getId() == null) {
             newRegistration = registration;
+            oldRegistration = null;
         } else {
             newRegistration = registration;
             oldRegistration = CloneUtil.cloneObject(newRegistration);
@@ -136,7 +137,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
         final Entity entity = registrationStrategy.getEntity();
 
-        addressModel = new LoadableDetachableModel<String>() {
+        IModel<String> addressModel = new LoadableDetachableModel<String>() {
 
             @Override
             protected String load() {
@@ -252,6 +253,15 @@ public class RegistrationEdit extends FormTemplatePage {
         };
         form.add(userAttributesView);
 
+        //history
+        form.add(new Link<Void>("history") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new RegistrationHistoryPage(apartmentCard, newRegistration));
+            }
+        }.setVisible(!isNew()));
+
         IndicatingAjaxButton submit = new IndicatingAjaxButton("submit") {
 
             @Override
@@ -301,7 +311,6 @@ public class RegistrationEdit extends FormTemplatePage {
         final EntityAttributeType ownerRelationshipAttributeType = registrationStrategy.getEntity().getAttributeType(OWNER_RELATIONSHIP);
 
         WebMarkupContainer ownerRelationshipContainer = new WebMarkupContainer("ownerRelationshipContainer");
-        add(ownerRelationshipContainer);
 
         //label
         IModel<String> labelModel = labelModel(ownerRelationshipAttributeType.getAttributeNames(), getLocale());
@@ -344,7 +353,6 @@ public class RegistrationEdit extends FormTemplatePage {
         final EntityAttributeType registrationTypeAttributeType = registrationStrategy.getEntity().getAttributeType(REGISTRATION_TYPE);
 
         WebMarkupContainer registrationTypeContainer = new WebMarkupContainer("registrationTypeContainer");
-        add(registrationTypeContainer);
 
         //label
         IModel<String> labelModel = labelModel(registrationTypeAttributeType.getAttributeNames(), getLocale());

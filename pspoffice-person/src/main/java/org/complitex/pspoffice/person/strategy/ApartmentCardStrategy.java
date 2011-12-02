@@ -603,7 +603,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     public ApartmentCardModification getDistinctions(ApartmentCard historyCard, Date startDate) {
         ApartmentCardModification m = new ApartmentCardModification();
-        Date previousStartDate = getPreviousModificationDate(historyCard.getId(), startDate);
+        final Date previousStartDate = getPreviousModificationDate(historyCard.getId(), startDate);
         ApartmentCard previousCard = previousStartDate == null ? null
                 : getHistoryApartmentCard(historyCard.getId(), previousStartDate);
         if (previousCard == null) {
@@ -622,11 +622,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 for (Attribute prev : previousCard.getAttributes()) {
                     if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())
                             && !current.getAttributeTypeId().equals(REGISTRATIONS)) {
-                        if (!current.getValueId().equals(prev.getValueId())) {
-                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.CHANGE);
-                        } else {
-                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
-                        }
+
+                        m.addAttributeModification(current.getAttributeTypeId(),
+                                !current.getValueId().equals(prev.getValueId()) ? ModificationType.CHANGE
+                                : ModificationType.NONE);
                     }
                 }
             }
@@ -678,7 +677,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                         //changed
                         if (!current.isFinished() && !prev.isFinished()) {
                             m.addRegistrationModification(current.getId(),
-                                    registrationStrategy.getDistinctions(current, startDate, previousStartDate));
+                                    registrationStrategy.getDistinctionsForApartmentCardHistory(current, startDate, previousStartDate));
                             break;
                         }
                         m.addRegistrationModification(current.getId(),
@@ -712,7 +711,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
             for (Attribute registrationAttribute : registrationAttributes) {
                 long registrationId = registrationAttribute.getValueId();
-                Registration registration = registrationStrategy.findHistoryObject(registrationId, date);
+                Registration registration = registrationStrategy.getHistoryRegistration(registrationId, date);
                 if (registration.isFinished() && registration.getEndDate().after(date)) {
                     registration.setStatus(StatusType.ACTIVE);
                     registration.removeAttribute(RegistrationStrategy.DEPARTURE_DATE);

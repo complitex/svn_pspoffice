@@ -71,24 +71,23 @@ final class ApartmentCardHistoryPanel extends Panel {
     private RegistrationTypeStrategy registrationTypeStrategy;
     private final Entity ENTITY = apartmentCardStrategy.getEntity();
 
-    ApartmentCardHistoryPanel(String id, long apartmentCardId, Date currentEndDate) {
+    ApartmentCardHistoryPanel(String id, long apartmentCardId, final Date endDate) {
         super(id);
 
-        final Date startDate = apartmentCardStrategy.getPreviousModificationDate(apartmentCardId, currentEndDate);
+        final Date startDate = apartmentCardStrategy.getPreviousModificationDate(apartmentCardId, endDate);
         final ApartmentCard card = apartmentCardStrategy.getHistoryApartmentCard(apartmentCardId, startDate);
         if (card == null) {
             throw new NullPointerException("History apartment card is null. Id: " + apartmentCardId
-                    + ", startDate:" + startDate + ", endDdate: " + startDate);
+                    + ", startDate:" + startDate + ", endDdate: " + endDate);
         }
         final ApartmentCardModification modification = apartmentCardStrategy.getDistinctions(card, startDate);
 
         add(CSSPackageResource.getHeaderContribution(ApartmentCardHistoryPanel.class,
                 ApartmentCardHistoryPanel.class.getSimpleName() + ".css"));
 
-        add(new Label("title", new StringResourceModel("title", null, new Object[]{apartmentCardId})));
-        add(new Label("label", currentEndDate != null ? new StringResourceModel("label", null,
+        add(new Label("label", endDate != null ? new StringResourceModel("label", null,
                 new Object[]{apartmentCardId, HistoryDateFormatter.format(startDate),
-                    HistoryDateFormatter.format(currentEndDate)})
+                    HistoryDateFormatter.format(endDate)})
                 : new StringResourceModel("label_current", null, new Object[]{apartmentCardId,
                     HistoryDateFormatter.format(startDate)})));
 
@@ -122,9 +121,8 @@ final class ApartmentCardHistoryPanel extends Panel {
         formOfOwnershipContainer.add(new Label("label", labelModel));
         formOfOwnershipContainer.add(new WebMarkupContainer("required").setVisible(formOfOwnershipAttributeType.isMandatory()));
         final List<DomainObject> allOwnershipForms = ownershipFormStrategy.getAll();
-        IModel<DomainObject> formOfOwnershipModel = new Model<DomainObject>(card.getOwnershipForm());
         final Component formOfOwnership = new DisableAwareDropDownChoice<DomainObject>("formOfOwnership",
-                formOfOwnershipModel, allOwnershipForms, new DomainObjectDisableAwareRenderer() {
+                new Model<DomainObject>(card.getOwnershipForm()), allOwnershipForms, new DomainObjectDisableAwareRenderer() {
 
             @Override
             public Object getDisplayValue(DomainObject object) {

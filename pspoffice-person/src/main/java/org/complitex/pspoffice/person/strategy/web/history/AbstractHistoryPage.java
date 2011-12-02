@@ -13,6 +13,9 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.template.web.template.TemplatePage;
 import org.odlabs.wiquery.core.javascript.JsQuery;
@@ -27,6 +30,8 @@ public abstract class AbstractHistoryPage extends TemplatePage {
     private final WebMarkupContainer historyContainer;
     private final long objectId;
     private Date currentEndDate;
+    private boolean isPostBack;
+    private final IModel<String> objectLinkMessageModel;
 
     private abstract class HistoryLink extends AjaxLink<Void> {
 
@@ -35,7 +40,6 @@ public abstract class AbstractHistoryPage extends TemplatePage {
 
         private HistoryLink(String id, boolean initiallyVisible) {
             super(id);
-
             this.initiallyVisible = initiallyVisible;
         }
 
@@ -82,50 +86,74 @@ public abstract class AbstractHistoryPage extends TemplatePage {
         }
     }
 
-    public AbstractHistoryPage(final long objectId) {
+    public AbstractHistoryPage(final long objectId, final IModel<String> titleModel,
+            final IModel<String> objectLinkMessageModel) {
         this.objectId = objectId;
+        this.objectLinkMessageModel = objectLinkMessageModel;
 
         add(CSSPackageResource.getHeaderContribution(AbstractHistoryPage.class, AbstractHistoryPage.class.getSimpleName() + ".css"));
+        add(new Label("title", titleModel));
 
-        //history container and content.
         historyContainer = new WebMarkupContainer("historyContainer");
-        historyContainer.setOutputMarkupId(true);
-        historyContainer.add(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
-        add(historyContainer);
-
-        //history buttons
-        boolean backButtonVisibleInitially = isBackButtonVisible();
-        boolean forwardButtonVisibleInitially = isForwardButtonVisible();
-
-        WebMarkupContainer historyButtonsContainer = new WebMarkupContainer("historyButtonsContainer");
-        historyButtonsContainer.setVisible(backButtonVisibleInitially || forwardButtonVisibleInitially);
-        add(historyButtonsContainer);
-
-        historyButtonsContainer.add(new HistoryLink("back", backButtonVisibleInitially) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                Date newEndDate = getPreviousModificationDate(objectId, currentEndDate);
-                if (getPreviousModificationDate(objectId, newEndDate) != null) {
-                    currentEndDate = newEndDate;
-                    super.onClick(target);
-                }
-                postOnClick(target);
-            }
-        });
-
-        historyButtonsContainer.add(new HistoryLink("forward", forwardButtonVisibleInitially) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                if (currentEndDate != null) {
-                    currentEndDate = getNextModificationDate(objectId, currentEndDate);
-                    super.onClick(target);
-                }
-                postOnClick(target);
-            }
-        });
     }
+
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        if (!isPostBack) {
+            isPostBack = true;
+
+            //history container and content.
+            historyContainer.setOutputMarkupId(true);
+            historyContainer.add(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
+            add(historyContainer);
+
+            //history buttons
+            boolean backButtonVisibleInitially = isBackButtonVisible();
+            boolean forwardButtonVisibleInitially = isForwardButtonVisible();
+
+            WebMarkupContainer historyButtonsContainer = new WebMarkupContainer("historyButtonsContainer");
+            historyButtonsContainer.setVisible(backButtonVisibleInitially || forwardButtonVisibleInitially);
+            add(historyButtonsContainer);
+
+            historyButtonsContainer.add(new HistoryLink("back", backButtonVisibleInitially) {
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    Date newEndDate = getPreviousModificationDate(objectId, currentEndDate);
+                    if (getPreviousModificationDate(objectId, newEndDate) != null) {
+                        currentEndDate = newEndDate;
+                        super.onClick(target);
+                    }
+                    postOnClick(target);
+                }
+            });
+
+            historyButtonsContainer.add(new HistoryLink("forward", forwardButtonVisibleInitially) {
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    if (currentEndDate != null) {
+                        currentEndDate = getNextModificationDate(objectId, currentEndDate);
+                        super.onClick(target);
+                    }
+                    postOnClick(target);
+                }
+            });
+
+            Link<Void> objectLink = new Link<Void>("objectLink") {
+
+                @Override
+                public void onClick() {
+                    returnBackToObject(objectId);
+                }
+            };
+            objectLink.add(new Label("objectLinkMessage", objectLinkMessageModel));
+            add(objectLink);
+        }
+    }
+
+    protected abstract void returnBackToObject(long objectId);
 
     protected abstract Date getPreviousModificationDate(long objectId, Date currentEndDate);
 

@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +23,7 @@ import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
@@ -38,10 +40,13 @@ import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCardModification;
+import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.RegisterChildrenCard;
 import org.complitex.pspoffice.person.strategy.entity.RegisterOwnerCard;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
 import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -79,6 +84,30 @@ public class ApartmentCardStrategy extends TemplateStrategy {
      * Set of persistable search state entities
      */
     private static final Set<String> SEARCH_STATE_ENTITES = ImmutableSet.of("country", "region", "city", "street", "building");
+    private static final Comparator<Registration> REGISTRATION_COMPARATOR = new Comparator<Registration>() {
+
+        @Override
+        public int compare(Registration o1, Registration o2) {
+            if (o1.isFinished() && o2.isFinished()) {
+                Date d1 = o1.getDepartureDate();
+                if (d1 == null) {
+                    d1 = o1.getEndDate();
+                }
+                Date d2 = o2.getDepartureDate();
+                if (d2 == null) {
+                    d2 = o2.getEndDate();
+                }
+                return d2.compareTo(d1);
+            }
+            if (o1.isFinished() || o2.isFinished()) {
+                return o1.isFinished() ? 1 : -1;
+            }
+
+            Date d1 = o1.getRegistrationDate();
+            Date d2 = o2.getRegistrationDate();
+            return d2.compareTo(d1);
+        }
+    };
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -343,30 +372,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             }
         }
         if (!registrations.isEmpty()) {
-            Collections.sort(registrations, new Comparator<Registration>() {
-
-                @Override
-                public int compare(Registration o1, Registration o2) {
-                    if (o1.isFinished() && o2.isFinished()) {
-                        Date d1 = o1.getDepartureDate();
-                        if (d1 == null) {
-                            d1 = o1.getEndDate();
-                        }
-                        Date d2 = o2.getDepartureDate();
-                        if (d2 == null) {
-                            d2 = o2.getEndDate();
-                        }
-                        return d2.compareTo(d1);
-                    }
-                    if (o1.isFinished() || o2.isFinished()) {
-                        return o1.isFinished() ? 1 : -1;
-                    }
-
-                    Date d1 = o1.getRegistrationDate();
-                    Date d2 = o2.getRegistrationDate();
-                    return d2.compareTo(d1);
-                }
-            });
+            Collections.sort(registrations, REGISTRATION_COMPARATOR);
         }
         apartmentCard.setRegistrations(registrations);
     }
@@ -549,5 +555,173 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public void disable(ApartmentCard apartmentCard, Date endDate) {
         apartmentCard.setEndDate(endDate);
         changeActivity(apartmentCard, false);
+    }
+
+    public SearchComponentState initAddressSearchComponentState(String addressEntity, long addressId) {
+        SearchComponentState searchComponentState = new SearchComponentState();
+        IStrategy addressStrategy = strategyFactory.getStrategy(addressEntity);
+        DomainObject addressObject = addressStrategy.findById(addressId, true);
+        SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(addressId, null);
+        if (info != null) {
+            searchComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
+            searchComponentState.put(addressEntity, addressObject);
+        }
+        if (addressEntity.equals("apartment")) {
+            DomainObject room = new DomainObject();
+            room.setId(SearchComponentState.NOT_SPECIFIED_ID);
+            searchComponentState.put("room", room);
+        } else if (addressEntity.equals("building")) {
+            DomainObject room = new DomainObject();
+            room.setId(SearchComponentState.NOT_SPECIFIED_ID);
+            searchComponentState.put("room", room);
+            DomainObject apartment = new DomainObject();
+            apartment.setId(SearchComponentState.NOT_SPECIFIED_ID);
+            searchComponentState.put("apartment", apartment);
+        }
+        return searchComponentState;
+    }
+
+    /* History */
+    private Map<String, Object> newModificationDateParams(long apartmentCardId, Date date) {
+        return ImmutableMap.<String, Object>of("apartmentCardId", apartmentCardId, "date", date,
+                "apartmentCardRegisrationAT", REGISTRATIONS);
+    }
+
+    public Date getPreviousModificationDate(long apartmentCardId, Date date) {
+        if (date == null) {
+            date = DateUtil.getCurrentDate();
+        }
+        return (Date) sqlSession().selectOne(APARTMENT_CARD_MAPPING + ".getPreviousModificationDate",
+                newModificationDateParams(apartmentCardId, date));
+    }
+
+    public Date getNextModificationDate(long apartmentCardId, Date date) {
+        if (date == null) {
+            return null;
+        }
+        return (Date) sqlSession().selectOne(APARTMENT_CARD_MAPPING + ".getNextModificationDate",
+                newModificationDateParams(apartmentCardId, date));
+    }
+
+    public ApartmentCardModification getDistinctions(ApartmentCard historyCard, Date startDate) {
+        ApartmentCardModification m = new ApartmentCardModification();
+        Date previousStartDate = getPreviousModificationDate(historyCard.getId(), startDate);
+        ApartmentCard previousCard = previousStartDate == null ? null
+                : getHistoryApartmentCard(historyCard.getId(), previousStartDate);
+        if (previousCard == null) {
+            for (Attribute current : historyCard.getAttributes()) {
+                if (!current.getAttributeTypeId().equals(REGISTRATIONS)) {
+                    m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                }
+            }
+        } else {
+            //changes
+            for (Attribute current : historyCard.getAttributes()) {
+                for (Attribute prev : previousCard.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())
+                            && !current.getAttributeTypeId().equals(REGISTRATIONS)) {
+                        if (!current.getValueId().equals(prev.getValueId())) {
+                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.CHANGE);
+                        } else {
+                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
+                        }
+                    }
+                }
+            }
+
+            //added
+            for (Attribute current : historyCard.getAttributes()) {
+                if (!current.getAttributeTypeId().equals(REGISTRATIONS)) {
+                    boolean added = true;
+                    for (Attribute prev : previousCard.getAttributes()) {
+                        if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                            added = false;
+                            break;
+                        }
+                    }
+                    if (added) {
+                        m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                    }
+                }
+            }
+
+            //removed
+            for (Attribute prev : previousCard.getAttributes()) {
+                if (!prev.getAttributeTypeId().equals(REGISTRATIONS)) {
+                    boolean removed = true;
+                    for (Attribute current : historyCard.getAttributes()) {
+                        if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                            removed = false;
+                            break;
+                        }
+                    }
+                    if (removed) {
+                        m.addAttributeModification(prev.getAttributeTypeId(), ModificationType.REMOVE);
+                    }
+                }
+            }
+
+            //registrations
+            for (Registration current : historyCard.getRegistrations()) {
+                boolean added = true;
+                for (Registration prev : previousCard.getRegistrations()) {
+                    if (current.getId().equals(prev.getId())) {
+                        added = false;
+                        //removed
+                        if (current.isFinished() && !prev.isFinished()) {
+                            m.addRegistrationModification(current.getId(),
+                                    new RegistrationModification().setModificationType(ModificationType.REMOVE));
+                            break;
+                        }
+                        //changed
+                        if (!current.isFinished() && !prev.isFinished()) {
+                            m.addRegistrationModification(current.getId(),
+                                    registrationStrategy.getDistinctions(current, startDate, previousStartDate));
+                            break;
+                        }
+                        m.addRegistrationModification(current.getId(),
+                                new RegistrationModification().setModificationType(ModificationType.NONE));
+                    }
+                }
+                if (added) {
+                    m.addRegistrationModification(current.getId(),
+                            new RegistrationModification().setModificationType(ModificationType.ADD));
+                }
+            }
+        }
+        return m;
+    }
+
+    public ApartmentCard getHistoryApartmentCard(long apartmentCardId, Date date) {
+        DomainObject historyObject = super.findHistoryObject(apartmentCardId, date);
+        if (historyObject == null) {
+            return null;
+        }
+        ApartmentCard card = new ApartmentCard(historyObject);
+        loadOwner(card);
+        loadHistoryRegistrations(card, date);
+        loadOwnershipForm(card);
+        return card;
+    }
+
+    private void loadHistoryRegistrations(ApartmentCard apartmentCard, Date date) {
+        List<Registration> registrations = newArrayList();
+        List<Attribute> registrationAttributes = apartmentCard.getAttributes(REGISTRATIONS);
+        if (registrationAttributes != null && !registrationAttributes.isEmpty()) {
+            for (Attribute registrationAttribute : registrationAttributes) {
+                long registrationId = registrationAttribute.getValueId();
+                Registration registration = registrationStrategy.findHistoryObject(registrationId, date);
+                if (registration.isFinished() && registration.getEndDate().after(date)) {
+                    registration.setStatus(StatusType.ACTIVE);
+                    registration.removeAttribute(RegistrationStrategy.DEPARTURE_DATE);
+                }
+                registrations.add(registration);
+            }
+        }
+
+        if (!registrations.isEmpty()) {
+            Collections.sort(registrations, REGISTRATION_COMPARATOR);
+        }
+        apartmentCard.setRegistrations(registrations);
     }
 }

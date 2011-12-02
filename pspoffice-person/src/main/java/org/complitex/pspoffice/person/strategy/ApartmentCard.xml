@@ -94,4 +94,34 @@
                 </if>
             LIMIT 0,1
     </select>
+    
+    <select id="getPreviousModificationDate" parameterType="map" resultType="date">
+        SELECT MAX(d.`date`) FROM (
+            SELECT a.`start_date` `date` FROM `apartment_card_attribute` a WHERE a.`object_id` = #{apartmentCardId} 
+                AND a.`start_date` <![CDATA[ < ]]> #{date}
+            UNION 
+            SELECT ra.`start_date` FROM `registration_attribute` ra WHERE ra.`start_date` <![CDATA[ < ]]> #{date}
+                AND ra.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
+                    AND aca.`start_date` <![CDATA[ < ]]> #{date} AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
+            UNION
+            SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ < ]]> #{date} 
+                AND r.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
+                    AND aca.`start_date` <![CDATA[ < ]]> #{date} AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
+        ) d
+    </select>
+    
+    <select id="getNextModificationDate" parameterType="map" resultType="date">
+        SELECT MIN(d.`date`) FROM (
+            SELECT a.`start_date` `date` FROM `apartment_card_attribute` a WHERE a.`object_id` = #{apartmentCardId} 
+                AND a.`start_date` <![CDATA[ > ]]> #{date}
+            UNION 
+            SELECT ra.`start_date` FROM `registration_attribute` ra WHERE ra.`start_date` <![CDATA[ > ]]> #{date}
+                AND ra.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
+                    AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
+            UNION
+            SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ > ]]> #{date} 
+                AND r.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
+                    AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
+        ) d
+    </select>
 </mapper>

@@ -51,7 +51,6 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
-import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
@@ -83,6 +82,7 @@ import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.DisableApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
+import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistory;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -257,7 +257,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         addressContainer.add(new Label("label", labelModel(addressAttributeType.getAttributeNames(), getLocale())));
         addressContainer.add(new WebMarkupContainer("required").setVisible(addressAttributeType.isMandatory()));
 
-        addressSearchComponentState = initAddressSearchComponentState();
+        addressSearchComponentState = apartmentCardStrategy.initAddressSearchComponentState(getAddressEntity(), getAddressId());
         ApartmentCardAddressSearchPanel address = null;
         if (isNew()) {
             address = new ApartmentCardAddressSearchPanel("address", addressSearchComponentState,
@@ -584,6 +584,15 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         reports.setVisible(!isNew());
         form.add(reports);
 
+        //history
+//        form.add(new Link<Void>("history") {
+//
+//            @Override
+//            public void onClick() {
+//                setResponsePage(new ApartmentCardHistory(newApartmentCard.getId()));
+//            }
+//        });
+
         //save-cancel functional
         ApartmentCardIndicatingSubmitLink submit = new ApartmentCardIndicatingSubmitLink("submit") {
 
@@ -756,32 +765,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         return addressId != null ? addressId : newApartmentCard.getAddressId();
     }
 
-    private SearchComponentState initAddressSearchComponentState() {
-        String currentAddressEntity = getAddressEntity();
-        long currentAddressId = getAddressId();
-        SearchComponentState searchComponentState = new SearchComponentState();
-        IStrategy addressStrategy = strategyFactory.getStrategy(currentAddressEntity);
-        DomainObject addressObject = addressStrategy.findById(currentAddressId, true);
-        SimpleObjectInfo info = addressStrategy.findParentInSearchComponent(currentAddressId, null);
-        if (info != null) {
-            searchComponentState = addressStrategy.getSearchComponentStateForParent(info.getId(), info.getEntityTable(), null);
-            searchComponentState.put(currentAddressEntity, addressObject);
-        }
-        if (currentAddressEntity.equals("apartment")) {
-            DomainObject room = new DomainObject();
-            room.setId(SearchComponentState.NOT_SPECIFIED_ID);
-            searchComponentState.put("room", room);
-        } else if (currentAddressEntity.equals("building")) {
-            DomainObject room = new DomainObject();
-            room.setId(SearchComponentState.NOT_SPECIFIED_ID);
-            searchComponentState.put("room", room);
-            DomainObject apartment = new DomainObject();
-            apartment.setId(SearchComponentState.NOT_SPECIFIED_ID);
-            searchComponentState.put("apartment", apartment);
-        }
-        return searchComponentState;
-    }
-
     private boolean isNew() {
         return oldApartmentCard == null;
     }
@@ -821,7 +804,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         final EntityAttributeType formOfOwnershipAttributeType = apartmentCardStrategy.getEntity().getAttributeType(FORM_OF_OWNERSHIP);
 
         WebMarkupContainer formOfOwnershipContainer = new WebMarkupContainer("formOfOwnershipContainer");
-        add(formOfOwnershipContainer);
 
         //label
         IModel<String> labelModel = labelModel(formOfOwnershipAttributeType.getAttributeNames(), getLocale());

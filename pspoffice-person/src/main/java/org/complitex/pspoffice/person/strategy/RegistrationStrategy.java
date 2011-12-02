@@ -4,22 +4,27 @@
  */
 package org.complitex.pspoffice.person.strategy;
 
+import static com.google.common.collect.ImmutableSet.*;
 import java.util.Date;
 import static com.google.common.collect.ImmutableMap.*;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
+import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
+import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -205,5 +210,92 @@ public class RegistrationStrategy extends Strategy {
     @Override
     public String[] getListRoles() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /* History */
+    @Transactional
+    @Override
+    public Registration findHistoryObject(long objectId, Date date) {
+        DomainObject histotyObject = super.findHistoryObject(objectId, date);
+        if (histotyObject == null) {
+            return null;
+        }
+        Registration registration = new Registration(histotyObject);
+        loadPerson(registration);
+        loadRegistrationType(registration);
+        loadOwnerRelationship(registration);
+        return registration;
+    }
+    private static final Set<Long> DISTINGUISH_ATTRIBUTES = of(REGISTRATION_TYPE, REGISTRATION_DATE, OWNER_RELATIONSHIP);
+
+    public RegistrationModification getDistinctions(Registration historyRegistration, Date startDate, Date previousStartDate) {
+        RegistrationModification m = new RegistrationModification();
+        Registration previousRegistration = previousStartDate == null ? null
+                : findHistoryObject(historyRegistration.getId(), previousStartDate);
+        if (previousRegistration == null) {
+            m.setModificationType(ModificationType.ADD);
+        } else {
+            //changes
+            for (Attribute current : historyRegistration.getAttributes()) {
+                for (Attribute prev : previousRegistration.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        if (!current.getValueId().equals(prev.getValueId())) {
+                            if (DISTINGUISH_ATTRIBUTES.contains(current.getAttributeTypeId())) {
+                                m.addAttributeModification(current.getAttributeTypeId(), ModificationType.CHANGE);
+                                m.setModificationType(ModificationType.NONE);
+                            } else if (m.getModificationType() == null) {
+                                m.setModificationType(ModificationType.CHANGE);
+                            }
+                        } else {
+                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
+                        }
+                    }
+                }
+            }
+
+            //added
+            for (Attribute current : historyRegistration.getAttributes()) {
+                boolean added = true;
+                for (Attribute prev : previousRegistration.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        added = false;
+                        break;
+                    }
+                }
+                if (added) {
+                    if (DISTINGUISH_ATTRIBUTES.contains(current.getAttributeTypeId())) {
+                        m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                        m.setModificationType(ModificationType.NONE);
+                    } else if (m.getModificationType() == null) {
+                        m.setModificationType(ModificationType.CHANGE);
+                    }
+
+                }
+            }
+
+            //removed
+            for (Attribute prev : previousRegistration.getAttributes()) {
+                boolean removed = true;
+                for (Attribute current : historyRegistration.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        removed = false;
+                        break;
+                    }
+                }
+                if (removed) {
+                    if (DISTINGUISH_ATTRIBUTES.contains(prev.getAttributeTypeId())) {
+                        m.addAttributeModification(prev.getAttributeTypeId(), ModificationType.REMOVE);
+                        m.setModificationType(ModificationType.NONE);
+                    } else if (m.getModificationType() == null) {
+                        m.setModificationType(ModificationType.CHANGE);
+                    }
+
+                }
+            }
+        }
+        if (m.getModificationType() == null) {
+            m.setModificationType(ModificationType.NONE);
+        }
+        return m;
     }
 }

@@ -69,7 +69,7 @@ final class RegistrationHistoryPanel extends Panel {
         final Registration registration = registrationStrategy.getHistoryRegistration(registrationId, startDate);
         if (registration == null) {
             throw new NullPointerException("History registration is null. Id: " + registrationId
-                    + ", startDate:" + startDate + ", endDdate: " + endDate);
+                    + ", startDate:" + startDate + ", endDate: " + endDate);
         }
 
         final RegistrationModification modification = registrationStrategy.getDistinctions(registration, startDate);

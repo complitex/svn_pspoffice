@@ -35,12 +35,16 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
+import org.complitex.dictionary.util.Numbers;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.person.strategy.entity.DocumentModification;
+import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
+import org.complitex.pspoffice.person.strategy.entity.PersonModification;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
@@ -728,5 +732,240 @@ public class PersonStrategy extends TemplateStrategy {
     private void disable(Person person, Date endDate) {
         person.setEndDate(endDate);
         changeActivity(person, false);
+    }
+
+    /* History */
+    private Map<String, Object> newModificationDateParams(long personId, Date date) {
+        return ImmutableMap.<String, Object>of("personId", personId, "date", date, "personDocumentAT", DOCUMENT);
+    }
+
+    public Date getPreviousModificationDate(long personId, Date date) {
+        if (date == null) {
+            date = DateUtil.getCurrentDate();
+        }
+        return (Date) sqlSession().selectOne(PERSON_MAPPING + ".getPreviousModificationDate",
+                newModificationDateParams(personId, date));
+    }
+
+    public Date getNextModificationDate(long personId, Date date) {
+        if (date == null) {
+            return null;
+        }
+        return (Date) sqlSession().selectOne(PERSON_MAPPING + ".getNextModificationDate",
+                newModificationDateParams(personId, date));
+    }
+
+    public Person getHistoryPerson(long personId, Date date) {
+        DomainObject historyObject = super.findHistoryObject(personId, date);
+        if (historyObject == null) {
+            return null;
+        }
+        Person person = new Person(historyObject);
+        updateNameAttributesForNewLocales(person);
+        loadChildren(person);
+        loadHistoryDocument(person, date);
+        return person;
+    }
+
+    private void loadHistoryDocument(Person person, Date date) {
+        long documentId = person.getAttribute(DOCUMENT).getValueId();
+        Document document = documentStrategy.getHistoryDocument(documentId, date);
+        person.setDocument(document);
+    }
+
+    public PersonModification getDistinctions(Person historyPerson, Date startDate) {
+        PersonModification m = new PersonModification();
+        final Date previousStartDate = getPreviousModificationDate(historyPerson.getId(), startDate);
+        Person previousPerson = previousStartDate == null ? null
+                : getHistoryPerson(historyPerson.getId(), previousStartDate);
+        if (previousPerson == null) {
+            for (Attribute current : historyPerson.getAttributes()) {
+                if (!current.getAttributeTypeId().equals(CHILDREN)) {
+                    m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                }
+            }
+            for (Person child : historyPerson.getChildren()) {
+                m.addChildModificationType(child.getId(), ModificationType.ADD);
+            }
+            m.setDocumentModification(getDocumentDistinctions(historyPerson.getDocument(), previousStartDate));
+        } else {
+            //changes
+            for (Attribute current : historyPerson.getAttributes()) {
+                for (Attribute prev : previousPerson.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())
+                            && !current.getAttributeTypeId().equals(CHILDREN)
+                            && !NAME_ATTRIBUTE_IDS.contains(current.getAttributeTypeId())) {
+                        m.addAttributeModification(current.getAttributeTypeId(),
+                                !current.getValueId().equals(prev.getValueId()) ? ModificationType.CHANGE
+                                : ModificationType.NONE);
+                    }
+                }
+            }
+
+            //added
+            for (Attribute current : historyPerson.getAttributes()) {
+                if (!current.getAttributeTypeId().equals(CHILDREN)
+                        && !NAME_ATTRIBUTE_IDS.contains(current.getAttributeTypeId())) {
+                    boolean added = true;
+                    for (Attribute prev : previousPerson.getAttributes()) {
+                        if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                            added = false;
+                            break;
+                        }
+                    }
+                    if (added) {
+                        m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                    }
+                }
+            }
+
+            //removed
+            for (Attribute prev : previousPerson.getAttributes()) {
+                if (!prev.getAttributeTypeId().equals(CHILDREN)
+                        && !NAME_ATTRIBUTE_IDS.contains(prev.getAttributeTypeId())) {
+                    boolean removed = true;
+                    for (Attribute current : historyPerson.getAttributes()) {
+                        if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                            removed = false;
+                            break;
+                        }
+                    }
+                    if (removed) {
+                        m.addAttributeModification(prev.getAttributeTypeId(), ModificationType.REMOVE);
+                    }
+                }
+            }
+
+            //children
+            for (Person current : historyPerson.getChildren()) {
+                boolean added = true;
+                for (Person prev : previousPerson.getChildren()) {
+                    if (current.getId().equals(prev.getId())) {
+                        added = false;
+                        m.addChildModificationType(current.getId(), ModificationType.NONE);
+                    }
+                }
+                if (added) {
+                    m.addChildModificationType(current.getId(), ModificationType.ADD);
+                }
+            }
+            for (Person prev : previousPerson.getChildren()) {
+                boolean removed = true;
+                for (Person current : historyPerson.getChildren()) {
+                    if (prev.getId().equals(current.getId())) {
+                        removed = false;
+                        break;
+                    }
+                }
+                if (removed) {
+                    m.setChildRemoved(true);
+                    break;
+                }
+            }
+
+
+            //names
+            for (final long nameAttributeId : NAME_ATTRIBUTE_IDS) {
+                boolean nameChanged = false;
+                for (Attribute current : historyPerson.getAttributes(nameAttributeId)) {
+                    if (!nameChanged) {
+                        boolean added = true;
+                        for (Attribute prev : previousPerson.getAttributes(nameAttributeId)) {
+                            if (current.getAttributeId().equals(prev.getAttributeId())) {
+                                added = false;
+                                nameChanged = !Numbers.isEqual(current.getValueId(), prev.getValueId());
+                                break;
+                            }
+                        }
+                        if (added) {
+                            nameChanged = true;
+                            break;
+                        }
+                    }
+                }
+                if (!nameChanged) {
+                    for (Attribute prev : previousPerson.getAttributes(nameAttributeId)) {
+                        boolean removed = true;
+                        for (Attribute current : historyPerson.getAttributes(nameAttributeId)) {
+                            if (prev.getAttributeId().equals(current.getAttributeId())) {
+                                removed = false;
+                                break;
+                            }
+                        }
+                        if (removed) {
+                            nameChanged = true;
+                            break;
+                        }
+                    }
+                }
+                m.addAttributeModification(nameAttributeId, nameChanged ? ModificationType.CHANGE : ModificationType.NONE);
+            }
+
+            //document
+            m.setDocumentModification(getDocumentDistinctions(historyPerson.getDocument(), previousStartDate));
+        }
+        return m;
+    }
+
+    private DocumentModification getDocumentDistinctions(Document historyDocument, Date previousStartDate) {
+        DocumentModification m = new DocumentModification();
+        Document previousDocument = previousStartDate == null ? null
+                : documentStrategy.getHistoryDocument(historyDocument.getId(), previousStartDate);
+        if (previousDocument == null) {
+            m = new DocumentModification(true);
+            for (Attribute current : historyDocument.getAttributes()) {
+                m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
+            }
+        } else {
+            //changes
+            for (Attribute current : historyDocument.getAttributes()) {
+                for (Attribute prev : previousDocument.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        if (!current.getValueId().equals(prev.getValueId())) {
+                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.CHANGE);
+                        } else {
+                            m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            //added
+            for (Attribute current : historyDocument.getAttributes()) {
+                boolean added = true;
+                for (Attribute prev : previousDocument.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        added = false;
+                        break;
+                    }
+                }
+                if (added) {
+                    m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                }
+            }
+
+            //removed
+            for (Attribute prev : previousDocument.getAttributes()) {
+                boolean removed = true;
+                for (Attribute current : historyDocument.getAttributes()) {
+                    if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
+                        removed = false;
+                        break;
+                    }
+                }
+                if (removed) {
+                    m.addAttributeModification(prev.getAttributeTypeId(), ModificationType.REMOVE);
+
+                }
+            }
+        }
+
+        for (Attribute current : historyDocument.getAttributes()) {
+            if (m.getAttributeModificationType(current.getAttributeTypeId()) == null) {
+                m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
+            }
+        }
+        return m;
     }
 }

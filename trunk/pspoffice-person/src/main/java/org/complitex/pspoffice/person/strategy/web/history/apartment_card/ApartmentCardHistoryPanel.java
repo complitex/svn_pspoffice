@@ -78,7 +78,7 @@ final class ApartmentCardHistoryPanel extends Panel {
         final ApartmentCard card = apartmentCardStrategy.getHistoryApartmentCard(apartmentCardId, startDate);
         if (card == null) {
             throw new NullPointerException("History apartment card is null. Id: " + apartmentCardId
-                    + ", startDate:" + startDate + ", endDdate: " + endDate);
+                    + ", startDate:" + startDate + ", endDate: " + endDate);
         }
         final ApartmentCardModification modification = apartmentCardStrategy.getDistinctions(card, startDate);
 

@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import org.apache.wicket.markup.html.link.Link;
 import com.google.common.base.Function;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
@@ -31,6 +32,7 @@ import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy.PersonApartmentCardAddress;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
+import org.complitex.pspoffice.person.strategy.web.history.person.PersonHistoryPage;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,12 +89,21 @@ public abstract class PersonEditPanel extends Panel {
         messages.setOutputMarkupId(true);
         add(messages);
 
-        Form form = new Form("form");
+        Form<Void> form = new Form<Void>("form");
 
         //input panel
         personInputPanel = new PersonInputPanel("personInputPanel", newPerson, messages, label, personAgeType,
                 defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
         form.add(personInputPanel);
+
+        //history
+        form.add(new Link<Void>("history") {
+
+            @Override
+            public void onClick() {
+                setResponsePage(new PersonHistoryPage(newPerson.getId()));
+            }
+        }.setVisible(!isNew()));
 
         //register children
         final RegisterChildrenDialog registerChildrenDialog = new RegisterChildrenDialog("registerChildrenDialog") {

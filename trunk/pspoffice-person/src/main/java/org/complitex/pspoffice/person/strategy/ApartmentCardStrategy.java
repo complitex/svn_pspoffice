@@ -677,7 +677,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                         //changed
                         if (!current.isFinished() && !prev.isFinished()) {
                             m.addRegistrationModification(current.getId(),
-                                    registrationStrategy.getDistinctionsForApartmentCardHistory(current, startDate, previousStartDate));
+                                    registrationStrategy.getDistinctionsForApartmentCardHistory(current, previousStartDate));
                             break;
                         }
                         m.addRegistrationModification(current.getId(),

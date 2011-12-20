@@ -38,7 +38,7 @@ class PersonFullNamePanel extends Panel {
         init(person, null, null, null, null);
     }
 
-    public PersonFullNamePanel(String id, Person person, Locale defaultNameLocale, String defaultLastName, String defaultFirstName,
+    PersonFullNamePanel(String id, Person person, Locale defaultNameLocale, String defaultLastName, String defaultFirstName,
             String defaultMiddleName) {
         super(id);
         init(person, defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
@@ -86,8 +86,7 @@ class PersonFullNamePanel extends Panel {
     }
 
     private void populateItem(ListItem<Attribute> item, PersonNameType personNameType, String personNameComponentId,
-            IModel<String> labelModel,
-            Locale defaultNameLocale, String defaultNameValue) {
+            IModel<String> labelModel, Locale defaultNameLocale, String defaultNameValue) {
         Attribute personNameAttribute = item.getModelObject();
         Locale locale = localeBean.getLocale(personNameAttribute.getAttributeId());
         boolean isSystemLocale = localeBean.getLocaleObject(personNameAttribute.getAttributeId()).isSystem();

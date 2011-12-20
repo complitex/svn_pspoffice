@@ -247,8 +247,8 @@ public class RegistrationStrategy extends Strategy {
     }
     private static final Set<Long> DISTINGUISH_ATTRIBUTES = of(REGISTRATION_TYPE, REGISTRATION_DATE, OWNER_RELATIONSHIP);
 
-    public RegistrationModification getDistinctionsForApartmentCardHistory(Registration historyRegistration,
-            Date startDate, Date previousStartDate) {
+    public RegistrationModification getDistinctionsForApartmentCardHistory(Registration historyRegistration, 
+            Date previousStartDate) {
         RegistrationModification m = new RegistrationModification();
         Registration previousRegistration = previousStartDate == null ? null
                 : getHistoryRegistration(historyRegistration.getId(), previousStartDate);
@@ -269,6 +269,7 @@ public class RegistrationStrategy extends Strategy {
                         } else {
                             m.addAttributeModification(current.getAttributeTypeId(), ModificationType.NONE);
                         }
+                        break;
                     }
                 }
             }

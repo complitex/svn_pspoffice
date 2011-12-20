@@ -468,7 +468,7 @@ public class PersonInputPanel extends Panel {
         CollapsibleFieldset documentFieldset = new CollapsibleFieldset("documentFieldset",
                 new ResourceModel("documentLabel"), false);
 
-        final Form documentForm = new Form("documentForm");
+        final Form<Void> documentForm = new Form<Void>("documentForm");
         documentFieldset.add(documentForm);
 
         final WebMarkupContainer documentButtonsContainer = new WebMarkupContainer("documentButtonsContainer");

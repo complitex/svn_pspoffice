@@ -147,4 +147,13 @@ public class DocumentStrategy extends TemplateStrategy {
     public String[] getEditRoles() {
         return new String[]{SecurityRole.PERSON_MODULE_EDIT};
     }
+
+    public Document getHistoryDocument(long documentId, Date date) {
+        DomainObject historyObject = super.findHistoryObject(documentId, date);
+        if (historyObject == null) {
+            return null;
+        }
+        Document document = new Document(historyObject);
+        return document;
+    }
 }

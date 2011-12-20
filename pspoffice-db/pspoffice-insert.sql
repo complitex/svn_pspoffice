@@ -26,6 +26,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2008, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2007, 2000, 0, 2008, 1);
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2009, 1, UPPER('Нас. пункт')), (2009, 2, UPPER('Місто'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2008, 2000, 0, 2009, 1);
+/* Документ */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2010, 1, UPPER('Документ')), (2010, 2, UPPER('Документ'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2009, 2000, 1, 2010, 1);
 /* Дата смерти  */

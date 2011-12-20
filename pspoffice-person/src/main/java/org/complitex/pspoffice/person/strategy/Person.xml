@@ -200,5 +200,38 @@
                     AND ra.`status` = 'ACTIVE'
                     AND rt.`value_id` = #{permanentRegistrationTypeId}
     </select>
+    
+    <!-- History -->
+    
+    <select id="getPreviousModificationDate" parameterType="map" resultType="date">
+        SELECT MAX(d.`date`) FROM (
+            SELECT a.`start_date` `date` FROM `person_attribute` a WHERE a.`object_id` = #{personId} 
+                AND a.`start_date` <![CDATA[ < ]]> #{date}
+            UNION
+            SELECT p.`end_date` FROM `person` p WHERE p.`end_date` <![CDATA[ < ]]> #{date} 
+                AND p.`object_id` = #{personId}
+            UNION
+            SELECT da.`start_date` FROM `document_attribute` da WHERE da.`start_date` <![CDATA[ < ]]> #{date}
+                AND da.`object_id` IN (SELECT pa.`value_id` FROM `person_attribute` pa WHERE pa.`object_id` = #{personId}
+                    AND pa.`start_date` <![CDATA[ < ]]> #{date} AND pa.`attribute_type_id` = #{personDocumentAT})
+        ) d
+    </select>
+    
+    <select id="getNextModificationDate" parameterType="map" resultType="date">
+        SELECT MIN(d.`date`) FROM (
+            SELECT a.`start_date` `date` FROM `person_attribute` a WHERE a.`object_id` = #{personId} 
+                AND a.`start_date` <![CDATA[ > ]]> #{date}
+            UNION
+            SELECT p.`end_date` FROM `person` p WHERE p.`end_date` <![CDATA[ > ]]> #{date} 
+                AND p.`object_id` = #{personId}
+            UNION
+            SELECT da.`start_date` FROM `document_attribute` da WHERE da.`start_date` <![CDATA[ > ]]> #{date}
+                AND da.`object_id` IN (SELECT pa.`value_id` FROM `person_attribute` pa WHERE pa.`object_id` = #{personId}
+                    AND pa.`attribute_type_id` = #{personDocumentAT})
+        ) d
+    </select>
+    
+    
+    
 
 </mapper>

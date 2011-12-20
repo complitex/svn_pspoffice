@@ -42,7 +42,7 @@ public class PersonNameAutocompleteComponent extends AutocompleteAjaxComponent<S
 
         private String value;
 
-        public PersonNameComponentModel(PersonName defaultValue) {
+        PersonNameComponentModel(PersonName defaultValue) {
             if (defaultValue != null) {
                 setValue(defaultValue.getName(), defaultValue.getId());
             } else {

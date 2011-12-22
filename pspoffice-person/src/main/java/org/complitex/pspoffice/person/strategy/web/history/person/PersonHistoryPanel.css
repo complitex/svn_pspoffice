@@ -10,7 +10,3 @@ fieldset > legend {
     font-weight: bold;
     font-size: 15px;
 }
-
-.inline_block {
-    display: inline-block;
-}

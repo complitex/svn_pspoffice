@@ -81,6 +81,12 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 /* Ссылка на регистрации */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2406, 1, UPPER('Зарегистрированные')), (2406, 2, UPPER('Зарегистрированные'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2405, 2400, 0, 2406, 1);
+/* Обоснование изменения */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2407, 1, UPPER('Обоснование изменения')), (2407, 2, UPPER('Обоснование изменения'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2406, 2400, 0, 2407, 1);
+/* ID пользователя, отредактировавшего карточку */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2408, 1, UPPER('ID пользователя, отредактировавшего карточку')), (2408, 2, UPPER('ID пользователя, отредактировавшего карточку'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2407, 2400, 0, 2408, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2401, 2401, 'person');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2402, 2402, 'room');
@@ -89,6 +95,8 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2405, 2403, 'ownership_form');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2406, 2404, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2407, 2405, 'registration');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2408, 2406, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2409, 2407, UPPER('integer'));
 
 -- Registration --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration',1), ('registration_string_culture',1);

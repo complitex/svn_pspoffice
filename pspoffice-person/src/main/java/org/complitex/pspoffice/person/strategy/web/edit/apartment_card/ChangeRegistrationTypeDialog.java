@@ -71,7 +71,7 @@ final class ChangeRegistrationTypeDialog extends Panel {
         messages.setOutputMarkupId(true);
         dialog.add(messages);
 
-        Form form = new Form("form");
+        Form<Void> form = new Form<Void>("form");
         dialog.add(form);
 
         final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();

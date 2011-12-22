@@ -21,10 +21,13 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
+import org.complitex.dictionary.service.IUserProfileBean;
+import org.complitex.dictionary.util.AttributeUtil;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -45,6 +48,8 @@ import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static com.google.common.collect.ImmutableList.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
@@ -59,6 +64,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
  */
 final class ApartmentCardHistoryPanel extends Panel {
 
+    private static final Logger log = LoggerFactory.getLogger(ApartmentCardHistoryPanel.class);
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
@@ -69,6 +75,8 @@ final class ApartmentCardHistoryPanel extends Panel {
     private OwnershipFormStrategy ownershipFormStrategy;
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB(name = "UserProfileBean")
+    private IUserProfileBean userProfileBean;
     private final Entity ENTITY = apartmentCardStrategy.getEntity();
 
     ApartmentCardHistoryPanel(String id, long apartmentCardId, final Date endDate) {
@@ -90,6 +98,15 @@ final class ApartmentCardHistoryPanel extends Panel {
                     HistoryDateFormatter.format(endDate)})
                 : new StringResourceModel("label_current", null, new Object[]{apartmentCardId,
                     HistoryDateFormatter.format(startDate)})));
+
+        final long editedByUserId = AttributeUtil.getIntegerValue(card, EDITED_BY_USER_ID);
+        String editedByUserName = null;
+        try {
+            editedByUserName = userProfileBean.getFullName(editedByUserId, getLocale());
+        } catch (Exception e) {
+            log.error("", e);
+        }
+        add(new Label("editedByUser", !Strings.isEmpty(editedByUserName) ? editedByUserName : "[N/A]"));
 
         //address
         WebMarkupContainer addressContainer = new WebMarkupContainer("addressContainer");
@@ -190,8 +207,8 @@ final class ApartmentCardHistoryPanel extends Panel {
         };
         add(registrations);
 
-        //user attributes and housing rights:
-        List<Long> userAttributeTypeIds = newArrayList(transform(filter(ENTITY.getEntityAttributeTypes(),
+        //explanation, user attributes and housing rights:
+        List<Long> restAttributeTypeIds = newArrayList(transform(filter(ENTITY.getEntityAttributeTypes(),
                 new Predicate<EntityAttributeType>() {
 
                     @Override
@@ -207,23 +224,26 @@ final class ApartmentCardHistoryPanel extends Panel {
                     }
                 }));
 
-        List<Attribute> userAttributes = newArrayList();
-        for (Long attributeTypeId : userAttributeTypeIds) {
+        List<Attribute> restAttributes = newArrayList();
+        Attribute explAttribute = card.getAttribute(EXPLANATION);
+        if (explAttribute != null) {
+            restAttributes.add(explAttribute);
+        }
+        for (Long attributeTypeId : restAttributeTypeIds) {
             Attribute userAttribute = card.getAttribute(attributeTypeId);
             if (userAttribute != null) {
-                userAttributes.add(userAttribute);
+                restAttributes.add(userAttribute);
             }
         }
-
-        ListView<Attribute> userAttributesView = new ListView<Attribute>("userAttributesView", userAttributes) {
+        ListView<Attribute> restAttributesView = new ListView<Attribute>("restAttributesView", restAttributes) {
 
             @Override
             protected void populateItem(ListItem<Attribute> item) {
-                long userAttributeTypeId = item.getModelObject().getAttributeTypeId();
-                initAttributeInput(card, modification, item, userAttributeTypeId);
+                long restAttributeTypeId = item.getModelObject().getAttributeTypeId();
+                initAttributeInput(card, modification, item, restAttributeTypeId);
             }
         };
-        add(userAttributesView);
+        add(restAttributesView);
     }
 
     private void initAttributeInput(ApartmentCard card, ApartmentCardModification modification, MarkupContainer parent,

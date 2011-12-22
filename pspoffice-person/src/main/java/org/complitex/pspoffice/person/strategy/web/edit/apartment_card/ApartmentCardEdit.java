@@ -8,12 +8,14 @@ import org.complitex.pspoffice.person.strategy.web.history.apartment_card.Apartm
 import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import static com.google.common.collect.Sets.*;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.ImmutableList.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +46,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
@@ -53,7 +56,7 @@ import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
-import org.complitex.dictionary.util.DateUtil;
+import static org.complitex.dictionary.util.DateUtil.getCurrentDate;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -78,6 +81,7 @@ import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.CommunalApartmentService;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
+import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.DisableApartmentCardButton;
@@ -123,6 +127,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private SessionBean sessionBean;
     @EJB
     private CommunalApartmentService communalApartmentService;
+    private final Entity ENTITY = apartmentCardStrategy.getEntity();
     private String addressEntity;
     private Long addressId;
     private ApartmentCard oldApartmentCard;
@@ -134,10 +139,11 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private DisableApartmentCardDialog disableApartmentCardDialog;
     private final List<Long> userOrganizationObjectIds = sessionBean.getUserOrganizationObjectIds();
     private WebMarkupContainer permissionContainer;
+    private ExplanationDialog apartmentCardExplanationDialog;
 
     private class ApartmentCardSubmitLink extends AjaxSubmitLink {
 
-        ApartmentCardSubmitLink(String id) {
+        private ApartmentCardSubmitLink(String id) {
             super(id, form);
         }
 
@@ -145,18 +151,42 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             try {
                 if (validate()) {
-                    save(DateUtil.getCurrentDate());
-                    afterSave();
+                    String needExplanationLabel = needExplanationLabel();
+                    boolean isNeedExplanation = !Strings.isEmpty(needExplanationLabel);
+                    if (!isNeedExplanation) {
+                        persist(null);
+                    } else {
+                        apartmentCardExplanationDialog.open(target, needExplanationLabel, new ExplanationDialog.ISubmitAction() {
+
+                            @Override
+                            public void onSubmit(AjaxRequestTarget target, String explanation) {
+                                try {
+                                    persist(explanation);
+                                } catch (Exception e) {
+                                    onFatalError(target, e);
+                                }
+                            }
+                        });
+                    }
                 } else {
                     target.addComponent(messages);
                     scrollToMessages(target);
                 }
             } catch (Exception e) {
-                log.error("", e);
-                error(getString("db_error"));
-                target.addComponent(messages);
-                scrollToMessages(target);
+                onFatalError(target, e);
             }
+        }
+
+        private void persist(String explanation) {
+            save(getCurrentDate(), explanation);
+            afterSave();
+        }
+
+        private void onFatalError(AjaxRequestTarget target, Exception e) {
+            log.error("", e);
+            error(getString("db_error"));
+            target.addComponent(messages);
+            scrollToMessages(target);
         }
 
         @Override
@@ -174,7 +204,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         private final AjaxIndicatorAppender indicatorAppender = new AjaxIndicatorAppender();
 
-        ApartmentCardIndicatingSubmitLink(String id) {
+        private ApartmentCardIndicatingSubmitLink(String id) {
             super(id);
             add(indicatorAppender);
         }
@@ -246,11 +276,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         form = new Form<Void>("form");
 
-        final Entity entity = apartmentCardStrategy.getEntity();
-
         //address
         WebMarkupContainer addressContainer = new WebMarkupContainer("addressContainer");
-        final EntityAttributeType addressAttributeType = entity.getAttributeType(ADDRESS);
+        final EntityAttributeType addressAttributeType = ENTITY.getAttributeType(ADDRESS);
         addressContainer.add(new Label("label", labelModel(addressAttributeType.getAttributeNames(), getLocale())));
         addressContainer.add(new WebMarkupContainer("required").setVisible(addressAttributeType.isMandatory()));
 
@@ -277,7 +305,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         //owner
         WebMarkupContainer ownerContainer = new WebMarkupContainer("ownerContainer");
-        final EntityAttributeType ownerAttributeType = entity.getAttributeType(OWNER);
+        final EntityAttributeType ownerAttributeType = ENTITY.getAttributeType(OWNER);
         IModel<String> ownerLabelModel = labelModel(ownerAttributeType.getAttributeNames(), getLocale());
         ownerContainer.add(new Label("label", ownerLabelModel));
         ownerContainer.add(new WebMarkupContainer("required").setVisible(ownerAttributeType.isMandatory()));
@@ -322,8 +350,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 if (registerOwnerCheckBox.getModelObject()) {
                     try {
                         if (validate()) {
-                            Date saveDate = DateUtil.getCurrentDate();
-                            save(saveDate);
+                            Date saveDate = getCurrentDate();
+                            save(saveDate, null);
                             registerOwnerDialog.open(target, newApartmentCard, saveDate);
                         } else {
                             registerOwnerCheckBox.setModelObject(false);
@@ -506,7 +534,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         initSystemAttributeInput(form, "housingRights", HOUSING_RIGHTS);
 
         //user attributes:
-        List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
+        List<Long> userAttributeTypeIds = newArrayList(transform(filter(ENTITY.getEntityAttributeTypes(),
                 new Predicate<EntityAttributeType>() {
 
                     @Override
@@ -625,6 +653,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         disableApartmentCardDialog = new DisableApartmentCardDialog("disableApartmentCardDialog");
         disableApartmentCardDialog.setVisible(!isNew());
         add(disableApartmentCardDialog);
+
+        //explanation
+        apartmentCardExplanationDialog = new ExplanationDialog("apartmentCardExplanationDialog");
+        add(apartmentCardExplanationDialog);
     }
 
     private void initSystemAttributeInput(MarkupContainer parent, String id, long attributeTypeId) {
@@ -767,19 +799,23 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         return oldApartmentCard == null;
     }
 
-    private void save(Date saveDate) {
+    private void save(Date saveDate, String explanation) {
         beforePersist();
         if (isNew()) {
             apartmentCardStrategy.insert(newApartmentCard, saveDate);
         } else {
+            if (!Strings.isEmpty(explanation)) {
+                apartmentCardStrategy.setExplanation(newApartmentCard, explanation);
+            }
             apartmentCardStrategy.update(oldApartmentCard, newApartmentCard, saveDate);
         }
         logBean.log(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, apartmentCardStrategy,
-                oldApartmentCard, newApartmentCard, null);
+                oldApartmentCard, newApartmentCard,
+                !Strings.isEmpty(explanation) ? getStringFormat("explanation_log", explanation) : null);
     }
 
     private void disable() {
-        apartmentCardStrategy.disable(oldApartmentCard, DateUtil.getCurrentDate());
+        apartmentCardStrategy.disable(oldApartmentCard, getCurrentDate());
         logBean.logArchivation(Log.STATUS.OK, Module.NAME, ApartmentCardEdit.class, apartmentCardStrategy.getEntityTable(),
                 oldApartmentCard.getId(), getString("disabling_log_message"));
     }
@@ -857,6 +893,33 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private void scrollToMessages(AjaxRequestTarget target) {
         target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
+    }
+
+    private String needExplanationLabel() {
+        if (isNew()) {
+            return null;
+        }
+
+        Set<String> modifiedAttributes = newHashSet();
+        if (!oldApartmentCard.getOwner().getId().equals(newApartmentCard.getOwner().getId())) {
+            modifiedAttributes.add(labelModel(ENTITY.getAttributeType(OWNER).getAttributeNames(), getLocale()).getObject());
+        }
+        if (!oldApartmentCard.getOwnershipForm().getId().equals(newApartmentCard.getOwnershipForm().getId())) {
+            modifiedAttributes.add(labelModel(ENTITY.getAttributeType(FORM_OF_OWNERSHIP).getAttributeNames(), getLocale()).getObject());
+        }
+        if (!Strings.isEqual(oldApartmentCard.getHousingRights(), newApartmentCard.getHousingRights())) {
+            modifiedAttributes.add(labelModel(ENTITY.getAttributeType(HOUSING_RIGHTS).getAttributeNames(), getLocale()).getObject());
+        }
+
+        if (modifiedAttributes.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder attributes = new StringBuilder();
+        for (Iterator<String> i = modifiedAttributes.iterator(); i.hasNext();) {
+            attributes.append("'").append(i.next()).append("'").append(i.hasNext() ? ", " : "");
+        }
+        return getStringFormat("need_explanation_label", attributes.toString());
     }
 
     @Override

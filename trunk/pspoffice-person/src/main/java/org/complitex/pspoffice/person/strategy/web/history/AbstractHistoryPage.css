@@ -54,3 +54,7 @@
     bottom: 10px; 
     z-index:1000001; 
 }
+
+.inline_block {
+    display: inline-block;
+}

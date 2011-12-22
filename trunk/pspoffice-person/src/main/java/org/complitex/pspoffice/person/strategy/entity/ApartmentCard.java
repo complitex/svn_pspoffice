@@ -65,6 +65,10 @@ public class ApartmentCard extends DomainObject {
         return getAttribute(ADDRESS).getValueId();
     }
 
+    public String getHousingRights() {
+        return getStringValue(this, HOUSING_RIGHTS);
+    }
+
     public int getRegisteredCount() {
         return newArrayList(filter(registrations, new Predicate<Registration>() {
 

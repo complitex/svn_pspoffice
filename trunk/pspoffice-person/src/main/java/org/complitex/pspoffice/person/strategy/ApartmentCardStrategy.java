@@ -69,6 +69,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public static final long FORM_OF_OWNERSHIP = 2403;
     public static final long HOUSING_RIGHTS = 2404;
     public static final long REGISTRATIONS = 2405;
+    public static final long EXPLANATION = 2406;
+    public static final long EDITED_BY_USER_ID = 2407;
     /**
      * Attribute value type ids
      */
@@ -80,6 +82,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public static final long FORM_OF_OWNERSHIP_TYPE = 2405;
     public static final long HOUSING_RIGHTS_TYPE = 2406;
     public static final long REGISTRATIONS_TYPE = 2407;
+    public static final long EXPLANATION_TYPE = 2408;
+    public static final long EDITED_BY_USER_ID_TYPE = 2409;
     /**
      * Set of persistable search state entities
      */
@@ -211,8 +215,9 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
             if (!attributeType.isObsolete()) {
                 if (object.getAttributes(attributeType.getId()).isEmpty()) {
-                    if (!attributeType.getId().equals(REGISTRATIONS)) {
-                        if ((attributeType.getEntityAttributeValueTypes().size() == 1) && !attributeType.getId().equals(REGISTRATIONS)) {
+                    if (!attributeType.getId().equals(REGISTRATIONS)
+                            && !attributeType.getId().equals(EXPLANATION)) {
+                        if (attributeType.getEntityAttributeValueTypes().size() == 1) {
                             Attribute attribute = new Attribute();
                             EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
                             attribute.setAttributeTypeId(attributeType.getId());
@@ -252,6 +257,45 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         }
         attribute.setValueTypeId(attributeValueTypeId);
         return attribute;
+    }
+
+    private void setEditedByUserId(DomainObject apartmentCard) {
+        long userId = sessionBean.getCurrentUserId();
+        stringBean.getSystemStringCulture(apartmentCard.getAttribute(EDITED_BY_USER_ID).getLocalizedValues()).
+                setValue(String.valueOf(userId));
+    }
+
+    @Transactional
+    @Override
+    public void insert(DomainObject apartmentCard, Date insertDate) {
+        setEditedByUserId(apartmentCard);
+        super.insert(apartmentCard, insertDate);
+    }
+
+    @Transactional
+    @Override
+    public void update(DomainObject oldApartmentCard, DomainObject newApartmentCard, Date updateDate) {
+        setEditedByUserId(newApartmentCard);
+
+        //handle explanation attribute: 
+        // 1. archive old explanation if it is existed.
+
+        final Attribute newExplAttribute = newApartmentCard.getAttribute(EXPLANATION);
+        newApartmentCard.removeAttribute(EXPLANATION);
+        final Attribute oldExplAttribute = oldApartmentCard.getAttribute(EXPLANATION);
+        oldApartmentCard.removeAttribute(EXPLANATION);
+        if(oldExplAttribute != null){
+            archiveAttribute(oldExplAttribute, updateDate);
+        }
+
+        super.update(oldApartmentCard, newApartmentCard, updateDate);
+
+        // 2. insert new one
+        if (newExplAttribute != null) {
+            newExplAttribute.setObjectId(newApartmentCard.getId());
+            newExplAttribute.setStartDate(updateDate);
+            insertAttribute(newExplAttribute);
+        }
     }
 
     @Transactional
@@ -579,6 +623,18 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         return searchComponentState;
     }
 
+    public void setExplanation(ApartmentCard apartmentCard, String explanation) {
+        apartmentCard.removeAttribute(EXPLANATION);
+
+        Attribute explAttribute = new Attribute();
+        explAttribute.setLocalizedValues(stringBean.newStringCultures());
+        stringBean.getSystemStringCulture(explAttribute.getLocalizedValues()).setValue(explanation);
+        explAttribute.setAttributeTypeId(EXPLANATION);
+        explAttribute.setValueTypeId(EXPLANATION_TYPE);
+        explAttribute.setAttributeId(1L);
+        apartmentCard.addAttribute(explAttribute);
+    }
+
     /* History */
     private Map<String, Object> newModificationDateParams(long apartmentCardId, Date date) {
         return ImmutableMap.<String, Object>of("apartmentCardId", apartmentCardId, "date", date,
@@ -621,7 +677,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             for (Attribute current : historyCard.getAttributes()) {
                 for (Attribute prev : previousCard.getAttributes()) {
                     if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())
-                            && !current.getAttributeTypeId().equals(REGISTRATIONS)) {
+                            && !current.getAttributeTypeId().equals(REGISTRATIONS)
+                            && !current.getAttributeTypeId().equals(EXPLANATION)) {
 
                         m.addAttributeModification(current.getAttributeTypeId(),
                                 !current.getValueId().equals(prev.getValueId()) ? ModificationType.CHANGE
@@ -632,7 +689,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
             //added
             for (Attribute current : historyCard.getAttributes()) {
-                if (!current.getAttributeTypeId().equals(REGISTRATIONS)) {
+                if (!current.getAttributeTypeId().equals(REGISTRATIONS)
+                        && !current.getAttributeTypeId().equals(EXPLANATION)) {
                     boolean added = true;
                     for (Attribute prev : previousCard.getAttributes()) {
                         if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
@@ -648,7 +706,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
             //removed
             for (Attribute prev : previousCard.getAttributes()) {
-                if (!prev.getAttributeTypeId().equals(REGISTRATIONS)) {
+                if (!prev.getAttributeTypeId().equals(REGISTRATIONS)
+                        && !prev.getAttributeTypeId().equals(EXPLANATION)) {
                     boolean removed = true;
                     for (Attribute current : historyCard.getAttributes()) {
                         if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())) {
@@ -689,6 +748,11 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                             new RegistrationModification().setModificationType(ModificationType.ADD));
                 }
             }
+
+            //explanation
+            if (historyCard.getAttribute(EXPLANATION) != null) {
+                m.addAttributeModification(EXPLANATION, ModificationType.ADD);
+            }
         }
         return m;
     }
@@ -699,6 +763,15 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             return null;
         }
         ApartmentCard card = new ApartmentCard(historyObject);
+
+        //explanation
+        Attribute explAttribute = card.getAttribute(EXPLANATION);
+        if (explAttribute != null) {
+            if (!explAttribute.getStartDate().equals(date)) {
+                card.removeAttribute(EXPLANATION);
+            }
+        }
+
         loadOwner(card);
         loadHistoryRegistrations(card, date);
         loadOwnershipForm(card);

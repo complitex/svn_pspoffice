@@ -11,16 +11,18 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.entity.ChangeRegistrationTypeCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -43,10 +45,12 @@ final class ChangeRegistrationTypeDialog extends Panel {
     private RegistrationTypeStrategy registrationTypeStrategy;
     @EJB
     private PersonStrategy personStrategy;
-    private IModel<DomainObject> model;
+    private IModel<ChangeRegistrationTypeCard> model;
     private Dialog dialog;
     private FeedbackPanel messages;
+    private Form<ChangeRegistrationTypeCard> form;
     private DisableAwareDropDownChoice<DomainObject> registrationType;
+    private TextArea<String> explanation;
     private List<Registration> registrationsToChangeType;
     private long apartmentCardId;
     private final DomainObject permanentRegistrationType;
@@ -58,9 +62,13 @@ final class ChangeRegistrationTypeDialog extends Panel {
     }
 
     private void init() {
-        dialog = new Dialog("dialog");
+        dialog = new Dialog("dialog") {
+
+            {
+                getOptions().putLiteral("width", "auto");
+            }
+        };
         dialog.setModal(true);
-        dialog.setWidth(350);
         dialog.setOpenEvent(JsScopeUiEvent.quickScope(new JsStatement().self().chain("parents", "'.ui-dialog:first'").
                 chain("find", "'.ui-dialog-titlebar-close'").
                 chain("hide").render()));
@@ -71,14 +79,15 @@ final class ChangeRegistrationTypeDialog extends Panel {
         messages.setOutputMarkupId(true);
         dialog.add(messages);
 
-        Form<Void> form = new Form<Void>("form");
+        model = new CompoundPropertyModel<ChangeRegistrationTypeCard>(new ChangeRegistrationTypeCard());
+        form = new Form<ChangeRegistrationTypeCard>("form", model);
+        form.setOutputMarkupId(true);
         dialog.add(form);
 
         final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
-        model = new Model<DomainObject>(permanentRegistrationType);
-
+        model.getObject().setRegistrationType(permanentRegistrationType);
         registrationType = new DisableAwareDropDownChoice<DomainObject>("registrationType",
-                model, allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
+                allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
 
             @Override
             public Object getDisplayValue(DomainObject object) {
@@ -86,8 +95,11 @@ final class ChangeRegistrationTypeDialog extends Panel {
             }
         });
         registrationType.setRequired(true);
-        registrationType.setOutputMarkupId(true);
         form.add(registrationType);
+
+        explanation = new TextArea<String>("explanation");
+        explanation.setRequired(true);
+        form.add(explanation);
 
         IndicatingAjaxButton submit = new IndicatingAjaxButton("submit", form) {
 
@@ -128,21 +140,29 @@ final class ChangeRegistrationTypeDialog extends Panel {
     void open(AjaxRequestTarget target, long apartmentCardId, List<Registration> registrationsToChangeType) {
         this.apartmentCardId = apartmentCardId;
         this.registrationsToChangeType = registrationsToChangeType;
-        model.setObject(permanentRegistrationType);
-        target.addComponent(registrationType);
+
+        initializeModel();
+
+        target.addComponent(form);
         target.addComponent(messages);
         dialog.open(target);
     }
 
+    private void initializeModel() {
+        model.setObject(new ChangeRegistrationTypeCard());
+        model.getObject().setRegistrationType(permanentRegistrationType);
+    }
+
     private void changeRegistrationType() {
-        apartmentCardStrategy.changeRegistrationType(apartmentCardId, registrationsToChangeType, model.getObject().getId());
+        apartmentCardStrategy.changeRegistrationType(registrationsToChangeType, model.getObject());
     }
 
     private boolean validate() {
         boolean valid = true;
 
         //permanent registration type
-        if (model.getObject().getId().equals(RegistrationTypeStrategy.PERMANENT)) {
+        Long registrationTypeId = model.getObject().getRegistrationType().getId();
+        if (registrationTypeId.equals(RegistrationTypeStrategy.PERMANENT)) {
             for (Registration registration : registrationsToChangeType) {
                 Person person = registration.getPerson();
                 String address = personStrategy.findPermanentRegistrationAddress(person.getId(), getLocale());

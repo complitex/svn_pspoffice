@@ -155,6 +155,12 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 /* Ссылка на Person */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2123, 1, UPPER('Персона')), (2123, 2, UPPER('Персона'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2122, 2100, 1, 2123, 1);
+/* Обоснование изменения */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2124, 1, UPPER('Обоснование изменения')), (2124, 2, UPPER('Обоснование изменения'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2123, 2100, 0, 2124, 1);
+/* ID пользователя, отредактировавшего карточку */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2125, 1, UPPER('ID пользователя, отредактировавшего карточку')), (2125, 2, UPPER('ID пользователя, отредактировавшего карточку'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2124, 2100, 0, 2125, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2100, 2100, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2101, 2101, UPPER('string'));
@@ -179,6 +185,8 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2120, 2120, 'registration_type');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2121, 2121, 'owner_relationship');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2122, 2122, 'person');
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2123, 2123, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2124, 2124, UPPER('integer'));
 
 -- Owner relationship --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('owner_relationship',1), ('owner_relationship_string_culture',1);

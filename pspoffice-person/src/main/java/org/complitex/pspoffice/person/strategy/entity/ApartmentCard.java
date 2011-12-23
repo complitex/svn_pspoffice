@@ -78,4 +78,12 @@ public class ApartmentCard extends DomainObject {
             }
         })).size();
     }
+
+    public long getEditedByUserId() {
+        return getIntegerValue(this, EDITED_BY_USER_ID);
+    }
+
+    public String getExplanation() {
+        return getStringValue(this, EXPLANATION);
+    }
 }

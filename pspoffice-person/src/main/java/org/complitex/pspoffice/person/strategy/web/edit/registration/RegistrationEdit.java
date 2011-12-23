@@ -8,9 +8,12 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import static com.google.common.collect.ImmutableList.*;
 import java.text.MessageFormat;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Sets.*;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
@@ -62,6 +65,7 @@ import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
+import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar.F3ReferenceButton;
@@ -103,11 +107,13 @@ public class RegistrationEdit extends FormTemplatePage {
     private LogBean logBean;
     @EJB
     private PersonStrategy personStrategy;
+    private final Entity ENTITY = registrationStrategy.getEntity();
     private final ApartmentCard apartmentCard;
     private final Registration newRegistration;
     private final Registration oldRegistration;
     private final String addressEntity;
     private final long addressId;
+    private ExplanationDialog registrationExplanationDialog;
 
     public RegistrationEdit(ApartmentCard apartmentCard, String addressEntity, long addressId, Registration registration) {
         this.apartmentCard = apartmentCard;
@@ -135,8 +141,6 @@ public class RegistrationEdit extends FormTemplatePage {
     private void init() {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
 
-        final Entity entity = registrationStrategy.getEntity();
-
         IModel<String> addressModel = new LoadableDetachableModel<String>() {
 
             @Override
@@ -163,7 +167,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
         //person
         WebMarkupContainer personContainer = new WebMarkupContainer("personContainer");
-        final EntityAttributeType personAttributeType = entity.getAttributeType(PERSON);
+        final EntityAttributeType personAttributeType = ENTITY.getAttributeType(PERSON);
         personContainer.add(new WebMarkupContainer("required").setVisible(personAttributeType.isMandatory()));
 
         PersonPicker person = new PersonPicker("person", PersonAgeType.ANY, new PropertyModel<Person>(newRegistration, "person"),
@@ -219,7 +223,7 @@ public class RegistrationEdit extends FormTemplatePage {
         form.add(initOwnerRelationship());
 
         //user attributes:
-        List<Long> userAttributeTypeIds = newArrayList(transform(filter(entity.getEntityAttributeTypes(),
+        List<Long> userAttributeTypeIds = newArrayList(transform(filter(ENTITY.getEntityAttributeTypes(),
                 new Predicate<EntityAttributeType>() {
 
                     @Override
@@ -268,19 +272,43 @@ public class RegistrationEdit extends FormTemplatePage {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     if (RegistrationEdit.this.validate()) {
-                        save();
-                        back();
+                        String needExplanationLabel = needExplanationLabel();
+                        boolean isNeedExplanation = !Strings.isEmpty(needExplanationLabel);
+                        if (!isNeedExplanation) {
+                            persist(null);
+                        } else {
+                            registrationExplanationDialog.open(target, needExplanationLabel, new ExplanationDialog.ISubmitAction() {
+
+                                @Override
+                                public void onSubmit(AjaxRequestTarget target, String explanation) {
+                                    try {
+                                        persist(explanation);
+                                    } catch (Exception e) {
+                                        onFatalError(target, e);
+                                    }
+                                }
+                            });
+                        }
+
                     } else {
                         target.addComponent(messages);
                         scrollToMessages(target);
                     }
                 } catch (Exception e) {
-                    log.error("", e);
-                    error(getString("db_error"));
-                    target.addComponent(messages);
-                    scrollToMessages(target);
+                    onFatalError(target, e);
                 }
+            }
 
+            private void persist(String explanation) {
+                save(explanation);
+                back();
+            }
+
+            private void onFatalError(AjaxRequestTarget target, Exception e) {
+                log.error("", e);
+                error(getString("db_error"));
+                target.addComponent(messages);
+                scrollToMessages(target);
             }
 
             @Override
@@ -305,6 +333,10 @@ public class RegistrationEdit extends FormTemplatePage {
         };
         form.add(back);
         add(form);
+
+        //explanation
+        registrationExplanationDialog = new ExplanationDialog("registrationExplanationDialog");
+        add(registrationExplanationDialog);
     }
 
     private Component initOwnerRelationship() {
@@ -469,15 +501,43 @@ public class RegistrationEdit extends FormTemplatePage {
         return getSession().getFeedbackMessages().isEmpty();
     }
 
-    private void save() {
+    private void save(String explanation) {
         beforePersist();
         if (isNew()) {
             apartmentCardStrategy.addRegistration(apartmentCard, newRegistration, DateUtil.getCurrentDate());
         } else {
+            if (!Strings.isEmpty(explanation)) {
+                registrationStrategy.setExplanation(newRegistration, explanation);
+            }
             registrationStrategy.update(oldRegistration, newRegistration, DateUtil.getCurrentDate());
         }
         logBean.log(Log.STATUS.OK, Module.NAME, RegistrationEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT,
-                registrationStrategy, oldRegistration, newRegistration, null);
+                registrationStrategy, oldRegistration, newRegistration,
+                !Strings.isEmpty(explanation) ? getStringFormat("explanation_log", explanation) : null);
+    }
+
+    private String needExplanationLabel() {
+        if (isNew()) {
+            return null;
+        }
+
+        Set<String> modifiedAttributes = newHashSet();
+        if (!oldRegistration.getRegistrationType().getId().equals(newRegistration.getRegistrationType().getId())) {
+            modifiedAttributes.add(labelModel(ENTITY.getAttributeType(REGISTRATION_TYPE).getAttributeNames(), getLocale()).getObject());
+        }
+        if (!oldRegistration.getOwnerRelationship().getId().equals(newRegistration.getOwnerRelationship().getId())) {
+            modifiedAttributes.add(labelModel(ENTITY.getAttributeType(OWNER_RELATIONSHIP).getAttributeNames(), getLocale()).getObject());
+        }
+
+        if (modifiedAttributes.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder attributes = new StringBuilder();
+        for (Iterator<String> i = modifiedAttributes.iterator(); i.hasNext();) {
+            attributes.append("'").append(i.next()).append("'").append(i.hasNext() ? ", " : "");
+        }
+        return getStringFormat("need_explanation_label", attributes.toString());
     }
 
     private void back() {

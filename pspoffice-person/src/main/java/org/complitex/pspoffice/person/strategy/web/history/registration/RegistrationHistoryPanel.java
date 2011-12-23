@@ -4,6 +4,10 @@
  */
 package org.complitex.pspoffice.person.strategy.web.history.registration;
 
+import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionary.service.IUserProfileBean;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -36,6 +40,8 @@ import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 import static com.google.common.collect.Iterables.*;
@@ -47,6 +53,7 @@ import static com.google.common.collect.Lists.*;
  */
 final class RegistrationHistoryPanel extends Panel {
 
+    private static final Logger log = LoggerFactory.getLogger(RegistrationHistoryPanel.class);
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB
@@ -59,6 +66,8 @@ final class RegistrationHistoryPanel extends Panel {
     private RegistrationTypeStrategy registrationTypeStrategy;
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
+    @EJB(name = "UserProfileBean")
+    private IUserProfileBean userProfileBean;
     private final Entity ENTITY = registrationStrategy.getEntity();
 
     RegistrationHistoryPanel(String id, long registrationId, final String addressEntity, final long addressId,
@@ -82,6 +91,15 @@ final class RegistrationHistoryPanel extends Panel {
                     HistoryDateFormatter.format(endDate)})
                 : new StringResourceModel("label_current", null, new Object[]{registrationId,
                     HistoryDateFormatter.format(startDate)})));
+
+        final Long editedByUserId = modification.getEditedByUserId();
+        String editedByUserName = null;
+        try {
+            editedByUserName = userProfileBean.getFullName(editedByUserId, getLocale());
+        } catch (Exception e) {
+            log.error("", e);
+        }
+        add(new Label("editedByUser", !Strings.isEmpty(editedByUserName) ? editedByUserName : "[N/A]"));
 
         final WebMarkupContainer content = new WebMarkupContainer("content");
         add(content);
@@ -203,6 +221,18 @@ final class RegistrationHistoryPanel extends Panel {
             }
         };
         content.add(userAttributesView);
+
+        WebMarkupContainer explanationContainer = new WebMarkupContainer("explanationContainer");
+        explanationContainer.add(new Label("label", new ResourceModel("explanation")));
+        WebMarkupContainer wrapper = new WebMarkupContainer("wrapper");
+        wrapper.add(new CssAttributeBehavior(ModificationType.ADD.getCssClass()));
+        explanationContainer.add(wrapper);
+        String explanationText = modification.getExplanation();
+        TextArea<String> explanation = new TextArea<String>("explanation", new Model<String>(explanationText));
+        explanation.setEnabled(false);
+        wrapper.add(explanation);
+        explanationContainer.setVisible(!Strings.isEmpty(explanationText));
+        content.add(explanationContainer);
     }
 
     private boolean isArrivalAddressContainerVisible(Registration registration) {

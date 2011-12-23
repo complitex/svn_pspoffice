@@ -15,6 +15,7 @@ public class RemoveRegistrationCard implements Serializable {
 
     private String reason;
     private Date date;
+    private String explanation;
     private String country;
     private String region;
     private String district;
@@ -102,5 +103,13 @@ public class RemoveRegistrationCard implements Serializable {
 
     public void setStreet(String street) {
         this.street = street;
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 }

@@ -134,4 +134,12 @@ public class Registration extends DomainObject {
     public void setOwnerRelationship(DomainObject ownerRelationship) {
         this.ownerRelationship = ownerRelationship;
     }
+
+    public long getEditedByUserId() {
+        return getIntegerValue(this, EDITED_BY_USER_ID);
+    }
+
+    public String getExplanation() {
+        return getStringValue(this, EXPLANATION);
+    }
 }

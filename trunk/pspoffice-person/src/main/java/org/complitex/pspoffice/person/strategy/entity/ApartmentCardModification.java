@@ -5,6 +5,7 @@
 package org.complitex.pspoffice.person.strategy.entity;
 
 import java.io.Serializable;
+import java.util.Collection;
 import static com.google.common.collect.Maps.*;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public class ApartmentCardModification implements Serializable {
 
     private final Map<Long, ModificationType> attributeModificationMap = newHashMap();
     private final Map<Long, RegistrationModification> registrationModificationMap = newHashMap();
+    private Long editedByUserId;
+    private String explanation;
 
     public ApartmentCardModification() {
     }
@@ -32,7 +35,27 @@ public class ApartmentCardModification implements Serializable {
         return registrationModificationMap.get(registrationId);
     }
 
+    public Collection<RegistrationModification> getRegistrationModifications() {
+        return registrationModificationMap.values();
+    }
+
     public void addRegistrationModification(long registrationId, RegistrationModification registrationModification) {
         registrationModificationMap.put(registrationId, registrationModification);
+    }
+
+    public Long getEditedByUserId() {
+        return editedByUserId;
+    }
+
+    public void setEditedByUserId(Long editedByUserId) {
+        this.editedByUserId = editedByUserId;
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 }

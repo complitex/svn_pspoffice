@@ -41,6 +41,7 @@ import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrat
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCardModification;
+import org.complitex.pspoffice.person.strategy.entity.ChangeRegistrationTypeCard;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.RegisterChildrenCard;
@@ -284,7 +285,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         newApartmentCard.removeAttribute(EXPLANATION);
         final Attribute oldExplAttribute = oldApartmentCard.getAttribute(EXPLANATION);
         oldApartmentCard.removeAttribute(EXPLANATION);
-        if(oldExplAttribute != null){
+        if (oldExplAttribute != null) {
             archiveAttribute(oldExplAttribute, updateDate);
         }
 
@@ -475,6 +476,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                     setValue(removeRegistrationCard.getBuildingCorp());
             stringBean.getSystemStringCulture(newRegistration.getAttribute(RegistrationStrategy.DEPARTURE_APARTMENT).getLocalizedValues()).
                     setValue(removeRegistrationCard.getApartment());
+            //explanation
+            registrationStrategy.setExplanation(newRegistration, removeRegistrationCard.getExplanation());
 
             registrationStrategy.update(registration, newRegistration, updateDate);
             registrationStrategy.disable(registration, updateDate);
@@ -504,12 +507,15 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void changeRegistrationType(long apartmentCardId, List<Registration> registrationsToChangeType, long newRegistrationTypeId) {
+    public void changeRegistrationType(List<Registration> registrationsToChangeType,
+            ChangeRegistrationTypeCard changeRegistrationTypeCard) {
         Date updateDate = DateUtil.getCurrentDate();
+        Long newRegistrationTypeId = changeRegistrationTypeCard.getRegistrationType().getId();
         for (Registration registration : registrationsToChangeType) {
             if (!registration.getRegistrationType().getId().equals(newRegistrationTypeId)) {
                 Registration newRegistration = CloneUtil.cloneObject(registration);
                 newRegistration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(newRegistrationTypeId);
+                registrationStrategy.setExplanation(newRegistration, changeRegistrationTypeCard.getExplanation());
                 registrationStrategy.update(registration, newRegistration, updateDate);
             }
         }
@@ -672,6 +678,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 m.addRegistrationModification(reg.getId(),
                         new RegistrationModification().setModificationType(ModificationType.ADD));
             }
+            m.setEditedByUserId(historyCard.getEditedByUserId());
         } else {
             //changes
             for (Attribute current : historyCard.getAttributes()) {
@@ -680,9 +687,13 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                             && !current.getAttributeTypeId().equals(REGISTRATIONS)
                             && !current.getAttributeTypeId().equals(EXPLANATION)) {
 
-                        m.addAttributeModification(current.getAttributeTypeId(),
-                                !current.getValueId().equals(prev.getValueId()) ? ModificationType.CHANGE
-                                : ModificationType.NONE);
+                        ModificationType modificationType = ModificationType.NONE;
+                        if (!current.getValueId().equals(prev.getValueId())) {
+                            modificationType = ModificationType.CHANGE;
+                            m.setEditedByUserId(historyCard.getEditedByUserId());
+                            m.setExplanation(historyCard.getExplanation());
+                        }
+                        m.addAttributeModification(current.getAttributeTypeId(), modificationType);
                     }
                 }
             }
@@ -700,6 +711,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                     }
                     if (added) {
                         m.addAttributeModification(current.getAttributeTypeId(), ModificationType.ADD);
+                        m.setEditedByUserId(historyCard.getEditedByUserId());
+                        m.setExplanation(historyCard.getExplanation());
                     }
                 }
             }
@@ -717,6 +730,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                     }
                     if (removed) {
                         m.addAttributeModification(prev.getAttributeTypeId(), ModificationType.REMOVE);
+                        m.setEditedByUserId(historyCard.getEditedByUserId());
+                        m.setExplanation(historyCard.getExplanation());
                     }
                 }
             }
@@ -730,7 +745,9 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                         //removed
                         if (current.isFinished() && !prev.isFinished()) {
                             m.addRegistrationModification(current.getId(),
-                                    new RegistrationModification().setModificationType(ModificationType.REMOVE));
+                                    new RegistrationModification().setModificationType(ModificationType.REMOVE).
+                                    setEditedByUserId(current.getEditedByUserId()).
+                                    setExplanation(current.getExplanation()));
                             break;
                         }
                         //changed
@@ -745,13 +762,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 }
                 if (added) {
                     m.addRegistrationModification(current.getId(),
-                            new RegistrationModification().setModificationType(ModificationType.ADD));
+                            registrationStrategy.getDistinctionsForApartmentCardHistory(current, previousStartDate));
                 }
-            }
-
-            //explanation
-            if (historyCard.getAttribute(EXPLANATION) != null) {
-                m.addAttributeModification(EXPLANATION, ModificationType.ADD);
             }
         }
         return m;
@@ -766,10 +778,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
         //explanation
         Attribute explAttribute = card.getAttribute(EXPLANATION);
-        if (explAttribute != null) {
-            if (!explAttribute.getStartDate().equals(date)) {
-                card.removeAttribute(EXPLANATION);
-            }
+        if (explAttribute != null && !explAttribute.getStartDate().equals(date)) {
+            card.removeAttribute(EXPLANATION);
         }
 
         loadOwner(card);

@@ -7,7 +7,7 @@
     <body>
         <wicket:panel>
             <h2 wicket:id="label"></h2>
-            
+
             <table style="float: right;" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                     <td>
@@ -20,7 +20,7 @@
                     </td>
                 </tr>
             </table>
-            
+
             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                     <wicket:container wicket:id="addressContainer">
@@ -116,7 +116,7 @@
                     </tr>
                 </table>
             </fieldset>
-            
+
             <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
                 <tr wicket:id="restAttributesView">
                     <th>
@@ -127,6 +127,16 @@
                     </th>
                     <td>
                         <div class="inline_block" wicket:id="input"></div>
+                    </td>
+                </tr>
+                <tr wicket:id="explanationContainer">
+                    <th>
+                        <wicket:container wicket:id="label"/>:
+                    </th>
+                    <td>
+                        <div wicket:id="wrapper">
+                            <textarea wicket:id="explanation" cols="45" rows="4"></textarea>
+                        </div>
                     </td>
                 </tr>
             </table>

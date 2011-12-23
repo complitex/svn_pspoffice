@@ -16,6 +16,7 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -87,6 +88,10 @@ final class RemoveRegistrationDialog extends Panel {
         departureDate = new MaskedDateInput("date");
         departureDate.setRequired(true);
         form.add(departureDate);
+
+        TextArea<String> explanation = new TextArea<String>("explanation");
+        explanation.setRequired(true);
+        form.add(explanation);
 
         CollapsibleFieldset addressFieldset = new CollapsibleFieldset("addressFieldset", new ResourceModel("address"));
         form.add(addressFieldset);

@@ -13,7 +13,7 @@
                     </h3>
                     <div wicket:id="messages"></div>
                     <form action="#" wicket:id="form">
-                        <table class="tbForm" cellpadding="0" cellspacing="0" border="0">
+                        <table class="tbForm" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 0;">
                             <tr>
                                 <th>
                                     <wicket:message key="reason"/><b class="blue">*</b>:
@@ -28,6 +28,14 @@
                                 </th>
                                 <td>
                                     <input type="text" wicket:id="date"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <wicket:message key="explanation"/><b class="blue">*</b>:
+                                </th>
+                                <td>
+                                    <textarea wicket:id="explanation" cols="45" rows="4"></textarea>
                                 </td>
                             </tr>
                         </table>
@@ -93,7 +101,7 @@
                             </table>
                         </div>
 
-                        <div style="margin-top: 30px;">
+                        <div style="margin-top: 20px;">
                             <input type="button" wicket:message="value:removeFromRegistration" wicket:id="removeFromRegistration" class="btnMiddle"/>
                             <input type="button" wicket:message="value:cancel" wicket:id="cancel" class="btnMiddle"/>
                         </div>

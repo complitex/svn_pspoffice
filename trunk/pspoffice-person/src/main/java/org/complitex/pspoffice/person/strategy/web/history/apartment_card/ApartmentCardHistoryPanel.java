@@ -15,11 +15,13 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
@@ -27,7 +29,6 @@ import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.IUserProfileBean;
-import org.complitex.dictionary.util.AttributeUtil;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -99,13 +100,7 @@ final class ApartmentCardHistoryPanel extends Panel {
                 : new StringResourceModel("label_current", null, new Object[]{apartmentCardId,
                     HistoryDateFormatter.format(startDate)})));
 
-        final long editedByUserId = AttributeUtil.getIntegerValue(card, EDITED_BY_USER_ID);
-        String editedByUserName = null;
-        try {
-            editedByUserName = userProfileBean.getFullName(editedByUserId, getLocale());
-        } catch (Exception e) {
-            log.error("", e);
-        }
+        final String editedByUserName = getEditedByUserName(modification);
         add(new Label("editedByUser", !Strings.isEmpty(editedByUserName) ? editedByUserName : "[N/A]"));
 
         //address
@@ -207,7 +202,7 @@ final class ApartmentCardHistoryPanel extends Panel {
         };
         add(registrations);
 
-        //explanation, user attributes and housing rights:
+        //user attributes and housing rights:
         List<Long> restAttributeTypeIds = newArrayList(transform(filter(ENTITY.getEntityAttributeTypes(),
                 new Predicate<EntityAttributeType>() {
 
@@ -225,10 +220,6 @@ final class ApartmentCardHistoryPanel extends Panel {
                 }));
 
         List<Attribute> restAttributes = newArrayList();
-        Attribute explAttribute = card.getAttribute(EXPLANATION);
-        if (explAttribute != null) {
-            restAttributes.add(explAttribute);
-        }
         for (Long attributeTypeId : restAttributeTypeIds) {
             Attribute userAttribute = card.getAttribute(attributeTypeId);
             if (userAttribute != null) {
@@ -244,6 +235,18 @@ final class ApartmentCardHistoryPanel extends Panel {
             }
         };
         add(restAttributesView);
+
+        WebMarkupContainer explanationContainer = new WebMarkupContainer("explanationContainer");
+        explanationContainer.add(new Label("label", new ResourceModel("explanation")));
+        WebMarkupContainer wrapper = new WebMarkupContainer("wrapper");
+        wrapper.add(new CssAttributeBehavior(ModificationType.ADD.getCssClass()));
+        explanationContainer.add(wrapper);
+        String explanationText = getExplanation(modification);
+        TextArea<String> explanation = new TextArea<String>("explanation", new Model<String>(explanationText));
+        explanation.setEnabled(false);
+        wrapper.add(explanation);
+        explanationContainer.setVisible(!Strings.isEmpty(explanationText));
+        add(explanationContainer);
     }
 
     private void initAttributeInput(ApartmentCard card, ApartmentCardModification modification, MarkupContainer parent,
@@ -264,5 +267,37 @@ final class ApartmentCardHistoryPanel extends Panel {
                 getLocale(), true);
         inputComponent.add(new CssAttributeBehavior(modification.getModificationType(attributeTypeId).getCssClass()));
         parent.add(inputComponent);
+    }
+
+    private String getEditedByUserName(ApartmentCardModification modification) {
+        Long editedByUserId = modification.getEditedByUserId();
+        if (editedByUserId == null) {
+            for (RegistrationModification rm : modification.getRegistrationModifications()) {
+                if (editedByUserId == null && rm.getEditedByUserId() != null) {
+                    editedByUserId = rm.getEditedByUserId();
+                    break;
+                }
+            }
+        }
+
+        String editedByUserName = null;
+        try {
+            editedByUserName = userProfileBean.getFullName(editedByUserId, getLocale());
+        } catch (Exception e) {
+            log.error("", e);
+        }
+        return editedByUserName;
+    }
+
+    private String getExplanation(ApartmentCardModification modification) {
+        if (modification.getExplanation() != null) {
+            return modification.getExplanation();
+        }
+        for (RegistrationModification rm : modification.getRegistrationModifications()) {
+            if (rm.getExplanation() != null) {
+                return rm.getExplanation();
+            }
+        }
+        return null;
     }
 }

@@ -193,7 +193,7 @@ final class RegisterOwnerDialog extends Panel {
     }
 
     private void register() {
-        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject(), saveDate);
+        apartmentCardStrategy.registerOwner(apartmentCard, model.getObject(), children, saveDate);
     }
 
     private boolean validate() {

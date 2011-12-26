@@ -39,9 +39,9 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
      * Owner relationship instance ids
      */
     public static final long OWNER = 1;
-    public static final long RESPONSIBLE = 2;
-    public static final long CHILDREN = 3;
-    private static final Set<Long> RESERVED_INSTANCE_IDS = of(OWNER, RESPONSIBLE, CHILDREN);
+    public static final long SON = 2;
+    public static final long DAUGHTER = 3;
+    private static final Set<Long> RESERVED_INSTANCE_IDS = of(OWNER, SON, DAUGHTER);
 
     @Override
     public String getEntityTable() {

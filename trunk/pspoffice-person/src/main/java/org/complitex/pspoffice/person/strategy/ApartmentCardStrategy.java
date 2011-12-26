@@ -23,6 +23,7 @@ import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.converter.StringConverter;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
@@ -522,7 +523,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard, Date insertDate) {
+    public void registerOwner(ApartmentCard apartmentCard, RegisterOwnerCard registerOwnerCard, List<Person> children,
+            Date insertDate) {
         long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
         Person owner = apartmentCard.getOwner();
         //owner registration
@@ -531,9 +533,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
         //children registration
         if (registerOwnerCard.isRegisterChildren()) {
-            for (Attribute childAttribute : owner.getAttributes(PersonStrategy.CHILDREN)) {
+            for (Person child : children) {
                 addRegistration(apartmentCard,
-                        newRegistration(childAttribute.getValueId(), registerOwnerCard, OwnerRelationshipStrategy.CHILDREN),
+                        newRegistration(child.getId(), registerOwnerCard,
+                        child.getGender() == Gender.MALE ? OwnerRelationshipStrategy.SON : OwnerRelationshipStrategy.DAUGHTER),
                         attributeId++, insertDate);
             }
         }
@@ -585,14 +588,15 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         ApartmentCard apartmentCard = findById(registerChildrenCard.getApartmentCardId(), true, false, false, false);
         long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
         for (Person child : children) {
-            addRegistration(apartmentCard, newChildRegistration(child.getId(), registerChildrenCard), attributeId++, insertDate);
+            addRegistration(apartmentCard, newChildRegistration(child, registerChildrenCard), attributeId++, insertDate);
         }
     }
 
-    private Registration newChildRegistration(long childId, RegisterChildrenCard registerChildrenCard) {
+    private Registration newChildRegistration(Person child, RegisterChildrenCard registerChildrenCard) {
         Registration registration = registrationStrategy.newInstance();
-        registration.getAttribute(RegistrationStrategy.PERSON).setValueId(childId);
-        registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(OwnerRelationshipStrategy.CHILDREN);
+        registration.getAttribute(RegistrationStrategy.PERSON).setValueId(child.getId());
+        registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(
+                child.getGender() == Gender.MALE ? OwnerRelationshipStrategy.SON : OwnerRelationshipStrategy.DAUGHTER);
         stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.REGISTRATION_DATE).getLocalizedValues()).
                 setValue(new DateConverter().toString(registerChildrenCard.getRegistrationDate()));
         registration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registerChildrenCard.getRegistrationType().getId());

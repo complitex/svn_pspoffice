@@ -4,6 +4,10 @@
  */
 package org.complitex.pspoffice.person.strategy.web.history.person;
 
+import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.string.Strings;
+import org.complitex.dictionary.service.IUserProfileBean;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -44,6 +48,8 @@ import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 
@@ -56,6 +62,7 @@ import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
  */
 final class PersonHistoryPanel extends Panel {
 
+    private static final Logger log = LoggerFactory.getLogger(PersonHistoryPanel.class);
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -68,6 +75,8 @@ final class PersonHistoryPanel extends Panel {
     private DocumentStrategy documentStrategy;
     @EJB
     private DocumentTypeStrategy documentTypeStrategy;
+    @EJB(name = "UserProfileBean")
+    private IUserProfileBean userProfileBean;
     private final Entity ENTITY = personStrategy.getEntity();
 
     PersonHistoryPanel(String id, long personId, final Date endDate) {
@@ -89,6 +98,15 @@ final class PersonHistoryPanel extends Panel {
                     HistoryDateFormatter.format(endDate)})
                 : new StringResourceModel("label_current", null, new Object[]{personId,
                     HistoryDateFormatter.format(startDate)})));
+
+        final Long editedByUserId = modification.getEditedByUserId();
+        String editedByUserName = null;
+        try {
+            editedByUserName = userProfileBean.getFullName(editedByUserId, getLocale());
+        } catch (Exception e) {
+            log.error("", e);
+        }
+        add(new Label("editedByUser", !Strings.isEmpty(editedByUserName) ? editedByUserName : "[N/A]"));
 
         //last name
         final EntityAttributeType lastNameAttributeType = ENTITY.getAttributeType(LAST_NAME);
@@ -265,6 +283,18 @@ final class PersonHistoryPanel extends Panel {
                 item.add(childComponent);
             }
         });
+
+        WebMarkupContainer explanationContainer = new WebMarkupContainer("explanationContainer");
+        explanationContainer.add(new Label("label", new ResourceModel("explanation")));
+        WebMarkupContainer wrapper = new WebMarkupContainer("wrapper");
+        wrapper.add(new CssAttributeBehavior(ModificationType.ADD.getCssClass()));
+        explanationContainer.add(wrapper);
+        String explanationText = modification.getExplanation();
+        TextArea<String> explanation = new TextArea<String>("explanation", new Model<String>(explanationText));
+        explanation.setEnabled(false);
+        wrapper.add(explanation);
+        explanationContainer.setVisible(!Strings.isEmpty(explanationText));
+        add(explanationContainer);
     }
 
     private void initAttributeInput(Person person, PersonModification modification, MarkupContainer parent,

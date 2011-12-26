@@ -236,6 +236,7 @@ final class ApartmentCardHistoryPanel extends Panel {
         };
         add(restAttributesView);
 
+        //explanation
         WebMarkupContainer explanationContainer = new WebMarkupContainer("explanationContainer");
         explanationContainer.add(new Label("label", new ResourceModel("explanation")));
         WebMarkupContainer wrapper = new WebMarkupContainer("wrapper");

@@ -18,6 +18,8 @@ public class PersonModification implements Serializable {
     private final Map<Long, ChildModification> childrenModificationMap = newHashMap();
     private DocumentModification documentModification;
     private boolean childRemoved;
+    private Long editedByUserId;
+    private String explanation;
 
     public PersonModification() {
     }
@@ -52,5 +54,21 @@ public class PersonModification implements Serializable {
 
     public void setChildRemoved(boolean childRemoved) {
         this.childRemoved = childRemoved;
+    }
+
+    public Long getEditedByUserId() {
+        return editedByUserId;
+    }
+
+    public void setEditedByUserId(Long editedByUserId) {
+        this.editedByUserId = editedByUserId;
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 }

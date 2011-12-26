@@ -4,14 +4,20 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import org.apache.wicket.util.string.Strings;
+import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.apache.wicket.markup.html.link.Link;
 import com.google.common.base.Function;
+import java.text.MessageFormat;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
+import static com.google.common.collect.Sets.*;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -29,7 +35,6 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.complitex.pspoffice.person.strategy.PersonStrategy.PersonApartmentCardAddress;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.web.history.person.PersonHistoryPage;
@@ -37,6 +42,8 @@ import org.complitex.resources.WebCommonResourceInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
+import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 
 /**
  *
@@ -55,7 +62,6 @@ public abstract class PersonEditPanel extends Panel {
     private Person newPerson;
     private PersonInputPanel personInputPanel;
     private FeedbackPanel messages;
-//    private ReportDownloadPanel reportDownloadPanel;
 
     public PersonEditPanel(String id, PersonAgeType personAgeType, Person oldPerson, Person newPerson) {
         super(id);
@@ -115,6 +121,10 @@ public abstract class PersonEditPanel extends Panel {
         };
         add(registerChildrenDialog);
 
+        //explanation
+        final ExplanationDialog personExplanationDialog = new ExplanationDialog("personExplanationDialog");
+        add(personExplanationDialog);
+
         //save-cancel functional
         IndicatingAjaxButton submit = new IndicatingAjaxButton("submit", form) {
 
@@ -122,40 +132,65 @@ public abstract class PersonEditPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     if (PersonEditPanel.this.validate()) {
-                        save();
-
-                        // register children dialog
-                        List<Person> newChildren = null;
-                        List<PersonApartmentCardAddress> personApartmentCardAddresses = null;
-                        boolean needRegisterChildren = false;
-                        if (!isNew()) {
-                            newChildren = getNewChildren();
-                            if (newChildren != null && !newChildren.isEmpty()) {
-                                personApartmentCardAddresses = getPersonApartmentCardAddresses(newChildren);
-                                if (personApartmentCardAddresses != null && !personApartmentCardAddresses.isEmpty()) {
-                                    needRegisterChildren = true;
-                                }
-                            }
-                        }
-                        if (needRegisterChildren) {
-                            registerChildrenDialog.open(target, personApartmentCardAddresses, newChildren);
+                        String needExplanationLabel = needExplanationLabel();
+                        boolean isNeedExplanation = !Strings.isEmpty(needExplanationLabel);
+                        if (!isNeedExplanation) {
+                            persist(target, null);
                         } else {
-                            onSave(oldPerson, newPerson, target);
+                            personExplanationDialog.open(target, needExplanationLabel, new ExplanationDialog.ISubmitAction() {
+
+                                @Override
+                                public void onSubmit(AjaxRequestTarget target, String explanation) {
+                                    try {
+                                        persist(target, explanation);
+                                    } catch (Exception e) {
+                                        onFatalError(target, e);
+                                    }
+                                }
+                            });
                         }
                     } else {
                         target.addComponent(messages);
                         scrollToMessages(target);
                     }
                 } catch (Exception e) {
-                    log.error("", e);
-                    error(getString("db_error"));
-                    target.addComponent(messages);
-                    scrollToMessages(target);
+                    onFatalError(target, e);
                 }
+            }
+
+            private void persist(AjaxRequestTarget target, String explanation) {
+                save(explanation);
+
+                // register children dialog
+                List<Person> newChildren = null;
+                List<PersonApartmentCardAddress> personApartmentCardAddresses = null;
+                boolean needRegisterChildren = false;
+                if (!isNew()) {
+                    newChildren = getNewChildren();
+                    if (newChildren != null && !newChildren.isEmpty()) {
+                        personApartmentCardAddresses = getPersonApartmentCardAddresses(newChildren);
+                        if (personApartmentCardAddresses != null && !personApartmentCardAddresses.isEmpty()) {
+                            needRegisterChildren = true;
+                        }
+                    }
+                }
+                if (needRegisterChildren) {
+                    registerChildrenDialog.open(target, personApartmentCardAddresses, newChildren);
+                } else {
+                    onSave(oldPerson, newPerson, target);
+                }
+            }
+
+            private void onFatalError(AjaxRequestTarget target, Exception e) {
+                log.error("", e);
+                error(getString("db_error"));
+                target.addComponent(messages);
+                scrollToMessages(target);
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
+                super.onError(target, form);
                 target.addComponent(messages);
                 scrollToMessages(target);
             }
@@ -166,6 +201,7 @@ public abstract class PersonEditPanel extends Panel {
         };
         submit.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(submit);
+
         AjaxLink<Void> cancel = new AjaxLink<Void>("cancel") {
 
             @Override
@@ -175,6 +211,7 @@ public abstract class PersonEditPanel extends Panel {
         };
         cancel.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(cancel);
+
         AjaxLink<Void> back = new AjaxLink<Void>("back") {
 
             @Override
@@ -185,10 +222,6 @@ public abstract class PersonEditPanel extends Panel {
         back.setVisible(!canEdit(null, personStrategy.getEntityTable(), newPerson));
         form.add(back);
         add(form);
-
-        //Загрузка отчетов
-//        reportDownloadPanel = new ReportDownloadPanel("report_download", RegistrationCardDownload.class, newPerson.getId(), getString("report_download"));
-//        add(reportDownloadPanel);
     }
 
     private boolean validate() {
@@ -199,15 +232,19 @@ public abstract class PersonEditPanel extends Panel {
         return oldPerson == null;
     }
 
-    private void save() {
+    private void save(String explanation) {
         personInputPanel.beforePersist();
         if (isNew()) {
             personStrategy.insert(newPerson, DateUtil.getCurrentDate());
         } else {
+            if (!Strings.isEmpty(explanation)) {
+                personStrategy.setExplanation(newPerson, explanation);
+            }
             personStrategy.update(oldPerson, newPerson, DateUtil.getCurrentDate());
         }
         logBean.log(Log.STATUS.OK, Module.NAME, PersonEdit.class, isNew() ? Log.EVENT.CREATE : Log.EVENT.EDIT, personStrategy,
-                oldPerson, newPerson, null);
+                oldPerson, newPerson,
+                !Strings.isEmpty(explanation) ? MessageFormat.format(getString("explanation_log"), explanation) : null);
     }
 
     protected abstract void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target);
@@ -275,5 +312,35 @@ public abstract class PersonEditPanel extends Panel {
             }
         }
         return finalApartmentCardAddresses;
+    }
+
+    private String needExplanationLabel() {
+        if (isNew()) {
+            return null;
+        }
+
+        Set<String> modifiedAttributes = newHashSet();
+        for (final long nameAttributeTypeId : NAME_ATTRIBUTE_IDS) {
+            if (personStrategy.isNameAttributeModified(oldPerson, newPerson, nameAttributeTypeId)) {
+                modifiedAttributes.add(labelModel(personStrategy.getEntity().
+                        getAttributeType(nameAttributeTypeId).getAttributeNames(), getLocale()).getObject());
+            }
+        }
+
+        if (newPerson.getReplacedDocument() != null) {
+            modifiedAttributes.add(labelModel(personStrategy.getEntity().getAttributeType(DOCUMENT).getAttributeNames(),
+                    getLocale()).getObject());
+        }
+
+
+        if (modifiedAttributes.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder attributes = new StringBuilder();
+        for (Iterator<String> i = modifiedAttributes.iterator(); i.hasNext();) {
+            attributes.append("'").append(i.next()).append("'").append(i.hasNext() ? ", " : "");
+        }
+        return MessageFormat.format(getString("need_explanation_label"), attributes.toString());
     }
 }

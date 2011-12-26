@@ -33,6 +33,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.LocaleBean;
+import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.Numbers;
@@ -85,7 +86,9 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long CHILDREN = 2015;
     public static final long GENDER = 2016;
     public static final long UKRAINE_CITIZENSHIP = 2020;
-    private static final Set<Long> NAME_ATTRIBUTE_IDS = ImmutableSet.of(LAST_NAME, FIRST_NAME, MIDDLE_NAME);
+    public static final long EXPLANATION = 2021;
+    public static final long EDITED_BY_USER_ID = 2022;
+    public static final Set<Long> NAME_ATTRIBUTE_IDS = ImmutableSet.of(LAST_NAME, FIRST_NAME, MIDDLE_NAME);
 
     /**
      * Order by related constants
@@ -124,6 +127,8 @@ public class PersonStrategy extends TemplateStrategy {
     private RegistrationStrategy registrationStrategy;
     @EJB
     private AddressRendererBean addressRendererBean;
+    @EJB
+    private SessionBean sessionBean;
 
     @Override
     public String getEntityTable() {
@@ -326,7 +331,9 @@ public class PersonStrategy extends TemplateStrategy {
         for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
             if (!attributeType.isObsolete()) {
                 if (object.getAttributes(attributeType.getId()).isEmpty()) {
-                    if ((attributeType.getEntityAttributeValueTypes().size() == 1) && !attributeType.getId().equals(CHILDREN)
+                    if ((attributeType.getEntityAttributeValueTypes().size() == 1)
+                            && !attributeType.getId().equals(CHILDREN)
+                            && !attributeType.getId().equals(EXPLANATION)
                             && !NAME_ATTRIBUTE_IDS.contains(attributeType.getId())) {
                         Attribute attribute = new Attribute();
                         EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
@@ -342,7 +349,8 @@ public class PersonStrategy extends TemplateStrategy {
 
                         //by default UKRAINE_CITIZENSHIP attribute set to TRUE.
                         if (attributeType.getId().equals(UKRAINE_CITIZENSHIP)) {
-                            StringCulture systemLocaleStringCulture = stringBean.getSystemStringCulture(attribute.getLocalizedValues());
+                            StringCulture systemLocaleStringCulture = 
+                                    stringBean.getSystemStringCulture(attribute.getLocalizedValues());
                             systemLocaleStringCulture.setValue(new BooleanConverter().toString(Boolean.TRUE));
                         }
                     }
@@ -495,11 +503,48 @@ public class PersonStrategy extends TemplateStrategy {
         super.insertDomainObject(person, updateDate);
     }
 
+    @Override
+    public void insert(DomainObject person, Date insertDate) {
+        setEditedByUserId(person);
+        super.insert(person, insertDate);
+    }
+
+    private void setEditedByUserId(DomainObject person) {
+        long userId = sessionBean.getCurrentUserId();
+        stringBean.getSystemStringCulture(person.getAttribute(EDITED_BY_USER_ID).getLocalizedValues()).
+                setValue(String.valueOf(userId));
+    }
+
+    public void setExplanation(Person person, String explanation) {
+        person.removeAttribute(EXPLANATION);
+
+        Attribute explAttribute = new Attribute();
+        explAttribute.setLocalizedValues(stringBean.newStringCultures());
+        stringBean.getSystemStringCulture(explAttribute.getLocalizedValues()).setValue(explanation);
+        explAttribute.setAttributeTypeId(EXPLANATION);
+        explAttribute.setValueTypeId(EXPLANATION);
+        explAttribute.setAttributeId(1L);
+        person.addAttribute(explAttribute);
+    }
+
     @Transactional
     @Override
     public void update(DomainObject oldObject, DomainObject newObject, Date updateDate) {
         Person oldPerson = (Person) oldObject;
         Person newPerson = (Person) newObject;
+
+        setEditedByUserId(newPerson);
+
+        //handle explanation attribute: 
+        // 1. archive old explanation if it is existed.
+
+        final Attribute newExplAttribute = newPerson.getAttribute(EXPLANATION);
+        newPerson.removeAttribute(EXPLANATION);
+        final Attribute oldExplAttribute = oldPerson.getAttribute(EXPLANATION);
+        oldPerson.removeAttribute(EXPLANATION);
+        if (oldExplAttribute != null) {
+            archiveAttribute(oldExplAttribute, updateDate);
+        }
 
         //document altering
         newPerson.getDocument().setSubjectIds(newPerson.getSubjectIds());
@@ -513,7 +558,7 @@ public class PersonStrategy extends TemplateStrategy {
 
         updateDocumentAttribute(oldPerson, newPerson);
 
-        // if person was a kid but birth date has changed or time was then it is need to update parent
+        // if person was a kid but birth date has changed or time gone then it is need to update parent
         if (oldPerson.isKid() && !newPerson.isKid()) {
             removeKidFromParent(newPerson.getId(), updateDate);
         }
@@ -522,6 +567,14 @@ public class PersonStrategy extends TemplateStrategy {
         prepareForSaveNameAttributes(newPerson);
 
         super.update(oldPerson, newPerson, updateDate);
+
+        //handle explanation attribute: 
+        // 2. insert new one
+        if (newExplAttribute != null && newExplAttribute.getStartDate() == null) {
+            newExplAttribute.setObjectId(newPerson.getId());
+            newExplAttribute.setStartDate(updateDate);
+            insertAttribute(newExplAttribute);
+        }
     }
 
     @Transactional
@@ -736,7 +789,8 @@ public class PersonStrategy extends TemplateStrategy {
 
     /* History */
     private Map<String, Object> newModificationDateParams(long personId, Date date) {
-        return ImmutableMap.<String, Object>of("personId", personId, "date", date, "personDocumentAT", DOCUMENT);
+        return ImmutableMap.<String, Object>of("personId", personId, "date", date, "personDocumentAT", DOCUMENT,
+                "nontraceableAttributes", newArrayList(EXPLANATION, EDITED_BY_USER_ID));
     }
 
     public Date getPreviousModificationDate(long personId, Date date) {
@@ -761,6 +815,13 @@ public class PersonStrategy extends TemplateStrategy {
             return null;
         }
         Person person = new Person(historyObject);
+
+        //explanation
+        Attribute explAttribute = person.getAttribute(EXPLANATION);
+        if (explAttribute != null && !explAttribute.getStartDate().equals(date)) {
+            person.removeAttribute(EXPLANATION);
+        }
+
         updateNameAttributesForNewLocales(person);
         loadChildren(person);
         loadHistoryDocument(person, date);
@@ -794,7 +855,9 @@ public class PersonStrategy extends TemplateStrategy {
                 for (Attribute prev : previousPerson.getAttributes()) {
                     if (current.getAttributeTypeId().equals(prev.getAttributeTypeId())
                             && !current.getAttributeTypeId().equals(CHILDREN)
+                            && !current.getAttributeTypeId().equals(EXPLANATION)
                             && !NAME_ATTRIBUTE_IDS.contains(current.getAttributeTypeId())) {
+
                         m.addAttributeModification(current.getAttributeTypeId(),
                                 !current.getValueId().equals(prev.getValueId()) ? ModificationType.CHANGE
                                 : ModificationType.NONE);
@@ -805,6 +868,7 @@ public class PersonStrategy extends TemplateStrategy {
             //added
             for (Attribute current : historyPerson.getAttributes()) {
                 if (!current.getAttributeTypeId().equals(CHILDREN)
+                        && !current.getAttributeTypeId().equals(EXPLANATION)
                         && !NAME_ATTRIBUTE_IDS.contains(current.getAttributeTypeId())) {
                     boolean added = true;
                     for (Attribute prev : previousPerson.getAttributes()) {
@@ -822,6 +886,7 @@ public class PersonStrategy extends TemplateStrategy {
             //removed
             for (Attribute prev : previousPerson.getAttributes()) {
                 if (!prev.getAttributeTypeId().equals(CHILDREN)
+                        && !prev.getAttributeTypeId().equals(EXPLANATION)
                         && !NAME_ATTRIBUTE_IDS.contains(prev.getAttributeTypeId())) {
                     boolean removed = true;
                     for (Attribute current : historyPerson.getAttributes()) {
@@ -865,46 +930,53 @@ public class PersonStrategy extends TemplateStrategy {
 
 
             //names
-            for (final long nameAttributeId : NAME_ATTRIBUTE_IDS) {
-                boolean nameChanged = false;
-                for (Attribute current : historyPerson.getAttributes(nameAttributeId)) {
-                    if (!nameChanged) {
-                        boolean added = true;
-                        for (Attribute prev : previousPerson.getAttributes(nameAttributeId)) {
-                            if (current.getAttributeId().equals(prev.getAttributeId())) {
-                                added = false;
-                                nameChanged = !Numbers.isEqual(current.getValueId(), prev.getValueId());
-                                break;
-                            }
-                        }
-                        if (added) {
-                            nameChanged = true;
-                            break;
-                        }
-                    }
-                }
-                if (!nameChanged) {
-                    for (Attribute prev : previousPerson.getAttributes(nameAttributeId)) {
-                        boolean removed = true;
-                        for (Attribute current : historyPerson.getAttributes(nameAttributeId)) {
-                            if (prev.getAttributeId().equals(current.getAttributeId())) {
-                                removed = false;
-                                break;
-                            }
-                        }
-                        if (removed) {
-                            nameChanged = true;
-                            break;
-                        }
-                    }
-                }
-                m.addAttributeModification(nameAttributeId, nameChanged ? ModificationType.CHANGE : ModificationType.NONE);
+            for (final long nameAttributeTypeId : NAME_ATTRIBUTE_IDS) {
+                boolean nameChanged = isNameAttributeModified(previousPerson, historyPerson, nameAttributeTypeId);
+                m.addAttributeModification(nameAttributeTypeId, nameChanged ? ModificationType.CHANGE : ModificationType.NONE);
             }
 
             //document
             m.setDocumentModification(getDocumentDistinctions(historyPerson.getDocument(), previousStartDate));
         }
+        m.setEditedByUserId(historyPerson.getEditedByUserId());
+        m.setExplanation(historyPerson.getExplanation());
         return m;
+    }
+
+    public boolean isNameAttributeModified(Person oldPerson, Person newPerson, long nameAttributeTypeId) {
+        boolean nameChanged = false;
+        for (Attribute newAttr : newPerson.getAttributes(nameAttributeTypeId)) {
+            if (!nameChanged) {
+                boolean added = true;
+                for (Attribute oldAttr : oldPerson.getAttributes(nameAttributeTypeId)) {
+                    if (newAttr.getAttributeId().equals(oldAttr.getAttributeId())) {
+                        added = false;
+                        nameChanged = !Numbers.isEqual(newAttr.getValueId(), oldAttr.getValueId());
+                        break;
+                    }
+                }
+                if (added) {
+                    nameChanged = true;
+                    break;
+                }
+            }
+        }
+        if (!nameChanged) {
+            for (Attribute oldAttr : oldPerson.getAttributes(nameAttributeTypeId)) {
+                boolean removed = true;
+                for (Attribute newAttr : newPerson.getAttributes(nameAttributeTypeId)) {
+                    if (oldAttr.getAttributeId().equals(newAttr.getAttributeId())) {
+                        removed = false;
+                        break;
+                    }
+                }
+                if (removed) {
+                    nameChanged = true;
+                    break;
+                }
+            }
+        }
+        return nameChanged;
     }
 
     private DocumentModification getDocumentDistinctions(Document historyDocument, Date previousStartDate) {

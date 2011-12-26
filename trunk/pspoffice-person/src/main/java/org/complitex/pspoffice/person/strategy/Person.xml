@@ -203,10 +203,20 @@
     
     <!-- History -->
     
+    <sql id="nontraceblaAttributesSql">
+        <if test="nontraceableAttributes != null and !nontraceableAttributes.isEmpty()">
+            AND a.`attribute_type_id` NOT IN 
+            <foreach open="(" close=")" separator="," item="item" collection="nontraceableAttributes">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    
     <select id="getPreviousModificationDate" parameterType="map" resultType="date">
         SELECT MAX(d.`date`) FROM (
             SELECT a.`start_date` `date` FROM `person_attribute` a WHERE a.`object_id` = #{personId} 
                 AND a.`start_date` <![CDATA[ < ]]> #{date}
+                <include refid="org.complitex.pspoffice.person.strategy.Person.nontraceblaAttributesSql"/>
             UNION
             SELECT p.`end_date` FROM `person` p WHERE p.`end_date` <![CDATA[ < ]]> #{date} 
                 AND p.`object_id` = #{personId}
@@ -221,6 +231,7 @@
         SELECT MIN(d.`date`) FROM (
             SELECT a.`start_date` `date` FROM `person_attribute` a WHERE a.`object_id` = #{personId} 
                 AND a.`start_date` <![CDATA[ > ]]> #{date}
+                <include refid="org.complitex.pspoffice.person.strategy.Person.nontraceblaAttributesSql"/>
             UNION
             SELECT p.`end_date` FROM `person` p WHERE p.`end_date` <![CDATA[ > ]]> #{date} 
                 AND p.`object_id` = #{personId}

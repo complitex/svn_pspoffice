@@ -292,7 +292,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         super.update(oldApartmentCard, newApartmentCard, updateDate);
 
         // 2. insert new one
-        if (newExplAttribute != null) {
+        if (newExplAttribute != null && newExplAttribute.getStartDate() == null) {
             newExplAttribute.setObjectId(newApartmentCard.getId());
             newExplAttribute.setStartDate(updateDate);
             insertAttribute(newExplAttribute);
@@ -644,7 +644,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     /* History */
     private Map<String, Object> newModificationDateParams(long apartmentCardId, Date date) {
         return ImmutableMap.<String, Object>of("apartmentCardId", apartmentCardId, "date", date,
-                "apartmentCardRegisrationAT", REGISTRATIONS);
+                "apartmentCardRegisrationAT", REGISTRATIONS,
+                "nontraceableAttributes", newArrayList(EXPLANATION, EDITED_BY_USER_ID),
+                "registrationNontraceableAttributes", newArrayList(RegistrationStrategy.EXPLANATION,
+                RegistrationStrategy.EDITED_BY_USER_ID));
     }
 
     public Date getPreviousModificationDate(long apartmentCardId, Date date) {

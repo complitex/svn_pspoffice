@@ -44,6 +44,12 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 /* Является ли гражданином Украины */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2021, 1, UPPER('Является гражданином Украины')), (2021, 2, UPPER('Свідоцтво про належність до громадянства України'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2020, 2000, 1, 2021, 1);
+/* Обоснование изменения */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2022, 1, UPPER('Обоснование изменения')), (2022, 2, UPPER('Обоснование изменения'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2021, 2000, 0, 2022, 1);
+/* ID пользователя, отредактировавшего персону */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2023, 1, UPPER('ID пользователя, отредактировавшего персону')), (2023, 2, UPPER('ID пользователя, отредактировавшего персону'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2022, 2000, 0, 2023, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2000, 2000, UPPER('last_name'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2001, 2001, UPPER('first_name'));
@@ -60,6 +66,8 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2015, 2015, 'person');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2016, 2016, UPPER('gender'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2020, 2020, UPPER('boolean'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2021, 2021, UPPER('big_string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2022, 2022, UPPER('integer'));
 
 -- Apartment Card --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('apartment_card',1), ('apartment_card_string_culture',1);
@@ -158,8 +166,8 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 /* Обоснование изменения */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2124, 1, UPPER('Обоснование изменения')), (2124, 2, UPPER('Обоснование изменения'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2123, 2100, 0, 2124, 1);
-/* ID пользователя, отредактировавшего карточку */
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2125, 1, UPPER('ID пользователя, отредактировавшего карточку')), (2125, 2, UPPER('ID пользователя, отредактировавшего карточку'));
+/* ID пользователя, отредактировавшего регистрацию */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2125, 1, UPPER('ID пользователя, отредактировавшего регистрацию')), (2125, 2, UPPER('ID пользователя, отредактировавшего регистрацию'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2124, 2100, 0, 2125, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2100, 2100, UPPER('string'));

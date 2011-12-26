@@ -222,6 +222,7 @@ final class RegistrationHistoryPanel extends Panel {
         };
         content.add(userAttributesView);
 
+        //explanation
         WebMarkupContainer explanationContainer = new WebMarkupContainer("explanationContainer");
         explanationContainer.add(new Label("label", new ResourceModel("explanation")));
         WebMarkupContainer wrapper = new WebMarkupContainer("wrapper");

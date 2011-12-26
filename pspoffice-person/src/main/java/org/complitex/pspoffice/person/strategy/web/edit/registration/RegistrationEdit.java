@@ -113,7 +113,6 @@ public class RegistrationEdit extends FormTemplatePage {
     private final Registration oldRegistration;
     private final String addressEntity;
     private final long addressId;
-    private ExplanationDialog registrationExplanationDialog;
 
     public RegistrationEdit(ApartmentCard apartmentCard, String addressEntity, long addressId, Registration registration) {
         this.apartmentCard = apartmentCard;
@@ -266,6 +265,10 @@ public class RegistrationEdit extends FormTemplatePage {
             }
         }.setVisible(!isNew()));
 
+        //explanation
+        final ExplanationDialog registrationExplanationDialog = new ExplanationDialog("registrationExplanationDialog");
+        add(registrationExplanationDialog);
+
         IndicatingAjaxButton submit = new IndicatingAjaxButton("submit") {
 
             @Override
@@ -289,7 +292,6 @@ public class RegistrationEdit extends FormTemplatePage {
                                 }
                             });
                         }
-
                     } else {
                         target.addComponent(messages);
                         scrollToMessages(target);
@@ -333,10 +335,6 @@ public class RegistrationEdit extends FormTemplatePage {
         };
         form.add(back);
         add(form);
-
-        //explanation
-        registrationExplanationDialog = new ExplanationDialog("registrationExplanationDialog");
-        add(registrationExplanationDialog);
     }
 
     private Component initOwnerRelationship() {

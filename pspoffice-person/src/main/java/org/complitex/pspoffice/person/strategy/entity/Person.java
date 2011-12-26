@@ -152,4 +152,12 @@ public class Person extends DomainObject {
     public boolean isDead() {
         return getStatus() == StatusType.INACTIVE && getDeathDate() != null;
     }
+
+    public long getEditedByUserId() {
+        return getIntegerValue(this, EDITED_BY_USER_ID);
+    }
+
+    public String getExplanation() {
+        return getStringValue(this, EXPLANATION);
+    }
 }

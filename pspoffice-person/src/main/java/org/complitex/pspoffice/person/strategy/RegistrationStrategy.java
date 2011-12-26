@@ -183,7 +183,7 @@ public class RegistrationStrategy extends Strategy {
         super.update(oldRegistration, newRegistration, updateDate);
 
         // 2. insert new one
-        if (newExplAttribute != null) {
+        if (newExplAttribute != null && newExplAttribute.getStartDate() == null) {
             newExplAttribute.setObjectId(newRegistration.getId());
             newExplAttribute.setStartDate(updateDate);
             insertAttribute(newExplAttribute);
@@ -313,7 +313,8 @@ public class RegistrationStrategy extends Strategy {
 
     /* History */
     private Map<String, Object> newModificationDateParams(long registrationId, Date date) {
-        return ImmutableMap.<String, Object>of("registrationId", registrationId, "date", date);
+        return ImmutableMap.<String, Object>of("registrationId", registrationId, "date", date,
+                "nontraceableAttributes", newArrayList(EXPLANATION, EDITED_BY_USER_ID));
     }
 
     public Date getPreviousModificationDate(long registrationId, Date date) {

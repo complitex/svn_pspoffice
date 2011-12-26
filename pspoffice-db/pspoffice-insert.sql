@@ -204,19 +204,15 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2201, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2200, 2200, 1, 2201, 1);
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2200, 2200, UPPER('string_culture'));
 
-INSERT INTO `owner_relationship`(`object_id`) VALUES (1),(2),(3),(4),(5),(6),(7);
+INSERT INTO `owner_relationship`(`object_id`) VALUES (1),(2),(3);
 INSERT INTO `owner_relationship_string_culture`(`id`, `locale_id`, `value`) VALUES
-(1, 1, UPPER('владелец')), (1, 2,UPPER('владелец')),
-(2, 1, UPPER('ответственный квартиросьемщик')), (2, 2,UPPER('ответственный квартиросьемщик')),
-(3, 1, UPPER('дети')), (3, 2, UPPER('дети')),
-(4, 1, UPPER('гость')), (4, 2, UPPER('гость')),
-(5, 1, UPPER('муж')), (5, 2, UPPER('муж')),
-(6, 1, UPPER('жена')), (6, 2, UPPER('жена')),
-(7, 1, UPPER('дальний родственник')), (7, 2, UPPER('дальний родственник'));
+(1, 1, UPPER('владелец')), (1, 2,UPPER('ВЛАСНИК КВАРТИРИ')),
+(2, 1, UPPER('сын')), (2, 2, UPPER('СИН')),
+(3, 1, UPPER('дочь')), (3, 2, UPPER('ДОЧКА'));
 INSERT INTO `owner_relationship_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
-(1,1,2200,1,2200),(1,2,2200,2,2200),(1,3,2200,3,2200),(1,4,2200,4,2200),(1,5,2200,5,2200),(1,6,2200,6,2200),(1,7,2200,7,2200);
+(1,1,2200,1,2200),(1,2,2200,2,2200),(1,3,2200,3,2200);
 
--- Forms of ownerships
+-- Forms of ownerships -- 
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('ownership_form',1), ('ownership_form_string_culture',1);
 INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2500, 1, 'Форма собственности'), (2500, 2, 'Форма власності');
 INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2500, 'ownership_form', 2500, '');
@@ -224,15 +220,7 @@ INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2501, 1, UPPER(
 INSERT INTO `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) VALUES (2500, 2500, 1, 2501, 1);
 INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2500, 2500, UPPER('string_culture'));
 
-INSERT INTO `ownership_form`(`object_id`) VALUES (1),(2),(3),(4),(5),(6);
-INSERT INTO `ownership_form_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('мiсцевих Рад')), (1, 2,UPPER('мiсцевих Рад')),
-(2, 1, UPPER('кооперативна')), (2, 2, UPPER('кооперативна')), (3, 1, UPPER('вiдомча')), (3, 2, UPPER('вiдомча')),
-(4, 1, UPPER('громадська')), (4, 2, UPPER('громадська')), (5, 1, UPPER('приватна')), (5, 2, UPPER('приватна')),
-(6, 1, UPPER('приватизована')), (6, 2, UPPER('приватизована'));
-INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
-(1,1,2500,1,2500),(1,2,2500,2,2500),(1,3,2500,3,2500),(1,4,2500,4,2500),(1,5,2500,5,2500),(1,6,2500,6,2500);
-
--- Registration type
+-- Registration type -- 
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration_type',1), ('registration_type_string_culture',1);
 INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2600, 1, 'Тип регистрации'), (2600, 2, 'Тип регистрации');
 INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2600, 'registration_type', 2600, '');
@@ -245,7 +233,7 @@ INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUE
 INSERT INTO `registration_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,1,2600,1,2600),(1,2,2600,2,2600);
 
--- Document type
+-- Document type --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('document_type',1), ('document_type_string_culture',1);
 INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2700, 1, 'Тип документа'), (2700, 2, 'Тип документа');
 INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2700, 'document_type', 2700, '');
@@ -258,7 +246,7 @@ INSERT INTO `document_type_string_culture`(`id`, `locale_id`, `value`) VALUES (1
 INSERT INTO `document_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,1,2700,1,2700),(1,2,2700,2,2700);
 
--- Document
+-- Document --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('document',1), ('document_string_culture',1);
 INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2800, 1, 'Документ'), (2800, 2, 'Документ');
 INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2800, 'document', 2800, '');

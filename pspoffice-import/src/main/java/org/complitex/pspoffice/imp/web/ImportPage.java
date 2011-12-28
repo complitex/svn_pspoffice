@@ -187,12 +187,12 @@ public class ImportPage extends TemplatePage {
 
             private String displayLoadingStatus(ImportStatus status) {
                 if (status != null) {
-                    if (status.getIndex() < 1 && !importService.isProcessing()) {
-                        return " - " + getStringOrKey("error");
-                    } else if (status.isFinished()) {
+                    if (status.isFinished()) {
                         return " - " + getStringFormat("finish_loading", status.getIndex());
-                    } else {
+                    } else if (importService.isProcessing()) {
                         return " - " + getStringFormat("loading_continue", status.getIndex());
+                    } else {
+                        return " - " + getStringOrKey("error");
                     }
                 }
                 return "";
@@ -214,12 +214,12 @@ public class ImportPage extends TemplatePage {
 
                     private String displayProcessingStatus(ImportStatus status) {
                         if (status != null) {
-                            if (status.getIndex() < 1 && !importService.isProcessing()) {
-                                return " - " + getStringOrKey("error");
-                            } else if (status.isFinished()) {
+                            if (status.isFinished()) {
                                 return " - " + getStringFormat("finish_processing", status.getIndex());
-                            } else {
+                            } else if (importService.isProcessing()) {
                                 return " - " + getStringFormat("processing_continue", status.getIndex());
+                            } else {
+                                return " - " + getStringOrKey("error");
                             }
                         }
                         return "";

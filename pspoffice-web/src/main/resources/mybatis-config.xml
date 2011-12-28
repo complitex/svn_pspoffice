@@ -56,5 +56,6 @@
         <!-- import -->
         <mapper resource="org/complitex/pspoffice/imp/service/StreetCorrectionBean.xml"/>
         <mapper resource="org/complitex/pspoffice/imp/service/BuildingCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/imp/service/ReferenceDataCorrectionBean.xml"/>
     </mappers>
 </configuration>

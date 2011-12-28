@@ -28,4 +28,10 @@ public final class AttributeUtil {
     public static void setValue(Attribute attribute, long localeId, String value) {
         setValue(attribute.getLocalizedValues(), localeId, value);
     }
+
+    public static void setValue(Attribute attribute, String value) {
+        for (StringCulture culture : attribute.getLocalizedValues()) {
+            culture.setValue(value);
+        }
+    }
 }

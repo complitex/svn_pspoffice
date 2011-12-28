@@ -629,6 +629,81 @@ CREATE TABLE `building_correction` (
   UNIQUE KEY `building_correction_id` (`idjek`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- Form ownerships correction --
+DROP TABLE IF EXISTS `ownership_form_correction`;
+
+CREATE TABLE `ownership_form_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `ownership_form_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Military duty corrections --
+DROP TABLE IF EXISTS `military_duty_correction`;
+
+CREATE TABLE `military_duty_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20) COMMENT 'Не используется',
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `military_duty_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Owner relationship corrections --
+DROP TABLE IF EXISTS `owner_relationship_correction`;
+
+CREATE TABLE `owner_relationship_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `owner_relationship_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Departure reason corrections --
+DROP TABLE IF EXISTS `departure_reason_correction`;
+
+CREATE TABLE `departure_reason_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20) COMMENT 'Не используется',
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `departure_reason_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Registration type corrections --
+DROP TABLE IF EXISTS `registration_type_correction`;
+
+CREATE TABLE `registration_type_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `registration_type_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

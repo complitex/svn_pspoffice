@@ -12,17 +12,29 @@ import org.complitex.dictionary.entity.IImportFile;
  */
 public enum PspImportFile implements IImportFile {
 
-    STREET("sul.csv"),
-    BUILDING("sbud.csv");
+    STREET("sul.csv", "ID	UTYPE	NKOD	RTYPE	NKOD1"),
+    BUILDING("sbud.csv",
+    "ID	IDJEK	IDUL	DOM	KORPUS	NKOD	ETAG	BEGLS	ENDLS	DILN	TIPB	NDOP	UTYPE	UL"),
+    OWNERSHIP_FORM("sprivat.csv", "ID	NKOD	CLR"),
+    MILITARY_DUTY("sarm.csv", "ID	NKOD"),
+    OWNER_RELATIONSHIP("srel.csv", "ID	NKOD	STAT"),
+    DEPARTURE_REASON("svip.csv", "ID	NKOD"),
+    REGISTRATION_TYPE("svidp.csv", "ID	NKOD");
     
-    private String fileName;
+    private final String fileName;
+    private final String csvHeader;
 
-    private PspImportFile(String fileName) {
+    private PspImportFile(String fileName, String csvHeader) {
         this.fileName = fileName;
+        this.csvHeader = csvHeader;
     }
 
     @Override
     public String getFileName() {
         return fileName;
+    }
+
+    public String getCsvHeader() {
+        return csvHeader;
     }
 }

@@ -10,5 +10,5 @@ package org.complitex.pspoffice.imp.entity;
  */
 public enum ProcessItem {
 
-    STREET_BUILDING
+    STREET_BUILDING, OWNERSHIP_FORM, OWNER_RELATIONSHIP, REGISTRATION_TYPE;
 }

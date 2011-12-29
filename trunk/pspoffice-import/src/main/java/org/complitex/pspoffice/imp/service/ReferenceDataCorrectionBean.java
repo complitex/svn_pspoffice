@@ -16,6 +16,7 @@ import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.imp.entity.ReferenceDataCorrection;
 import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 
@@ -38,6 +39,16 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
      */
     public static final long PERMANENT = 1;
     public static final long TEMPORAL = 2;
+    /**
+     * Document types constants
+     */
+    public static final long PASSPORT = 7;
+    public static final long BIRTH_CERTIFICATE = 10;
+    /**
+     * Owner type constants
+     */
+    public static final long OWNER_TYPE = 1;
+    
     @EJB
     private StrategyFactory strategyFactory;
 
@@ -170,5 +181,46 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         if (!permanentResolved || !temporalResolved) {
             throw new RegistrationTypesNotResolved(permanentResolved, temporalResolved);
         }
+    }
+
+    public static class DocumentTypesNotResolved extends Exception {
+
+        private final boolean passportResolved;
+        private final boolean birthCertificateResolved;
+
+        public DocumentTypesNotResolved(boolean passportResolved, boolean birthCertificateResolved) {
+            this.passportResolved = passportResolved;
+            this.birthCertificateResolved = birthCertificateResolved;
+        }
+
+        public boolean isBirthCertificateResolved() {
+            return birthCertificateResolved;
+        }
+
+        public boolean isPassportResolved() {
+            return passportResolved;
+        }
+    }
+
+    public void putReservedDocumentTypes() {
+        final String operation = ".putReservedDocumentType";
+        sqlSession().update(MAPPING_NAMESPACE + operation,
+                ImmutableMap.of("id", PASSPORT, "processed", true, "systemObjectId", DocumentTypeStrategy.PASSPORT));
+        sqlSession().update(MAPPING_NAMESPACE + operation,
+                ImmutableMap.of("id", BIRTH_CERTIFICATE, "processed", true, "systemObjectId",
+                DocumentTypeStrategy.BIRTH_CERTIFICATE));
+    }
+
+    public void checkReservedDocumentTypes() throws DocumentTypesNotResolved {
+        final String entity = "document_type";
+        final boolean passportResolved = isReservedObjectResolved(entity, PASSPORT);
+        final boolean birthCertificateResolved = isReservedObjectResolved(entity, BIRTH_CERTIFICATE);
+        if (!passportResolved || !birthCertificateResolved) {
+            throw new DocumentTypesNotResolved(passportResolved, birthCertificateResolved);
+        }
+    }
+
+    public boolean checkReservedOwnerType() {
+        return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".checkReservedOwnerType", OWNER_TYPE) > 0;
     }
 }

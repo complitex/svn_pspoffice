@@ -242,7 +242,8 @@ INSERT INTO `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2700, 2700, UPPER('string_culture'));
 
 INSERT INTO `document_type`(`object_id`) VALUES (1),(2);
-INSERT INTO `document_type_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('паспорт')), (2, 1, UPPER('свидетельство о рождении'));
+INSERT INTO `document_type_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('паспорт')),(1, 2, UPPER('ПАСПОРТ')),
+(2, 1, UPPER('свидетельство о рождении')), (2, 2, UPPER('СВIДОЦТВО ПРО НАРОДЖЕННЯ'));
 INSERT INTO `document_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,1,2700,1,2700),(1,2,2700,2,2700);
 

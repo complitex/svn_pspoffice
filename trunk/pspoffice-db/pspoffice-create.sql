@@ -704,6 +704,93 @@ CREATE TABLE `registration_type_correction` (
   UNIQUE KEY `registration_type_correction_id` (`idjek`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- Document type corrections --
+DROP TABLE IF EXISTS `document_type_correction`;
+
+CREATE TABLE `document_type_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `document_type_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Owner type corrections --
+DROP TABLE IF EXISTS `owner_type_correction`;
+
+CREATE TABLE `owner_type_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idjek` VARCHAR(100) NOT NULL,
+  `nkod` VARCHAR(100),
+  `system_object_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `owner_type_correction_id` (`idjek`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Person corrections --
+DROP TABLE IF EXISTS `person_correction`;
+
+CREATE TABLE `person_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idbud` VARCHAR(100) COMMENT 'Ссылка на дом',
+  `rah` VARCHAR(100) COMMENT 'Счет',
+  `kv` VARCHAR(100) COMMENT 'Квартира',
+  `fam` VARCHAR(100) COMMENT 'Фамилия',
+  `im` VARCHAR(100) COMMENT 'Имя',
+  `ot` VARCHAR(100) COMMENT 'Отчество',
+  `datar` VARCHAR(100) COMMENT 'Дата рождения',
+  `reltovlaskv` VARCHAR(100) COMMENT 'Отношение к владельцу квартиры',
+  `grajd` VARCHAR(100) COMMENT 'Гражданство',
+  `pol` VARCHAR(100) COMMENT 'Пол',
+  `idrel` VARCHAR(100) COMMENT 'Ссылка на owner_relationship_correction',
+  `nkra` VARCHAR(100) COMMENT 'Страна рождения',
+  `nobl` VARCHAR(100) COMMENT 'Область рождения',
+  `nrayon` VARCHAR(100) COMMENT 'Район рождения',
+  `nmisto` VARCHAR(100) COMMENT 'Город рождения',
+  `iddok` VARCHAR(100) COMMENT 'Ссылка на тип документа',
+  `dokseria` VARCHAR(100) COMMENT 'Серия документа',
+  `doknom` VARCHAR(100) COMMENT 'Номер документа',
+  `dokvidan` VARCHAR(100) COMMENT 'Орган, выдавший документ',
+  `dokdatvid` VARCHAR(100) COMMENT 'Дата выдачи документа',
+  `idarm` VARCHAR(100) COMMENT 'Ссылка на military_duty_correction',
+  `pkra` VARCHAR(100) COMMENT 'Страна прибытия',
+  `pobl` VARCHAR(100) COMMENT 'Область прибытия',
+  `prayon` VARCHAR(100) COMMENT 'Район прибытия',
+  `pmisto` VARCHAR(100) COMMENT 'Город прибытия',
+  `pdpribza` VARCHAR(100) COMMENT 'Дата прибытия из-за пределов города',
+  `pidul` VARCHAR(100) COMMENT 'Ссылка на улицу прибытия',
+  `pbud` VARCHAR(100) COMMENT 'Номер дома прибытия',
+  `pkorp` VARCHAR(100) COMMENT 'Корпус дома прибытия',
+  `pkv` VARCHAR(100) COMMENT 'Квартира прибытия',
+  `pdpribvm` VARCHAR(100) COMMENT 'Дата прибытия в пределах города',
+  `dprop` VARCHAR(100) COMMENT 'Дата прописки',
+  `idvidp` VARCHAR(100) COMMENT 'Ссылка на вид прописки',
+  `vkra` VARCHAR(100) COMMENT 'Страна выбытия',
+  `vobl` VARCHAR(100) COMMENT 'Область выбытия',
+  `vrayon` VARCHAR(100) COMMENT 'Район выбытия',
+  `vmisto` VARCHAR(100) COMMENT 'Город выбытия',
+  `vidul` VARCHAR(100) COMMENT 'Ссылка на улицу выбытия',
+  `vbud` VARCHAR(100) COMMENT 'Номер дома выбытия',
+  `vkorp` VARCHAR(100) COMMENT 'Корпус дома выбытия',
+  `vkv` VARCHAR(100) COMMENT 'Квартира выбытия',
+  `vdata` VARCHAR(100) COMMENT 'Дата выбытия',
+  `idvip` VARCHAR(100) COMMENT 'Ссылка на причину выписки',
+  `larc` VARCHAR(100) COMMENT 'Признак архивной записи',
+  `system_person_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `person_correction_id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

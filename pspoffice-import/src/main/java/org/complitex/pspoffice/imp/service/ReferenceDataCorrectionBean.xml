@@ -72,4 +72,13 @@
             (SELECT COUNT(*) FROM `${entity}_correction` WHERE `id` = #{objectId}) > 0 FROM DUAL
     </select>
     
+    <update id="putReservedDocumentType" parameterType="map">
+        UPDATE `document_type_correction` SET `processed` = #{processed}, `system_object_id` = #{systemObjectId} 
+        WHERE `id` = #{id}
+    </update>
+    
+    <select id="checkReservedOwnerType" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM `owner_type_correction` WHERE `id` = #{id}
+    </select>
+    
 </mapper>

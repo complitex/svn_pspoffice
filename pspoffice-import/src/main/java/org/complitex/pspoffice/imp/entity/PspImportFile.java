@@ -19,7 +19,9 @@ public enum PspImportFile implements IImportFile {
     MILITARY_DUTY("sarm.csv", "ID	NKOD"),
     OWNER_RELATIONSHIP("srel.csv", "ID	NKOD	STAT"),
     DEPARTURE_REASON("svip.csv", "ID	NKOD"),
-    REGISTRATION_TYPE("svidp.csv", "ID	NKOD");
+    REGISTRATION_TYPE("svidp.csv", "ID	NKOD"),
+    DOCUMENT_TYPE("sdoc.csv", "ID	NKOD"),
+    OWNER_TYPE("svlas.csv", "ID	NKOD");
     
     private final String fileName;
     private final String csvHeader;

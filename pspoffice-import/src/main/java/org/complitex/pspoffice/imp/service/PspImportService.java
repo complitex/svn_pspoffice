@@ -47,6 +47,7 @@ import org.complitex.dictionary.service.exception.ImportCriticalException;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
 import org.complitex.dictionary.util.ResourceUtil;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.imp.entity.BuildingCorrection;
 import org.complitex.pspoffice.imp.entity.ImportMessage;
 import org.complitex.pspoffice.imp.entity.ProcessItem;
@@ -94,6 +95,8 @@ public class PspImportService {
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB
+    private DocumentTypeStrategy documentTypeStrategy;
     @EJB
     private ReferenceDataCorrectionBean referenceDataCorrectionBean;
     @EJB
@@ -198,6 +201,8 @@ public class PspImportService {
         loadReferenceData(PspImportFile.OWNER_RELATIONSHIP, "owner_relationship");
         loadReferenceData(PspImportFile.DEPARTURE_REASON, "departure_reason");
         loadReferenceData(PspImportFile.REGISTRATION_TYPE, "registration_type");
+        loadReferenceData(PspImportFile.DOCUMENT_TYPE, "document_type");
+        loadReferenceData(PspImportFile.OWNER_TYPE, "owner_type");
     }
 
     /**
@@ -394,6 +399,8 @@ public class PspImportService {
         processOwnershipForms();
         processOwnerRelationships();
         processRegistrationsTypes();
+        processDocumentsTypes();
+        processOwnerTypes();
     }
 
     private void processStreetsAndBuildings() throws OpenErrorFileException, OpenErrorDescriptionFileException {
@@ -1046,6 +1053,97 @@ public class PspImportService {
         }
     }
 
+    private void processDocumentsTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        final ProcessItem item = ProcessItem.DOCUMENT_TYPE;
+        BufferedWriter documentTypeErrorDescriptionFile = null;
+
+        try {
+            userTransaction.begin();
+            referenceDataCorrectionBean.putReservedDocumentTypes();
+            userTransaction.commit();
+
+            try {
+                referenceDataCorrectionBean.checkReservedDocumentTypes();
+                messages.add(new ImportMessage(getString("success_finish_document_type_processing"), INFO));
+            } catch (ReferenceDataCorrectionBean.DocumentTypesNotResolved e) {
+                StringBuilder sb = new StringBuilder();
+                if (!e.isPassportResolved()) {
+                    sb.append(documentTypeStrategy.displayDomainObject(
+                            documentTypeStrategy.findById(DocumentTypeStrategy.PASSPORT, true),
+                            localeBean.getSystemLocale())).
+                            append(", ");
+                }
+                if (!e.isBirthCertificateResolved()) {
+                    sb.append(documentTypeStrategy.displayDomainObject(
+                            documentTypeStrategy.findById(DocumentTypeStrategy.BIRTH_CERTIFICATE, true),
+                            localeBean.getSystemLocale())).
+                            append(", ");
+                }
+                sb.delete(sb.length() - 2, sb.length());
+                String error = getString("fail_finish_document_type_processing", sb.toString());
+
+                documentTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, PspImportFile.DOCUMENT_TYPE);
+                documentTypeErrorDescriptionFile.write(error);
+                documentTypeErrorDescriptionFile.newLine();
+
+                messages.add(new ImportMessage(error, WARN));
+            }
+            ImportStatus status = new ImportStatus(0);
+            status.finish();
+            processingStatuses.put(item, status);
+        } catch (Exception e) {
+            try {
+                if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                    userTransaction.rollback();
+                }
+            } catch (Exception e1) {
+                log.error("Couldn't to rollback transaction.", e1);
+            }
+            throw new RuntimeException(e);
+        } finally {
+            if (documentTypeErrorDescriptionFile != null) {
+                try {
+                    documentTypeErrorDescriptionFile.close();
+                } catch (IOException e) {
+                    log.error("Couldn't to close file stream.", e);
+                }
+            }
+        }
+    }
+
+    private void processOwnerTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        final ProcessItem item = ProcessItem.OWNER_TYPE;
+        BufferedWriter ownerTypeErrorDescriptionFile = null;
+
+        try {
+            if (referenceDataCorrectionBean.checkReservedOwnerType()) {
+                messages.add(new ImportMessage(getString("success_finish_owner_type_processing"), INFO));
+            } else {
+                String error = getString("fail_finish_owner_type_processing");
+
+                ownerTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, PspImportFile.OWNER_TYPE);
+                ownerTypeErrorDescriptionFile.write(error);
+                ownerTypeErrorDescriptionFile.newLine();
+
+                messages.add(new ImportMessage(error, WARN));
+            }
+
+            ImportStatus status = new ImportStatus(0);
+            status.finish();
+            processingStatuses.put(item, status);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (ownerTypeErrorDescriptionFile != null) {
+                try {
+                    ownerTypeErrorDescriptionFile.close();
+                } catch (IOException e) {
+                    log.error("Couldn't to close file stream.", e);
+                }
+            }
+        }
+    }
+
     private String getString(String key, Object... parameters) {
         return ResourceUtil.getFormatString(RESOURCE_BUNDLE, key, locale, parameters);
     }
@@ -1077,6 +1175,8 @@ public class PspImportService {
             referenceDataCorrectionBean.cleanData("owner_relationship", jekIds);
             referenceDataCorrectionBean.cleanData("departure_reason", jekIds);
             referenceDataCorrectionBean.cleanData("registration_type", jekIds);
+            referenceDataCorrectionBean.cleanData("document_type", jekIds);
+            referenceDataCorrectionBean.cleanData("owner_type", jekIds);
 
             userTransaction.commit();
         } catch (Exception e) {

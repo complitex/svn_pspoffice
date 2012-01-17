@@ -5,12 +5,6 @@
     
     <resultMap id="streetCorrection" type="org.complitex.pspoffice.imp.entity.StreetCorrection">
         <id column="pk_id" property="pkId"/>
-        <result column="id" property="id"/>
-        <result column="idjek" property="idjek"/>
-        <result column="utype" property="utype"/>
-        <result column="nkod" property="nkod"/>
-        <result column="rtype" property="rtype"/>
-        <result column="nkod1" property="nkod1"/>
         <result column="system_street_id" property="systemStreetId"/>
     </resultMap>
     

@@ -27,13 +27,13 @@ public class StreetCorrectionBean extends AbstractBean {
     public void insert(StreetCorrection streetCorrection) {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", streetCorrection);
     }
-    
-    public void update(StreetCorrection streetCorrection){
-        sqlSession().update(MAPPING_NAMESPACE+".update", streetCorrection);
+
+    public void update(StreetCorrection streetCorrection) {
+        sqlSession().update(MAPPING_NAMESPACE + ".update", streetCorrection);
     }
-    
-    public void clearProcessingStatus(Set<String> jekIds){
-        sqlSession().update(MAPPING_NAMESPACE+".clearProcessingStatus", ImmutableMap.of("value", jekIds));
+
+    public void clearProcessingStatus(Set<String> jekIds) {
+        sqlSession().update(MAPPING_NAMESPACE + ".clearProcessingStatus", ImmutableMap.of("value", jekIds));
     }
 
     public StreetCorrection findById(String id, String idjek) {
@@ -44,23 +44,23 @@ public class StreetCorrectionBean extends AbstractBean {
     public boolean exists(String idjek) {
         return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".exists", idjek) > 0;
     }
-    
-    public void cleanData(Set<String> jekIds){
-        sqlSession().delete(MAPPING_NAMESPACE+".delete", ImmutableMap.of("value", jekIds));
+
+    public void cleanData(Set<String> jekIds) {
+        sqlSession().delete(MAPPING_NAMESPACE + ".delete", ImmutableMap.of("value", jekIds));
     }
 
     public Long findSystemStreetType(String ukrStreetType, String rusStreetType) {
         Map<String, Object> params = Maps.newHashMap(
                 ImmutableMap.<String, Object>of("streetTypeShortNameAT", StreetTypeStrategy.SHORT_NAME));
 
-        params.put("localeId", LocaleUtil.UKRAINIAN_LOCALE_ID);
+        params.put("localeId", Utils.UKRAINIAN_LOCALE_ID);
         params.put("name", trimTrailingDot(ukrStreetType));
         List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemStreetType", params);
         if (ids.isEmpty() || ids.size() > 1) {
             params.put("name", ukrStreetType);
             ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemStreetType", params);
             if (ids.isEmpty() || ids.size() > 1) {
-                params.put("localeId", LocaleUtil.RUSSIAN_LOCALE_ID);
+                params.put("localeId", Utils.RUSSIAN_LOCALE_ID);
                 params.put("name", trimTrailingDot(rusStreetType));
                 ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemStreetType", params);
                 if (ids.isEmpty() || ids.size() > 1) {
@@ -80,11 +80,11 @@ public class StreetCorrectionBean extends AbstractBean {
                 "streetTypeId", streetTypeId,
                 "cityId", cityId));
 
-        params.put("localeId", LocaleUtil.RUSSIAN_LOCALE_ID);
+        params.put("localeId", Utils.RUSSIAN_LOCALE_ID);
         params.put("name", rusName);
         List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemStreet", params);
         if (ids.isEmpty() || ids.size() > 1) {
-            params.put("localeId", LocaleUtil.UKRAINIAN_LOCALE_ID);
+            params.put("localeId", Utils.UKRAINIAN_LOCALE_ID);
             params.put("name", ukrName);
             ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemStreet", params);
         }

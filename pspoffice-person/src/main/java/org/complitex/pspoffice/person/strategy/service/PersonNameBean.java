@@ -65,6 +65,10 @@ public class PersonNameBean extends AbstractBean {
         return personName;
     }
 
+    public PersonName saveIfNotExists(PersonNameType personNameType, String name, long localeId) {
+        return findOrSave(personNameType, name, localeBean.getLocale(localeId), true);
+    }
+
     @Transactional
     public PersonName save(PersonNameType personNameType, String name, Locale locale) {
         PersonName personName = new PersonName();

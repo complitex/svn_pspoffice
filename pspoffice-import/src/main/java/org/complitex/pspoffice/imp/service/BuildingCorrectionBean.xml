@@ -5,13 +5,7 @@
     
     <resultMap id="buildingCorrection" type="org.complitex.pspoffice.imp.entity.BuildingCorrection">
         <id column="pk_id" property="pkId"/>
-        <result column="id" property="id"/>
-        <result column="idjek" property="idjek"/>
-        <result column="idul" property="idul"/>
-        <result column="dom" property="dom"/>
-        <result column="korpus" property="korpus"/>
         <result column="system_building_id" property="systemBuildingId"/>
-        <result column="processed" property="processed"/>
     </resultMap>
     
     <insert id="insert" parameterType="org.complitex.pspoffice.imp.entity.BuildingCorrection" useGeneratedKeys="true" keyProperty="pkId">

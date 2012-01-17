@@ -29,26 +29,25 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
 
     private static final String MAPPING_NAMESPACE = ReferenceDataCorrectionBean.class.getName();
     /**
-     * Owner relationships constants
+     * Owner relationships consts
      */
     public static final long OWNER = 85;
     public static final long DAUGHTER = 3;
     public static final long SON = 4;
     /**
-     * Registration types constants
+     * Registration types consts
      */
     public static final long PERMANENT = 1;
     public static final long TEMPORAL = 2;
     /**
-     * Document types constants
+     * Document types consts
      */
     public static final long PASSPORT = 7;
     public static final long BIRTH_CERTIFICATE = 10;
     /**
-     * Owner type constants
+     * Owner type consts
      */
     public static final long OWNER_TYPE = 1;
-    
     @EJB
     private StrategyFactory strategyFactory;
 
@@ -220,7 +219,8 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         }
     }
 
-    public boolean checkReservedOwnerType() {
-        return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".checkReservedOwnerType", OWNER_TYPE) > 0;
+    public String getReservedOwnerType() {
+        List<String> ownerTypes = sqlSession().selectList(MAPPING_NAMESPACE + ".getReservedOwnerType", OWNER_TYPE);
+        return ownerTypes.size() == 1 ? ownerTypes.get(0) : null;
     }
 }

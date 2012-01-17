@@ -4,8 +4,6 @@
  */
 package org.complitex.pspoffice.document.strategy;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import static com.google.common.collect.Lists.*;
 import java.util.Date;
 import java.util.List;
@@ -18,11 +16,7 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.StringCultureBean;
-import org.complitex.dictionary.util.StringUtil;
-import static org.complitex.dictionary.util.AttributeUtil.*;
 import org.complitex.pspoffice.document.strategy.entity.Document;
-import org.complitex.pspoffice.document.strategy.entity.Passport;
-import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -37,12 +31,10 @@ public class DocumentStrategy extends TemplateStrategy {
      * Common attribute type ids
      */
     public static final long DOCUMENT_TYPE = 2800;
-    /**
-     * Document type to attributes map
-     */
-    private static final Multimap<Long, Long> DOCUMENT_TYPE_TO_ATTRIBUTES_MAP = ImmutableMultimap.<Long, Long>builder().
-            putAll(DocumentTypeStrategy.PASSPORT, 2811L, 2812L, 2813L, 2814L).
-            putAll(DocumentTypeStrategy.BIRTH_CERTIFICATE, 2815L, 2816L, 2817L).build();
+    public static final long DOCUMENT_SERIA = 2801;
+    public static final long DOCUMENT_NUMBER = 2802;
+    public static final long ORGANIZATION_ISSUED = 2803;
+    public static final long DATE_ISSUED = 2804;
     @EJB
     private StringCultureBean stringBean;
 
@@ -62,11 +54,7 @@ public class DocumentStrategy extends TemplateStrategy {
         DomainObject object = super.findById(id, true);
         if (object != null) {
             Document doc = new Document(object);
-            if (doc.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
-                return new Passport(doc);
-            } else {
-                return doc;
-            }
+            return doc;
         } else {
             return null;
         }
@@ -82,29 +70,18 @@ public class DocumentStrategy extends TemplateStrategy {
         document.addAttribute(documentTypeAttribute);
         fillAttributes(document);
 
-        if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
-            return new Passport(document);
-        } else {
-            return document;
-        }
-    }
-
-    private boolean isSupportedAttribute(long attributeTypeId, long documentTypeId) {
-        return DOCUMENT_TYPE_TO_ATTRIBUTES_MAP.get(documentTypeId).contains(attributeTypeId);
+        return document;
     }
 
     @Override
     protected void fillAttributes(DomainObject document) {
-        long documentTypeId = document.getAttribute(DOCUMENT_TYPE).getValueId();
-
         List<Attribute> toAdd = newArrayList();
 
         for (EntityAttributeType attributeType : getEntity().getEntityAttributeTypes()) {
             if (document.getAttributes(attributeType.getId()).isEmpty()
                     && (attributeType.getEntityAttributeValueTypes().size() == 1)
                     && !attributeType.isObsolete()
-                    && !attributeType.getId().equals(DOCUMENT_TYPE)
-                    && isSupportedAttribute(attributeType.getId(), documentTypeId)) {
+                    && !attributeType.getId().equals(DOCUMENT_TYPE)) {
                 Attribute attribute = new Attribute();
                 EntityAttributeValueType attributeValueType = attributeType.getEntityAttributeValueTypes().get(0);
                 attribute.setAttributeTypeId(attributeType.getId());
@@ -126,16 +103,7 @@ public class DocumentStrategy extends TemplateStrategy {
     @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
         Document document = (Document) object;
-
-        long documentTypeId = document.getDocumentTypeId();
-        if (documentTypeId == DocumentTypeStrategy.PASSPORT) {
-            Passport passport = (Passport) document;
-            return passport.getSeries() + " " + passport.getNumber();
-        } else if (documentTypeId == DocumentTypeStrategy.BIRTH_CERTIFICATE) {
-            return StringUtil.valueOf(getStringValue(document, 2815));
-        } else {
-            throw new IllegalStateException("Unknown document type: " + documentTypeId);
-        }
+        return document.getSeries() + " " + document.getNumber();
     }
 
     @Override

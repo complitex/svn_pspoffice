@@ -11,7 +11,7 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.pspoffice.document.strategy.entity.Document;
-import org.complitex.pspoffice.document.strategy.entity.Passport;
+import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.report.entity.RegistrationCard;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -36,12 +36,11 @@ public class RegistrationCardBean extends AbstractBean {
         card.setNationality("");
         personStrategy.loadDocument(person);
         Document document = person.getDocument();
-        if (document instanceof Passport) {
-            Passport passport = (Passport) document;
-            card.setPassportSeries(passport.getSeries());
-            card.setPassportNumber(passport.getNumber());
-            Date dateIssued = passport.getDateIssued();
-            String organizationIssued = passport.getOrganizationIssued();
+        if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
+            card.setPassportSeries(document.getSeries());
+            card.setPassportNumber(document.getNumber());
+            Date dateIssued = document.getDateIssued();
+            String organizationIssued = document.getOrganizationIssued();
             String issued = "";
             if (!Strings.isEmpty(organizationIssued)) {
                 issued += organizationIssued;

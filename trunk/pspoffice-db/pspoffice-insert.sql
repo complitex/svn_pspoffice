@@ -255,30 +255,21 @@ INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`)
 /* Ссылка на document_type */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2801, 1, UPPER('Тип документа')), (2801, 2, UPPER('Тип документа'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2800, 2800, 1, 2801, 1);
-
-/* Атрибуты паспорта */
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2812, 1, UPPER('Серия')), (2812, 2, UPPER('Серія'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2811, 2800, 1, 2812, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2813, 1, UPPER('Номер')), (2813, 2, UPPER('Номер'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2812, 2800, 1, 2813, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2814, 1, UPPER('Кем выдан')), (2814, 2, UPPER('Орган видачі'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2813, 2800, 0, 2814, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2815, 1, UPPER('Дата выдачи')), (2815, 2, UPPER('Дата видачі'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2814, 2800, 0, 2815, 1);
-/* Атрибуты св-ва о рождении */
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2816, 1, UPPER('Свидетельство о рождении')), (2816, 2, UPPER('Свідоцтво про нарождення'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2815, 2800, 1, 2816, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2817, 1, UPPER('Дата выдачи')), (2817, 2, UPPER('Дата видачі'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2816, 2800, 0, 2817, 1);
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2818, 1, UPPER('Кем выдан')), (2818, 2, UPPER('Орган видачі'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2817, 2800, 0, 2818, 1);
+/* Серия документа */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2802, 1, UPPER('Серия')), (2802, 2, UPPER('Серія'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2801, 2800, 1, 2802, 1);
+/* Номер документа */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2803, 1, UPPER('Номер')), (2803, 2, UPPER('Номер'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2802, 2800, 1, 2803, 1);
+/* Кем выдан */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2804, 1, UPPER('Кем выдан')), (2804, 2, UPPER('Орган видачі'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2803, 2800, 0, 2804, 1);
+/* Дата выдачи */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2805, 1, UPPER('Дата выдачи')), (2805, 2, UPPER('Дата видачі'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2804, 2800, 0, 2805, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2800, 2800, 'document_type');
-
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2811, 2811, UPPER('string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2812, 2812, UPPER('string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2813, 2813, UPPER('string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2814, 2814, UPPER('masked_date'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2815, 2815, UPPER('string'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2816, 2816, UPPER('masked_date'));
-insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2817, 2817, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2801, 2801, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2802, 2802, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2803, 2803, UPPER('string'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2804, 2804, UPPER('masked_date'));

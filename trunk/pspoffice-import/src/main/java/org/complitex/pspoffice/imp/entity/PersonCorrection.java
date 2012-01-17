@@ -63,6 +63,11 @@ public class PersonCorrection {
     public PersonCorrection() {
     }
 
+    public PersonCorrection(long id, String content) {
+        this.id = id;
+        this.content = content;
+    }
+
     public String getContent() {
         return content;
     }

@@ -37,6 +37,7 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.address.strategy.building.BuildingStrategy;
 import org.complitex.address.strategy.building.entity.Building;
 import org.complitex.address.strategy.building_address.BuildingAddressStrategy;
@@ -50,6 +51,7 @@ import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.imp.entity.BuildingCorrection;
 import org.complitex.pspoffice.imp.entity.ImportMessage;
+import org.complitex.pspoffice.imp.entity.PersonCorrection;
 import org.complitex.pspoffice.imp.entity.ProcessItem;
 import org.complitex.pspoffice.imp.entity.PspImportFile;
 import org.complitex.pspoffice.imp.entity.ReferenceDataCorrection;
@@ -59,6 +61,7 @@ import org.complitex.pspoffice.imp.service.exception.OpenErrorFileException;
 import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,13 +101,19 @@ public class PspImportService {
     @EJB
     private DocumentTypeStrategy documentTypeStrategy;
     @EJB
+    private PersonStrategy personStrategy;
+    @EJB
     private ReferenceDataCorrectionBean referenceDataCorrectionBean;
+    @EJB
+    private PersonCorrectionBean personCorrectionBean;
     @EJB
     private LocaleBean localeBean;
     private long SYSTEM_LOCALE_ID;
     private boolean processing;
     private Locale locale;
     private Long cityId;
+    private String ownerType;
+    private boolean reservedDocumentTypesResolved;
     private Set<String> jekIds;
     private String importDirectory;
     private String errorsDirectory;
@@ -138,6 +147,8 @@ public class PspImportService {
         processingStatuses.clear();
         messages.clear();
         cityId = null;
+        ownerType = null;
+        reservedDocumentTypesResolved = false;
         locale = null;
         jekIds = null;
         importDirectory = null;
@@ -203,6 +214,7 @@ public class PspImportService {
         loadReferenceData(PspImportFile.REGISTRATION_TYPE, "registration_type");
         loadReferenceData(PspImportFile.DOCUMENT_TYPE, "document_type");
         loadReferenceData(PspImportFile.OWNER_TYPE, "owner_type");
+        loadPersons();
     }
 
     /**
@@ -394,6 +406,110 @@ public class PspImportService {
         }
     }
 
+    /**
+     * 0  2     3   4  5   6  7  8     9            11    12  13    17   18   19     20     21    22       23     24
+     * id idbud rah kv fam im ot datar realtovlaskv grajd pol idrel nkra nobl nrayon nmisto iddok dokseria doknom dokvidan
+     * 
+     * 25        28    30   31   32     33     34       35    36   37    38  39       40    41     43   44   45     46
+     * dokdatvid idarm pkra pobl prayon pmisto pdpribza pidul pbud pkorp pkv pdpribvm dprop idvidp vkra vobl vrayon vmisto
+     * 
+     * 47    48   49    50  51    52    56
+     * vidul vbud vkorp vkv vdata idvip larc
+     */
+    private void loadPersons() throws ImportFileReadException, ImportFileNotFoundException {
+        final PspImportFile file = PspImportFile.PERSON;
+
+        final boolean exists = personCorrectionBean.exists();
+
+        if (exists) {
+            messages.add(new ImportMessage(getString("already_loaded_person_file", file.getFileName()), WARN));
+        }
+
+        if (!exists) {
+
+            //start file importing:
+            loadingStatuses.put(file, new ImportStatus(0));
+            messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
+
+            final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+
+            int recordIndex = 0;
+
+            try {
+                String[] line;
+
+                while ((line = reader.readNext()) != null) {
+                    recordIndex++;
+
+                    long id = Long.parseLong(line[0].trim());
+                    PersonCorrection p = new PersonCorrection(id, getContent(line));
+                    p.setIdbud(line[2].trim());
+                    p.setRah(line[3].trim());
+                    p.setKv(line[4].trim());
+                    p.setFam(line[5].trim());
+                    p.setIm(line[6].trim());
+                    p.setOt(line[7].trim());
+                    p.setDatar(line[8].trim());
+                    p.setReltovlaskv(line[9].trim());
+                    p.setGrajd(line[11].trim());
+                    p.setPol(line[12].trim());
+                    p.setIdrel(line[13].trim());
+                    p.setNkra(line[17].trim());
+                    p.setNobl(line[18].trim());
+                    p.setNrayon(line[19].trim());
+                    p.setNmisto(line[20].trim());
+                    p.setIddok(line[21].trim());
+                    p.setDokseria(line[22].trim());
+                    p.setDoknom(line[23].trim());
+                    p.setDokvidan(line[24].trim());
+                    p.setDokdatvid(line[25].trim());
+                    p.setIdarm(line[28].trim());
+                    p.setPkra(line[30].trim());
+                    p.setPobl(line[31].trim());
+                    p.setPrayon(line[32].trim());
+                    p.setPmisto(line[33].trim());
+                    p.setPdpribza(line[34].trim());
+                    p.setPidul(line[35].trim());
+                    p.setPbud(line[36].trim());
+                    p.setPkorp(line[37].trim());
+                    p.setPkv(line[38].trim());
+                    p.setPdpribvm(line[39].trim());
+                    p.setDprop(line[40].trim());
+                    p.setIdvidp(line[41].trim());
+                    p.setVkra(line[43].trim());
+                    p.setVobl(line[44].trim());
+                    p.setVrayon(line[45].trim());
+                    p.setVmisto(line[46].trim());
+                    p.setVidul(line[47].trim());
+                    p.setVbud(line[48].trim());
+                    p.setVkorp(line[49].trim());
+                    p.setVkv(line[50].trim());
+                    p.setVdata(line[51].trim());
+                    p.setIdvip(line[52].trim());
+                    p.setLarc(line[56].trim());
+
+                    personCorrectionBean.insert(p);
+
+                    loadingStatuses.get(file).increment();
+                }
+
+                //finish file importing
+                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                loadingStatuses.get(file).finish();
+            } catch (IOException e) {
+                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
+            } catch (NumberFormatException e) {
+                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
+            } finally {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    log.error("Couldn't to close csv reader.", e);
+                }
+            }
+        }
+    }
+
     private void processFiles() throws OpenErrorFileException, OpenErrorDescriptionFileException {
         processStreetsAndBuildings();
         processOwnershipForms();
@@ -401,6 +517,7 @@ public class PspImportService {
         processRegistrationsTypes();
         processDocumentsTypes();
         processOwnerTypes();
+        processPersons();
     }
 
     private void processStreetsAndBuildings() throws OpenErrorFileException, OpenErrorDescriptionFileException {
@@ -476,9 +593,9 @@ public class PspImportService {
                                                         BuildingAddressStrategy.PARENT_STREET_ENTITY_ID);
                                                 systemBuildingAddress.setParentId(systemStreetId);
 
-                                                AttributeUtil.setValue(systemBuildingAddress.getAttribute(
+                                                Utils.setValue(systemBuildingAddress.getAttribute(
                                                         BuildingAddressStrategy.NUMBER), SYSTEM_LOCALE_ID, dom);
-                                                AttributeUtil.setValue(systemBuildingAddress.getAttribute(
+                                                Utils.setValue(systemBuildingAddress.getAttribute(
                                                         BuildingAddressStrategy.CORP), SYSTEM_LOCALE_ID, korpus);
 
                                                 buildingStrategy.insert(systemBuilding, DateUtil.getCurrentDate());
@@ -639,7 +756,7 @@ public class PspImportService {
                                 Long systemOwnershipFormId = referenceDataCorrectionBean.findSystemObject(entity, ownershipForm.getNkod());
                                 if (systemOwnershipFormId == null) {
                                     DomainObject systemOwnershipForm = ownershipFormStrategy.newInstance();
-                                    AttributeUtil.setValue(systemOwnershipForm.getAttribute(OwnershipFormStrategy.NAME),
+                                    Utils.setValue(systemOwnershipForm.getAttribute(OwnershipFormStrategy.NAME),
                                             ownershipForm.getNkod());
                                     ownershipFormStrategy.insert(systemOwnershipForm, DateUtil.getCurrentDate());
                                     systemOwnershipFormId = systemOwnershipForm.getId();
@@ -768,7 +885,7 @@ public class PspImportService {
                                             referenceDataCorrectionBean.findSystemObject(entity, ownerRelationship.getNkod());
                                     if (systemOwnerRelationshipId == null) {
                                         DomainObject systemOwnerRelationship = ownerRelationshipStrategy.newInstance();
-                                        AttributeUtil.setValue(systemOwnerRelationship.getAttribute(OwnerRelationshipStrategy.NAME),
+                                        Utils.setValue(systemOwnerRelationship.getAttribute(OwnerRelationshipStrategy.NAME),
                                                 ownerRelationship.getNkod());
                                         ownerRelationshipStrategy.insert(systemOwnerRelationship, DateUtil.getCurrentDate());
                                         systemOwnerRelationshipId = systemOwnerRelationship.getId();
@@ -929,7 +1046,7 @@ public class PspImportService {
                                             referenceDataCorrectionBean.findSystemObject(entity, registrationType.getNkod());
                                     if (systemRegistrationTypeId == null) {
                                         DomainObject systemRegistrationType = registrationTypeStrategy.newInstance();
-                                        AttributeUtil.setValue(systemRegistrationType.getAttribute(RegistrationTypeStrategy.NAME),
+                                        Utils.setValue(systemRegistrationType.getAttribute(RegistrationTypeStrategy.NAME),
                                                 registrationType.getNkod());
                                         registrationTypeStrategy.insert(systemRegistrationType, DateUtil.getCurrentDate());
                                         systemRegistrationTypeId = systemRegistrationType.getId();
@@ -1065,6 +1182,7 @@ public class PspImportService {
             try {
                 referenceDataCorrectionBean.checkReservedDocumentTypes();
                 messages.add(new ImportMessage(getString("success_finish_document_type_processing"), INFO));
+                reservedDocumentTypesResolved = true;
             } catch (ReferenceDataCorrectionBean.DocumentTypesNotResolved e) {
                 StringBuilder sb = new StringBuilder();
                 if (!e.isPassportResolved()) {
@@ -1088,7 +1206,7 @@ public class PspImportService {
 
                 messages.add(new ImportMessage(error, WARN));
             }
-            ImportStatus status = new ImportStatus(0);
+            ImportStatus status = new ImportStatus(2);
             status.finish();
             processingStatuses.put(item, status);
         } catch (Exception e) {
@@ -1116,7 +1234,8 @@ public class PspImportService {
         BufferedWriter ownerTypeErrorDescriptionFile = null;
 
         try {
-            if (referenceDataCorrectionBean.checkReservedOwnerType()) {
+            ownerType = referenceDataCorrectionBean.getReservedOwnerType();
+            if (!Strings.isEmpty(ownerType)) {
                 messages.add(new ImportMessage(getString("success_finish_owner_type_processing"), INFO));
             } else {
                 String error = getString("fail_finish_owner_type_processing");
@@ -1128,7 +1247,7 @@ public class PspImportService {
                 messages.add(new ImportMessage(error, WARN));
             }
 
-            ImportStatus status = new ImportStatus(0);
+            ImportStatus status = new ImportStatus(1);
             status.finish();
             processingStatuses.put(item, status);
         } catch (Exception e) {
@@ -1140,6 +1259,141 @@ public class PspImportService {
                 } catch (IOException e) {
                     log.error("Couldn't to close file stream.", e);
                 }
+            }
+        }
+    }
+
+    private void processPersons() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        if (!reservedDocumentTypesResolved) {
+            return;
+        }
+
+        try {
+            final ProcessItem item = ProcessItem.PERSON;
+
+            BufferedWriter personErrorFile = null;
+            BufferedWriter personErrorDescriptionFile = null;
+
+            processingStatuses.put(item, new ImportStatus(0));
+            final int count = personCorrectionBean.countForProcessing();
+            final int archiveCount = personCorrectionBean.archiveCount();
+            messages.add(new ImportMessage(getString("begin_person_processing", count), INFO));
+            boolean wasErrors = false;
+
+            try {
+                int leftPersons = count;
+                while (leftPersons > 0) {
+                    List<PersonCorrection> persons = personCorrectionBean.findForProcessing(PROCESSING_BATCH);
+
+                    userTransaction.begin();
+                    for (PersonCorrection p : persons) {
+                        String errorDescription = null;
+
+                        if (!Strings.isEmpty(p.getFam()) && !Strings.isEmpty(p.getIm()) && !Strings.isEmpty(p.getOt())
+                                && PersonCorrectionBean.isBirthDateValid(p.getDatar())
+                                && PersonCorrectionBean.isGenderValid(p.getPol())
+                                && !Strings.isEmpty(p.getGrajd())
+                                && PersonCorrectionBean.isDocumentDataValid(p.getIddok(), p.getDokseria(), p.getDoknom())) {
+
+                            if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
+                                try {
+                                    Long systemPersonId = personCorrectionBean.findSystemPerson(p);
+                                    if (systemPersonId == null) {
+                                        DomainObject systemPerson = personCorrectionBean.newSystemPerson(p);
+                                        personStrategy.insert(systemPerson, DateUtil.getCurrentDate());
+                                        systemPersonId = systemPerson.getId();
+                                    }
+                                    p.setSystemPersonId(systemPersonId);
+                                } catch (TooManyResultsException e) {
+                                    errorDescription = getString("person_system_many_objects", p.getId(),
+                                            p.getFam(), p.getIm(), p.getOt(), p.getDatar());
+                                }
+                            } else {
+                                errorDescription = getString("unsupported_document_type", p.getId(), p.getIddok());
+                            }
+                        } else {
+                            errorDescription = getString("invalid_person_data", p.getId(), p.getFam(), p.getIm(),
+                                    p.getOt(), p.getDatar(), p.getPol(), p.getGrajd(),
+                                    p.getIddok(), p.getDokseria(), p.getDoknom());
+                        }
+
+                        p.setProcessed(true);
+                        personCorrectionBean.update(p);
+
+                        processingStatuses.get(item).increment();
+
+                        if (errorDescription != null) {
+                            wasErrors = true;
+                            if (personErrorFile == null) {
+                                personErrorFile = getErrorFile(errorsDirectory, PspImportFile.PERSON);
+                                personErrorFile.write(PspImportFile.PERSON.getCsvHeader());
+                                personErrorFile.newLine();
+                            }
+                            if (personErrorDescriptionFile == null) {
+                                personErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                        PspImportFile.PERSON);
+                            }
+
+                            personErrorFile.write(p.getContent());
+                            personErrorFile.newLine();
+
+                            personErrorDescriptionFile.write(errorDescription);
+                            personErrorDescriptionFile.newLine();
+                        }
+                    }
+
+                    userTransaction.commit();
+                    leftPersons = personCorrectionBean.countForProcessing();
+                }
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (Exception e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+
+                throw new RuntimeException(e);
+            } finally {
+                if (personErrorFile != null) {
+                    try {
+                        personErrorFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+                if (personErrorDescriptionFile != null) {
+                    try {
+                        personErrorDescriptionFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+            }
+
+            if (wasErrors) {
+                messages.add(new ImportMessage(getString("fail_finish_person_processing", count, archiveCount), WARN));
+            } else {
+                messages.add(new ImportMessage(getString("success_finish_person_processing", count, archiveCount), INFO));
+            }
+            processingStatuses.get(item).finish();
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            try {
+                userTransaction.begin();
+
+                personCorrectionBean.clearProcessingStatus();
+
+                userTransaction.commit();
+            } catch (Exception e) {
+                try {
+                    userTransaction.rollback();
+                } catch (SystemException e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+                log.error("Couldn't to clear processing status for persons.", e);
             }
         }
     }
@@ -1177,6 +1431,7 @@ public class PspImportService {
             referenceDataCorrectionBean.cleanData("registration_type", jekIds);
             referenceDataCorrectionBean.cleanData("document_type", jekIds);
             referenceDataCorrectionBean.cleanData("owner_type", jekIds);
+            personCorrectionBean.cleanData();
 
             userTransaction.commit();
         } catch (Exception e) {

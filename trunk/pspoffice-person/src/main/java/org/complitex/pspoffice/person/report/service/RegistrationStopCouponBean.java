@@ -17,9 +17,7 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.service.SessionBean;
-import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
-import org.complitex.pspoffice.document.strategy.entity.Passport;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -42,8 +40,6 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private SessionBean sessionBean;
     @EJB
     private LocaleBean localeBean;
-    @EJB
-    private DocumentStrategy documentStrategy;
 
     @Transactional
     public RegistrationStopCoupon get(Registration registration, String addressEntity, long addressId) {
@@ -58,24 +54,27 @@ public class RegistrationStopCouponBean extends AbstractBean {
         personStrategy.loadDocument(person);
 
         Document document = person.getDocument();
-        if (document instanceof Passport) {
-            Passport passport = (Passport) document;
-            String passportInfo = passport.getSeries() + " " + passport.getNumber();
-            Date dateIssued = passport.getDateIssued();
-            String organizationIssued = passport.getOrganizationIssued();
-            if (!Strings.isEmpty(organizationIssued)) {
-                passportInfo += ", " + organizationIssued;
-                if (dateIssued != null) {
-                    passportInfo += " " + format(dateIssued);
-                }
-            }
-            coupon.setPassportInfo(passportInfo);
+        if (document.getDocumentTypeId() == DocumentTypeStrategy.PASSPORT) {
+            coupon.setPassportInfo(getDocumentInfo(document));
         } else if (document.getDocumentTypeId() == DocumentTypeStrategy.BIRTH_CERTIFICATE) {
-            coupon.setBirthCertificateInfo(documentStrategy.displayDomainObject(document, null));
+            coupon.setBirthCertificateInfo(getDocumentInfo(document));
         }
         personStrategy.loadChildren(person);
 
         return coupon;
+    }
+
+    private String getDocumentInfo(Document document) {
+        String info = document.getSeries() + " " + document.getNumber();
+        Date dateIssued = document.getDateIssued();
+        String organizationIssued = document.getOrganizationIssued();
+        if (!Strings.isEmpty(organizationIssued)) {
+            info += ", " + organizationIssued;
+            if (dateIssued != null) {
+                info += " " + format(dateIssued);
+            }
+        }
+        return info;
     }
 
     @Transactional

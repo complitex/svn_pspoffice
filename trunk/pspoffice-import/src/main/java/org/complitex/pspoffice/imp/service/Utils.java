@@ -12,9 +12,15 @@ import org.complitex.dictionary.entity.StringCulture;
  *
  * @author Artem
  */
-public final class AttributeUtil {
+public class Utils {
 
-    private AttributeUtil() {
+    public static final int RUSSIAN_LOCALE_ID = 1;
+    public static final int UKRAINIAN_LOCALE_ID = 2;
+    public static final String NULL_REFERENCE = "[null]";
+    public static final String DATE_PATTERN = "dd.MM.yyyy";
+    public static final String NONARCHIVE_INDICATOR = "0";
+
+    private Utils() {
     }
 
     public static void setValue(List<StringCulture> values, long localeId, String value) {

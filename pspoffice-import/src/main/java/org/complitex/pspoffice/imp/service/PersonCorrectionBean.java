@@ -5,6 +5,7 @@
 package org.complitex.pspoffice.imp.service;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -16,7 +17,9 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Gender;
 import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
+import org.complitex.dictionary.util.StringUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
@@ -88,13 +91,13 @@ public class PersonCorrectionBean extends AbstractBean {
                 ImmutableMap.of("size", size, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
     }
 
-    public Long findSystemPerson(PersonCorrection p) throws TooManyResultsException {
+    public Long findSystemPerson(PersonCorrection p, Date birthDate) throws TooManyResultsException {
         List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemPerson",
                 ImmutableMap.builder().
                 put("personBirthDateAT", PersonStrategy.BIRTH_DATE).
                 put("localeId", Utils.UKRAINIAN_LOCALE_ID).
                 put("lastName", p.getFam()).put("firstName", p.getIm()).put("middleName", p.getOt()).
-                put("birthDate", getBirthDateAsDateString(p.getDatar())).
+                put("birthDate", getBirthDateAsDateString(birthDate)).
                 build());
         if (ids.size() == 1) {
             return ids.get(0);
@@ -105,11 +108,11 @@ public class PersonCorrectionBean extends AbstractBean {
         }
     }
 
-    private static String getBirthDateAsDateString(String rawBirthDate) {
-        return new DateConverter().toString(DateUtil.asDate(rawBirthDate, Utils.DATE_PATTERN));
+    private static String getBirthDateAsDateString(Date birthDate) {
+        return new DateConverter().toString(birthDate);
     }
 
-    public Person newSystemPerson(PersonCorrection pc) {
+    public Person newSystemPerson(PersonCorrection pc, Date birthDate, String militaryServiceRelation) {
         Person p = personStrategy.newInstance();
 
         //ФИО
@@ -118,7 +121,7 @@ public class PersonCorrectionBean extends AbstractBean {
         setName(PersonNameType.MIDDLE_NAME, PersonStrategy.MIDDLE_NAME, p, pc.getOt());
 
         //Дата рождения
-        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_DATE), getBirthDateAsDateString(pc.getDatar()));
+        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_DATE), getBirthDateAsDateString(birthDate));
 
         //Пол
         Gender gender = null;
@@ -160,6 +163,11 @@ public class PersonCorrectionBean extends AbstractBean {
         Utils.setValue(d.getAttribute(DocumentStrategy.DATE_ISSUED), pc.getDokdatvid());
         p.setDocument(d);
 
+        //отношение к воиской обязанности
+        if (militaryServiceRelation != null) {
+            Utils.setValue(p.getAttribute(PersonStrategy.MILITARY_SERVICE_RELATION), militaryServiceRelation);
+        }
+
         return p;
     }
 
@@ -185,5 +193,48 @@ public class PersonCorrectionBean extends AbstractBean {
 
     public static boolean isDocumentDataValid(String documentType, String seria, String number) {
         return !Strings.isEmpty(documentType) && !Strings.isEmpty(seria) && !Strings.isEmpty(number);
+    }
+
+    public static boolean isParentDataValid(String idbud, String kv, String parentnom) {
+        return !Strings.isEmpty(idbud) && !Strings.isEmpty(kv) && parentnom != null && StringUtil.isNumeric(parentnom);
+    }
+
+    public void addChild(long personId, long childId, String birthDate, Date updateDate) {
+        if (DateUtil.isValidDateInterval(updateDate, DateUtil.asDate(birthDate, Utils.DATE_PATTERN),
+                PersonStrategy.AGE_THRESHOLD)) {
+            return;
+        }
+
+        Person person = personStrategy.findById(personId, true, false, false, false);
+        Person newPerson = CloneUtil.cloneObject(person);
+
+        List<Attribute> childrenAttributes = newPerson.getAttributes(PersonStrategy.CHILDREN);
+        for (Attribute childAttribute : childrenAttributes) {
+            if (childAttribute.getValueId().equals(childId)) {
+                return;
+            }
+        }
+        newPerson.addAttribute(newChildAttribute(childrenAttributes.size() + 1, childId));
+        personStrategy.update(person, newPerson, updateDate);
+    }
+
+    private Attribute newChildAttribute(long attributeId, long childId) {
+        Attribute childAttribute = new Attribute();
+        childAttribute.setAttributeId(attributeId);
+        childAttribute.setAttributeTypeId(PersonStrategy.CHILDREN);
+        childAttribute.setValueTypeId(PersonStrategy.CHILDREN);
+        childAttribute.setValueId(childId);
+        return childAttribute;
+    }
+
+    public List<Long> findSystemParent(String idbud, String kv, String nom) {
+        return sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemParent",
+                ImmutableMap.of("NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR,
+                "idbud", idbud, "kv", kv, "nom", nom));
+    }
+
+    public List<PersonCorrection> findChildren(int size) {
+        return sqlSession().selectList(MAPPING_NAMESPACE + ".findChildren",
+                ImmutableMap.of("size", size, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
     }
 }

@@ -784,11 +784,33 @@ CREATE TABLE `person_correction` (
   `vdata` VARCHAR(100) COMMENT 'Дата выбытия',
   `idvip` VARCHAR(100) COMMENT 'Ссылка на причину выписки',
   `larc` VARCHAR(100) COMMENT 'Признак архивной записи',
+  `nom` VARCHAR(100) COMMENT 'Персональный номер персоны в квартире',
+  `parentnom` VARCHAR(100) COMMENT 'Персональный номер родителя персоны в квартире',
+  `kid` TINYINT(1) NOT NULL default 0,
   `system_person_id` BIGINT(20),
   `processed` TINYINT(1) NOT NULL default 0,
   `content` VARCHAR(1000) NOT NULL,
   PRIMARY KEY (`pk_id`),
   UNIQUE KEY `person_correction_id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Apartment card corrections --
+DROP TABLE IF EXISTS `apartment_card_correction`;
+
+CREATE TABLE `apartment_card_correction` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `idbud` VARCHAR(100) COMMENT 'Ссылка на дом',
+  `rah` VARCHAR(100) COMMENT 'Счет',
+  `kv` VARCHAR(100) COMMENT 'Квартира',
+  `fio` VARCHAR(100) COMMENT 'ФИО',
+  `idprivat` VARCHAR(100) COMMENT 'Ссылка на форму собственности',
+  `larc` VARCHAR(100) COMMENT 'Признак архивной записи',
+  `system_apartment_card_id` BIGINT(20),
+  `processed` TINYINT(1) NOT NULL default 0,
+  `content` VARCHAR(1000) NOT NULL,
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `apartment_card_correction_id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

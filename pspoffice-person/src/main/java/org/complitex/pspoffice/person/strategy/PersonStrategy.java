@@ -88,6 +88,7 @@ public class PersonStrategy extends TemplateStrategy {
     public static final long UKRAINE_CITIZENSHIP = 2020;
     public static final long EXPLANATION = 2021;
     public static final long EDITED_BY_USER_ID = 2022;
+    public static final long OLD_SYSTEM_PERSON_ID = 2023;
     public static final Set<Long> NAME_ATTRIBUTE_IDS = ImmutableSet.of(LAST_NAME, FIRST_NAME, MIDDLE_NAME);
 
     /**

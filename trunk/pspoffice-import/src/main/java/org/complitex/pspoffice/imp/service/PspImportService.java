@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.imp.service;
 
+import java.util.Date;
 import org.complitex.dictionary.util.DateUtil;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -49,6 +50,7 @@ import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.imp.entity.ApartmentCardCorrection;
 import org.complitex.pspoffice.imp.entity.BuildingCorrection;
 import org.complitex.pspoffice.imp.entity.ImportMessage;
 import org.complitex.pspoffice.imp.entity.PersonCorrection;
@@ -106,6 +108,8 @@ public class PspImportService {
     private ReferenceDataCorrectionBean referenceDataCorrectionBean;
     @EJB
     private PersonCorrectionBean personCorrectionBean;
+    @EJB
+    private ApartmentCardCorrectionBean apartmentCardCorrectionBean;
     @EJB
     private LocaleBean localeBean;
     private long SYSTEM_LOCALE_ID;
@@ -215,6 +219,7 @@ public class PspImportService {
         loadReferenceData(PspImportFile.DOCUMENT_TYPE, "document_type");
         loadReferenceData(PspImportFile.OWNER_TYPE, "owner_type");
         loadPersons();
+        loadApartmentCards();
     }
 
     /**
@@ -413,8 +418,8 @@ public class PspImportService {
      * 25        28    30   31   32     33     34       35    36   37    38  39       40    41     43   44   45     46
      * dokdatvid idarm pkra pobl prayon pmisto pdpribza pidul pbud pkorp pkv pdpribvm dprop idvidp vkra vobl vrayon vmisto
      * 
-     * 47    48   49    50  51    52    56
-     * vidul vbud vkorp vkv vdata idvip larc
+     * 47    48   49    50  51    52    53        56   57
+     * vidul vbud vkorp vkv vdata idvip parentnom larc nom
      */
     private void loadPersons() throws ImportFileReadException, ImportFileNotFoundException {
         final PspImportFile file = PspImportFile.PERSON;
@@ -487,8 +492,70 @@ public class PspImportService {
                     p.setVdata(line[51].trim());
                     p.setIdvip(line[52].trim());
                     p.setLarc(line[56].trim());
+                    p.setNom(line[57].trim());
+                    p.setParentnom(line[53].trim());
 
                     personCorrectionBean.insert(p);
+
+                    loadingStatuses.get(file).increment();
+                }
+
+                //finish file importing
+                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                loadingStatuses.get(file).finish();
+            } catch (IOException e) {
+                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
+            } catch (NumberFormatException e) {
+                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
+            } finally {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    log.error("Couldn't to close csv reader.", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 0  1     2   3  4   5        29
+     * id idbud rah kv fio idprivat larc
+     */
+    private void loadApartmentCards() throws ImportFileReadException, ImportFileNotFoundException {
+        final PspImportFile file = PspImportFile.APARTMENT_CARD;
+
+        final boolean exists = apartmentCardCorrectionBean.exists();
+
+        if (exists) {
+            messages.add(new ImportMessage(getString("already_loaded_apartment_card_file", file.getFileName()), WARN));
+        }
+
+        if (!exists) {
+
+            //start file importing:
+            loadingStatuses.put(file, new ImportStatus(0));
+            messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
+
+            final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+
+            int recordIndex = 0;
+
+            try {
+                String[] line;
+
+                while ((line = reader.readNext()) != null) {
+                    recordIndex++;
+
+                    long id = Long.parseLong(line[0].trim());
+                    ApartmentCardCorrection c = new ApartmentCardCorrection(id, getContent(line));
+                    c.setIdbud(line[1].trim());
+                    c.setRah(line[2].trim());
+                    c.setKv(line[3].trim());
+                    c.setFio(line[4].trim());
+                    c.setIdprivat(line[5].trim());
+                    c.setLarc(line[29].trim());
+
+                    apartmentCardCorrectionBean.insert(c);
 
                     loadingStatuses.get(file).increment();
                 }
@@ -518,6 +585,7 @@ public class PspImportService {
         processDocumentsTypes();
         processOwnerTypes();
         processPersons();
+//        processApartmentCardsAndRegistrations();
     }
 
     private void processStreetsAndBuildings() throws OpenErrorFileException, OpenErrorDescriptionFileException {
@@ -720,7 +788,9 @@ public class PspImportService {
                 userTransaction.commit();
             } catch (Exception e) {
                 try {
-                    userTransaction.rollback();
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
                 } catch (SystemException e1) {
                     log.error("Couldn't to rollback transaction.", e1);
                 }
@@ -840,7 +910,9 @@ public class PspImportService {
                 userTransaction.commit();
             } catch (Exception e) {
                 try {
-                    userTransaction.rollback();
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
                 } catch (SystemException e1) {
                     log.error("Couldn't to rollback transaction.", e1);
                 }
@@ -1003,7 +1075,9 @@ public class PspImportService {
                 userTransaction.commit();
             } catch (Exception e) {
                 try {
-                    userTransaction.rollback();
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
                 } catch (SystemException e1) {
                     log.error("Couldn't to rollback transaction.", e1);
                 }
@@ -1161,7 +1235,9 @@ public class PspImportService {
                 userTransaction.commit();
             } catch (Exception e) {
                 try {
-                    userTransaction.rollback();
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
                 } catch (SystemException e1) {
                     log.error("Couldn't to rollback transaction.", e1);
                 }
@@ -1268,6 +1344,8 @@ public class PspImportService {
             return;
         }
 
+        final Date creationDate = DateUtil.getCurrentDate();
+
         try {
             final ProcessItem item = ProcessItem.PERSON;
 
@@ -1295,12 +1373,31 @@ public class PspImportService {
                                 && !Strings.isEmpty(p.getGrajd())
                                 && PersonCorrectionBean.isDocumentDataValid(p.getIddok(), p.getDokseria(), p.getDoknom())) {
 
+                            Date birthDate = DateUtil.asDate(p.getDatar(), Utils.DATE_PATTERN);
+                            p.setKid(!DateUtil.isValidDateInterval(creationDate, birthDate, PersonStrategy.AGE_THRESHOLD));
+
                             if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
+
+                                //military service relation
+                                String militaryServiceRelation = null;
                                 try {
-                                    Long systemPersonId = personCorrectionBean.findSystemPerson(p);
+                                    militaryServiceRelation =
+                                            referenceDataCorrectionBean.getById("military_duty", p.getIdarm(), jekIds);
+                                    if (militaryServiceRelation == null) {
+                                        errorDescription = getString("person_military_duty_not_found", p.getId(),
+                                                p.getIdarm(), jekIds.toString());
+                                    }
+                                } catch (TooManyResultsException e) {
+                                    errorDescription = getString("person_military_duty_too_many_objects", p.getId(),
+                                            p.getIdarm(), jekIds.toString());
+                                }
+
+                                try {
+                                    Long systemPersonId = personCorrectionBean.findSystemPerson(p, birthDate);
                                     if (systemPersonId == null) {
-                                        DomainObject systemPerson = personCorrectionBean.newSystemPerson(p);
-                                        personStrategy.insert(systemPerson, DateUtil.getCurrentDate());
+                                        DomainObject systemPerson = personCorrectionBean.newSystemPerson(p, birthDate,
+                                                militaryServiceRelation);
+                                        personStrategy.insert(systemPerson, creationDate);
                                         systemPersonId = systemPerson.getId();
                                     }
                                     p.setSystemPersonId(systemPersonId);
@@ -1344,6 +1441,60 @@ public class PspImportService {
 
                     userTransaction.commit();
                     leftPersons = personCorrectionBean.countForProcessing();
+                }
+
+                //children
+                userTransaction.begin();
+                personCorrectionBean.clearProcessingStatus();
+                userTransaction.commit();
+
+                List<PersonCorrection> children = personCorrectionBean.findChildren(PROCESSING_BATCH);
+                while (!children.isEmpty()) {
+                    userTransaction.begin();
+                    for (PersonCorrection child : children) {
+                        String errorDescription = null;
+                        if (PersonCorrectionBean.isParentDataValid(child.getIdbud(), child.getKv(), child.getParentnom())) {
+                            List<Long> systemParentIds = personCorrectionBean.findSystemParent(child.getIdbud(),
+                                    child.getKv(), child.getParentnom());
+                            if (systemParentIds.isEmpty()) {
+                                errorDescription = getString("person_parent_not_found", child.getId(),
+                                        child.getIdbud(), child.getKv(), child.getParentnom());
+                            } else if (systemParentIds.size() > 1) {
+                                errorDescription = getString("person_too_many_parents", child.getId(),
+                                        child.getIdbud(), child.getKv(), child.getParentnom(), systemParentIds.toString());
+                            } else {
+                                personCorrectionBean.addChild(systemParentIds.get(0), child.getSystemPersonId(),
+                                        child.getDatar(), creationDate);
+                            }
+                        } else {
+                            errorDescription = getString("person_parent_data_invalid", child.getId(),
+                                    child.getIdbud(), child.getKv(), child.getParentnom());
+                        }
+
+                        child.setProcessed(true);
+                        personCorrectionBean.update(child);
+
+                        if (errorDescription != null) {
+                            wasErrors = true;
+                            if (personErrorFile == null) {
+                                personErrorFile = getErrorFile(errorsDirectory, PspImportFile.PERSON);
+                                personErrorFile.write(PspImportFile.PERSON.getCsvHeader());
+                                personErrorFile.newLine();
+                            }
+                            if (personErrorDescriptionFile == null) {
+                                personErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                        PspImportFile.PERSON);
+                            }
+
+                            personErrorFile.write(child.getContent());
+                            personErrorFile.newLine();
+
+                            personErrorDescriptionFile.write(errorDescription);
+                            personErrorDescriptionFile.newLine();
+                        }
+                    }
+                    userTransaction.commit();
+                    children = personCorrectionBean.findChildren(PROCESSING_BATCH);
                 }
             } catch (Exception e) {
                 try {
@@ -1389,11 +1540,122 @@ public class PspImportService {
                 userTransaction.commit();
             } catch (Exception e) {
                 try {
-                    userTransaction.rollback();
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
                 } catch (SystemException e1) {
                     log.error("Couldn't to rollback transaction.", e1);
                 }
                 log.error("Couldn't to clear processing status for persons.", e);
+            }
+        }
+    }
+
+    private void processApartmentCardsAndRegistrations() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        try {
+            final ProcessItem item = ProcessItem.APARTMENT_CARD;
+
+            BufferedWriter apartmentCardErrorFile = null;
+            BufferedWriter apartmentCardErrorDescriptionFile = null;
+
+            processingStatuses.put(item, new ImportStatus(0));
+            final int count = personCorrectionBean.countForProcessing();
+            final int archiveCount = personCorrectionBean.archiveCount();
+            messages.add(new ImportMessage(getString("begin_apartment_card_processing", count), INFO));
+            boolean wasErrors = false;
+
+            try {
+                int leftCards = count;
+                while (leftCards > 0) {
+                    List<ApartmentCardCorrection> cards = apartmentCardCorrectionBean.findForProcessing(PROCESSING_BATCH);
+
+                    userTransaction.begin();
+                    for (ApartmentCardCorrection c : cards) {
+                        String errorDescription = null;
+
+                        String idprivat = c.getIdprivat();
+                        if (!Strings.isEmpty(idprivat)) {
+                        } else {
+                            errorDescription = getString("invalid_apartment_card_idprivat", c.getId());
+                        }
+
+                        c.setProcessed(true);
+                        apartmentCardCorrectionBean.update(c);
+
+                        processingStatuses.get(item).increment();
+
+                        if (errorDescription != null) {
+                            wasErrors = true;
+                            if (apartmentCardErrorFile == null) {
+                                apartmentCardErrorFile = getErrorFile(errorsDirectory, PspImportFile.APARTMENT_CARD);
+                                apartmentCardErrorFile.write(PspImportFile.APARTMENT_CARD.getCsvHeader());
+                                apartmentCardErrorFile.newLine();
+                            }
+                            if (apartmentCardErrorDescriptionFile == null) {
+                                apartmentCardErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                        PspImportFile.APARTMENT_CARD);
+                            }
+
+                            apartmentCardErrorFile.write(c.getContent());
+                            apartmentCardErrorFile.newLine();
+
+                            apartmentCardErrorDescriptionFile.write(errorDescription);
+                            apartmentCardErrorDescriptionFile.newLine();
+                        }
+                    }
+
+                    userTransaction.commit();
+                    leftCards = apartmentCardCorrectionBean.countForProcessing();
+                }
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (Exception e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+
+                throw new RuntimeException(e);
+            } finally {
+                if (apartmentCardErrorFile != null) {
+                    try {
+                        apartmentCardErrorFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+                if (apartmentCardErrorDescriptionFile != null) {
+                    try {
+                        apartmentCardErrorDescriptionFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+            }
+
+            if (wasErrors) {
+                messages.add(new ImportMessage(getString("fail_finish_apartment_card_processing", count, archiveCount), WARN));
+            } else {
+                messages.add(new ImportMessage(getString("success_finish_apartment_card_processing", count, archiveCount), INFO));
+            }
+            processingStatuses.get(item).finish();
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            try {
+                userTransaction.begin();
+
+                apartmentCardCorrectionBean.clearProcessingStatus();
+
+                userTransaction.commit();
+            } catch (Exception e) {
+                try {
+                    userTransaction.rollback();
+                } catch (SystemException e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+                log.error("Couldn't to clear processing status for apartment cards.", e);
             }
         }
     }
@@ -1432,6 +1694,7 @@ public class PspImportService {
             referenceDataCorrectionBean.cleanData("document_type", jekIds);
             referenceDataCorrectionBean.cleanData("owner_type", jekIds);
             personCorrectionBean.cleanData();
+            apartmentCardCorrectionBean.cleanData();
 
             userTransaction.commit();
         } catch (Exception e) {

@@ -349,7 +349,7 @@ public class PersonStrategy extends TemplateStrategy {
 
                         //by default UKRAINE_CITIZENSHIP attribute set to TRUE.
                         if (attributeType.getId().equals(UKRAINE_CITIZENSHIP)) {
-                            StringCulture systemLocaleStringCulture = 
+                            StringCulture systemLocaleStringCulture =
                                     stringBean.getSystemStringCulture(attribute.getLocalizedValues());
                             systemLocaleStringCulture.setValue(new BooleanConverter().toString(Boolean.TRUE));
                         }
@@ -547,16 +547,18 @@ public class PersonStrategy extends TemplateStrategy {
         }
 
         //document altering
-        newPerson.getDocument().setSubjectIds(newPerson.getSubjectIds());
-        documentStrategy.update(oldPerson.getDocument(), newPerson.getDocument(), updateDate);
+        if (newPerson.getDocument() != null) {
+            newPerson.getDocument().setSubjectIds(newPerson.getSubjectIds());
+            documentStrategy.update(oldPerson.getDocument(), newPerson.getDocument(), updateDate);
 
-        if (newPerson.getReplacedDocument() != null) {
-            documentStrategy.disable(newPerson.getDocument(), updateDate);
-            newPerson.getReplacedDocument().setSubjectIds(newPerson.getSubjectIds());
-            documentStrategy.insert(newPerson.getReplacedDocument(), updateDate);
+            if (newPerson.getReplacedDocument() != null) {
+                documentStrategy.disable(newPerson.getDocument(), updateDate);
+                newPerson.getReplacedDocument().setSubjectIds(newPerson.getSubjectIds());
+                documentStrategy.insert(newPerson.getReplacedDocument(), updateDate);
+            }
+
+            updateDocumentAttribute(oldPerson, newPerson);
         }
-
-        updateDocumentAttribute(oldPerson, newPerson);
 
         // if person was a kid but birth date has changed or time gone then it is need to update parent
         if (oldPerson.isKid() && !newPerson.isKid()) {

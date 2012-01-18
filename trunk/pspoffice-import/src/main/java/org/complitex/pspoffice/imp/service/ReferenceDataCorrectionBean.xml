@@ -77,4 +77,12 @@
         SELECT `nkod` FROM `owner_type_correction` WHERE `id` = #{id}
     </select>
     
+    <select id="getById" parameterType="map" resultType="string">
+        SELECT DISTINCT(`nkod`) FROM `${entity}_correction` WHERE `id` = #{id} AND
+        `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
+            #{idjek}
+        </foreach>
+    </select>
+    
 </mapper>

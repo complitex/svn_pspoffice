@@ -56,8 +56,11 @@ public class PersonCorrection {
     private String vdata;
     private String idvip;
     private String larc;
+    private String nom;
+    private String parentnom;
     private Long systemPersonId;
     private boolean processed;
+    private boolean kid;
     private String content;
 
     public PersonCorrection() {
@@ -66,6 +69,30 @@ public class PersonCorrection {
     public PersonCorrection(long id, String content) {
         this.id = id;
         this.content = content;
+    }
+
+    public boolean isKid() {
+        return kid;
+    }
+
+    public void setKid(boolean kid) {
+        this.kid = kid;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public String getParentnom() {
+        return parentnom;
+    }
+
+    public void setParentnom(String parentnom) {
+        this.parentnom = parentnom;
     }
 
     public String getContent() {

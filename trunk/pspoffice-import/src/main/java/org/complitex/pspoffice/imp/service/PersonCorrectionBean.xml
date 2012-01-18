@@ -13,16 +13,19 @@
 	(`pk_id`, `id`, `idbud`, `rah`,	`kv`, `fam`, `im`, `ot`, `datar`, `reltovlaskv`, `grajd`, `pol`, `idrel`, `nkra`, 
 	`nobl`, `nrayon`, `nmisto`, `iddok`, `dokseria`, `doknom`, `dokvidan`, `dokdatvid`, `idarm`, `pkra`, `pobl`, `prayon`, 
 	`pmisto`, `pdpribza`, `pidul`, `pbud`, `pkorp`, `pkv`, `pdpribvm`, `dprop`, `idvidp`, `vkra`, `vobl`, `vrayon`, 
-	`vmisto`, `vidul`, `vbud`, `vkorp`, `vkv`, `vdata`, `idvip`, `larc`, `system_person_id`, `processed`, `content`)
+	`vmisto`, `vidul`, `vbud`, `vkorp`, `vkv`, `vdata`, `idvip`, `larc`, `nom`, `parentnom`, `kid`, 
+        `system_person_id`, `processed`, `content`)
 	VALUES
 	(#{pkId}, #{id}, #{idbud}, #{rah}, #{kv}, #{fam}, #{im}, #{ot} , #{datar}, #{reltovlaskv}, #{grajd}, #{pol}, #{idrel}, #{nkra}, 
 	#{nobl}, #{nrayon}, #{nmisto}, #{iddok}, #{dokseria}, #{doknom}, #{dokvidan}, #{dokdatvid}, #{idarm}, #{pkra}, #{pobl}, #{prayon}, 
 	#{pmisto}, #{pdpribza}, #{pidul}, #{pbud}, #{pkorp}, #{pkv}, #{pdpribvm}, #{dprop}, #{idvidp}, #{vkra}, #{vobl}, #{vrayon}, 
-	#{vmisto}, #{vidul}, #{vbud}, #{vkorp}, #{vkv}, #{vdata}, #{idvip}, #{larc}, #{systemPersonId}, #{processed}, #{content});
+	#{vmisto}, #{vidul}, #{vbud}, #{vkorp}, #{vkv}, #{vdata}, #{idvip}, #{larc}, #{nom}, #{parentnom}, #{kid}, 
+        #{systemPersonId}, #{processed}, #{content});
     </insert>
     
     <update id="update" parameterType="org.complitex.pspoffice.imp.entity.PersonCorrection">
-        UPDATE `person_correction` SET `processed` = #{processed}, `system_person_id` = #{systemPersonId} 
+        UPDATE `person_correction` SET `processed` = #{processed}, `system_person_id` = #{systemPersonId},
+        `kid` = #{kid}
         WHERE `pk_id` = #{pkId}
     </update>
     
@@ -71,4 +74,15 @@
         AND bd_value.`value` = #{birthDate}
     </select>
     
+    <select id="findSystemParent" parameterType="map" resultType="long">
+        SELECT `system_person_id` FROM `person_correction` WHERE `larc` = #{NONARCHIVE_INDICATOR}
+            AND `idbud` = #{idbud} AND `kv` = #{kv} AND `nom` = #{nom}
+            AND `system_person_id` IS NOT NULL
+    </select>
+    
+    <select id="findChildren" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
+        SELECT * FROM `person_correction` WHERE `larc` = #{NONARCHIVE_INDICATOR}
+        AND `kid` = 1 AND `processed` = 0 AND `system_person_id` IS NOT NULL
+        LIMIT ${size}
+    </select>
 </mapper>

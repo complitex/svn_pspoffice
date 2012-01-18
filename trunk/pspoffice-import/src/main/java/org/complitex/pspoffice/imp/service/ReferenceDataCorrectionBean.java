@@ -223,4 +223,17 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         List<String> ownerTypes = sqlSession().selectList(MAPPING_NAMESPACE + ".getReservedOwnerType", OWNER_TYPE);
         return ownerTypes.size() == 1 ? ownerTypes.get(0) : null;
     }
+
+    public String getById(String entity, String id, Set<String> jekIds)
+            throws TooManyResultsException {
+        List<String> values = sqlSession().selectList(MAPPING_NAMESPACE + ".getById",
+                ImmutableMap.of("entity", entity, "id", id, "jekIds", jekIds));
+        if (values.isEmpty()) {
+            return null;
+        } else if (values.size() == 1) {
+            return values.get(0);
+        } else {
+            throw new TooManyResultsException();
+        }
+    }
 }

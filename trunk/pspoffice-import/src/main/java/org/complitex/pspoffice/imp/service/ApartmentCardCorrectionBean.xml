@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.imp.service.ApartmentCardCorrectionBean">
+    
+    <resultMap id="apartmentCardCorrection" type="org.complitex.pspoffice.imp.entity.ApartmentCardCorrection">
+        <id column="pk_id" property="pkId"/>
+        <result column="system_apartment_card_id" property="systemApartmentCardId"/>
+    </resultMap>
+    
+    <insert id="insert" parameterType="org.complitex.pspoffice.imp.entity.ApartmentCardCorrection" useGeneratedKeys="true" keyProperty="pkId">
+        INSERT INTO `apartment_card_correction`
+	(`pk_id`, `id`, `idbud`, `rah`,	`kv`, `fio`, `idprivat`, `larc`, `system_apartment_card_id`, `processed`, `content`)
+	VALUES
+	(#{pkId}, #{id}, #{idbud}, #{rah}, #{kv}, #{fio}, #{idprivat}, #{larc}, #{systemApartmentCardId}, #{processed}, #{content});
+    </insert>
+    
+    <update id="update" parameterType="org.complitex.pspoffice.imp.entity.ApartmentCardCorrection">
+        UPDATE `apartment_card_correction` SET `processed` = #{processed}, `system_apartment_card_id` = #{systemApartmentCardId} 
+        WHERE `pk_id` = #{pkId}
+    </update>
+    
+    <select id="findById" parameterType="long" resultMap="org.complitex.pspoffice.imp.service.ApartmentCardCorrectionBean.apartmentCardCorrection">
+        SELECT * FROM `apartment_card_correction` WHERE `id` = #{id}
+    </select>
+    
+    <delete id="delete">
+        DELETE FROM `apartment_card_correction`
+    </delete>
+    
+    <select id="exists" resultType="int">
+        SELECT COUNT(*) FROM `apartment_card_correction`
+    </select>
+    
+    <update id="clearProcessingStatus">
+        UPDATE `apartment_card_correction` SET `processed` = 0
+    </update>
+    
+    <select id="countForProcessing" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM `apartment_card_correction` WHERE `system_apartment_card_id` IS NULL
+        AND `processed` = 0 AND `larc` = #{NONARCHIVE_INDICATOR}
+    </select>
+    
+    <select id="archiveCount" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM `apartment_card_correction` WHERE `larc` != #{NONARCHIVE_INDICATOR}
+    </select>
+    
+    <select id="findForProcessing" resultMap="org.complitex.pspoffice.imp.service.ApartmentCardCorrectionBean.apartmentCardCorrection"
+            parameterType="map">
+        SELECT * FROM `apartment_card_correction` WHERE `system_apartment_card_id` IS NULL AND `processed` = 0 
+        AND `larc` = #{NONARCHIVE_INDICATOR}
+        LIMIT ${size}
+    </select>
+    
+<!--    <select id="findSystemApartmentCard" parameterType="map" resultType="long">
+        SELECT e.`object_id` FROM `person` e
+        <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
+        JOIN `person_attribute` bd ON (bd.`object_id` = e.`object_id` AND bd.`attribute_type_id` = #{personBirthDateAT}
+            AND bd.`status` = 'ACTIVE')
+        JOIN `person_string_culture` bd_value ON (bd_value.`id` = bd.`value_id` AND bd_value.`locale_id` = sys.`id`)
+        
+        AND (ln.`name` = #{lastName} OR sys_ln.`name` = #{lastName})
+        AND (fn.`name` = #{firstName} OR sys_fn.`name` = #{firstName})
+        AND (mn.`name` = #{middleName} OR sys_mn.`name` = #{middleName})
+        AND bd_value.`value` = #{birthDate}
+    </select>-->
+    
+</mapper>

@@ -52,6 +52,15 @@
         LIMIT ${size}
     </select>
     
+    <select id="findSystemApartment" parameterType="map" resultType="long">
+        SELECT DISTINCT e.`object_id` FROM `apartment` e 
+            JOIN `apartment_attribute` n ON (e.`object_id` = n.`object_id` 
+                AND n.`attribute_type_id` = #{apartmentNameAT} AND n.`status` = 'ACTIVE')
+            LEFT JOIN `apartment_string_culture` name ON (n.`value_id` = name.`id` AND name.`locale_id` = #{localeId})
+            WHERE e.`status` IN ('ACTIVE', 'INACTIVE') AND name.`value` = #{name}
+                AND e.`parent_id` = #{buildingId}
+    </select>
+    
 <!--    <select id="findSystemApartmentCard" parameterType="map" resultType="long">
         SELECT e.`object_id` FROM `person` e
         <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>

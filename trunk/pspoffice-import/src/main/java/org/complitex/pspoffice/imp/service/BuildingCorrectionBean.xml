@@ -87,4 +87,12 @@
             addr.`parent_entity_id` = #{parentEntityId} AND addr.`parent_id` = #{parentId}    
     </select>
     
+    <select id="getById" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.BuildingCorrectionBean.buildingCorrection">
+        SELECT * FROM `building_correction` WHERE `id` = #{id} AND 
+        `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="value" item="idjek">
+            #{idjek}
+        </foreach>
+    </select>
+    
 </mapper>

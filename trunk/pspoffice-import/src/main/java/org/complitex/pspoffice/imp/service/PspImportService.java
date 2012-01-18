@@ -64,6 +64,7 @@ import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1367,51 +1368,61 @@ public class PspImportService {
                     for (PersonCorrection p : persons) {
                         String errorDescription = null;
 
-                        if (!Strings.isEmpty(p.getFam()) && !Strings.isEmpty(p.getIm()) && !Strings.isEmpty(p.getOt())
-                                && PersonCorrectionBean.isBirthDateValid(p.getDatar())
-                                && PersonCorrectionBean.isGenderValid(p.getPol())
-                                && !Strings.isEmpty(p.getGrajd())
-                                && PersonCorrectionBean.isDocumentDataValid(p.getIddok(), p.getDokseria(), p.getDoknom())) {
-
-                            Date birthDate = DateUtil.asDate(p.getDatar(), Utils.DATE_PATTERN);
-                            p.setKid(!DateUtil.isValidDateInterval(creationDate, birthDate, PersonStrategy.AGE_THRESHOLD));
-
-                            if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
-
-                                //military service relation
-                                String militaryServiceRelation = null;
+                        if (p.getSystemPersonId() == null) {
+                            if (!Strings.isEmpty(p.getFam()) && !Strings.isEmpty(p.getIm()) && !Strings.isEmpty(p.getOt())) {
                                 try {
-                                    militaryServiceRelation =
-                                            referenceDataCorrectionBean.getById("military_duty", p.getIdarm(), jekIds);
-                                    if (militaryServiceRelation == null) {
-                                        errorDescription = getString("person_military_duty_not_found", p.getId(),
-                                                p.getIdarm(), jekIds.toString());
-                                    }
-                                } catch (TooManyResultsException e) {
-                                    errorDescription = getString("person_military_duty_too_many_objects", p.getId(),
-                                            p.getIdarm(), jekIds.toString());
-                                }
+                                    Person systemPerson = personCorrectionBean.findSystemPerson(p);
+                                    if (systemPerson != null) {
+                                        p.setSystemPersonId(systemPerson.getId());
+                                        p.setKid(systemPerson.isKid());
+                                        errorDescription = getString("person_exists", p.getId());
+                                    } else {
+                                        if (PersonCorrectionBean.isBirthDateValid(p.getDatar())
+                                                && PersonCorrectionBean.isGenderValid(p.getPol())
+                                                && !Strings.isEmpty(p.getGrajd())
+                                                && PersonCorrectionBean.isDocumentDataValid(p.getIddok(), p.getDokseria(), p.getDoknom())) {
 
-                                try {
-                                    Long systemPersonId = personCorrectionBean.findSystemPerson(p, birthDate);
-                                    if (systemPersonId == null) {
-                                        DomainObject systemPerson = personCorrectionBean.newSystemPerson(p, birthDate,
-                                                militaryServiceRelation);
-                                        personStrategy.insert(systemPerson, creationDate);
-                                        systemPersonId = systemPerson.getId();
+                                            Date birthDate = DateUtil.asDate(p.getDatar(), Utils.DATE_PATTERN);
+                                            p.setKid(!DateUtil.isValidDateInterval(creationDate, birthDate, PersonStrategy.AGE_THRESHOLD));
+
+                                            if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
+
+                                                //military service relation
+                                                String militaryServiceRelation = null;
+                                                try {
+                                                    militaryServiceRelation =
+                                                            referenceDataCorrectionBean.getById("military_duty", p.getIdarm(), jekIds);
+                                                    if (militaryServiceRelation == null) {
+                                                        errorDescription = getString("person_military_duty_not_found", p.getId(),
+                                                                p.getIdarm(), jekIds.toString());
+                                                    }
+                                                } catch (TooManyResultsException e) {
+                                                    errorDescription = getString("person_military_duty_too_many_objects", p.getId(),
+                                                            p.getIdarm(), jekIds.toString());
+                                                }
+
+                                                systemPerson = personCorrectionBean.newSystemPerson(p, birthDate,
+                                                        militaryServiceRelation);
+                                                personStrategy.insert(systemPerson, creationDate);
+                                                p.setSystemPersonId(systemPerson.getId());
+                                            } else {
+                                                errorDescription = getString("unsupported_document_type", p.getId(), p.getIddok());
+                                            }
+                                        } else {
+                                            errorDescription = getString("invalid_person_data", p.getId(), p.getDatar(),
+                                                    p.getPol(), p.getGrajd(), p.getIddok(), p.getDokseria(), p.getDoknom());
+                                        }
                                     }
-                                    p.setSystemPersonId(systemPersonId);
                                 } catch (TooManyResultsException e) {
                                     errorDescription = getString("person_system_many_objects", p.getId(),
-                                            p.getFam(), p.getIm(), p.getOt(), p.getDatar());
+                                            p.getFam(), p.getIm(), p.getOt());
                                 }
                             } else {
-                                errorDescription = getString("unsupported_document_type", p.getId(), p.getIddok());
+                                errorDescription = getString("invalid_person_fio", p.getId(), p.getFam(), p.getIm(),
+                                        p.getOt());
                             }
                         } else {
-                            errorDescription = getString("invalid_person_data", p.getId(), p.getFam(), p.getIm(),
-                                    p.getOt(), p.getDatar(), p.getPol(), p.getGrajd(),
-                                    p.getIddok(), p.getDokseria(), p.getDoknom());
+                            errorDescription = getString("person_exists", p.getId());
                         }
 
                         p.setProcessed(true);
@@ -1573,7 +1584,28 @@ public class PspImportService {
                     for (ApartmentCardCorrection c : cards) {
                         String errorDescription = null;
 
-                        String idprivat = c.getIdprivat();
+                        //building
+                        Long systemBuildingId = null;
+                        final String buildingId = c.getIdbud();
+                        if (!Strings.isEmpty(buildingId)) {
+                            BuildingCorrection building = null;
+                            try {
+                                building = buildingCorrectionBean.getById(buildingId, jekIds);
+                                if (building != null) {
+                                    systemBuildingId = building.getSystemBuildingId();
+                                }
+                            } catch (TooManyResultsException e) {
+                            }
+                        }
+
+                        //apartment
+                        if (systemBuildingId != null) {
+                            final String apartment = c.getKv();
+                            if (!Strings.isEmpty(apartment)) {
+                            }
+                        }
+
+                        final String idprivat = c.getIdprivat();
                         if (!Strings.isEmpty(idprivat)) {
                         } else {
                             errorDescription = getString("invalid_apartment_card_idprivat", c.getId());

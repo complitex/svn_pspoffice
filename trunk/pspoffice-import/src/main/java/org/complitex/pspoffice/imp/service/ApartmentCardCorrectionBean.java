@@ -5,10 +5,16 @@
 package org.complitex.pspoffice.imp.service;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import org.complitex.address.strategy.apartment.ApartmentStrategy;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.pspoffice.imp.entity.ApartmentCardCorrection;
+import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 
 /**
  *
@@ -18,6 +24,9 @@ import org.complitex.pspoffice.imp.entity.ApartmentCardCorrection;
 public class ApartmentCardCorrectionBean extends AbstractBean {
 
     private static final String MAPPING_NAMESPACE = ApartmentCardCorrectionBean.class.getName();
+    
+    @EJB
+    private ApartmentStrategy apartmentStrategy;
 
     public void insert(ApartmentCardCorrection apartmentCardCorrection) {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", apartmentCardCorrection);
@@ -55,6 +64,29 @@ public class ApartmentCardCorrectionBean extends AbstractBean {
         return sqlSession().selectList(MAPPING_NAMESPACE + ".findForProcessing",
                 ImmutableMap.of("size", size, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
     }
+    
+    public Long findSystemApartment(long systemBuildingId, String apartment) throws TooManyResultsException {
+        List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemApartment", 
+                ImmutableMap.<String, Object>of("apartmentNameAT", ApartmentStrategy.NAME, "name", apartment, 
+                "buildingId", systemBuildingId, "localeId", Utils.RUSSIAN_LOCALE_ID));
+        
+        if (ids.size() == 1) {
+            return ids.get(0);
+        } else if (ids.isEmpty()) {
+            return null;
+        } else {
+            throw new TooManyResultsException();
+        }
+    }
+    
+    public DomainObject newApartment(long systemBuildingId, String apartment){
+        DomainObject a = apartmentStrategy.newInstance();
+        Utils.setValue(a.getAttribute(ApartmentStrategy.NAME), apartment);
+        a.setParentId(systemBuildingId);
+        a.setParentEntityId(500L);
+        return a;
+    }
+    
 //    public Long findSystemPerson(PersonCorrection p) throws TooManyResultsException {
 //        List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemPerson",
 //                ImmutableMap.builder().

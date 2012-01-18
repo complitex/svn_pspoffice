@@ -91,16 +91,16 @@ public class PersonCorrectionBean extends AbstractBean {
                 ImmutableMap.of("size", size, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
     }
 
-    public Long findSystemPerson(PersonCorrection p, Date birthDate) throws TooManyResultsException {
+    public Person findSystemPerson(PersonCorrection p) throws TooManyResultsException {
         List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemPerson",
                 ImmutableMap.builder().
-                put("personBirthDateAT", PersonStrategy.BIRTH_DATE).
+                put("personIdAT", PersonStrategy.OLD_SYSTEM_PERSON_ID).
                 put("localeId", Utils.UKRAINIAN_LOCALE_ID).
                 put("lastName", p.getFam()).put("firstName", p.getIm()).put("middleName", p.getOt()).
-                put("birthDate", getBirthDateAsDateString(birthDate)).
+                put("personId", p.getId()).
                 build());
         if (ids.size() == 1) {
-            return ids.get(0);
+            return personStrategy.findById(ids.get(0), true, false, false, false);
         } else if (ids.isEmpty()) {
             return null;
         } else {
@@ -167,6 +167,9 @@ public class PersonCorrectionBean extends AbstractBean {
         if (militaryServiceRelation != null) {
             Utils.setValue(p.getAttribute(PersonStrategy.MILITARY_SERVICE_RELATION), militaryServiceRelation);
         }
+
+        //ID в файле импорта
+        Utils.setValue(p.getAttribute(PersonStrategy.OLD_SYSTEM_PERSON_ID), String.valueOf(pc.getId()));
 
         return p;
     }

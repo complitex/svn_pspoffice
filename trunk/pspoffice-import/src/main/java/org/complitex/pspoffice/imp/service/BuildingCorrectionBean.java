@@ -87,4 +87,16 @@ public class BuildingCorrectionBean extends AbstractBean {
             throw new TooManyResultsException();
         }
     }
+
+    public BuildingCorrection getById(String id, Set<String> jekIds) throws TooManyResultsException {
+        List<BuildingCorrection> corrections = sqlSession().selectList(MAPPING_NAMESPACE + ".getById",
+                ImmutableMap.of("id", id, "jekIds", jekIds));
+        if (corrections.isEmpty()) {
+            return null;
+        } else if (corrections.size() == 1) {
+            return corrections.get(0);
+        } else {
+            throw new TooManyResultsException();
+        }
+    }
 }

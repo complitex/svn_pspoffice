@@ -99,6 +99,9 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 /* ID пользователя, отредактировавшего карточку */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2408, 1, UPPER('ID пользователя, отредактировавшего карточку')), (2408, 2, UPPER('ID пользователя, отредактировавшего карточку'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2407, 2400, 0, 2408, 1);
+/* ID поквартирной карточки в старой системе паспортного стола */
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2409, 1, UPPER('ID поквартирной карточки в старой системе паспортного стола')), (2409, 2, UPPER('ID поквартирной карточки в старой системе паспортного стола'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2408, 2400, 0, 2409, 1);
 
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2401, 2401, 'person');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2402, 2402, 'room');
@@ -109,6 +112,7 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2407, 2405, 'registration');
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2408, 2406, UPPER('big_string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2409, 2407, UPPER('integer'));
+insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2410, 2408, UPPER('string'));
 
 -- Registration --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('registration',1), ('registration_string_culture',1);

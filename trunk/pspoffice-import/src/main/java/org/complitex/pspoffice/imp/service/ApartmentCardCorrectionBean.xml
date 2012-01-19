@@ -37,8 +37,8 @@
     </update>
     
     <select id="countForProcessing" parameterType="string" resultType="int">
-        SELECT COUNT(*) FROM `apartment_card_correction` WHERE `system_apartment_card_id` IS NULL
-        AND `processed` = 0 AND `larc` = #{NONARCHIVE_INDICATOR}
+        SELECT COUNT(*) FROM `apartment_card_correction` WHERE `processed` = 0 
+            AND `larc` = #{NONARCHIVE_INDICATOR}
     </select>
     
     <select id="archiveCount" parameterType="string" resultType="int">
@@ -47,7 +47,7 @@
     
     <select id="findForProcessing" resultMap="org.complitex.pspoffice.imp.service.ApartmentCardCorrectionBean.apartmentCardCorrection"
             parameterType="map">
-        SELECT * FROM `apartment_card_correction` WHERE `system_apartment_card_id` IS NULL AND `processed` = 0 
+        SELECT * FROM `apartment_card_correction` WHERE `processed` = 0 
         AND `larc` = #{NONARCHIVE_INDICATOR}
         LIMIT ${size}
     </select>
@@ -61,17 +61,15 @@
                 AND e.`parent_id` = #{buildingId}
     </select>
     
-<!--    <select id="findSystemApartmentCard" parameterType="map" resultType="long">
-        SELECT e.`object_id` FROM `person` e
-        <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
-        JOIN `person_attribute` bd ON (bd.`object_id` = e.`object_id` AND bd.`attribute_type_id` = #{personBirthDateAT}
-            AND bd.`status` = 'ACTIVE')
-        JOIN `person_string_culture` bd_value ON (bd_value.`id` = bd.`value_id` AND bd_value.`locale_id` = sys.`id`)
-        
-        AND (ln.`name` = #{lastName} OR sys_ln.`name` = #{lastName})
-        AND (fn.`name` = #{firstName} OR sys_fn.`name` = #{firstName})
-        AND (mn.`name` = #{middleName} OR sys_mn.`name` = #{middleName})
-        AND bd_value.`value` = #{birthDate}
-    </select>-->
+    <select id="findSystemApartmentCard" parameterType="map" resultType="long">
+        SELECT e.`object_id` FROM `apartment_card` e
+        JOIN `locales` sys ON sys.`system` = 1
+        JOIN `apartment_card_attribute` kv ON (kv.`object_id` = e.`object_id` AND kv.`attribute_type_id` = #{apartmentCardAddressAT}
+            AND kv.`value_type_id` = #{apartmentCardApartmentATID} AND kv.`status` = 'ACTIVE')
+        JOIN `apartment_card_attribute` acid ON (acid.`object_id` = e.`object_id` AND acid.`attribute_type_id` = #{apartmentCardIdAT}
+            AND acid.`status` = 'ACTIVE')
+        JOIN `apartment_card_string_culture` acid_value ON (acid_value.`id` = acid.`value_id` AND acid_value.`locale_id` = sys.`id`)
+        AND kv.`value_id` = #{apartmentId} AND acid_value.`value` = #{apartmentCardId}
+    </select>
     
 </mapper>

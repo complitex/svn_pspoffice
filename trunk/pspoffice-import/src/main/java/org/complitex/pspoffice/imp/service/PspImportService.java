@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.ConcurrencyManagement;
@@ -39,9 +38,9 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 import org.apache.wicket.util.string.Strings;
+import org.complitex.address.strategy.apartment.ApartmentStrategy;
 import org.complitex.address.strategy.building.BuildingStrategy;
 import org.complitex.address.strategy.building.entity.Building;
-import org.complitex.address.strategy.building_address.BuildingAddressStrategy;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.exception.AbstractException;
@@ -63,7 +62,9 @@ import org.complitex.pspoffice.imp.service.exception.OpenErrorFileException;
 import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
+import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.slf4j.Logger;
@@ -112,24 +113,23 @@ public class PspImportService {
     @EJB
     private ApartmentCardCorrectionBean apartmentCardCorrectionBean;
     @EJB
+    private ApartmentStrategy apartmentStrategy;
+    @EJB
+    private ApartmentCardStrategy apartmentCardStrategy;
+    @EJB
     private LocaleBean localeBean;
-    private long SYSTEM_LOCALE_ID;
     private boolean processing;
     private Locale locale;
     private Long cityId;
     private String ownerType;
     private boolean reservedDocumentTypesResolved;
     private Set<String> jekIds;
+    private Map<String, Long> organizationMap;
     private String importDirectory;
     private String errorsDirectory;
     private Map<PspImportFile, ImportStatus> loadingStatuses = new EnumMap<PspImportFile, ImportStatus>(PspImportFile.class);
     private Map<ProcessItem, ImportStatus> processingStatuses = new EnumMap<ProcessItem, ImportStatus>(ProcessItem.class);
     private Queue<ImportMessage> messages = new ConcurrentLinkedQueue<ImportMessage>();
-
-    @PostConstruct
-    private void init() {
-        this.SYSTEM_LOCALE_ID = localeBean.getSystemLocaleObject().getId();
-    }
 
     public boolean isProcessing() {
         return processing;
@@ -156,12 +156,13 @@ public class PspImportService {
         reservedDocumentTypesResolved = false;
         locale = null;
         jekIds = null;
+        organizationMap = null;
         importDirectory = null;
         errorsDirectory = null;
     }
 
     @Asynchronous
-    public void startImport(long cityId, Set<String> jekIds, String importDirectiry, String errorsDirectory, Locale locale) {
+    public void startImport(long cityId, Map<String, Long> organizationMap, String importDirectiry, String errorsDirectory, Locale locale) {
         if (processing) {
             return;
         }
@@ -170,7 +171,8 @@ public class PspImportService {
         processing = true;
 
         this.cityId = cityId;
-        this.jekIds = jekIds;
+        this.organizationMap = organizationMap;
+        this.jekIds = organizationMap.keySet();
         this.importDirectory = importDirectiry;
         this.errorsDirectory = errorsDirectory;
         this.locale = locale;
@@ -586,7 +588,7 @@ public class PspImportService {
         processDocumentsTypes();
         processOwnerTypes();
         processPersons();
-//        processApartmentCardsAndRegistrations();
+        processApartmentCardsAndRegistrations();
     }
 
     private void processStreetsAndBuildings() throws OpenErrorFileException, OpenErrorDescriptionFileException {
@@ -655,18 +657,9 @@ public class PspImportService {
                                             Long systemBuildingId =
                                                     buildingCorrectionBean.findSystemBuilding(systemStreetId, dom, korpus);
                                             if (systemBuildingId == null) {
-                                                Building systemBuilding = buildingStrategy.newInstance();
-                                                DomainObject systemBuildingAddress = systemBuilding.getPrimaryAddress();
-
-                                                systemBuildingAddress.setParentEntityId(
-                                                        BuildingAddressStrategy.PARENT_STREET_ENTITY_ID);
-                                                systemBuildingAddress.setParentId(systemStreetId);
-
-                                                Utils.setValue(systemBuildingAddress.getAttribute(
-                                                        BuildingAddressStrategy.NUMBER), SYSTEM_LOCALE_ID, dom);
-                                                Utils.setValue(systemBuildingAddress.getAttribute(
-                                                        BuildingAddressStrategy.CORP), SYSTEM_LOCALE_ID, korpus);
-
+                                                Building systemBuilding =
+                                                        buildingCorrectionBean.newBuilding(systemStreetId, dom, korpus,
+                                                        organizationMap.get(building.getIdjek()));
                                                 buildingStrategy.insert(systemBuilding, DateUtil.getCurrentDate());
                                                 systemBuildingId = systemBuilding.getId();
                                             }
@@ -1563,6 +1556,13 @@ public class PspImportService {
     }
 
     private void processApartmentCardsAndRegistrations() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        if (Strings.isEmpty(ownerType)) {
+            return;
+        }
+        if (!reservedDocumentTypesResolved) {
+            return;
+        }
+
         try {
             final ProcessItem item = ProcessItem.APARTMENT_CARD;
 
@@ -1570,10 +1570,12 @@ public class PspImportService {
             BufferedWriter apartmentCardErrorDescriptionFile = null;
 
             processingStatuses.put(item, new ImportStatus(0));
-            final int count = personCorrectionBean.countForProcessing();
-            final int archiveCount = personCorrectionBean.archiveCount();
+            final int count = apartmentCardCorrectionBean.countForProcessing();
+            final int archiveCount = apartmentCardCorrectionBean.archiveCount();
             messages.add(new ImportMessage(getString("begin_apartment_card_processing", count), INFO));
             boolean wasErrors = false;
+
+            final Date creationDate = DateUtil.getCurrentDate();
 
             try {
                 int leftCards = count;
@@ -1584,31 +1586,111 @@ public class PspImportService {
                     for (ApartmentCardCorrection c : cards) {
                         String errorDescription = null;
 
-                        //building
-                        Long systemBuildingId = null;
-                        final String buildingId = c.getIdbud();
-                        if (!Strings.isEmpty(buildingId)) {
-                            BuildingCorrection building = null;
-                            try {
-                                building = buildingCorrectionBean.getById(buildingId, jekIds);
-                                if (building != null) {
-                                    systemBuildingId = building.getSystemBuildingId();
+                        if (c.getSystemApartmentCardId() == null) {
+
+                            //building
+                            if (!Strings.isEmpty(c.getIdbud())) {
+                                BuildingCorrection building = null;
+                                try {
+                                    building = buildingCorrectionBean.getById(c.getIdbud(), jekIds);
+                                    if (building != null) {
+                                        final Long systemBuildingId = building.getSystemBuildingId();
+
+                                        //apartment
+                                        if (systemBuildingId != null) {
+                                            if (!Strings.isEmpty(c.getKv())) {
+                                                try {
+                                                    Long systemApartmentId =
+                                                            apartmentCardCorrectionBean.findSystemApartment(systemBuildingId, c.getKv());
+                                                    if (systemApartmentId == null) {
+                                                        //create new system apartment
+                                                        DomainObject systemApartment =
+                                                                apartmentCardCorrectionBean.newApartment(systemBuildingId, c.getKv(),
+                                                                organizationMap.get(building.getIdjek()));
+                                                        apartmentStrategy.insert(systemApartment, creationDate);
+                                                        systemApartmentId = systemApartment.getId();
+                                                    } else {
+                                                        //system apartment already exists. Do nothing.
+                                                    }
+
+                                                    //apartment card itself
+                                                    try {
+                                                        Long systemApartmentCardId =
+                                                                apartmentCardCorrectionBean.findSystemApartmentCard(c.getId(), systemApartmentId);
+                                                        if (systemApartmentCardId == null) {
+                                                            //create new system apartment card
+
+                                                            //form of ownership: idprivat
+                                                            if (!Strings.isEmpty(c.getIdprivat())) {
+                                                                try {
+                                                                    final Long systemOwnershipFormId =
+                                                                            referenceDataCorrectionBean.getSystemObjectId("ownership_form", c.getIdprivat(), jekIds);
+                                                                    if (systemOwnershipFormId == null) {
+                                                                        errorDescription = getString("apartment_card_system_ownership_form_not_resolved",
+                                                                                c.getId(), c.getIdprivat(), jekIds.toString());
+                                                                    } else {
+                                                                        //owner.
+                                                                        PersonCorrection owner =
+                                                                                personCorrectionBean.getOwner(c.getIdbud(), c.getKv(), ownerType, c.getFio());
+                                                                        if (owner == null) {
+                                                                            errorDescription = getString("apartment_card_owner_not_resolved",
+                                                                                    c.getId(), c.getIdbud(), c.getKv(), ownerType);
+                                                                        } else if (owner.getSystemPersonId() == null) {
+                                                                            errorDescription = getString("apartment_card_system_owner_not_resolved",
+                                                                                    c.getId(), c.getIdbud(), c.getKv(), ownerType, owner.getId());
+                                                                        } else {
+                                                                            //system owner found. Now we can create new apartment card.
+                                                                            ApartmentCard apartmentCard =
+                                                                                    apartmentCardCorrectionBean.newApartmentCard(c.getId(), systemApartmentId, owner.getSystemPersonId(), systemOwnershipFormId,
+                                                                                    organizationMap.get(building.getIdjek()));
+                                                                            apartmentCardStrategy.insert(apartmentCard, creationDate);
+                                                                            c.setSystemApartmentCardId(apartmentCard.getId());
+                                                                        }
+                                                                    }
+                                                                } catch (TooManyResultsException e) {
+                                                                    errorDescription = getString("apartment_card_too_many_system_ownership_forms",
+                                                                            c.getId(), c.getIdprivat(), jekIds.toString());
+                                                                }
+                                                            } else {
+                                                                errorDescription = getString("apartment_card_ownership_form_not_found",
+                                                                        c.getId(), c.getIdprivat());
+                                                            }
+                                                        } else {
+                                                            //system apartment card already exists. Do nothing.
+                                                            errorDescription = getString("apartment_card_exists", c.getId());
+                                                            c.setSystemApartmentCardId(systemApartmentCardId);
+                                                        }
+                                                    } catch (TooManyResultsException e) {
+                                                        errorDescription = getString("apartment_card_too_many_system_apartment_cards",
+                                                                c.getId(), c.getIdbud(), systemBuildingId, c.getKv(), systemApartmentId);
+                                                    }
+                                                } catch (TooManyResultsException e) {
+                                                    errorDescription = getString("apartment_card_too_many_system_apartments",
+                                                            c.getId(), c.getIdbud(), systemBuildingId, c.getKv());
+                                                }
+                                            } else {
+                                                errorDescription = getString("apartment_card_apartment_empty", c.getId(),
+                                                        c.getKv());
+                                            }
+                                        } else {
+                                            errorDescription = getString("apartment_card_system_building_not_resolved", c.getId(),
+                                                    c.getIdbud(), jekIds.toString());
+                                        }
+                                    } else {
+                                        errorDescription = getString("apartment_card_building_not_found", c.getId(),
+                                                c.getIdbud(), jekIds.toString());
+                                    }
+                                } catch (TooManyResultsException e) {
+                                    errorDescription = getString("apartment_card_too_many_buildings", c.getId(),
+                                            c.getIdbud(), jekIds.toString());
                                 }
-                            } catch (TooManyResultsException e) {
+                            } else {
+                                errorDescription = getString("apartment_card_building_not_found", c.getId(),
+                                        c.getIdbud(), jekIds.toString());
                             }
-                        }
-
-                        //apartment
-                        if (systemBuildingId != null) {
-                            final String apartment = c.getKv();
-                            if (!Strings.isEmpty(apartment)) {
-                            }
-                        }
-
-                        final String idprivat = c.getIdprivat();
-                        if (!Strings.isEmpty(idprivat)) {
                         } else {
-                            errorDescription = getString("invalid_apartment_card_idprivat", c.getId());
+                            //system apartment card already exists. Do nothing.
+                            errorDescription = getString("apartment_card_exists", c.getId());
                         }
 
                         c.setProcessed(true);

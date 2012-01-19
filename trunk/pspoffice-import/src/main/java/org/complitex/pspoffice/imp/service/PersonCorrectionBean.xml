@@ -83,4 +83,15 @@
         AND `kid` = 1 AND `processed` = 0 AND `system_person_id` IS NOT NULL
         LIMIT ${size}
     </select>
+    
+    <select id="getOwnerByType" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
+        SELECT * FROM `person_correction` WHERE `idbud` = #{buildingId} AND `kv` = #{apartment} AND `reltovlaskv` = #{OWNER_TYPE}
+        AND `larc` = #{NONARCHIVE_INDICATOR}
+    </select>
+    
+    <select id="getOwnerByName" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
+        SELECT * FROM `person_correction` WHERE `idbud` = #{buildingId} AND `kv` = #{apartment} 
+            AND CONCAT(`fam`, ' ', `im`, ' ', `ot`) = #{fio}
+        AND `larc` = #{NONARCHIVE_INDICATOR}
+    </select>
 </mapper>

@@ -236,4 +236,17 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
             throw new TooManyResultsException();
         }
     }
+
+    public Long getSystemObjectId(String entity, String id, Set<String> jekIds)
+            throws TooManyResultsException {
+        List<Long> values = sqlSession().selectList(MAPPING_NAMESPACE + ".getSystemObjectId",
+                ImmutableMap.of("entity", entity, "id", id, "jekIds", jekIds));
+        if (values.isEmpty()) {
+            return null;
+        } else if (values.size() == 1) {
+            return values.get(0);
+        } else {
+            throw new TooManyResultsException();
+        }
+    }
 }

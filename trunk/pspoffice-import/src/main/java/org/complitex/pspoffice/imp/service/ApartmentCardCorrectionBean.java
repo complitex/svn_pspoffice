@@ -5,16 +5,18 @@
 package org.complitex.pspoffice.imp.service;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.complitex.address.strategy.apartment.ApartmentStrategy;
+import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.pspoffice.imp.entity.ApartmentCardCorrection;
 import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
+import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 
 /**
  *
@@ -24,7 +26,8 @@ import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 public class ApartmentCardCorrectionBean extends AbstractBean {
 
     private static final String MAPPING_NAMESPACE = ApartmentCardCorrectionBean.class.getName();
-    
+    @EJB
+    private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
     private ApartmentStrategy apartmentStrategy;
 
@@ -64,12 +67,12 @@ public class ApartmentCardCorrectionBean extends AbstractBean {
         return sqlSession().selectList(MAPPING_NAMESPACE + ".findForProcessing",
                 ImmutableMap.of("size", size, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
     }
-    
+
     public Long findSystemApartment(long systemBuildingId, String apartment) throws TooManyResultsException {
-        List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemApartment", 
-                ImmutableMap.<String, Object>of("apartmentNameAT", ApartmentStrategy.NAME, "name", apartment, 
+        List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemApartment",
+                ImmutableMap.<String, Object>of("apartmentNameAT", ApartmentStrategy.NAME, "name", apartment,
                 "buildingId", systemBuildingId, "localeId", Utils.RUSSIAN_LOCALE_ID));
-        
+
         if (ids.size() == 1) {
             return ids.get(0);
         } else if (ids.isEmpty()) {
@@ -78,29 +81,55 @@ public class ApartmentCardCorrectionBean extends AbstractBean {
             throw new TooManyResultsException();
         }
     }
-    
-    public DomainObject newApartment(long systemBuildingId, String apartment){
+
+    public DomainObject newApartment(long systemBuildingId, String apartment, long jekId) {
         DomainObject a = apartmentStrategy.newInstance();
         Utils.setValue(a.getAttribute(ApartmentStrategy.NAME), apartment);
         a.setParentId(systemBuildingId);
-        a.setParentEntityId(500L);
+        a.setParentEntityId(ApartmentStrategy.PARENT_ENTITY_ID);
+        a.setSubjectIds(Sets.newHashSet(jekId));
         return a;
     }
-    
-//    public Long findSystemPerson(PersonCorrection p) throws TooManyResultsException {
-//        List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemPerson",
-//                ImmutableMap.builder().
-//                put("personBirthDateAT", PersonStrategy.BIRTH_DATE).
-//                put("localeId", Utils.UKRAINIAN_LOCALE_ID).
-//                put("lastName", p.getFam()).put("firstName", p.getIm()).put("middleName", p.getOt()).
-//                put("birthDate", getBirthDateAsDateString(p.getDatar())).
-//                build());
-//        if (ids.size() == 1) {
-//            return ids.get(0);
-//        } else if (ids.isEmpty()) {
-//            return null;
-//        } else {
-//            throw new TooManyResultsException();
-//        }
-//    }
+
+    public Long findSystemApartmentCard(long apartmentCardCorrectionId, long apartmentId) throws TooManyResultsException {
+        List<Long> ids = sqlSession().selectList(MAPPING_NAMESPACE + ".findSystemApartmentCard",
+                ImmutableMap.of("apartmentCardAddressAT", ApartmentCardStrategy.ADDRESS,
+                "apartmentCardApartmentATID", ApartmentCardStrategy.ADDRESS_APARTMENT,
+                "apartmentCardIdAT", ApartmentCardStrategy.OLD_SYSTEM_APARTMENT_CARD_ID,
+                "apartmentId", apartmentId, "apartmentCardId", apartmentCardCorrectionId));
+        if (ids.size() == 1) {
+            return ids.get(0);
+        } else if (ids.isEmpty()) {
+            return null;
+        } else {
+            throw new TooManyResultsException();
+        }
+    }
+
+    public ApartmentCard newApartmentCard(long apartmentCardId, long apartmentId, long ownerId, long ownershipFromId, long jekId) {
+        ApartmentCard c = apartmentCardStrategy.newInstance();
+
+        //address
+        Attribute addressAttribute = c.getAttribute(ApartmentCardStrategy.ADDRESS);
+        addressAttribute.setValueTypeId(ApartmentCardStrategy.ADDRESS_APARTMENT);
+        addressAttribute.setValueId(apartmentId);
+
+        //owner
+        Attribute ownerAttribute = c.getAttribute(ApartmentCardStrategy.OWNER);
+        ownerAttribute.setValueId(ownerId);
+        ownerAttribute.setValueTypeId(ApartmentCardStrategy.OWNER_TYPE);
+
+        //ownership form
+        Attribute ownershipFormAttribute = c.getAttribute(ApartmentCardStrategy.FORM_OF_OWNERSHIP);
+        ownershipFormAttribute.setValueId(ownershipFromId);
+        ownershipFormAttribute.setValueTypeId(ApartmentCardStrategy.FORM_OF_OWNERSHIP_TYPE);
+
+        //permissions
+        c.setSubjectIds(Sets.newHashSet(jekId));
+
+        //ID в файле импорта
+        Utils.setValue(c.getAttribute(ApartmentCardStrategy.OLD_SYSTEM_APARTMENT_CARD_ID), String.valueOf(apartmentCardId));
+
+        return c;
+    }
 }

@@ -90,7 +90,7 @@
     <select id="getById" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.BuildingCorrectionBean.buildingCorrection">
         SELECT * FROM `building_correction` WHERE `id` = #{id} AND 
         `idjek` IN 
-        <foreach open="(" close=")" separator="," collection="value" item="idjek">
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
             #{idjek}
         </foreach>
     </select>

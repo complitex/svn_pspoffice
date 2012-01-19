@@ -85,4 +85,12 @@
         </foreach>
     </select>
     
+    <select id="getSystemObjectId" parameterType="map" resultType="long">
+        SELECT DISTINCT(`system_object_id`) FROM `${entity}_correction` WHERE `id` = #{id} AND
+        `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
+            #{idjek}
+        </foreach>
+    </select>
+    
 </mapper>

@@ -4,6 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.File;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -21,6 +22,7 @@ import org.complitex.template.web.template.TemplatePage;
 import javax.ejb.EJB;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -234,11 +236,11 @@ public class ImportPage extends TemplatePage {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (!importService.isProcessing()) {
                     if (ImportPage.this.validate()) {
-                        Set<String> jekIds = getSelectedJekIds();
+                        Map<String, Long> organizationMap = getSelectedOrganizations();
                         long cityId = citySearchComponentState.get("city").getId();
 
                         messagesModel.getObject().clear();
-                        importService.startImport(cityId, jekIds, importDirectoryModel.getObject(),
+                        importService.startImport(cityId, organizationMap, importDirectoryModel.getObject(),
                                 errorsDirectoryModel.getObject(), getLocale());
 
                         container.add(newTimer());
@@ -267,12 +269,12 @@ public class ImportPage extends TemplatePage {
                 messagesModel.getObject().clear();
                 target.addComponent(container);
 
-                Set<String> jekIds = getSelectedJekIds();
-                if (jekIds.isEmpty()) {
+                Map<String, Long> organizationMap = getSelectedOrganizations();
+                if (organizationMap.isEmpty()) {
                     error(getString("clean_data_organization_required"));
                 } else {
                     try {
-                        importService.cleanData(jekIds);
+                        importService.cleanData(organizationMap.keySet());
                         info(getString("clean_data_successful"));
                     } catch (Exception e) {
                         log.error("", e);
@@ -289,14 +291,14 @@ public class ImportPage extends TemplatePage {
         });
     }
 
-    private Set<String> getSelectedJekIds() {
-        Set<String> jekIds = Sets.newHashSet();
+    private Map<String, Long> getSelectedOrganizations() {
+        Map<String, Long> organizationMap = Maps.newHashMap();
         for (DomainObject o : selectedOrganizations) {
             if (o != null && o.getId() != null && o.getId() > 0) {
-                jekIds.add(organizationStrategy.getUniqueCode(o));
+                organizationMap.put(organizationStrategy.getUniqueCode(o), o.getId());
             }
         }
-        return jekIds;
+        return organizationMap;
     }
 
     private boolean validateFiles() {

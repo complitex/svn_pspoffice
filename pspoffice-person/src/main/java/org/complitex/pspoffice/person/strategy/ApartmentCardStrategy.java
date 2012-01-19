@@ -73,6 +73,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public static final long REGISTRATIONS = 2405;
     public static final long EXPLANATION = 2406;
     public static final long EDITED_BY_USER_ID = 2407;
+    public static final long OLD_SYSTEM_APARTMENT_CARD_ID = 2408;
     /**
      * Attribute value type ids
      */
@@ -86,6 +87,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     public static final long REGISTRATIONS_TYPE = 2407;
     public static final long EXPLANATION_TYPE = 2408;
     public static final long EDITED_BY_USER_ID_TYPE = 2409;
+    public static final long OLD_SYSTEM_APARTMENT_CARD_ID_TYPE = 2410;
     /**
      * Set of persistable search state entities
      */

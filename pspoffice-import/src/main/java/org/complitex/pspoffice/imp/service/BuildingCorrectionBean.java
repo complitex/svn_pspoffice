@@ -6,14 +6,20 @@ package org.complitex.pspoffice.imp.service;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.strategy.building.BuildingStrategy;
+import org.complitex.address.strategy.building.entity.Building;
 import org.complitex.address.strategy.building_address.BuildingAddressStrategy;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.pspoffice.imp.entity.BuildingCorrection;
 import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 
@@ -25,6 +31,16 @@ import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
 public class BuildingCorrectionBean extends AbstractBean {
 
     private static final String MAPPING_NAMESPACE = BuildingCorrectionBean.class.getName();
+    @EJB
+    private BuildingStrategy buildingStrategy;
+    @EJB
+    private LocaleBean localeBean;
+    private long SYSTEM_LOCALE_ID;
+
+    @PostConstruct
+    private void init() {
+        SYSTEM_LOCALE_ID = localeBean.getSystemLocaleObject().getId();
+    }
 
     public void insert(BuildingCorrection buildingCorrection) {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", buildingCorrection);
@@ -98,5 +114,23 @@ public class BuildingCorrectionBean extends AbstractBean {
         } else {
             throw new TooManyResultsException();
         }
+    }
+
+    public Building newBuilding(long streetId, String buildingNumber, String corp, long jekId) {
+        Building b = buildingStrategy.newInstance();
+        DomainObject systemBuildingAddress = b.getPrimaryAddress();
+
+        systemBuildingAddress.setParentEntityId(
+                BuildingAddressStrategy.PARENT_STREET_ENTITY_ID);
+        systemBuildingAddress.setParentId(streetId);
+
+        Utils.setValue(systemBuildingAddress.getAttribute(
+                BuildingAddressStrategy.NUMBER), SYSTEM_LOCALE_ID, buildingNumber);
+        Utils.setValue(systemBuildingAddress.getAttribute(
+                BuildingAddressStrategy.CORP), SYSTEM_LOCALE_ID, corp);
+
+        b.setSubjectIds(Sets.newHashSet(jekId));
+
+        return b;
     }
 }

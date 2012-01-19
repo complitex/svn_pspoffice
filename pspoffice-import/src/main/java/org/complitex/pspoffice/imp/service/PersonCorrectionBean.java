@@ -240,4 +240,38 @@ public class PersonCorrectionBean extends AbstractBean {
         return sqlSession().selectList(MAPPING_NAMESPACE + ".findChildren",
                 ImmutableMap.of("size", size, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
     }
+
+    public PersonCorrection getOwner(String buildingId, String apartment, String ownerType, String fio) {
+        PersonCorrection correction = findOwnerByType(buildingId, apartment, ownerType);
+        if (correction == null && !Strings.isEmpty(fio)) {
+            correction = findOwnerByName(buildingId, apartment, prepareFio(fio));
+        }
+        return correction;
+    }
+
+    private static String prepareFio(String rawFio) {
+        return rawFio.replaceAll("( )+", " ").trim();
+    }
+
+    private PersonCorrection findOwnerByName(String buildingId, String apartment, String fio) {
+        List<PersonCorrection> corrections = sqlSession().selectList(MAPPING_NAMESPACE + ".getOwnerByName",
+                ImmutableMap.of("buildingId", buildingId, "apartment", apartment,
+                "fio", fio, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
+        if (corrections.size() == 1) {
+            return corrections.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    private PersonCorrection findOwnerByType(String buildingId, String apartment, String ownerType) {
+        List<PersonCorrection> corrections = sqlSession().selectList(MAPPING_NAMESPACE + ".getOwnerByType",
+                ImmutableMap.of("buildingId", buildingId, "apartment", apartment,
+                "OWNER_TYPE", ownerType, "NONARCHIVE_INDICATOR", Utils.NONARCHIVE_INDICATOR));
+        if (corrections.size() == 1) {
+            return corrections.get(0);
+        } else {
+            return null;
+        }
+    }
 }

@@ -13,6 +13,7 @@ import org.complitex.dictionary.util.ImportStorageUtil;
 import java.io.IOException;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.BufferedWriter;
@@ -64,8 +65,10 @@ import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrat
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
+import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
+import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,12 +120,18 @@ public class PspImportService {
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
+    private RegistrationCorrectionBean registrationCorrectionBean;
+    @EJB
+    private RegistrationStrategy registrationStrategy;
+    @EJB
     private LocaleBean localeBean;
     private boolean processing;
     private Locale locale;
     private Long cityId;
     private String ownerType;
     private boolean reservedDocumentTypesResolved;
+    private boolean reservedRegistrationTypesResolved;
+    private boolean reservedOwnerRelationshipResolved;
     private Set<String> jekIds;
     private Map<String, Long> organizationMap;
     private String importDirectory;
@@ -154,6 +163,8 @@ public class PspImportService {
         cityId = null;
         ownerType = null;
         reservedDocumentTypesResolved = false;
+        reservedRegistrationTypesResolved = false;
+        reservedOwnerRelationshipResolved = false;
         locale = null;
         jekIds = null;
         organizationMap = null;
@@ -588,7 +599,8 @@ public class PspImportService {
         processDocumentsTypes();
         processOwnerTypes();
         processPersons();
-        processApartmentCardsAndRegistrations();
+        processApartmentCards();
+        processRegistrations();
     }
 
     private void processStreetsAndBuildings() throws OpenErrorFileException, OpenErrorDescriptionFileException {
@@ -618,7 +630,7 @@ public class PspImportService {
                                 String streetErrorDescription = null;
 
                                 String idul = building.getIdul();
-                                final StreetCorrection street = streetCorrectionBean.findById(idul, idjek);
+                                final StreetCorrection street = streetCorrectionBean.getById(idul, idjek);
                                 if (street == null) {
                                     buildingErrorDescription = getString("buiding_invalid_street_id",
                                             building.getId(), building.getIdjek(), idul);
@@ -994,7 +1006,8 @@ public class PspImportService {
                 }
 
                 try {
-                    referenceDataCorrectionBean.checkReservedOwnerRelationships();
+                    referenceDataCorrectionBean.checkReservedOwnerRelationships(jekIds);
+                    reservedOwnerRelationshipResolved = true;
                 } catch (ReferenceDataCorrectionBean.OwnerRelationshipsNotResolved e) {
                     wasErrors = true;
 
@@ -1015,7 +1028,7 @@ public class PspImportService {
                                 append(", ");
                     }
                     sb.delete(sb.length() - 2, sb.length());
-                    String error = getString("reserved_owner_relationship_not_resolved", sb.toString());
+                    String error = getString("reserved_owner_relationship_not_resolved", sb.toString(), jekIds.toString());
                     if (ownerRelationshipErrorDescriptionFile == null) {
                         ownerRelationshipErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
                                 PspImportFile.OWNER_RELATIONSHIP);
@@ -1081,161 +1094,64 @@ public class PspImportService {
     }
 
     private void processRegistrationsTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final String entity = "registration_type";
+        final ProcessItem item = ProcessItem.REGISTRATION_TYPE;
+        BufferedWriter registrationTypeErrorDescriptionFile = null;
+
         try {
-            final ProcessItem item = ProcessItem.REGISTRATION_TYPE;
-
-            BufferedWriter registrationTypeErrorFile = null;
-            BufferedWriter registrationTypeErrorDescriptionFile = null;
-
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
-            messages.add(new ImportMessage(getString("begin_registration_type_processing", count), INFO));
-            boolean wasErrors = false;
+            userTransaction.begin();
+            referenceDataCorrectionBean.putReservedRegistrationTypes(jekIds);
+            userTransaction.commit();
 
             try {
-                for (String idjek : jekIds) {
-                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    while (jekCount > 0) {
-                        List<ReferenceDataCorrection> registrationTypes =
-                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
-
-                        userTransaction.begin();
-                        for (ReferenceDataCorrection registrationType : registrationTypes) {
-                            String errorDescription = null;
-
-                            if (registrationType.getId() == ReferenceDataCorrectionBean.PERMANENT) { //постоянная регистрация
-                                registrationType.setSystemObjectId(RegistrationTypeStrategy.PERMANENT);
-                            } else if (registrationType.getId() == ReferenceDataCorrectionBean.TEMPORAL) { //временная регистрация
-                                registrationType.setSystemObjectId(RegistrationTypeStrategy.TEMPORAL);
-                            } else {
-                                try {
-                                    Long systemRegistrationTypeId =
-                                            referenceDataCorrectionBean.findSystemObject(entity, registrationType.getNkod());
-                                    if (systemRegistrationTypeId == null) {
-                                        DomainObject systemRegistrationType = registrationTypeStrategy.newInstance();
-                                        Utils.setValue(systemRegistrationType.getAttribute(RegistrationTypeStrategy.NAME),
-                                                registrationType.getNkod());
-                                        registrationTypeStrategy.insert(systemRegistrationType, DateUtil.getCurrentDate());
-                                        systemRegistrationTypeId = systemRegistrationType.getId();
-                                    }
-                                    registrationType.setSystemObjectId(systemRegistrationTypeId);
-                                } catch (TooManyResultsException e) {
-                                    errorDescription = getString("registration_type_system_many_objects", registrationType.getId(),
-                                            idjek, registrationType.getNkod());
-                                }
-                            }
-
-                            registrationType.setProcessed(true);
-                            referenceDataCorrectionBean.update(registrationType);
-
-                            processingStatuses.get(item).increment();
-
-                            if (errorDescription != null) {
-                                wasErrors = true;
-                                if (registrationTypeErrorFile == null) {
-                                    registrationTypeErrorFile = getErrorFile(errorsDirectory, PspImportFile.REGISTRATION_TYPE);
-                                    registrationTypeErrorFile.write(PspImportFile.REGISTRATION_TYPE.getCsvHeader());
-                                    registrationTypeErrorFile.newLine();
-                                }
-                                if (registrationTypeErrorDescriptionFile == null) {
-                                    registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            PspImportFile.REGISTRATION_TYPE);
-                                }
-
-                                registrationTypeErrorFile.write(registrationType.getContent());
-                                registrationTypeErrorFile.newLine();
-
-                                registrationTypeErrorDescriptionFile.write(errorDescription);
-                                registrationTypeErrorDescriptionFile.newLine();
-                            }
-                        }
-
-                        userTransaction.commit();
-                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    }
+                referenceDataCorrectionBean.checkReservedRegistrationTypes(jekIds);
+                messages.add(new ImportMessage(getString("success_finish_registration_type_processing"), INFO));
+                reservedRegistrationTypesResolved = true;
+            } catch (ReferenceDataCorrectionBean.RegistrationTypesNotResolved e) {
+                StringBuilder sb = new StringBuilder();
+                if (!e.isPermanentResolved()) {
+                    sb.append(registrationTypeStrategy.displayDomainObject(
+                            registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true),
+                            localeBean.getSystemLocale())).
+                            append(", ");
                 }
-
-                try {
-                    referenceDataCorrectionBean.checkReservedRegistrationTypes();
-                } catch (ReferenceDataCorrectionBean.RegistrationTypesNotResolved e) {
-                    wasErrors = true;
-
-                    StringBuilder sb = new StringBuilder();
-                    if (!e.isPermanentResolved()) {
-                        sb.append(registrationTypeStrategy.displayDomainObject(
-                                registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true),
-                                localeBean.getSystemLocale())).
-                                append(", ");
-                    }
-                    if (!e.isTemporalResolved()) {
-                        sb.append(registrationTypeStrategy.displayDomainObject(
-                                registrationTypeStrategy.findById(RegistrationTypeStrategy.TEMPORAL, true),
-                                localeBean.getSystemLocale())).
-                                append(", ");
-                    }
-                    sb.delete(sb.length() - 2, sb.length());
-                    String error = getString("reserved_registration_type_not_resolved", sb.toString());
-                    if (registrationTypeErrorDescriptionFile == null) {
-                        registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                PspImportFile.REGISTRATION_TYPE);
-                    }
-                    registrationTypeErrorDescriptionFile.write(error);
-                    registrationTypeErrorDescriptionFile.newLine();
-
-                    messages.add(new ImportMessage(error, WARN));
+                if (!e.isTemporalResolved()) {
+                    sb.append(registrationTypeStrategy.displayDomainObject(
+                            registrationTypeStrategy.findById(RegistrationTypeStrategy.TEMPORAL, true),
+                            localeBean.getSystemLocale())).
+                            append(", ");
                 }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
+                sb.delete(sb.length() - 2, sb.length());
+                String error = getString("fail_finish_registration_type_processing", sb.toString(), jekIds.toString());
+                if (registrationTypeErrorDescriptionFile == null) {
+                    registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                            PspImportFile.REGISTRATION_TYPE);
                 }
+                registrationTypeErrorDescriptionFile.write(error);
+                registrationTypeErrorDescriptionFile.newLine();
 
-                throw new RuntimeException(e);
-            } finally {
-                if (registrationTypeErrorFile != null) {
-                    try {
-                        registrationTypeErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-                if (registrationTypeErrorDescriptionFile != null) {
-                    try {
-                        registrationTypeErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
+                messages.add(new ImportMessage(error, WARN));
             }
 
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_registration_type_processing", count), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_registration_type_processing", count), INFO));
+            ImportStatus status = new ImportStatus(2);
+            status.finish();
+            processingStatuses.put(item, status);
+        } catch (Exception e) {
+            try {
+                if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                    userTransaction.rollback();
+                }
+            } catch (Exception e1) {
+                log.error("Couldn't to rollback transaction.", e1);
             }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
+
+            throw new RuntimeException(e);
         } finally {
-            try {
-                userTransaction.begin();
-
-                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
-
-                userTransaction.commit();
-            } catch (Exception e) {
+            if (registrationTypeErrorDescriptionFile != null) {
                 try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
+                    registrationTypeErrorDescriptionFile.close();
+                } catch (IOException e) {
+                    log.error("Couldn't to close file stream.", e);
                 }
-                log.error("Couldn't to clear processing status for registration types.", e);
             }
         }
     }
@@ -1246,11 +1162,11 @@ public class PspImportService {
 
         try {
             userTransaction.begin();
-            referenceDataCorrectionBean.putReservedDocumentTypes();
+            referenceDataCorrectionBean.putReservedDocumentTypes(jekIds);
             userTransaction.commit();
 
             try {
-                referenceDataCorrectionBean.checkReservedDocumentTypes();
+                referenceDataCorrectionBean.checkReservedDocumentTypes(jekIds);
                 messages.add(new ImportMessage(getString("success_finish_document_type_processing"), INFO));
                 reservedDocumentTypesResolved = true;
             } catch (ReferenceDataCorrectionBean.DocumentTypesNotResolved e) {
@@ -1268,7 +1184,7 @@ public class PspImportService {
                             append(", ");
                 }
                 sb.delete(sb.length() - 2, sb.length());
-                String error = getString("fail_finish_document_type_processing", sb.toString());
+                String error = getString("fail_finish_document_type_processing", sb.toString(), jekIds.toString());
 
                 documentTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, PspImportFile.DOCUMENT_TYPE);
                 documentTypeErrorDescriptionFile.write(error);
@@ -1276,6 +1192,7 @@ public class PspImportService {
 
                 messages.add(new ImportMessage(error, WARN));
             }
+
             ImportStatus status = new ImportStatus(2);
             status.finish();
             processingStatuses.put(item, status);
@@ -1304,11 +1221,11 @@ public class PspImportService {
         BufferedWriter ownerTypeErrorDescriptionFile = null;
 
         try {
-            ownerType = referenceDataCorrectionBean.getReservedOwnerType();
+            ownerType = referenceDataCorrectionBean.getReservedOwnerType(jekIds);
             if (!Strings.isEmpty(ownerType)) {
                 messages.add(new ImportMessage(getString("success_finish_owner_type_processing"), INFO));
             } else {
-                String error = getString("fail_finish_owner_type_processing");
+                String error = getString("fail_finish_owner_type_processing", jekIds.toString());
 
                 ownerTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, PspImportFile.OWNER_TYPE);
                 ownerTypeErrorDescriptionFile.write(error);
@@ -1371,8 +1288,6 @@ public class PspImportService {
                                         errorDescription = getString("person_exists", p.getId());
                                     } else {
                                         if (PersonCorrectionBean.isBirthDateValid(p.getDatar())
-                                                && PersonCorrectionBean.isGenderValid(p.getPol())
-                                                && !Strings.isEmpty(p.getGrajd())
                                                 && PersonCorrectionBean.isDocumentDataValid(p.getIddok(), p.getDokseria(), p.getDoknom())) {
 
                                             Date birthDate = DateUtil.asDate(p.getDatar(), Utils.DATE_PATTERN);
@@ -1381,21 +1296,24 @@ public class PspImportService {
                                             if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
 
                                                 //military service relation
+                                                //TODO: disable for the present
+                                                /*
                                                 String militaryServiceRelation = null;
                                                 try {
-                                                    militaryServiceRelation =
-                                                            referenceDataCorrectionBean.getById("military_duty", p.getIdarm(), jekIds);
-                                                    if (militaryServiceRelation == null) {
-                                                        errorDescription = getString("person_military_duty_not_found", p.getId(),
-                                                                p.getIdarm(), jekIds.toString());
-                                                    }
-                                                } catch (TooManyResultsException e) {
-                                                    errorDescription = getString("person_military_duty_too_many_objects", p.getId(),
-                                                            p.getIdarm(), jekIds.toString());
+                                                militaryServiceRelation =
+                                                referenceDataCorrectionBean.getMilitaryServiceRelationById(p.getIdarm(), jekIds);
+                                                if (militaryServiceRelation == null) {
+                                                errorDescription = getString("person_military_duty_not_found", p.getId(),
+                                                p.getIdarm(), jekIds.toString());
                                                 }
+                                                } catch (TooManyResultsException e) {
+                                                errorDescription = getString("person_military_duty_too_many_objects", p.getId(),
+                                                p.getIdarm(), jekIds.toString());
+                                                }
+                                                 */
 
                                                 systemPerson = personCorrectionBean.newSystemPerson(p, birthDate,
-                                                        militaryServiceRelation);
+                                                        null/*militaryServiceRelation*/);
                                                 personStrategy.insert(systemPerson, creationDate);
                                                 p.setSystemPersonId(systemPerson.getId());
                                             } else {
@@ -1403,7 +1321,7 @@ public class PspImportService {
                                             }
                                         } else {
                                             errorDescription = getString("invalid_person_data", p.getId(), p.getDatar(),
-                                                    p.getPol(), p.getGrajd(), p.getIddok(), p.getDokseria(), p.getDoknom());
+                                                    p.getIddok(), p.getDokseria(), p.getDoknom());
                                         }
                                     }
                                 } catch (TooManyResultsException e) {
@@ -1555,11 +1473,8 @@ public class PspImportService {
         }
     }
 
-    private void processApartmentCardsAndRegistrations() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        if (Strings.isEmpty(ownerType)) {
-            return;
-        }
-        if (!reservedDocumentTypesResolved) {
+    private void processApartmentCards() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        if (Strings.isEmpty(ownerType) || !reservedDocumentTypesResolved) {
             return;
         }
 
@@ -1592,7 +1507,7 @@ public class PspImportService {
                             if (!Strings.isEmpty(c.getIdbud())) {
                                 BuildingCorrection building = null;
                                 try {
-                                    building = buildingCorrectionBean.getById(c.getIdbud(), jekIds);
+                                    building = buildingCorrectionBean.findById(c.getIdbud(), jekIds);
                                     if (building != null) {
                                         final Long systemBuildingId = building.getSystemBuildingId();
 
@@ -1622,38 +1537,37 @@ public class PspImportService {
 
                                                             //form of ownership: idprivat
                                                             if (!Strings.isEmpty(c.getIdprivat())) {
-                                                                try {
-                                                                    final Long systemOwnershipFormId =
-                                                                            referenceDataCorrectionBean.getSystemObjectId("ownership_form", c.getIdprivat(), jekIds);
-                                                                    if (systemOwnershipFormId == null) {
-                                                                        errorDescription = getString("apartment_card_system_ownership_form_not_resolved",
-                                                                                c.getId(), c.getIdprivat(), jekIds.toString());
+                                                                ReferenceDataCorrection ownershipForm =
+                                                                        referenceDataCorrectionBean.getById("ownership_form", c.getIdprivat(), building.getIdjek());
+                                                                if (ownershipForm == null) {
+                                                                    errorDescription = getString("apartment_card_ownership_form_not_found",
+                                                                            c.getId(), c.getIdprivat(), building.getIdjek());
+                                                                } else if (ownershipForm.getSystemObjectId() == null) {
+                                                                    errorDescription = getString("apartment_card_system_ownership_form_not_resolved",
+                                                                            c.getId(), c.getIdprivat(), building.getIdjek());
+                                                                } else {
+                                                                    //owner.
+                                                                    PersonCorrection owner =
+                                                                            personCorrectionBean.getOwner(c.getIdbud(), c.getKv(), ownerType, c.getFio());
+                                                                    if (owner == null) {
+                                                                        errorDescription = getString("apartment_card_owner_not_resolved",
+                                                                                c.getId(), c.getIdbud(), c.getKv(), ownerType);
+                                                                    } else if (owner.getSystemPersonId() == null) {
+                                                                        errorDescription = getString("apartment_card_system_owner_not_resolved",
+                                                                                c.getId(), c.getIdbud(), c.getKv(), ownerType, owner.getId());
                                                                     } else {
-                                                                        //owner.
-                                                                        PersonCorrection owner =
-                                                                                personCorrectionBean.getOwner(c.getIdbud(), c.getKv(), ownerType, c.getFio());
-                                                                        if (owner == null) {
-                                                                            errorDescription = getString("apartment_card_owner_not_resolved",
-                                                                                    c.getId(), c.getIdbud(), c.getKv(), ownerType);
-                                                                        } else if (owner.getSystemPersonId() == null) {
-                                                                            errorDescription = getString("apartment_card_system_owner_not_resolved",
-                                                                                    c.getId(), c.getIdbud(), c.getKv(), ownerType, owner.getId());
-                                                                        } else {
-                                                                            //system owner found. Now we can create new apartment card.
-                                                                            ApartmentCard apartmentCard =
-                                                                                    apartmentCardCorrectionBean.newApartmentCard(c.getId(), systemApartmentId, owner.getSystemPersonId(), systemOwnershipFormId,
-                                                                                    organizationMap.get(building.getIdjek()));
-                                                                            apartmentCardStrategy.insert(apartmentCard, creationDate);
-                                                                            c.setSystemApartmentCardId(apartmentCard.getId());
-                                                                        }
+                                                                        //system owner found. Now we can create new apartment card.
+                                                                        ApartmentCard apartmentCard =
+                                                                                apartmentCardCorrectionBean.newApartmentCard(
+                                                                                c.getId(), systemApartmentId, owner.getSystemPersonId(),
+                                                                                ownershipForm.getSystemObjectId(), organizationMap.get(building.getIdjek()));
+                                                                        apartmentCardStrategy.insert(apartmentCard, creationDate);
+                                                                        c.setSystemApartmentCardId(apartmentCard.getId());
                                                                     }
-                                                                } catch (TooManyResultsException e) {
-                                                                    errorDescription = getString("apartment_card_too_many_system_ownership_forms",
-                                                                            c.getId(), c.getIdprivat(), jekIds.toString());
                                                                 }
                                                             } else {
                                                                 errorDescription = getString("apartment_card_ownership_form_not_found",
-                                                                        c.getId(), c.getIdprivat());
+                                                                        c.getId(), c.getIdprivat(), building.getIdjek());
                                                             }
                                                         } else {
                                                             //system apartment card already exists. Do nothing.
@@ -1674,7 +1588,7 @@ public class PspImportService {
                                             }
                                         } else {
                                             errorDescription = getString("apartment_card_system_building_not_resolved", c.getId(),
-                                                    c.getIdbud(), jekIds.toString());
+                                                    c.getIdbud(), building.getIdjek());
                                         }
                                     } else {
                                         errorDescription = getString("apartment_card_building_not_found", c.getId(),
@@ -1685,8 +1599,8 @@ public class PspImportService {
                                             c.getIdbud(), jekIds.toString());
                                 }
                             } else {
-                                errorDescription = getString("apartment_card_building_not_found", c.getId(),
-                                        c.getIdbud(), jekIds.toString());
+                                errorDescription = getString("apartment_card_building_empty", c.getId(),
+                                        c.getIdbud());
                             }
                         } else {
                             //system apartment card already exists. Do nothing.
@@ -1774,6 +1688,341 @@ public class PspImportService {
         }
     }
 
+    private void processRegistrations() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        if (Strings.isEmpty(ownerType) || !reservedDocumentTypesResolved
+                || !reservedOwnerRelationshipResolved || !reservedRegistrationTypesResolved) {
+            return;
+        }
+
+        try {
+            final ProcessItem item = ProcessItem.REGISTRATION;
+
+            BufferedWriter registrationErrorFile = null;
+            BufferedWriter registrationErrorDescriptionFile = null;
+
+            processingStatuses.put(item, new ImportStatus(0));
+            final int count = registrationCorrectionBean.countForProcessing();
+            messages.add(new ImportMessage(getString("begin_registration_processing", count), INFO));
+            boolean wasErrors = false;
+
+            final Date creationDate = DateUtil.getCurrentDate();
+
+            try {
+                int leftCards = count;
+                while (leftCards > 0) {
+                    List<ApartmentCardCorrection> cards = registrationCorrectionBean.findApartmentCardsForProcessing(PROCESSING_BATCH);
+
+                    for (ApartmentCardCorrection c : cards) {
+                        List<String> errorDescriptions = Lists.newArrayList();
+
+                        List<PersonCorrection> persons = personCorrectionBean.findByAddress(c.getIdbud(), c.getKv());
+                        for (PersonCorrection p : persons) {
+                            if (p.getSystemRegistrationId() == null) {
+                                if (p.getSystemPersonId() == null) {
+                                    errorDescriptions.add(getString("registration_system_person_not_resolved", p.getId()));
+                                } else {
+                                    ApartmentCard systemApartmentCard = apartmentCardStrategy.findById(c.getSystemApartmentCardId(),
+                                            true, true, true, false);
+
+                                    boolean exists = false;
+
+                                    Date departureDate = DateUtil.asDate(p.getVdata(), Utils.DATE_PATTERN);
+                                    boolean isFinishedRegistration = departureDate != null;
+                                    for (Registration r : systemApartmentCard.getRegistrations()) {
+                                        if (p.getSystemPersonId().equals(r.getPerson().getId())
+                                                && ((isFinishedRegistration && r.isFinished())
+                                                || (!isFinishedRegistration && !r.isFinished()))) {
+                                            exists = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (exists) {
+                                        errorDescriptions.add(getString("registration_exists", p.getId()));
+                                    } else {
+                                        //create new system registration
+
+                                        Long systemRegistrationId = null;
+
+                                        //registration date
+                                        final Date registrationDate = DateUtil.asDate(p.getDprop(), Utils.DATE_PATTERN);
+                                        if (registrationDate != null) {
+                                            //owner relationship
+
+                                            //at first find jek id:
+                                            BuildingCorrection building = null;
+                                            try {
+                                                building = buildingCorrectionBean.findById(c.getIdbud(), jekIds);
+                                            } catch (TooManyResultsException e) {
+                                                //impossible case because we handle apartment cards that already 
+                                                // were processed by processApartmentCards() and that processing 
+                                                // includes search the building and check that there only one building found.
+                                            }
+                                            ReferenceDataCorrection ownerRelationship =
+                                                    referenceDataCorrectionBean.getById("owner_relationship", p.getIdrel(), building.getIdjek());
+                                            if (ownerRelationship == null) {
+                                                errorDescriptions.add(getString("registration_owner_relationship_not_found",
+                                                        p.getId(), p.getIdrel(), building.getIdjek()));
+                                            } else if (ownerRelationship.getSystemObjectId() == null) {
+                                                errorDescriptions.add(getString("registration_system_owner_relationship_not_resolved",
+                                                        p.getId(), p.getIdrel(), building.getIdjek()));
+                                            } else {
+                                                //registration type
+                                                ReferenceDataCorrection registrationType =
+                                                        referenceDataCorrectionBean.getById("registration_type", p.getIdvidp(), building.getIdjek());
+                                                if (registrationType == null) {
+                                                    errorDescriptions.add(getString("registration_registration_type_not_found",
+                                                            p.getId(), p.getIdrel(), building.getIdjek()));
+                                                } else {
+                                                    // if registration type is not permanent then is is temporal:
+                                                    final long systemRegistrationTypeId = registrationType.getSystemObjectId() != null
+                                                            ? registrationType.getSystemObjectId() : RegistrationTypeStrategy.TEMPORAL;
+
+                                                    //arrival street
+                                                    String arrivalStreet = null;
+                                                    StreetCorrection arrivalStreetCorrection =
+                                                            streetCorrectionBean.getById(p.getPidul(), building.getIdjek());
+                                                    if (arrivalStreetCorrection != null) {
+                                                        //at first try to take ukrainian street name
+                                                        if (!Strings.isEmpty(arrivalStreetCorrection.getNkod())) {
+                                                            arrivalStreet = arrivalStreetCorrection.getUtype()
+                                                                    + " " + arrivalStreetCorrection.getNkod();
+                                                        } else {
+                                                            arrivalStreet = arrivalStreetCorrection.getRtype()
+                                                                    + " " + arrivalStreetCorrection.getNkod1();
+                                                        }
+                                                        if (Strings.isEmpty(arrivalStreet)) {
+                                                            errorDescriptions.add(getString("registration_arrival_street_empty",
+                                                                    p.getId(), p.getPidul(),
+                                                                    arrivalStreetCorrection.getUtype() + " " + arrivalStreetCorrection.getNkod(),
+                                                                    arrivalStreetCorrection.getRtype() + " " + arrivalStreetCorrection.getNkod1(),
+                                                                    building.getIdjek()));
+                                                        }
+                                                    } else {
+                                                        errorDescriptions.add(getString("registration_arrival_street_not_found",
+                                                                p.getId(), p.getPidul(), building.getIdjek()));
+                                                    }
+
+                                                    //arrival date
+                                                    Date arrivalDate1 = DateUtil.asDate(p.getPdpribza(), Utils.DATE_PATTERN);
+                                                    Date arrivalDate2 = DateUtil.asDate(p.getPdpribvm(), Utils.DATE_PATTERN);
+                                                    Date arrivalDate = DateUtil.getMax(arrivalDate1, arrivalDate2);
+                                                    if (arrivalDate == null) {
+                                                        errorDescriptions.add(getString("registration_arrival_date_invalid",
+                                                                p.getId(), p.getPdpribza(), p.getPdpribvm(), building.getIdjek()));
+                                                    }
+
+                                                    String departureStreet = null;
+                                                    String departureReason = null;
+                                                    if (isFinishedRegistration) {
+                                                        //departure street
+                                                        StreetCorrection departureStreetCorrection =
+                                                                streetCorrectionBean.getById(p.getVidul(), building.getIdjek());
+                                                        if (departureStreetCorrection != null) {
+                                                            //at first try to take ukrainian street name
+                                                            if (!Strings.isEmpty(departureStreetCorrection.getNkod())) {
+                                                                departureStreet = departureStreetCorrection.getUtype()
+                                                                        + " " + departureStreetCorrection.getNkod();
+                                                            } else {
+                                                                departureStreet = departureStreetCorrection.getRtype()
+                                                                        + " " + departureStreetCorrection.getNkod1();
+                                                            }
+                                                            if (Strings.isEmpty(departureStreet)) {
+                                                                errorDescriptions.add(getString("registration_departure_street_empty",
+                                                                        p.getId(), p.getVidul(),
+                                                                        departureStreetCorrection.getUtype() + " " + departureStreetCorrection.getNkod(),
+                                                                        departureStreetCorrection.getRtype() + " " + departureStreetCorrection.getNkod1(),
+                                                                        building.getIdjek()));
+                                                            }
+                                                        } else {
+                                                            errorDescriptions.add(getString("registration_departure_street_not_found",
+                                                                    p.getId(), p.getVidul(), building.getIdjek()));
+                                                        }
+
+                                                        //departure reason
+                                                        ReferenceDataCorrection departureReasonCorrection =
+                                                                referenceDataCorrectionBean.getById("departure_reason", p.getIdvip(), building.getIdjek());
+                                                        if (departureReasonCorrection != null) {
+                                                            departureReason = departureReasonCorrection.getNkod();
+                                                            if (Strings.isEmpty(departureReason)) {
+                                                                errorDescriptions.add(getString("registration_departure_reason_empty",
+                                                                        p.getId(), p.getIdvip(), building.getIdjek()));
+                                                            }
+                                                        } else {
+                                                            errorDescriptions.add(getString("registration_departure_reason_not_found",
+                                                                    p.getId(), p.getIdvip(), building.getIdjek()));
+                                                        }
+
+                                                        //departure date
+                                                        if (departureDate == null) {
+                                                            errorDescriptions.add(getString("registration_departure_date_invalid",
+                                                                    p.getId(), p.getVdata(), building.getIdjek()));
+                                                        }
+                                                    }
+
+                                                    //now we can create new registration.
+                                                    Registration registration =
+                                                            registrationCorrectionBean.newRegistration(p, isFinishedRegistration,
+                                                            p.getSystemPersonId(), ownerRelationship.getSystemObjectId(),
+                                                            systemRegistrationTypeId, registrationDate,
+                                                            arrivalDate, arrivalStreet,
+                                                            departureDate, departureStreet, departureReason);
+
+                                                    if (!isFinishedRegistration) {
+                                                        //need validation
+
+                                                        boolean isValid = true;
+                                                        {
+                                                            //registration date must be greater than person's birth date
+                                                            if (registration.getPerson().getBirthDate().after(registration.getRegistrationDate())) {
+                                                                isValid = false;
+                                                                errorDescriptions.add(getString("registration_date_validation_error",
+                                                                        p.getId(), Utils.displayDate(registrationDate),
+                                                                        Utils.displayDate(registration.getPerson().getBirthDate())));
+                                                            }
+
+                                                            //permanent registration type
+                                                            if (systemRegistrationTypeId == RegistrationTypeStrategy.PERMANENT) {
+                                                                String address = personStrategy.findPermanentRegistrationAddress(registration.getPerson().getId(),
+                                                                        localeBean.getSystemLocale());
+                                                                if (!Strings.isEmpty(address)) {
+                                                                    isValid = false;
+                                                                    errorDescriptions.add(getString("registration_permanent_registration_type_validation_error",
+                                                                            p.getId(), address));
+                                                                }
+                                                            }
+
+                                                            //owner and owner relationship
+                                                            String ownerName = registrationStrategy.checkOwner(systemApartmentCard.getId(),
+                                                                    ownerRelationship.getSystemObjectId(),
+                                                                    registration.getPerson().getId(), localeBean.getSystemLocale());
+                                                            if (!Strings.isEmpty(ownerName)) {
+                                                                isValid = false;
+                                                                errorDescriptions.add(getString("registration_owner_is_another_man_validation_error",
+                                                                        p.getId(), ownerName));
+                                                            }
+
+                                                            //duplicate person registration check
+                                                            if (!registrationStrategy.validateDuplicatePerson(systemApartmentCard.getId(), registration.getPerson().getId())) {
+                                                                isValid = false;
+                                                                errorDescriptions.add(getString("registration_person_already_registered_validation_error",
+                                                                        p.getId()));
+                                                            }
+                                                        }
+                                                        if (isValid) {
+                                                            systemRegistrationId =
+                                                                    registrationCorrectionBean.addRegistration(systemApartmentCard, registration, creationDate);
+                                                        }
+                                                    } else { // validation not needed.
+                                                        userTransaction.begin();
+                                                        systemRegistrationId =
+                                                                registrationCorrectionBean.addRegistration(systemApartmentCard, registration, creationDate);
+                                                        registrationStrategy.disable(registration, creationDate);
+                                                        userTransaction.commit();
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            errorDescriptions.add(getString("registration_date_invalid", p.getId(), p.getDprop()));
+                                        }
+
+                                        if (systemRegistrationId != null) {
+                                            p.setSystemRegistrationId(systemRegistrationId);
+                                            userTransaction.begin();
+                                            registrationCorrectionBean.updatePerson(p);
+                                            userTransaction.commit();
+                                        }
+                                    }
+                                }
+                            } else {
+                                errorDescriptions.add(getString("registration_exists", p.getId()));
+                            }
+                        }
+
+                        c.setProcessed(true);
+                        userTransaction.begin();
+                        registrationCorrectionBean.updateApartmentCard(c);
+                        userTransaction.commit();
+
+                        processingStatuses.get(item).increment();
+
+                        if (!errorDescriptions.isEmpty()) {
+                            wasErrors = true;
+                            if (registrationErrorFile == null) {
+                                registrationErrorFile = getErrorFile(errorsDirectory, RegistrationCorrectionBean.REGISTRATION_FILE_NAME);
+                                registrationErrorFile.write(RegistrationCorrectionBean.REGISTRATION_FILE_HEADER);
+                                registrationErrorFile.newLine();
+                            }
+                            if (registrationErrorDescriptionFile == null) {
+                                registrationErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                        RegistrationCorrectionBean.REGISTRATION_FILE_NAME);
+                            }
+
+                            registrationErrorFile.write(c.getContent());
+                            registrationErrorFile.newLine();
+
+                            for (String error : errorDescriptions) {
+                                registrationErrorDescriptionFile.write(error);
+                                registrationErrorDescriptionFile.newLine();
+                            }
+                        }
+                    }
+
+                    leftCards = registrationCorrectionBean.countForProcessing();
+                }
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (Exception e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+
+                throw new RuntimeException(e);
+            } finally {
+                if (registrationErrorFile != null) {
+                    try {
+                        registrationErrorFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+                if (registrationErrorDescriptionFile != null) {
+                    try {
+                        registrationErrorDescriptionFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+            }
+
+            if (wasErrors) {
+                messages.add(new ImportMessage(getString("fail_finish_registration_processing", count), WARN));
+            } else {
+                messages.add(new ImportMessage(getString("success_finish_registration_processing", count), INFO));
+            }
+            processingStatuses.get(item).finish();
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            try {
+                userTransaction.begin();
+
+                apartmentCardCorrectionBean.clearProcessingStatus();
+
+                userTransaction.commit();
+            } catch (Exception e) {
+                try {
+                    userTransaction.rollback();
+                } catch (SystemException e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+                log.error("Couldn't to clear processing status for registrations.", e);
+            }
+        }
+    }
+
     private String getString(String key, Object... parameters) {
         return ResourceUtil.getFormatString(RESOURCE_BUNDLE, key, locale, parameters);
     }
@@ -1835,7 +2084,11 @@ public class PspImportService {
     }
 
     private BufferedWriter getErrorFile(String dir, PspImportFile file) throws OpenErrorFileException {
-        String name = file.getFileName().substring(0, file.getFileName().lastIndexOf(".")) + ERROR_FILE_SUFFIX;
+        return getErrorFile(dir, file.getFileName());
+    }
+
+    private BufferedWriter getErrorFile(String dir, String fileName) throws OpenErrorFileException {
+        String name = fileName.substring(0, fileName.lastIndexOf(".")) + ERROR_FILE_SUFFIX;
         try {
             return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(dir, name)), CHARSET));
         } catch (Exception e) {
@@ -1844,7 +2097,11 @@ public class PspImportService {
     }
 
     private BufferedWriter getErrorDescriptionFile(String dir, PspImportFile file) throws OpenErrorDescriptionFileException {
-        String name = file.getFileName().substring(0, file.getFileName().lastIndexOf(".")) + ERROR_DESCRIPTION_FILE_SUFFIX;
+        return getErrorDescriptionFile(dir, file.getFileName());
+    }
+
+    private BufferedWriter getErrorDescriptionFile(String dir, String fileName) throws OpenErrorDescriptionFileException {
+        String name = fileName.substring(0, fileName.lastIndexOf(".")) + ERROR_DESCRIPTION_FILE_SUFFIX;
         try {
             return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(dir, name)), CHARSET));
         } catch (Exception e) {

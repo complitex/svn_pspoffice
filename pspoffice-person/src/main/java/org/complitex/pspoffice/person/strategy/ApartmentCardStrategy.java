@@ -434,7 +434,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     public void addRegistration(ApartmentCard apartmentCard, Registration registration, Date insertDate) {
-        long attributeId = apartmentCard.getAttributes(REGISTRATIONS).size() + 1;
+        long attributeId = apartmentCard.getRegistrations().size() + 1;
         addRegistration(apartmentCard, registration, attributeId, insertDate);
     }
 

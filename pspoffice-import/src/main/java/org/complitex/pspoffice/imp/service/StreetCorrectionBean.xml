@@ -18,7 +18,7 @@
         WHERE `pk_id` = #{pkId}
     </update>
     
-    <select id="findById" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.StreetCorrectionBean.streetCorrection">
+    <select id="getById" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.StreetCorrectionBean.streetCorrection">
         SELECT * FROM `street_correction` WHERE `id` = #{id} AND `idjek` = #{idjek}
     </select>
     

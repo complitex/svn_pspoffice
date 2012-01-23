@@ -46,8 +46,8 @@ public class BuildingCorrectionBean extends AbstractBean {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", buildingCorrection);
     }
 
-    public BuildingCorrection find(long id, String idjek) {
-        return (BuildingCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".findById",
+    public BuildingCorrection getById(long id, String idjek) {
+        return (BuildingCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".getById",
                 ImmutableMap.of("id", id, "idjek", idjek));
     }
 
@@ -104,8 +104,8 @@ public class BuildingCorrectionBean extends AbstractBean {
         }
     }
 
-    public BuildingCorrection getById(String id, Set<String> jekIds) throws TooManyResultsException {
-        List<BuildingCorrection> corrections = sqlSession().selectList(MAPPING_NAMESPACE + ".getById",
+    public BuildingCorrection findById(String id, Set<String> jekIds) throws TooManyResultsException {
+        List<BuildingCorrection> corrections = sqlSession().selectList(MAPPING_NAMESPACE + ".findById",
                 ImmutableMap.of("id", id, "jekIds", jekIds));
         if (corrections.isEmpty()) {
             return null;

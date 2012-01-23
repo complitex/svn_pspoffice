@@ -128,7 +128,7 @@ public class ApartmentCardCorrectionBean extends AbstractBean {
         c.setSubjectIds(Sets.newHashSet(jekId));
 
         //ID в файле импорта
-        Utils.setValue(c.getAttribute(ApartmentCardStrategy.OLD_SYSTEM_APARTMENT_CARD_ID), String.valueOf(apartmentCardId));
+        Utils.setSystemLocaleValue(c.getAttribute(ApartmentCardStrategy.OLD_SYSTEM_APARTMENT_CARD_ID), String.valueOf(apartmentCardId));
 
         return c;
     }

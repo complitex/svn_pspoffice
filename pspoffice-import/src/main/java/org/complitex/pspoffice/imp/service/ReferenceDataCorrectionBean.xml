@@ -19,10 +19,6 @@
         WHERE `pk_id` = #{pkId}
     </update>
     
-    <select id="findById" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.ReferenceDataCorrectionBean.referenceDataCorrection">
-        SELECT * FROM `${entity}_correction` WHERE `id` = #{id} AND `idjek` = #{idjek}
-    </select>
-    
     <delete id="delete" parameterType="collection">
         DELETE FROM `${entity}_correction` WHERE `idjek` IN 
         <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
@@ -61,36 +57,49 @@
         </foreach>
     </update>
     
-    <select id="checkReservedObject" parameterType="map" resultType="int">
-        SELECT 
-            (SELECT COUNT(*) FROM `${entity}_correction` WHERE `id` = #{objectId} AND `system_object_id` IS NULL) = 0
-            AND 
-            (SELECT COUNT(*) FROM `${entity}_correction` WHERE `id` = #{objectId}) > 0 FROM DUAL
+    <select id="isReservedObjectResolvedBySystemObjectId" parameterType="map" resultType="int">
+        SELECT COUNT(DISTINCT `system_object_id`) FROM `${entity}_correction` WHERE `id` = #{objectId} AND `system_object_id` IS NOT NULL
+        AND `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
+            #{idjek}
+        </foreach>
     </select>
     
     <update id="putReservedDocumentType" parameterType="map">
         UPDATE `document_type_correction` SET `processed` = #{processed}, `system_object_id` = #{systemObjectId} 
-        WHERE `id` = #{id}
+        WHERE `id` = #{id} AND `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
+            #{idjek}
+        </foreach>
     </update>
     
-    <select id="getReservedOwnerType" parameterType="long" resultType="string">
-        SELECT `nkod` FROM `owner_type_correction` WHERE `id` = #{id}
+    <update id="putReservedRegistrationType" parameterType="map">
+        UPDATE `registration_type_correction` SET `processed` = #{processed}, `system_object_id` = #{systemObjectId} 
+        WHERE `id` = #{id} AND `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
+            #{idjek}
+        </foreach>
+    </update>
+    
+    <select id="getReservedOwnerType" parameterType="map" resultType="string">
+        SELECT DISTINCT(`nkod`) FROM `owner_type_correction` WHERE `id` = #{OWNER_TYPE}
+        AND `idjek` IN 
+        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
+            #{idjek}
+        </foreach>
     </select>
     
-    <select id="getById" parameterType="map" resultType="string">
-        SELECT DISTINCT(`nkod`) FROM `${entity}_correction` WHERE `id` = #{id} AND
+    <select id="getMilitaryServiceRelationById" parameterType="map" resultType="string">
+        SELECT DISTINCT(`nkod`) FROM `military_duty_correction` WHERE `id` = #{id} AND
         `idjek` IN 
         <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
             #{idjek}
         </foreach>
     </select>
     
-    <select id="getSystemObjectId" parameterType="map" resultType="long">
-        SELECT DISTINCT(`system_object_id`) FROM `${entity}_correction` WHERE `id` = #{id} AND
-        `idjek` IN 
-        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
-            #{idjek}
-        </foreach>
+    <select id="getByIdAndJek" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.ReferenceDataCorrectionBean.referenceDataCorrection">
+        SELECT * FROM `${entity}_correction` WHERE `id` = #{id} AND
+        `idjek` = #{idjek}
     </select>
     
 </mapper>

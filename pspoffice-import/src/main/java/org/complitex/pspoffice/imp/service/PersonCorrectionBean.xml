@@ -6,6 +6,7 @@
     <resultMap id="personCorrection" type="org.complitex.pspoffice.imp.entity.PersonCorrection">
         <id column="pk_id" property="pkId"/>
         <result column="system_person_id" property="systemPersonId"/>
+        <result column="system_registration_id" property="systemRegistrationId"/>
     </resultMap>
     
     <insert id="insert" parameterType="org.complitex.pspoffice.imp.entity.PersonCorrection" useGeneratedKeys="true" keyProperty="pkId">
@@ -14,13 +15,13 @@
 	`nobl`, `nrayon`, `nmisto`, `iddok`, `dokseria`, `doknom`, `dokvidan`, `dokdatvid`, `idarm`, `pkra`, `pobl`, `prayon`, 
 	`pmisto`, `pdpribza`, `pidul`, `pbud`, `pkorp`, `pkv`, `pdpribvm`, `dprop`, `idvidp`, `vkra`, `vobl`, `vrayon`, 
 	`vmisto`, `vidul`, `vbud`, `vkorp`, `vkv`, `vdata`, `idvip`, `larc`, `nom`, `parentnom`, `kid`, 
-        `system_person_id`, `processed`, `content`)
+        `system_person_id`, `system_registration_id`, `processed`, `content`)
 	VALUES
 	(#{pkId}, #{id}, #{idbud}, #{rah}, #{kv}, #{fam}, #{im}, #{ot} , #{datar}, #{reltovlaskv}, #{grajd}, #{pol}, #{idrel}, #{nkra}, 
 	#{nobl}, #{nrayon}, #{nmisto}, #{iddok}, #{dokseria}, #{doknom}, #{dokvidan}, #{dokdatvid}, #{idarm}, #{pkra}, #{pobl}, #{prayon}, 
 	#{pmisto}, #{pdpribza}, #{pidul}, #{pbud}, #{pkorp}, #{pkv}, #{pdpribvm}, #{dprop}, #{idvidp}, #{vkra}, #{vobl}, #{vrayon}, 
 	#{vmisto}, #{vidul}, #{vbud}, #{vkorp}, #{vkv}, #{vdata}, #{idvip}, #{larc}, #{nom}, #{parentnom}, #{kid}, 
-        #{systemPersonId}, #{processed}, #{content});
+        #{systemPersonId}, #{systemRegistrationId}, #{processed}, #{content});
     </insert>
     
     <update id="update" parameterType="org.complitex.pspoffice.imp.entity.PersonCorrection">
@@ -29,7 +30,7 @@
         WHERE `pk_id` = #{pkId}
     </update>
     
-    <select id="findById" parameterType="long" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
+    <select id="getById" parameterType="long" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
         SELECT * FROM `person_correction` WHERE `id` = #{id}
     </select>
     
@@ -94,4 +95,9 @@
             AND CONCAT(`fam`, ' ', `im`, ' ', `ot`) = #{fio}
         AND `larc` = #{NONARCHIVE_INDICATOR}
     </select>
+    
+    <select id="findPersonByAddress" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
+        SELECT * FROM `person_correction` WHERE `idbud` = #{buildingId} AND `kv` = #{apartment}
+    </select>
+    
 </mapper>

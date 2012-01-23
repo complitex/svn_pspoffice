@@ -36,8 +36,8 @@ public class StreetCorrectionBean extends AbstractBean {
         sqlSession().update(MAPPING_NAMESPACE + ".clearProcessingStatus", ImmutableMap.of("value", jekIds));
     }
 
-    public StreetCorrection findById(String id, String idjek) {
-        return (StreetCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".findById",
+    public StreetCorrection getById(String id, String idjek) {
+        return (StreetCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".getById",
                 ImmutableMap.of("id", id, "idjek", idjek));
     }
 

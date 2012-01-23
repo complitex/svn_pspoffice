@@ -58,8 +58,8 @@ public class PersonCorrectionBean extends AbstractBean {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", personCorrection);
     }
 
-    public PersonCorrection find(long id) {
-        return (PersonCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".findById", id);
+    public PersonCorrection getById(long id) {
+        return (PersonCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".getById", id);
     }
 
     public boolean exists() {
@@ -121,30 +121,30 @@ public class PersonCorrectionBean extends AbstractBean {
         setName(PersonNameType.MIDDLE_NAME, PersonStrategy.MIDDLE_NAME, p, pc.getOt());
 
         //Дата рождения
-        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_DATE), getBirthDateAsDateString(birthDate));
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_DATE), getBirthDateAsDateString(birthDate));
 
         //Пол
         Gender gender = null;
-        if (pc.getPol().equalsIgnoreCase(MALE)) {
+        if (MALE.equalsIgnoreCase(pc.getPol())) {
             gender = Gender.MALE;
-        } else if (pc.getPol().equalsIgnoreCase(FEMALE)) {
+        } else if (FEMALE.equalsIgnoreCase(pc.getPol())) {
             gender = Gender.FEMALE;
+        } else {
+            gender = Gender.MALE;
         }
-        if (gender == null) {
-            throw new IllegalArgumentException("Person correction has invalid gender value: " + pc.getPol());
-        }
-        Utils.setValue(p.getAttribute(PersonStrategy.GENDER), new GenderConverter().toString(gender));
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.GENDER), new GenderConverter().toString(gender));
 
         //Гражданство Украины
-        final boolean isUkraineCitizenship = UKRAINE_CITIZENSHIP_INDICATOR.equalsIgnoreCase(pc.getGrajd());
-        Utils.setValue(p.getAttribute(PersonStrategy.UKRAINE_CITIZENSHIP),
+        final boolean isUkraineCitizenship = Strings.isEmpty(pc.getGrajd())
+                || UKRAINE_CITIZENSHIP_INDICATOR.equalsIgnoreCase(pc.getGrajd());
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.UKRAINE_CITIZENSHIP),
                 new BooleanConverter().toString(isUkraineCitizenship));
 
         //Место рождения
-        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_COUNTRY), pc.getNkra());
-        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_REGION), pc.getNobl());
-        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_DISTRICT), pc.getNrayon());
-        Utils.setValue(p.getAttribute(PersonStrategy.BIRTH_CITY), pc.getNmisto());
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_COUNTRY), pc.getNkra());
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_REGION), pc.getNobl());
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_DISTRICT), pc.getNrayon());
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_CITY), pc.getNmisto());
 
         //Документ
         Long documentTypeId = null;
@@ -157,19 +157,19 @@ public class PersonCorrectionBean extends AbstractBean {
             throw new IllegalArgumentException("Person correction has invalid document type id: " + pc.getIddok());
         }
         Document d = documentStrategy.newInstance(documentTypeId);
-        Utils.setValue(d.getAttribute(DocumentStrategy.DOCUMENT_SERIA), pc.getDokseria());
-        Utils.setValue(d.getAttribute(DocumentStrategy.DOCUMENT_NUMBER), pc.getDoknom());
-        Utils.setValue(d.getAttribute(DocumentStrategy.ORGANIZATION_ISSUED), pc.getDokvidan());
-        Utils.setValue(d.getAttribute(DocumentStrategy.DATE_ISSUED), pc.getDokdatvid());
+        Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DOCUMENT_SERIA), pc.getDokseria());
+        Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DOCUMENT_NUMBER), pc.getDoknom());
+        Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.ORGANIZATION_ISSUED), pc.getDokvidan());
+        Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DATE_ISSUED), pc.getDokdatvid());
         p.setDocument(d);
 
         //отношение к воиской обязанности
         if (militaryServiceRelation != null) {
-            Utils.setValue(p.getAttribute(PersonStrategy.MILITARY_SERVICE_RELATION), militaryServiceRelation);
+            Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.MILITARY_SERVICE_RELATION), militaryServiceRelation);
         }
 
         //ID в файле импорта
-        Utils.setValue(p.getAttribute(PersonStrategy.OLD_SYSTEM_PERSON_ID), String.valueOf(pc.getId()));
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.OLD_SYSTEM_PERSON_ID), String.valueOf(pc.getId()));
 
         return p;
     }
@@ -181,12 +181,8 @@ public class PersonCorrectionBean extends AbstractBean {
         }
     }
 
-    public static boolean isGenderValid(String gender) {
-        return !Strings.isEmpty(gender) && (gender.equalsIgnoreCase(FEMALE) || gender.equalsIgnoreCase(MALE));
-    }
-
     public static boolean isBirthDateValid(String birthDate) {
-        return !Strings.isEmpty(birthDate) && DateUtil.asDate(birthDate, Utils.DATE_PATTERN) != null;
+        return DateUtil.asDate(birthDate, Utils.DATE_PATTERN) != null;
     }
 
     public static boolean isSupportedDocumentType(String documentType) {
@@ -273,5 +269,10 @@ public class PersonCorrectionBean extends AbstractBean {
         } else {
             return null;
         }
+    }
+
+    public List<PersonCorrection> findByAddress(String buildingId, String apartment) {
+        return sqlSession().selectList(MAPPING_NAMESPACE + ".findPersonByAddress",
+                ImmutableMap.of("buildingId", buildingId, "apartment", apartment));
     }
 }

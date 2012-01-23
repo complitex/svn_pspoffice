@@ -59,6 +59,7 @@ public class PersonCorrection {
     private String nom;
     private String parentnom;
     private Long systemPersonId;
+    private Long systemRegistrationId;
     private boolean processed;
     private boolean kid;
     private String content;
@@ -413,6 +414,14 @@ public class PersonCorrection {
 
     public void setSystemPersonId(Long systemPersonId) {
         this.systemPersonId = systemPersonId;
+    }
+
+    public Long getSystemRegistrationId() {
+        return systemRegistrationId;
+    }
+
+    public void setSystemRegistrationId(Long systemRegistrationId) {
+        this.systemRegistrationId = systemRegistrationId;
     }
 
     public String getVbud() {

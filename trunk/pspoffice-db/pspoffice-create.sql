@@ -788,6 +788,7 @@ CREATE TABLE `person_correction` (
   `parentnom` VARCHAR(100) COMMENT 'Персональный номер родителя персоны в квартире',
   `kid` TINYINT(1) NOT NULL default 0,
   `system_person_id` BIGINT(20),
+  `system_registration_id` BIGINT(20),
   `processed` TINYINT(1) NOT NULL default 0,
   `content` VARCHAR(1000) NOT NULL,
   PRIMARY KEY (`pk_id`),

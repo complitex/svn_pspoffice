@@ -59,5 +59,6 @@
         <mapper resource="org/complitex/pspoffice/imp/service/ReferenceDataCorrectionBean.xml"/>
         <mapper resource="org/complitex/pspoffice/imp/service/PersonCorrectionBean.xml"/>
         <mapper resource="org/complitex/pspoffice/imp/service/ApartmentCardCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/imp/service/RegistrationCorrectionBean.xml"/>
     </mappers>
 </configuration>

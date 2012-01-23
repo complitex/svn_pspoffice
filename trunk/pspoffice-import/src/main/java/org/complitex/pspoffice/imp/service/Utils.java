@@ -4,9 +4,14 @@
  */
 package org.complitex.pspoffice.imp.service;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.service.LocaleBean;
+import org.complitex.dictionary.util.EjbBeanLocator;
 
 /**
  *
@@ -19,8 +24,13 @@ public class Utils {
     public static final String NULL_REFERENCE = "[null]";
     public static final String DATE_PATTERN = "dd.MM.yyyy";
     public static final String NONARCHIVE_INDICATOR = "0";
+    private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(DATE_PATTERN);
 
     private Utils() {
+    }
+
+    public static String displayDate(Date date) {
+        return DATE_FORMATTER.format(date);
     }
 
     public static void setValue(List<StringCulture> values, long localeId, String value) {
@@ -39,5 +49,10 @@ public class Utils {
         for (StringCulture culture : attribute.getLocalizedValues()) {
             culture.setValue(value);
         }
+    }
+
+    public static void setSystemLocaleValue(Attribute attribute, String value) {
+        LocaleBean localeBean = EjbBeanLocator.getBean(LocaleBean.class);
+        setValue(attribute, localeBean.getSystemLocaleObject().getId(), value);
     }
 }

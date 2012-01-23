@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.AttributeExample;
 import org.complitex.dictionary.entity.example.ComparisonType;
@@ -19,6 +20,7 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.imp.entity.ReferenceDataCorrection;
 import org.complitex.pspoffice.imp.service.exception.TooManyResultsException;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 
 /**
  *
@@ -57,11 +59,6 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
 
     public void update(ReferenceDataCorrection referenceDataCorrection) {
         sqlSession().update(MAPPING_NAMESPACE + ".update", referenceDataCorrection);
-    }
-
-    public ReferenceDataCorrection findById(String entity, String id, String idjek) {
-        return (ReferenceDataCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".findById",
-                ImmutableMap.of("entity", entity, "id", id, "idjek", idjek));
     }
 
     public boolean exists(String entity, String idjek) {
@@ -139,19 +136,19 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         }
     }
 
-    public void checkReservedOwnerRelationships() throws OwnerRelationshipsNotResolved {
+    public void checkReservedOwnerRelationships(Set<String> jekIds) throws OwnerRelationshipsNotResolved {
         final String entity = "owner_relationship";
-        final boolean ownerResolved = isReservedObjectResolved(entity, OWNER);
-        final boolean daughterResolved = isReservedObjectResolved(entity, DAUGHTER);
-        final boolean sonResolved = isReservedObjectResolved(entity, SON);
+        final boolean ownerResolved = isReservedObjectResolvedBySystemObjectId(entity, OWNER, jekIds);
+        final boolean daughterResolved = isReservedObjectResolvedBySystemObjectId(entity, DAUGHTER, jekIds);
+        final boolean sonResolved = isReservedObjectResolvedBySystemObjectId(entity, SON, jekIds);
         if (!ownerResolved || !daughterResolved || !sonResolved) {
             throw new OwnerRelationshipsNotResolved(ownerResolved, daughterResolved, sonResolved);
         }
     }
 
-    private boolean isReservedObjectResolved(String entity, long objectId) {
-        return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".checkReservedObject",
-                ImmutableMap.of("entity", entity, "objectId", objectId)) == 1;
+    private boolean isReservedObjectResolvedBySystemObjectId(String entity, long objectId, Set<String> jekIds) {
+        return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".isReservedObjectResolvedBySystemObjectId",
+                ImmutableMap.of("entity", entity, "objectId", objectId, "jekIds", jekIds)) == 1;
     }
 
     public static class RegistrationTypesNotResolved extends Exception {
@@ -173,10 +170,10 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         }
     }
 
-    public void checkReservedRegistrationTypes() throws RegistrationTypesNotResolved {
+    public void checkReservedRegistrationTypes(Set<String> jekIds) throws RegistrationTypesNotResolved {
         final String entity = "registration_type";
-        final boolean permanentResolved = isReservedObjectResolved(entity, PERMANENT);
-        final boolean temporalResolved = isReservedObjectResolved(entity, TEMPORAL);
+        final boolean permanentResolved = isReservedObjectResolvedBySystemObjectId(entity, PERMANENT, jekIds);
+        final boolean temporalResolved = isReservedObjectResolvedBySystemObjectId(entity, TEMPORAL, jekIds);
         if (!permanentResolved || !temporalResolved) {
             throw new RegistrationTypesNotResolved(permanentResolved, temporalResolved);
         }
@@ -201,33 +198,44 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         }
     }
 
-    public void putReservedDocumentTypes() {
+    public void putReservedDocumentTypes(Set<String> jekIds) {
         final String operation = ".putReservedDocumentType";
         sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", PASSPORT, "processed", true, "systemObjectId", DocumentTypeStrategy.PASSPORT));
+                ImmutableMap.of("id", PASSPORT, "processed", true, "systemObjectId", DocumentTypeStrategy.PASSPORT, 
+                "jekIds", jekIds));
         sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", BIRTH_CERTIFICATE, "processed", true, "systemObjectId",
-                DocumentTypeStrategy.BIRTH_CERTIFICATE));
+                ImmutableMap.of("id", BIRTH_CERTIFICATE, "processed", true, "systemObjectId", DocumentTypeStrategy.BIRTH_CERTIFICATE,
+                "jekIds", jekIds));
     }
 
-    public void checkReservedDocumentTypes() throws DocumentTypesNotResolved {
+    public void putReservedRegistrationTypes(Set<String> jekIds) {
+        final String operation = ".putReservedRegistrationType";
+        sqlSession().update(MAPPING_NAMESPACE + operation,
+                ImmutableMap.of("id", PERMANENT, "processed", true, "systemObjectId", RegistrationTypeStrategy.PERMANENT, 
+                "jekIds", jekIds));
+        sqlSession().update(MAPPING_NAMESPACE + operation,
+                ImmutableMap.of("id", TEMPORAL, "processed", true, "systemObjectId", RegistrationTypeStrategy.TEMPORAL, 
+                "jekIds", jekIds));
+    }
+
+    public void checkReservedDocumentTypes(Set<String> jekIds) throws DocumentTypesNotResolved {
         final String entity = "document_type";
-        final boolean passportResolved = isReservedObjectResolved(entity, PASSPORT);
-        final boolean birthCertificateResolved = isReservedObjectResolved(entity, BIRTH_CERTIFICATE);
+        final boolean passportResolved = isReservedObjectResolvedBySystemObjectId(entity, PASSPORT, jekIds);
+        final boolean birthCertificateResolved = isReservedObjectResolvedBySystemObjectId(entity, BIRTH_CERTIFICATE, jekIds);
         if (!passportResolved || !birthCertificateResolved) {
             throw new DocumentTypesNotResolved(passportResolved, birthCertificateResolved);
         }
     }
 
-    public String getReservedOwnerType() {
-        List<String> ownerTypes = sqlSession().selectList(MAPPING_NAMESPACE + ".getReservedOwnerType", OWNER_TYPE);
+    public String getReservedOwnerType(Set<String> jekIds) {
+        List<String> ownerTypes = sqlSession().selectList(MAPPING_NAMESPACE + ".getReservedOwnerType",
+                ImmutableMap.of("OWNER_TYPE", OWNER_TYPE, "jekIds", jekIds));
         return ownerTypes.size() == 1 ? ownerTypes.get(0) : null;
     }
 
-    public String getById(String entity, String id, Set<String> jekIds)
-            throws TooManyResultsException {
-        List<String> values = sqlSession().selectList(MAPPING_NAMESPACE + ".getById",
-                ImmutableMap.of("entity", entity, "id", id, "jekIds", jekIds));
+    public String getMilitaryServiceRelationById(String id, Set<String> jekIds) throws TooManyResultsException {
+        List<String> values = sqlSession().selectList(MAPPING_NAMESPACE + ".getMilitaryServiceRelationById",
+                ImmutableMap.of("id", id, "jekIds", jekIds));
         if (values.isEmpty()) {
             return null;
         } else if (values.size() == 1) {
@@ -237,16 +245,12 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         }
     }
 
-    public Long getSystemObjectId(String entity, String id, Set<String> jekIds)
-            throws TooManyResultsException {
-        List<Long> values = sqlSession().selectList(MAPPING_NAMESPACE + ".getSystemObjectId",
-                ImmutableMap.of("entity", entity, "id", id, "jekIds", jekIds));
-        if (values.isEmpty()) {
-            return null;
-        } else if (values.size() == 1) {
-            return values.get(0);
+    public ReferenceDataCorrection getById(String entity, String id, String idjek) {
+        if (!Strings.isEmpty(id)) {
+            return (ReferenceDataCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".getByIdAndJek",
+                    ImmutableMap.of("entity", entity, "id", id, "idjek", idjek));
         } else {
-            throw new TooManyResultsException();
+            return null;
         }
     }
 }

@@ -46,11 +46,6 @@ public class BuildingCorrectionBean extends AbstractBean {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", buildingCorrection);
     }
 
-    public BuildingCorrection getById(long id, String idjek) {
-        return (BuildingCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".getById",
-                ImmutableMap.of("id", id, "idjek", idjek));
-    }
-
     public boolean exists(String idjek) {
         return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".exists", idjek) > 0;
     }

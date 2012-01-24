@@ -20,10 +20,6 @@
         WHERE `pk_id` = #{pkId}
     </update>
     
-    <select id="findById" parameterType="long" resultMap="org.complitex.pspoffice.imp.service.ApartmentCardCorrectionBean.apartmentCardCorrection">
-        SELECT * FROM `apartment_card_correction` WHERE `id` = #{id}
-    </select>
-    
     <delete id="delete">
         DELETE FROM `apartment_card_correction`
     </delete>

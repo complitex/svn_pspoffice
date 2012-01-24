@@ -58,10 +58,6 @@ public class PersonCorrectionBean extends AbstractBean {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", personCorrection);
     }
 
-    public PersonCorrection getById(long id) {
-        return (PersonCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".getById", id);
-    }
-
     public boolean exists() {
         return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".exists") > 0;
     }
@@ -108,10 +104,6 @@ public class PersonCorrectionBean extends AbstractBean {
         }
     }
 
-    private static String getBirthDateAsDateString(Date birthDate) {
-        return new DateConverter().toString(birthDate);
-    }
-
     public Person newSystemPerson(PersonCorrection pc, Date birthDate, String militaryServiceRelation) {
         Person p = personStrategy.newInstance();
 
@@ -121,7 +113,7 @@ public class PersonCorrectionBean extends AbstractBean {
         setName(PersonNameType.MIDDLE_NAME, PersonStrategy.MIDDLE_NAME, p, pc.getOt());
 
         //Дата рождения
-        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_DATE), getBirthDateAsDateString(birthDate));
+        Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_DATE), new DateConverter().toString(birthDate));
 
         //Пол
         Gender gender = null;

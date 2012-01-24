@@ -35,10 +35,6 @@ public class ApartmentCardCorrectionBean extends AbstractBean {
         sqlSession().insert(MAPPING_NAMESPACE + ".insert", apartmentCardCorrection);
     }
 
-    public ApartmentCardCorrection find(long id) {
-        return (ApartmentCardCorrection) sqlSession().selectOne(MAPPING_NAMESPACE + ".findById", id);
-    }
-
     public boolean exists() {
         return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".exists") > 0;
     }

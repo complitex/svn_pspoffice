@@ -30,10 +30,6 @@
         WHERE `pk_id` = #{pkId}
     </update>
     
-    <select id="getById" parameterType="long" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection">
-        SELECT * FROM `person_correction` WHERE `id` = #{id}
-    </select>
-    
     <delete id="delete">
         DELETE FROM `person_correction`
     </delete>

@@ -18,10 +18,6 @@
         WHERE `pk_id` = #{pkId}
     </update>
     
-    <select id="getById" parameterType="map" resultMap="org.complitex.pspoffice.imp.service.BuildingCorrectionBean.buildingCorrection">
-        SELECT * FROM `building_correction` WHERE `id` = #{id} AND `idjek` = #{idjek}
-    </select>
-    
     <select id="exists" parameterType="string" resultType="int">
         SELECT COUNT(*) FROM `building_correction` WHERE `idjek` = #{idjek}
     </select>

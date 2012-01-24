@@ -138,16 +138,16 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
 
     public void checkReservedOwnerRelationships(Set<String> jekIds) throws OwnerRelationshipsNotResolved {
         final String entity = "owner_relationship";
-        final boolean ownerResolved = isReservedObjectResolvedBySystemObjectId(entity, OWNER, jekIds);
-        final boolean daughterResolved = isReservedObjectResolvedBySystemObjectId(entity, DAUGHTER, jekIds);
-        final boolean sonResolved = isReservedObjectResolvedBySystemObjectId(entity, SON, jekIds);
+        final boolean ownerResolved = isReservedObjectResolved(entity, OWNER, jekIds);
+        final boolean daughterResolved = isReservedObjectResolved(entity, DAUGHTER, jekIds);
+        final boolean sonResolved = isReservedObjectResolved(entity, SON, jekIds);
         if (!ownerResolved || !daughterResolved || !sonResolved) {
             throw new OwnerRelationshipsNotResolved(ownerResolved, daughterResolved, sonResolved);
         }
     }
 
-    private boolean isReservedObjectResolvedBySystemObjectId(String entity, long objectId, Set<String> jekIds) {
-        return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".isReservedObjectResolvedBySystemObjectId",
+    private boolean isReservedObjectResolved(String entity, long objectId, Set<String> jekIds) {
+        return (Integer) sqlSession().selectOne(MAPPING_NAMESPACE + ".isReservedObjectResolved",
                 ImmutableMap.of("entity", entity, "objectId", objectId, "jekIds", jekIds)) == 1;
     }
 
@@ -172,8 +172,8 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
 
     public void checkReservedRegistrationTypes(Set<String> jekIds) throws RegistrationTypesNotResolved {
         final String entity = "registration_type";
-        final boolean permanentResolved = isReservedObjectResolvedBySystemObjectId(entity, PERMANENT, jekIds);
-        final boolean temporalResolved = isReservedObjectResolvedBySystemObjectId(entity, TEMPORAL, jekIds);
+        final boolean permanentResolved = isReservedObjectResolved(entity, PERMANENT, jekIds);
+        final boolean temporalResolved = isReservedObjectResolved(entity, TEMPORAL, jekIds);
         if (!permanentResolved || !temporalResolved) {
             throw new RegistrationTypesNotResolved(permanentResolved, temporalResolved);
         }
@@ -201,27 +201,27 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
     public void putReservedDocumentTypes(Set<String> jekIds) {
         final String operation = ".putReservedDocumentType";
         sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", PASSPORT, "processed", true, "systemObjectId", DocumentTypeStrategy.PASSPORT, 
+                ImmutableMap.of("id", PASSPORT, "systemObjectId", DocumentTypeStrategy.PASSPORT,
                 "jekIds", jekIds));
         sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", BIRTH_CERTIFICATE, "processed", true, "systemObjectId", DocumentTypeStrategy.BIRTH_CERTIFICATE,
+                ImmutableMap.of("id", BIRTH_CERTIFICATE, "systemObjectId", DocumentTypeStrategy.BIRTH_CERTIFICATE,
                 "jekIds", jekIds));
     }
 
     public void putReservedRegistrationTypes(Set<String> jekIds) {
         final String operation = ".putReservedRegistrationType";
         sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", PERMANENT, "processed", true, "systemObjectId", RegistrationTypeStrategy.PERMANENT, 
+                ImmutableMap.of("id", PERMANENT, "systemObjectId", RegistrationTypeStrategy.PERMANENT,
                 "jekIds", jekIds));
         sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", TEMPORAL, "processed", true, "systemObjectId", RegistrationTypeStrategy.TEMPORAL, 
+                ImmutableMap.of("id", TEMPORAL, "systemObjectId", RegistrationTypeStrategy.TEMPORAL,
                 "jekIds", jekIds));
     }
 
     public void checkReservedDocumentTypes(Set<String> jekIds) throws DocumentTypesNotResolved {
         final String entity = "document_type";
-        final boolean passportResolved = isReservedObjectResolvedBySystemObjectId(entity, PASSPORT, jekIds);
-        final boolean birthCertificateResolved = isReservedObjectResolvedBySystemObjectId(entity, BIRTH_CERTIFICATE, jekIds);
+        final boolean passportResolved = isReservedObjectResolved(entity, PASSPORT, jekIds);
+        final boolean birthCertificateResolved = isReservedObjectResolved(entity, BIRTH_CERTIFICATE, jekIds);
         if (!passportResolved || !birthCertificateResolved) {
             throw new DocumentTypesNotResolved(passportResolved, birthCertificateResolved);
         }

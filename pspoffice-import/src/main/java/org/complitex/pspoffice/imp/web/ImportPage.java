@@ -95,7 +95,7 @@ public class ImportPage extends TemplatePage {
         dataForm.add(new WiQuerySearchComponent("citySearchComponent", citySearchComponentState,
                 ImmutableList.of("city"), null, ShowMode.ACTIVE, true));
 
-        final List<? extends DomainObject> allOrganizations = organizationStrategy.getAllOrganizations(getLocale());
+        final List<? extends DomainObject> userOrganizations = organizationStrategy.getUserOrganizations(getLocale());
 
         selectedOrganizations = Lists.newArrayList();
         selectedOrganizations.add(null);
@@ -125,7 +125,7 @@ public class ImportPage extends TemplatePage {
                         int index = getCurrentIndex(fakeContainer);
                         DomainObject organization = null;
                         if (organizationId != null) {
-                            organization = Iterables.find(allOrganizations, new Predicate<DomainObject>() {
+                            organization = Iterables.find(userOrganizations, new Predicate<DomainObject>() {
 
                                 @Override
                                 public boolean apply(DomainObject input) {

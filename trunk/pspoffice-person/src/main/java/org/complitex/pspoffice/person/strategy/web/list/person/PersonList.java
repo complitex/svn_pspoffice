@@ -23,14 +23,12 @@ import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
-import org.complitex.dictionary.strategy.web.model.DomainObjectIdModel;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.datatable.ArrowOrderByBorder;
@@ -152,7 +150,6 @@ public final class PersonList extends ScrollListPage {
         dataProvider.setSort(getSortProperty(""), getSortOrder(true));
 
         //Filters
-        filterForm.add(new TextField<String>("id", new DomainObjectIdModel(new PropertyModel<Long>(example, "id"))));
         filterForm.add(new TextField<String>("lastNameFilter", new Model<String>() {
 
             @Override
@@ -198,7 +195,7 @@ public final class PersonList extends ScrollListPage {
             protected void populateItem(Item<Person> item) {
                 Person person = item.getModelObject();
 
-                item.add(new Label("id", StringUtil.valueOf(person.getId())));
+                item.add(new Label("order", StringUtil.valueOf(getViewOffset() + item.getIndex() + 1)));
                 item.add(new Label("lastName", person.getLastName(getLocale(), systemLocale)));
                 item.add(new Label("firstName", person.getFirstName(getLocale(), systemLocale)));
                 item.add(new Label("middleName", person.getMiddleName(getLocale(), systemLocale)));

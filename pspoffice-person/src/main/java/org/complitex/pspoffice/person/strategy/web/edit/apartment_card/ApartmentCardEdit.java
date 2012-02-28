@@ -4,6 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import org.apache.wicket.model.LoadableDetachableModel;
+import java.text.MessageFormat;
 import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistoryPage;
 import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
@@ -256,11 +258,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         add(JavascriptPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js"));
         add(CSSPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".css"));
 
-        IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
+        IModel<String> labelModel = new LoadableDetachableModel<String>() {
 
             @Override
-            public String getObject() {
-                return stringBean.displayValue(apartmentCardStrategy.getEntity().getEntityNames(), getLocale());
+            protected String load() {
+                final String entityName = stringBean.displayValue(ENTITY.getEntityNames(), getLocale());
+                return isNew() || !sessionBean.isAdmin() ? entityName
+                        : MessageFormat.format(getString("label_edit"), entityName, newApartmentCard.getId());
             }
         };
         Label title = new Label("title", labelModel);

@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import org.complitex.dictionary.service.SessionBean;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.apache.wicket.markup.html.link.Link;
@@ -57,6 +58,8 @@ public abstract class PersonEditPanel extends Panel {
     @EJB
     private LogBean logBean;
     @EJB
+    private SessionBean sessionBean;
+    @EJB
     private PersonStrategy personStrategy;
     private Person oldPerson;
     private Person newPerson;
@@ -85,7 +88,9 @@ public abstract class PersonEditPanel extends Panel {
 
             @Override
             public String getObject() {
-                return stringBean.displayValue(personStrategy.getEntity().getEntityNames(), getLocale());
+                final String entityName = stringBean.displayValue(personStrategy.getEntity().getEntityNames(), getLocale());
+                return isNew() || !sessionBean.isAdmin() ? entityName
+                        : MessageFormat.format(getString("label_edit"), entityName, newPerson.getId());
             }
         });
         label.setOutputMarkupId(true);

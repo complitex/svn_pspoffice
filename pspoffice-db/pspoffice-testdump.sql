@@ -21,6 +21,6 @@ INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_t
  (1,8,2500,8,2500);
 
 
-
+--insert into config(`name`, `value`) values ('IMPORT_FILE_STORAGE_DIR', 'D:\\Artem\\Projects\\org.complitex\\storage\\import3');
 --insert into config(`name`, `value`) values ('DEFAULT_IMPORT_FILE_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada');
 --insert into config(`name`, `value`) values ('DEFAULT_IMPORT_FILE_ERRORS_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada\\errors');

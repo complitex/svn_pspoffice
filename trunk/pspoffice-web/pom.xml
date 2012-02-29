@@ -80,6 +80,10 @@
         </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-street</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-report</artifactId>
             <!--todo xerces bug-->
             <exclusions>

@@ -20,6 +20,28 @@ INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_t
 (1,1,2500,1,2500),(1,2,2500,2,2500),(1,3,2500,3,2500),(1,4,2500,4,2500),(1,5,2500,5,2500),(1,6,2500,6,2500), (1,7,2500,7,2500),
  (1,8,2500,8,2500);
 
+-- Test user organizations
+insert into `organization`(`object_id`) values (1),(2);
+insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1, 1, UPPER('Паспортный стол №1')),(2, 1, UPPER('1')),
+(3, 1, UPPER('Паспортный стол №2')),(4, 1, UPPER('2'));
+insert into `organization_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values
+(1,1,900,1,900), (1,1,901,2,901), (1,1,905,1,905),
+(1,2,900,3,900), (1,2,901,4,901), (1,2,905,1,905);
+
+-- Test users
+-- User '1'
+insert into `first_name` (`id`, `name`) values(3,'1');
+insert into `last_name` (`id`, `name`) values(3,'1');
+insert into `middle_name` (`id`, `name`) values(3,'1');
+
+insert into `user_info` (`object_id`) values(3);
+insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values(1,3,1000,3,1000);
+insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values(1,3,1001,3,1001);
+insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values(1,3,1002,3,1002);
+
+insert into `user` (`id`, `login`, `password`, `user_info_object_id`) values(3,'1','c4ca4238a0b923820dcc509a6f75849b',3);
+insert into `user_organization` (`id`, `user_id`, `organization_object_id`, `main`) values(1,3,1,1);
+insert into `usergroup` (`id`, `login`, `group_name`) values(4,1,'EMPLOYEES');
 
 --insert into config(`name`, `value`) values ('IMPORT_FILE_STORAGE_DIR', 'D:\\Artem\\Projects\\org.complitex\\storage\\import3');
 --insert into config(`name`, `value`) values ('DEFAULT_IMPORT_FILE_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada');

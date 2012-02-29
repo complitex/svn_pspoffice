@@ -40,6 +40,10 @@
         <mapper resource="org/complitex/address/strategy/building/Building.xml"/>
         <mapper resource="org/complitex/address/strategy/building_address/BuildingAddress.xml"/>
         <mapper resource="org/complitex/address/strategy/street/Street.xml"/>
+        
+        <!-- Psp office custom "find" and "count" operations for streets -->
+        <mapper resource="org/complitex/pspoffice/address/street/Street.xml"/>
+        
         <mapper resource="org/complitex/address/strategy/city/City.xml"/>
         <mapper resource="org/complitex/address/strategy/district/District.xml"/>
 

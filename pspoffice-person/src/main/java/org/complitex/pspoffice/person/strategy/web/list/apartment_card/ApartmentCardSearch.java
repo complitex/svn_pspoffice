@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
@@ -31,6 +32,7 @@ import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.web.component.autocomplete.EnhancedAddressSearchComponent;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
+import org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid.BuildingsGrid;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.component.toolbar.search.CollapsibleSearchToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
@@ -92,6 +94,38 @@ public class ApartmentCardSearch extends FormTemplatePage {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
+                final DomainObject city = addressSearchComponentState.get("city");
+
+                if (city == null || city.getId() == null || city.getId() <= 0) {
+                    // город не введен -> ошибка, это обязательное поле.
+                    error(getString("address_invalid"));
+                    target.addComponent(messages);
+                    return;
+                }
+                //город введен.
+//                storeAdditionalInfo(addressSearchComponentState);
+
+                final DomainObject street = addressSearchComponentState.get("street");
+                if (street == null || street.getId() == null || street.getId() <= 0) {
+                    //улица не введена -> выводим грид домов.
+                    PageParameters parameters = new PageParameters();
+                    parameters.put(BuildingsGrid.CITY_PARAM, city.getId());
+                    setResponsePage(BuildingsGrid.class, parameters);
+                    return;
+                }
+                //улица введена.
+
+                final DomainObject building = addressSearchComponentState.get("building");
+                if (building == null || building.getId() == null || building.getId() <= 0) {
+                    //дом не введен -> выводим грид домов для заданной улицы.
+                    PageParameters parameters = new PageParameters();
+                    parameters.put(BuildingsGrid.CITY_PARAM, city.getId());
+                    parameters.put(BuildingsGrid.STREET_PARAM, street.getId());
+                    setResponsePage(BuildingsGrid.class, parameters);
+                    return;
+                }
+                //дом введен.
+
                 SimpleObjectInfo addressInfo = getAddressObjectInfo(addressSearchComponentState);
                 if (addressInfo != null) {
                     storeAdditionalInfo(addressSearchComponentState);

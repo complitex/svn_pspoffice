@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.complitex.pspoffice.person.strategy.service.BuildingsGridBean">
+    
+    <sql id="from">
+        FROM `building` b 
+            JOIN `building_address` addr ON (addr.`status` IN ('ACTIVE', 'INACTIVE') AND ((b.`parent_id` = addr.`object_id`) OR
+            EXISTS(SELECT 1 FROM `building_attribute` ba WHERE ba.`object_id` = b.`object_id` AND ba.`status` = 'ACTIVE'
+                AND ba.`attribute_type_id` = ${additionalAddressAT} AND ba.`value_id` = addr.`object_id`)))
+                
+            JOIN `building_address_attribute` num_a ON (num_a.`object_id` = addr.`object_id` AND num_a.`status` = 'ACTIVE' 
+                    AND num_a.`attribute_type_id` = ${buildingAddressNumberAT})
+            JOIN `building_address_string_culture` num ON (num.`id` = num_a.`value_id`)
+            
+            LEFT JOIN `building_attribute` distr_a ON (distr_a.`status` = 'ACTIVE' AND distr_a.`object_id` = b.`object_id`
+                AND distr_a.`attribute_type_id` = ${buildingDistrictAT})
+            LEFT JOIN `district` d ON (d.`status` IN ('ACTIVE', 'INACTIVE') AND d.`object_id` = distr_a.`value_id`)
+            
+            LEFT JOIN `street` s ON (s.`status` IN ('ACTIVE', 'INACTIVE') AND 
+                s.`object_id` = addr.`parent_id` AND addr.`parent_entity_id` = 300)
+    </sql>
+    <sql id="where">
+        WHERE 
+            b.`status` IN ('ACTIVE', 'INACTIVE')
+            <if test="not admin">
+                AND b.`permission_id` IN ${buildingPermissionString}
+            </if>
+            AND (
+                (addr.`parent_id` = #{cityId} AND addr.`parent_entity_id` = 400) OR 
+                (s.`parent_id` = #{cityId} AND s.`parent_entity_id` = 400)
+            )
+            <if test="districtId != null">
+                AND d.`object_id` = #{districtId}
+            </if>
+            <if test="streetId != null">
+                AND s.`object_id` = #{streetId}
+            </if>
+            <if test="buildingNumber != null">
+                AND num.`value` = #{buildingNumber}
+            </if>
+    </sql>
+    
+    <select id="count" parameterType="map" resultType="int">
+        SELECT COUNT(DISTINCT b.`object_id`)
+            <include refid="org.complitex.pspoffice.person.strategy.service.BuildingsGridBean.from"/>
+            <include refid="org.complitex.pspoffice.person.strategy.service.BuildingsGridBean.where"/>
+    </select>
+
+    <select id="find" resultType="hashmap" parameterType="map">
+        SELECT DISTINCT b.`object_id` buildingId,
+                ((SELECT COUNT(1) FROM `apartment` a WHERE a.`status` IN ('ACTIVE', 'INACTIVE') AND a.`parent_id` = b.`object_id` 
+                    AND a.`parent_entity_id` = 500
+                     <if test="not admin">
+                        AND a.`permission_id` IN ${apartmentPermissionString}
+                     </if>) + 
+                 (SELECT COUNT(1) FROM `room` r WHERE r.`status` IN ('ACTIVE', 'INACTIVE') AND r.`parent_id` = b.`object_id` 
+                    AND r.`parent_entity_id` = 500
+                     <if test="not admin">
+                        AND r.`permission_id` IN ${roomPermissionString}
+                     </if>)) apartments
+        
+        <include refid="org.complitex.pspoffice.person.strategy.service.BuildingsGridBean.from"/>
+        <include refid="org.complitex.pspoffice.person.strategy.service.BuildingsGridBean.where"/>
+
+        LIMIT ${start},${size}
+    </select>
+</mapper>

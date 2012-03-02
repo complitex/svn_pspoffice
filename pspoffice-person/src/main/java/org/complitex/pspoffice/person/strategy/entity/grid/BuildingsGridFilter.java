@@ -13,17 +13,17 @@ import java.util.Locale;
  */
 public class BuildingsGridFilter implements Serializable {
 
-    private long cityId;
+    private final long cityId;
     private Long districtId;
     private Long streetId;
     private String buildingNumber;
-    private String buildingPermissionString;
-    private String apartmentPermissionString;
-    private String roomPermissionString;
-    private boolean admin;
+    private final String buildingPermissionString;
+    private final String apartmentPermissionString;
+    private final String roomPermissionString;
+    private final boolean admin;
     private int start;
     private int size;
-    private Locale locale;
+    private final Locale locale;
 
     public BuildingsGridFilter(long cityId, Long streetId, String buildingPermissionString, String apartmentPermissionString,
             String roomPermissionString, boolean admin, Locale locale) {
@@ -48,40 +48,20 @@ public class BuildingsGridFilter implements Serializable {
         return apartmentPermissionString;
     }
 
-    public void setApartmentPermissionString(String apartmentPermissionString) {
-        this.apartmentPermissionString = apartmentPermissionString;
-    }
-
     public String getBuildingPermissionString() {
         return buildingPermissionString;
-    }
-
-    public void setBuildingPermissionString(String buildingPermissionString) {
-        this.buildingPermissionString = buildingPermissionString;
     }
 
     public String getRoomPermissionString() {
         return roomPermissionString;
     }
 
-    public void setRoomPermissionString(String roomPermissionString) {
-        this.roomPermissionString = roomPermissionString;
-    }
-
     public boolean isAdmin() {
         return admin;
     }
 
-    public void setAdmin(boolean admin) {
-        this.admin = admin;
-    }
-
     public long getCityId() {
         return cityId;
-    }
-
-    public void setCityId(long cityId) {
-        this.cityId = cityId;
     }
 
     public String getBuildingNumber() {
@@ -126,9 +106,5 @@ public class BuildingsGridFilter implements Serializable {
 
     public Locale getLocale() {
         return locale;
-    }
-
-    public void setLocale(Locale locale) {
-        this.locale = locale;
     }
 }

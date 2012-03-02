@@ -248,6 +248,7 @@ public final class BuildingsGrid extends ListPage {
                 item.add(apartmentsLink);
                 apartmentsLink.add(new Label("apartments", String.valueOf(buildingsGridEntity.getApartments())));
 
+                //organizations
                 item.add(new ListView<DomainObject>("organizations", buildingsGridEntity.getOrganizations()) {
 
                     @Override

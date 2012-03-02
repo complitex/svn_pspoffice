@@ -14,14 +14,14 @@ import org.complitex.dictionary.entity.DomainObject;
  */
 public class BuildingsGridEntity implements Serializable {
 
-    private String district;
-    private Long districtId;
-    private String street;
-    private Long streetId;
-    private String building;
-    private long buildingId;
-    private int apartments;
-    private List<DomainObject> organizations;
+    private final String district;
+    private final Long districtId;
+    private final String street;
+    private final Long streetId;
+    private final String building;
+    private final long buildingId;
+    private final int apartments;
+    private final List<DomainObject> organizations;
 
     public BuildingsGridEntity(String district, Long districtId, String street, Long streetId, String building,
             long buildingId, int apartments, List<DomainObject> organizations) {

@@ -32,6 +32,7 @@ import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.web.component.autocomplete.EnhancedAddressSearchComponent;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
+import org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid.ApartmentsGrid;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid.BuildingsGrid;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.component.toolbar.search.CollapsibleSearchToolbarButton;
@@ -125,6 +126,16 @@ public class ApartmentCardSearch extends FormTemplatePage {
                     return;
                 }
                 //дом введен.
+                
+                final DomainObject apartment = addressSearchComponentState.get("apartment");
+                if (apartment == null || apartment.getId() == null || apartment.getId() <= 0) {
+                    //квартира не введена -> выводим грид квартир для заданного дома.
+                    PageParameters parameters = new PageParameters();
+                    parameters.put(ApartmentsGrid.BUILDING_PARAM, building.getId());
+                    setResponsePage(ApartmentsGrid.class, parameters);
+                    return;
+                }
+                //квартира введена.
 
                 SimpleObjectInfo addressInfo = getAddressObjectInfo(addressSearchComponentState);
                 if (addressInfo != null) {

@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +31,7 @@ import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridFilter;
  */
 @Stateless
 public class BuildingsGridBean extends AbstractBean {
-
+    
     private static final String MAPPING = BuildingsGridBean.class.getName();
     @EJB
     private BuildingStrategy buildingStrategy;
@@ -42,7 +43,7 @@ public class BuildingsGridBean extends AbstractBean {
     private SessionBean sessionBean;
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
-
+    
     public BuildingsGridFilter newFilter(long cityId, Long streetId, Locale locale) {
         final boolean isAdmin = sessionBean.isAdmin();
         return new BuildingsGridFilter(cityId, streetId,
@@ -51,7 +52,7 @@ public class BuildingsGridBean extends AbstractBean {
                 !isAdmin ? sessionBean.getPermissionString("room") : null,
                 isAdmin, locale);
     }
-
+    
     private Map<String, Object> newParamsMap(BuildingsGridFilter filter) {
         Map<String, Object> params = Maps.newHashMap();
         params.put("additionalAddressAT", BuildingStrategy.BUILDING_ADDRESS);
@@ -69,11 +70,11 @@ public class BuildingsGridBean extends AbstractBean {
         params.put("size", filter.getSize());
         return params;
     }
-
+    
     public int count(BuildingsGridFilter filter) {
         return (Integer) sqlSession().selectOne(MAPPING + ".count", newParamsMap(filter));
     }
-
+    
     public List<BuildingsGridEntity> find(BuildingsGridFilter filter) {
         List<Map<String, Long>> data = sqlSession().selectList(MAPPING + ".find", newParamsMap(filter));
         final List<BuildingsGridEntity> result = Lists.newArrayList();
@@ -100,7 +101,6 @@ public class BuildingsGridBean extends AbstractBean {
                     building = buildingStrategy.displayDomainObject(buildingObject, filter.getLocale());
                 }
 
-
                 //street
                 Long streetId = null;
                 if (filter.getStreetId() != null) {
@@ -124,9 +124,9 @@ public class BuildingsGridBean extends AbstractBean {
                     DomainObject districtObject = districtStrategy.findById(districtId, true);
                     district = districtStrategy.displayDomainObject(districtObject, filter.getLocale());
                 }
-
+                
                 final int apartments = item.get("apartments").intValue();
-
+                
                 final List<DomainObject> organizations = Lists.newArrayList();
                 final Set<Long> organizationIds = buildingObject.getSubjectIds();
                 for (long organizationId : organizationIds) {
@@ -135,9 +135,9 @@ public class BuildingsGridBean extends AbstractBean {
                         organizations.add(organization);
                     }
                 }
-
+                
                 result.add(new BuildingsGridEntity(district, districtId, street, streetId, building, buildingId,
-                        apartments, organizations));
+                        apartments, Collections.unmodifiableList(organizations)));
             }
         }
         return result;

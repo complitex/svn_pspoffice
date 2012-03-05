@@ -539,7 +539,7 @@ public class RegistrationEdit extends FormTemplatePage {
     }
 
     private void back() {
-        setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
+        setResponsePage(new ApartmentCardEdit(apartmentCard.getId(), null));
     }
 
     @Override

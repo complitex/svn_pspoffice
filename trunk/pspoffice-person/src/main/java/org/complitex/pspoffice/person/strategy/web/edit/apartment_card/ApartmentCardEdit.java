@@ -4,6 +4,9 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
+import org.apache.wicket.PageParameters;
+import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.apache.wicket.model.LoadableDetachableModel;
 import java.text.MessageFormat;
 import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistoryPage;
@@ -87,11 +90,11 @@ import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.DisableApartmentCardButton;
-import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
-import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardList;
+import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
+import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -109,6 +112,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 public final class ApartmentCardEdit extends FormTemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(ApartmentCardEdit.class);
+    public static final String PAGE_SESSION_KEY = "apartment_card_page";
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
@@ -142,6 +146,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     private final List<Long> userOrganizationObjectIds = sessionBean.getUserOrganizationObjectIds();
     private WebMarkupContainer permissionContainer;
     private ExplanationDialog apartmentCardExplanationDialog;
+    private final String backInfoSessionKey;
 
     private class ApartmentCardSubmitLink extends AjaxSubmitLink {
 
@@ -226,7 +231,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
      * Edit existing apartment card.
      * @param apartmentCard
      */
-    public ApartmentCardEdit(ApartmentCard apartmentCard) {
+    public ApartmentCardEdit(ApartmentCard apartmentCard, String backInfoSessionKey) {
+        this.backInfoSessionKey = backInfoSessionKey;
         init(apartmentCard);
     }
 
@@ -235,13 +241,15 @@ public final class ApartmentCardEdit extends FormTemplatePage {
      * @param addressEntity
      * @param addressId
      */
-    public ApartmentCardEdit(String addressEntity, long addressId) {
+    public ApartmentCardEdit(String addressEntity, long addressId, String backInfoSessionKey) {
         this.addressEntity = addressEntity;
         this.addressId = addressId;
+        this.backInfoSessionKey = backInfoSessionKey;
         init(apartmentCardStrategy.newInstance());
     }
 
-    public ApartmentCardEdit(long apartmentCardId) {
+    public ApartmentCardEdit(long apartmentCardId, String backInfoSessionKey) {
+        this.backInfoSessionKey = backInfoSessionKey;
         init(apartmentCardStrategy.findById(apartmentCardId, true));
     }
 
@@ -482,7 +490,10 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                     @Override
                     public void onClick() {
-                        setResponsePage(new PersonEdit(apartmentCard.getId(), registration.getPerson().getId()));
+                        PageParameters params = personStrategy.getEditPageParams(registration.getPerson().getId(), null, null);
+                        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(apartmentCard.getId()));
+                        params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        setResponsePage(personStrategy.getEditPage(), params);
                     }
                 };
                 personLink.add(new Label("personName", personStrategy.displayDomainObject(registration.getPerson(), getLocale())));
@@ -825,17 +836,15 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     }
 
     private void back() {
-        String backAddressEntity = null;
-        Long backAddressId = null;
-        DomainObject room = addressSearchComponentState.get("room");
-        if (room != null && room.getId() > 0) {
-            backAddressId = room.getParentId();
-            backAddressEntity = room.getParentEntityId().equals(100L) ? "apartment" : "building";
-        } else {
-            backAddressEntity = getAddressEntity();
-            backAddressId = getAddressId();
+        if (!Strings.isEmpty(backInfoSessionKey)) {
+            IBackInfo backInfo = BackInfoManager.get(this, backInfoSessionKey);
+            if (backInfo != null) {
+                backInfo.back(this);
+                return;
+            }
         }
-        setResponsePage(new ApartmentCardList(backAddressEntity, backAddressId));
+
+        setResponsePage(ApartmentCardSearch.class);
     }
 
     private Component initFormOfOwnership() {
@@ -934,7 +943,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     protected void onClick() {
                         setResponsePage(new ApartmentCardEdit(
-                                ApartmentCardStrategy.getAddressEntity(oldApartmentCard), oldApartmentCard.getAddressId()));
+                                ApartmentCardStrategy.getAddressEntity(oldApartmentCard), oldApartmentCard.getAddressId(), null));
                     }
 
                     @Override

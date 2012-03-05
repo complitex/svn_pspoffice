@@ -137,7 +137,7 @@ final class RegisterOwnerDialog extends Panel {
                 try {
                     if (RegisterOwnerDialog.this.validate()) {
                         register();
-                        setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
+                        setResponsePage(new ApartmentCardEdit(apartmentCard.getId(), null));
                     } else {
                         target.addComponent(messages);
                         scrollToMessages(target);
@@ -166,7 +166,7 @@ final class RegisterOwnerDialog extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                setResponsePage(new ApartmentCardEdit(apartmentCard.getId()));
+                setResponsePage(new ApartmentCardEdit(apartmentCard.getId(), null));
             }
         };
         form.add(cancel);

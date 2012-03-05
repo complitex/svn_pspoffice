@@ -44,6 +44,6 @@ public final class ApartmentCardHistoryPage extends AbstractHistoryPage {
 
     @Override
     protected void returnBackToObject(long objectId) {
-        setResponsePage(new ApartmentCardEdit(objectId));
+        setResponsePage(new ApartmentCardEdit(objectId, null));
     }
 }

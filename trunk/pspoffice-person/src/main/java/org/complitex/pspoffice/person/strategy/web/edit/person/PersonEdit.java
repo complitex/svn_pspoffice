@@ -13,12 +13,14 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
+import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
-import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.edit.person.toolbar.DeathButton;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -39,12 +41,10 @@ public class PersonEdit extends FormTemplatePage {
     private StringCultureBean stringBean;
     private Person oldPerson;
     private Person newPerson;
-    private final boolean isBackPage;
-    private long backApartmentCardId;
     private PersonDeathDialog personDeathDialog;
+    private final String backInfoSessionKey;
 
     public PersonEdit(PageParameters parameters) {
-        this.isBackPage = false;
         Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
         if (objectId == null) {
             //create new entity
@@ -59,20 +59,22 @@ public class PersonEdit extends FormTemplatePage {
             }
             oldPerson = CloneUtil.cloneObject(newPerson);
         }
+
+        this.backInfoSessionKey = parameters.getString(TemplateStrategy.BACK_INFO_SESSION_KEY);
+
         init();
     }
 
     /**
      * Constructor for traverses from ApartmentCardEdit. It backs to ApartmentCardEdit page after person editing.
      */
-    public PersonEdit(long apartmentCardId, long personId) {
-        this.isBackPage = true;
-        newPerson = personStrategy.findById(personId, false, true, true, true);
-        oldPerson = CloneUtil.cloneObject(newPerson);
-        this.backApartmentCardId = apartmentCardId;
-        init();
-    }
-
+//    public PersonEdit(long apartmentCardId, long personId) {
+//        this.isBackPage = true;
+//        newPerson = personStrategy.findById(personId, false, true, true, true);
+//        oldPerson = CloneUtil.cloneObject(newPerson);
+//        this.backApartmentCardId = apartmentCardId;
+//        init();
+//    }
     private void init() {
         Label title = new Label("title", new AbstractReadOnlyModel<String>() {
 
@@ -102,13 +104,17 @@ public class PersonEdit extends FormTemplatePage {
     }
 
     private void back() {
-        if (!isBackPage) {
-            PageParameters listPageParams = personStrategy.getListPageParams();
-            listPageParams.put(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
-            setResponsePage(personStrategy.getListPage(), listPageParams);
-        } else {
-            setResponsePage(new ApartmentCardEdit(backApartmentCardId));
+        if (!Strings.isEmpty(backInfoSessionKey)) {
+            IBackInfo backInfo = BackInfoManager.get(this, backInfoSessionKey);
+            if (backInfo != null) {
+                backInfo.back(this);
+                return;
+            }
         }
+
+        PageParameters listPageParams = personStrategy.getListPageParams();
+        listPageParams.put(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
+        setResponsePage(personStrategy.getListPage(), listPageParams);
     }
 
     @Override
@@ -129,4 +135,3 @@ public class PersonEdit extends FormTemplatePage {
                 });
     }
 }
-

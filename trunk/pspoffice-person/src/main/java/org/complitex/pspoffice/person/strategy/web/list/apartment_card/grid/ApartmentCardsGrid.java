@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.PageParameters;
@@ -19,16 +20,17 @@ import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
-import org.complitex.dictionary.web.component.back.BackInfo;
+import org.complitex.dictionary.web.component.back.IBackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
-import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.ApartmentCardsGridBean;
+import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.template.strategy.TemplateStrategy;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 
@@ -46,12 +48,11 @@ public final class ApartmentCardsGrid extends ListPage {
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
     @EJB
-    private ApartmentCardStrategy apartmentCardStrategy;
-    @EJB
     private AddressRendererBean addressRendererBean;
+    private final long apartmentId;
 
     public ApartmentCardsGrid(PageParameters parameters) {
-        final long apartmentId = parameters.getAsLong(APARTMENT_PARAM);
+        apartmentId = parameters.getAsLong(APARTMENT_PARAM);
 
         IModel<String> labelModel = new StringResourceModel("label", null,
                 new Object[]{addressRendererBean.displayAddress("apartment", apartmentId, getLocale())});
@@ -80,7 +81,9 @@ public final class ApartmentCardsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
-                                setResponsePage(new ApartmentCardEdit(apartmentCardsGridEntity.getApartmentCardId()));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                                setResponsePage(new ApartmentCardEdit(apartmentCardsGridEntity.getApartmentCardId(),
+                                        PAGE_SESSION_KEY));
                             }
                         };
                         item.add(apartmentCardLink);
@@ -141,9 +144,21 @@ public final class ApartmentCardsGrid extends ListPage {
         add(backSearch);
     }
 
-    private static BackInfo gridBackInfo(long apartmentId) {
+    private static IBackInfo gridBackInfo(long apartmentId) {
         PageParameters backPageParams = new PageParameters();
         backPageParams.put(APARTMENT_PARAM, apartmentId);
         return new BookmarkableBackInfo(ApartmentCardsGrid.class, backPageParams);
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        return ImmutableList.of(new AddApartmentCardButton(id) {
+
+            @Override
+            protected void onClick() {
+                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                setResponsePage(new ApartmentCardEdit("apartment", apartmentId, PAGE_SESSION_KEY));
+            }
+        });
     }
 }

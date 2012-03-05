@@ -38,7 +38,7 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.ShowMode;
-import org.complitex.dictionary.web.component.back.BackInfo;
+import org.complitex.dictionary.web.component.back.IBackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
@@ -317,7 +317,7 @@ public final class BuildingsGrid extends ListPage {
         content.add(backSearch);
     }
 
-    private static BackInfo gridBackInfo(long cityId, Long streetId) {
+    private static IBackInfo gridBackInfo(long cityId, Long streetId) {
         PageParameters backPageParams = new PageParameters();
         backPageParams.put(CITY_PARAM, cityId);
         if (streetId != null) {

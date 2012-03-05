@@ -16,7 +16,7 @@
     </sql>
     
     <sql id="apartmentsWhere">
-        WHERE a.`parent_entity_id` = 500 AND a.`parent_id` = #{buildingId}
+        WHERE a.`status` = 'ACTIVE' AND a.`parent_entity_id` = 500 AND a.`parent_id` = #{buildingId}
         <if test="not admin">
             AND a.`permission_id` IN ${apartmentPermissionString}
         </if>
@@ -26,7 +26,7 @@
     </sql>
     
     <sql id="roomsWhere">
-        WHERE r.`parent_entity_id` = 500 AND r.`parent_id` = #{buildingId}
+        WHERE r.`status` = 'ACTIVE' AND r.`parent_entity_id` = 500 AND r.`parent_id` = #{buildingId}
         <if test="not admin">
             AND r.`permission_id` IN ${roomPermissionString}
         </if>

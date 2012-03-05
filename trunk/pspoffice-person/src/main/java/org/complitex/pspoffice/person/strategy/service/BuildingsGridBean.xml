@@ -5,7 +5,7 @@
     
     <sql id="from">
         FROM `building` b 
-            JOIN `building_address` addr ON (addr.`status` IN ('ACTIVE', 'INACTIVE') AND ((b.`parent_id` = addr.`object_id`) OR
+            JOIN `building_address` addr ON (addr.`status` = 'ACTIVE' AND ((b.`parent_id` = addr.`object_id`) OR
             EXISTS(SELECT 1 FROM `building_attribute` ba WHERE ba.`object_id` = b.`object_id` AND ba.`status` = 'ACTIVE'
                 AND ba.`attribute_type_id` = ${additionalAddressAT} AND ba.`value_id` = addr.`object_id`)))
                 
@@ -15,14 +15,14 @@
             
             LEFT JOIN `building_attribute` distr_a ON (distr_a.`status` = 'ACTIVE' AND distr_a.`object_id` = b.`object_id`
                 AND distr_a.`attribute_type_id` = ${buildingDistrictAT})
-            LEFT JOIN `district` d ON (d.`status` IN ('ACTIVE', 'INACTIVE') AND d.`object_id` = distr_a.`value_id`)
+            LEFT JOIN `district` d ON (d.`status` = 'ACTIVE' AND d.`object_id` = distr_a.`value_id`)
             
-            LEFT JOIN `street` s ON (s.`status` IN ('ACTIVE', 'INACTIVE') AND 
+            LEFT JOIN `street` s ON (s.`status` = 'ACTIVE' AND 
                 s.`object_id` = addr.`parent_id` AND addr.`parent_entity_id` = 300)
     </sql>
     <sql id="where">
         WHERE 
-            b.`status` IN ('ACTIVE', 'INACTIVE')
+            b.`status` = 'ACTIVE'
             <if test="not admin">
                 AND b.`permission_id` IN ${buildingPermissionString}
             </if>
@@ -49,12 +49,12 @@
 
     <select id="find" resultType="hashmap" parameterType="map">
         SELECT DISTINCT b.`object_id` buildingId,
-                ((SELECT COUNT(1) FROM `apartment` a WHERE a.`status` IN ('ACTIVE', 'INACTIVE') AND a.`parent_id` = b.`object_id` 
+                ((SELECT COUNT(1) FROM `apartment` a WHERE a.`status` = 'ACTIVE' AND a.`parent_id` = b.`object_id` 
                     AND a.`parent_entity_id` = 500
                      <if test="not admin">
                         AND a.`permission_id` IN ${apartmentPermissionString}
                      </if>) + 
-                 (SELECT COUNT(1) FROM `room` r WHERE r.`status` IN ('ACTIVE', 'INACTIVE') AND r.`parent_id` = b.`object_id` 
+                 (SELECT COUNT(1) FROM `room` r WHERE r.`status` = 'ACTIVE' AND r.`parent_id` = b.`object_id` 
                     AND r.`parent_entity_id` = 500
                      <if test="not admin">
                         AND r.`permission_id` IN ${roomPermissionString}

@@ -23,6 +23,7 @@ import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.address.strategy.apartment.ApartmentStrategy;
 import org.complitex.address.strategy.room.RoomStrategy;
@@ -42,6 +43,7 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.ApartmentsGridBean;
+import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.ListPage;
@@ -53,8 +55,9 @@ import org.complitex.template.web.security.SecurityRole;
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class ApartmentsGrid extends ListPage {
-    
-    public static final String BUILDING_PARAM = "buildingId";
+
+    public static final String BUILDING_PARAM = "building_id";
+    public static final String BACK_PARAM = "apartments_grid_back";
     private static final String PAGE_SESSION_KEY = "apartments_grid_page";
     @EJB
     private ApartmentStrategy apartmentStrategy;
@@ -71,16 +74,16 @@ public final class ApartmentsGrid extends ListPage {
     @EJB
     private LocaleBean localeBean;
     private final Locale systemLocale = localeBean.getSystemLocale();
-    
+
     public ApartmentsGrid(PageParameters parameters) {
         final long buildingId = parameters.getAsLong(BUILDING_PARAM);
-        
+
         IModel<String> labelModel = new StringResourceModel("label", null,
                 new Object[]{addressRendererBean.displayAddress("building", buildingId, getLocale())});
-        
+
         add(new Label("title", labelModel));
         add(new Label("label", labelModel));
-        
+
         final WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
         add(content);
@@ -94,14 +97,14 @@ public final class ApartmentsGrid extends ListPage {
 
         //Data Provider
         final DataProvider<ApartmentsGridEntity> dataProvider = new DataProvider<ApartmentsGridEntity>() {
-            
+
             @Override
             protected Iterable<ApartmentsGridEntity> getData(int first, int count) {
                 filter.setStart(first);
                 filter.setSize(count);
                 return apartmentGridBean.find(filter);
             }
-            
+
             @Override
             protected int getSize() {
                 return apartmentGridBean.count(filter);
@@ -114,7 +117,7 @@ public final class ApartmentsGrid extends ListPage {
 
         //Data View
         DataView<ApartmentsGridEntity> apartments = new DataView<ApartmentsGridEntity>("apartments", dataProvider, 1) {
-            
+
             @Override
             protected void populateItem(Item<ApartmentsGridEntity> item) {
                 final ApartmentsGridEntity apartmentsGridEntity = item.getModelObject();
@@ -124,7 +127,7 @@ public final class ApartmentsGrid extends ListPage {
 
                 //apartment/room
                 Link<Void> objectLink = new Link<Void>("objectLink") {
-                    
+
                     @Override
                     public void onClick() {
                         IStrategy strategy = "apartment".equals(apartmentsGridEntity.getEntity()) ? apartmentStrategy
@@ -140,13 +143,13 @@ public final class ApartmentsGrid extends ListPage {
 
                 //rooms
                 item.add(new ListView<DomainObject>("rooms", apartmentsGridEntity.getRooms()) {
-                    
+
                     @Override
                     protected void populateItem(ListItem<DomainObject> item) {
                         final DomainObject room = item.getModelObject();
-                        
+
                         Link<Void> roomLink = new Link<Void>("roomLink") {
-                            
+
                             @Override
                             public void onClick() {
                                 PageParameters params = roomStrategy.getEditPageParams(room.getId(), null, null);
@@ -162,19 +165,16 @@ public final class ApartmentsGrid extends ListPage {
 
                 //apartment cards
                 item.add(new ListView<ApartmentCard>("apartmentCards", apartmentsGridEntity.getApartmentCards()) {
-                    
+
                     @Override
                     protected void populateItem(ListItem<ApartmentCard> item) {
                         final ApartmentCard apartmentCard = item.getModelObject();
-                        
+
                         Link<Void> apartmentCardLink = new Link<Void>("apartmentCardLink") {
-                            
+
                             @Override
                             public void onClick() {
-                                PageParameters params = apartmentCardStrategy.getEditPageParams(apartmentCard.getId(), null, null);
-                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId));
-                                params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
-                                setResponsePage(apartmentCardStrategy.getEditPage(), params);
+                                setResponsePage(new ApartmentCardEdit(apartmentCard));
                             }
                         };
                         item.add(apartmentCardLink);
@@ -188,13 +188,13 @@ public final class ApartmentsGrid extends ListPage {
 
                 //organizations
                 item.add(new ListView<DomainObject>("organizations", apartmentsGridEntity.getOrganizations()) {
-                    
+
                     @Override
                     protected void populateItem(ListItem<DomainObject> item) {
                         final DomainObject organization = item.getModelObject();
-                        
+
                         Link<Void> organizationLink = new Link<Void>("organizationLink") {
-                            
+
                             @Override
                             public void onClick() {
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
@@ -214,7 +214,7 @@ public final class ApartmentsGrid extends ListPage {
 
         //Reset Action
         AjaxLink<Void> reset = new AjaxLink<Void>("reset") {
-            
+
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filterForm.clearInput();
@@ -226,32 +226,44 @@ public final class ApartmentsGrid extends ListPage {
 
         //Submit Action
         AjaxButton submit = new AjaxButton("submit", filterForm) {
-            
+
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 target.addComponent(content);
             }
         };
         filterForm.add(submit);
-        
+
         content.add(new PagingNavigator("navigator", apartments, getPreferencesPage(), content));
-        
-        Link<Void> back = new Link<Void>("back") {
-            
+
+        Link<Void> backSearch = new Link<Void>("backSearch") {
+
             @Override
             public void onClick() {
                 setResponsePage(ApartmentCardSearch.class);
             }
         };
+        content.add(backSearch);
+
+        final String backInfoSessionKey = parameters.getString(BACK_PARAM);
+        final BackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
+        Link<Void> back = new Link<Void>("back") {
+
+            @Override
+            public void onClick() {
+                backInfo.back(this);
+            }
+        };
+        back.setVisible(backInfo != null);
         content.add(back);
     }
-    
+
     private static BackInfo gridBackInfo(long buildingId) {
         PageParameters backPageParams = new PageParameters();
         backPageParams.put(BUILDING_PARAM, buildingId);
         return new BookmarkableBackInfo(ApartmentsGrid.class, backPageParams);
     }
-    
+
     private static String apartmentCardInfo(ApartmentCard apartmentCard, Locale locale, Locale systemLocale) {
         Person owner = apartmentCard.getOwner();
         return owner.getLastName(locale, systemLocale) + " "

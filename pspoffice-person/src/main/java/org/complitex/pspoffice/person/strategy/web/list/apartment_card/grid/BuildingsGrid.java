@@ -59,8 +59,8 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class BuildingsGrid extends ListPage {
 
-    public static final String CITY_PARAM = "cityId";
-    public static final String STREET_PARAM = "streetId";
+    public static final String CITY_PARAM = "city_id";
+    public static final String STREET_PARAM = "street_id";
     private static final String PAGE_SESSION_KEY = "buildings_grid_page";
     @EJB
     private DistrictStrategy districtStrategy;
@@ -239,14 +239,21 @@ public final class BuildingsGrid extends ListPage {
                 buildingLink.add(new Label("building", buildingsGridEntity.getBuilding()));
 
                 //apartments
+                final int apartments = buildingsGridEntity.getApartments();
                 Link<Void> apartmentsLink = new Link<Void>("apartmentsLink") {
 
                     @Override
                     public void onClick() {
+                        BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
+                        PageParameters params = new PageParameters();
+                        params.put(ApartmentsGrid.BUILDING_PARAM, buildingsGridEntity.getBuildingId());
+                        params.put(ApartmentsGrid.BACK_PARAM, PAGE_SESSION_KEY);
+                        setResponsePage(ApartmentsGrid.class, params);
                     }
                 };
+                apartmentsLink.setEnabled(apartments > 0);
                 item.add(apartmentsLink);
-                apartmentsLink.add(new Label("apartments", String.valueOf(buildingsGridEntity.getApartments())));
+                apartmentsLink.add(new Label("apartments", String.valueOf(apartments)));
 
                 //organizations
                 item.add(new ListView<DomainObject>("organizations", buildingsGridEntity.getOrganizations()) {
@@ -300,14 +307,14 @@ public final class BuildingsGrid extends ListPage {
 
         content.add(new PagingNavigator("navigator", buildings, getPreferencesPage(), content));
 
-        Link<Void> back = new Link<Void>("back") {
+        Link<Void> backSearch = new Link<Void>("backSearch") {
 
             @Override
             public void onClick() {
                 setResponsePage(ApartmentCardSearch.class);
             }
         };
-        content.add(back);
+        content.add(backSearch);
     }
 
     private static BackInfo gridBackInfo(long cityId, Long streetId) {

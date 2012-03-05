@@ -56,6 +56,7 @@
         <mapper resource="org/complitex/pspoffice/person/strategy/Registration.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/service/BuildingsGridBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/service/ApartmentsGridBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/person/strategy/service/ApartmentCardsGridBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/strategy/service/PersonNameBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/report/service/RegistrationStopCouponBean.xml"/>
         

@@ -32,12 +32,11 @@ import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
-import org.complitex.dictionary.web.component.back.BackInfo;
+import org.complitex.dictionary.web.component.back.IBackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
 import org.complitex.dictionary.web.component.paging.PagingNavigator;
-import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridEntity;
@@ -68,14 +67,14 @@ public final class ApartmentsGrid extends ListPage {
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
     @EJB
-    private ApartmentCardStrategy apartmentCardStrategy;
-    @EJB
     private AddressRendererBean addressRendererBean;
     @EJB
     private LocaleBean localeBean;
     private final Locale systemLocale = localeBean.getSystemLocale();
 
     public ApartmentsGrid(PageParameters parameters) {
+        final String backInfoSessionKey = parameters.getString(BACK_PARAM);
+
         final long buildingId = parameters.getAsLong(BUILDING_PARAM);
 
         IModel<String> labelModel = new StringResourceModel("label", null,
@@ -133,7 +132,7 @@ public final class ApartmentsGrid extends ListPage {
                         IStrategy strategy = "apartment".equals(apartmentsGridEntity.getEntity()) ? apartmentStrategy
                                 : roomStrategy;
                         PageParameters params = strategy.getEditPageParams(apartmentsGridEntity.getObjectId(), null, null);
-                        BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId));
+                        BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
                         params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(strategy.getEditPage(), params);
                     }
@@ -153,7 +152,7 @@ public final class ApartmentsGrid extends ListPage {
                             @Override
                             public void onClick() {
                                 PageParameters params = roomStrategy.getEditPageParams(room.getId(), null, null);
-                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
                                 params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(roomStrategy.getEditPage(), params);
                             }
@@ -174,7 +173,8 @@ public final class ApartmentsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
-                                setResponsePage(new ApartmentCardEdit(apartmentCard));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
+                                setResponsePage(new ApartmentCardEdit(apartmentCard.getId(), PAGE_SESSION_KEY));
                             }
                         };
                         item.add(apartmentCardLink);
@@ -198,7 +198,7 @@ public final class ApartmentsGrid extends ListPage {
                             @Override
                             public void onClick() {
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
-                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
                                 params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
@@ -245,8 +245,8 @@ public final class ApartmentsGrid extends ListPage {
         };
         content.add(backSearch);
 
-        final String backInfoSessionKey = parameters.getString(BACK_PARAM);
-        final BackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
+
+        final IBackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
         Link<Void> back = new Link<Void>("back") {
 
             @Override
@@ -258,9 +258,10 @@ public final class ApartmentsGrid extends ListPage {
         content.add(back);
     }
 
-    private static BackInfo gridBackInfo(long buildingId) {
+    private static IBackInfo gridBackInfo(long buildingId, String backInfoSessionKey) {
         PageParameters backPageParams = new PageParameters();
         backPageParams.put(BUILDING_PARAM, buildingId);
+        backPageParams.put(BACK_PARAM, backInfoSessionKey);
         return new BookmarkableBackInfo(ApartmentsGrid.class, backPageParams);
     }
 

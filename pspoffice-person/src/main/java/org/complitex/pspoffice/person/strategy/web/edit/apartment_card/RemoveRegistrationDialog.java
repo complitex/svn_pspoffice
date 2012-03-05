@@ -111,7 +111,7 @@ final class RemoveRegistrationDialog extends Panel {
                 try {
                     if (RemoveRegistrationDialog.this.validate()) {
                         removeRegistrations();
-                        setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                        setResponsePage(new ApartmentCardEdit(apartmentCardId, null));
                     } else {
                         target.addComponent(messages);
                         scrollToMessages(target);

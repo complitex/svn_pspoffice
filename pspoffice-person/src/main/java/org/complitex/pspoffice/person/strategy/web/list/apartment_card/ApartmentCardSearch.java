@@ -120,9 +120,9 @@ public class ApartmentCardSearch extends FormTemplatePage {
                         return;
                     } else if (count == 1) {
                         // переходим на страницу редактирования поквартирной карточки.
-                        setResponsePage(new ApartmentCardEdit(apartmentCardsGridBean.findOne(apartmentId)));
+                        setResponsePage(new ApartmentCardEdit(apartmentCardsGridBean.findOne(apartmentId), null));
                     } else {
-                        setResponsePage(new ApartmentCardNotFound("apartment", apartmentId));
+                        setResponsePage(new ApartmentCardNotFound(apartmentId));
                     }
                     return;
                 }

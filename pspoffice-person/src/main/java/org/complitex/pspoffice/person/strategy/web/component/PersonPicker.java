@@ -7,6 +7,7 @@ package org.complitex.pspoffice.person.strategy.web.component;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -28,15 +29,18 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.util.StringUtil;
+import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.type.GenderPanel;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
-import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
+import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardBackInfo;
+import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEditPanel;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
+import org.complitex.template.strategy.TemplateStrategy;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 
@@ -99,7 +103,12 @@ public final class PersonPicker extends FormComponentPanel<Person> {
             @Override
             public void onClick() {
                 Person person = PersonPicker.this.getModelObject();
-                setResponsePage(new PersonEdit(apartmentCardId, person.getId()));
+
+                PageParameters params = personStrategy.getEditPageParams(person.getId(), null, null);
+                BackInfoManager.put(this, ApartmentCardEdit.PAGE_SESSION_KEY, new ApartmentCardBackInfo(apartmentCardId));
+                params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, ApartmentCardEdit.PAGE_SESSION_KEY);
+                setResponsePage(personStrategy.getEditPage(), params);
+
             }
         };
         personLink.setOutputMarkupPlaceholderTag(true);

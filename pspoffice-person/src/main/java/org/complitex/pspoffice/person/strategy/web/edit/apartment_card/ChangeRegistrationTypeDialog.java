@@ -108,7 +108,7 @@ final class ChangeRegistrationTypeDialog extends Panel {
                 try {
                     if (ChangeRegistrationTypeDialog.this.validate()) {
                         changeRegistrationType();
-                        setResponsePage(new ApartmentCardEdit(apartmentCardId));
+                        setResponsePage(new ApartmentCardEdit(apartmentCardId, null));
                     } else {
                         target.addComponent(messages);
                     }

@@ -25,16 +25,16 @@ public final class ApartmentCardNotFound extends TemplatePage {
     @EJB
     private AddressRendererBean addressRendererBean;
 
-    public ApartmentCardNotFound(final String addressEntity, final long addressId) {
+    public ApartmentCardNotFound(final long apartmentId) {
         add(new Label("title", new ResourceModel("title")));
         add(new Label("label", new StringResourceModel("label", null, new Object[]{
-                    addressRendererBean.displayAddress(addressEntity, addressId, getLocale())
+                    addressRendererBean.displayAddress("apartment", apartmentId, getLocale())
                 })));
         add(new Link<Void>("yes") {
 
             @Override
             public void onClick() {
-                setResponsePage(new ApartmentCardEdit(addressEntity, addressId));
+                setResponsePage(new ApartmentCardEdit("apartment", apartmentId, null));
             }
         });
         add(new Link<Void>("no") {
@@ -46,4 +46,3 @@ public final class ApartmentCardNotFound extends TemplatePage {
         });
     }
 }
-

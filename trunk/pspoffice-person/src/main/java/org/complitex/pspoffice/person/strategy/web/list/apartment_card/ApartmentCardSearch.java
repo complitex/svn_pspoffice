@@ -27,7 +27,6 @@ import org.complitex.dictionary.web.component.search.CollapsibleSearchPanel;
 import org.complitex.dictionary.web.component.search.ISearchCallback;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
-import org.complitex.pspoffice.person.strategy.service.ApartmentCardsGridBean;
 import org.complitex.pspoffice.person.strategy.web.component.autocomplete.EnhancedAddressSearchComponent;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid.ApartmentCardsGrid;
@@ -58,8 +57,6 @@ public class ApartmentCardSearch extends FormTemplatePage {
     }
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
-    @EJB
-    private ApartmentCardsGridBean apartmentCardsGridBean;
     private CollapsibleSearchPanel searchPanel;
     private IndicatingAjaxLink<Void> submit;
 
@@ -111,7 +108,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
                 if (apartmentId != null) {
                     storeAddressSearchInfo();
                     // квартира введена.
-                    final int count = apartmentCardsGridBean.count(apartmentId);
+                    final int count = apartmentCardStrategy.countByAddress("apartment", apartmentId);
                     if (count > 1) {
                         // выводим грид поквартирных карточек.
                         PageParameters parameters = new PageParameters();
@@ -120,7 +117,8 @@ public class ApartmentCardSearch extends FormTemplatePage {
                         return;
                     } else if (count == 1) {
                         // переходим на страницу редактирования поквартирной карточки.
-                        setResponsePage(new ApartmentCardEdit(apartmentCardsGridBean.findOne(apartmentId), null));
+                        setResponsePage(
+                                new ApartmentCardEdit(apartmentCardStrategy.findOneByAddress("apartment", apartmentId), null));
                     } else {
                         setResponsePage(new ApartmentCardNotFound(apartmentId));
                     }

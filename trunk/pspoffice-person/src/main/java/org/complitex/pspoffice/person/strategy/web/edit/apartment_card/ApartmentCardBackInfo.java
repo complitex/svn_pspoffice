@@ -5,13 +5,13 @@
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
 import org.apache.wicket.Component;
-import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfo;
 
 /**
  *
  * @author Artem
  */
-public final class ApartmentCardBackInfo implements IBackInfo {
+public final class ApartmentCardBackInfo extends BackInfo {
 
     private final long apartmentCardId;
 

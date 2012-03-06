@@ -17,7 +17,7 @@
     
     <sql id="apartmentsWhere">
         WHERE a.`status` = 'ACTIVE' AND a.`parent_entity_id` = 500 AND a.`parent_id` = #{buildingId}
-        <if test="not admin">
+        <if test="apartmentPermissionString != null">
             AND a.`permission_id` IN ${apartmentPermissionString}
         </if>
         <if test="number != null">
@@ -27,7 +27,7 @@
     
     <sql id="roomsWhere">
         WHERE r.`status` = 'ACTIVE' AND r.`parent_entity_id` = 500 AND r.`parent_id` = #{buildingId}
-        <if test="not admin">
+        <if test="roomPermissionString != null">
             AND r.`permission_id` IN ${roomPermissionString}
         </if>
         <if test="number != null">

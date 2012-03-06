@@ -32,7 +32,7 @@ import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
-import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
@@ -246,7 +246,7 @@ public final class ApartmentsGrid extends ListPage {
         content.add(backSearch);
 
 
-        final IBackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
+        final BackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
         Link<Void> back = new Link<Void>("back") {
 
             @Override
@@ -258,7 +258,7 @@ public final class ApartmentsGrid extends ListPage {
         content.add(back);
     }
 
-    private static IBackInfo gridBackInfo(long buildingId, String backInfoSessionKey) {
+    private static BackInfo gridBackInfo(long buildingId, String backInfoSessionKey) {
         PageParameters backPageParams = new PageParameters();
         backPageParams.put(BUILDING_PARAM, buildingId);
         backPageParams.put(BACK_PARAM, backInfoSessionKey);

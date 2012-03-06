@@ -6,23 +6,24 @@ package org.complitex.pspoffice.person.strategy.entity.grid;
 
 import java.io.Serializable;
 import java.util.Locale;
+import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 
 /**
  *
  * @author Artem
  */
-public class ApartmentCardsGridFilter implements Serializable {
+public class RegistrationsGridFilter implements Serializable {
 
-    private final long apartmentId;
+    private final ApartmentCard apartmentCard;
     private final Locale locale;
 
-    public ApartmentCardsGridFilter(long apartmentId, Locale locale) {
-        this.apartmentId = apartmentId;
+    public RegistrationsGridFilter(ApartmentCard apartmentCard, Locale locale) {
+        this.apartmentCard = apartmentCard;
         this.locale = locale;
     }
 
-    public long getApartmentId() {
-        return apartmentId;
+    public ApartmentCard getApartmentCard() {
+        return apartmentCard;
     }
 
     public Locale getLocale() {

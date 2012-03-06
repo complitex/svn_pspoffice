@@ -17,17 +17,15 @@ public class ApartmentsGridFilter implements Serializable {
     private String number;
     private final String apartmentPermissionString;
     private final String roomPermissionString;
-    private final boolean admin;
     private int start;
     private int size;
     private final Locale locale;
 
     public ApartmentsGridFilter(long buildingId, String apartmentPermissionString, String roomPermissionString,
-            boolean admin, Locale locale) {
+            Locale locale) {
         this.buildingId = buildingId;
         this.apartmentPermissionString = apartmentPermissionString;
         this.roomPermissionString = roomPermissionString;
-        this.admin = admin;
         this.locale = locale;
     }
 
@@ -59,10 +57,6 @@ public class ApartmentsGridFilter implements Serializable {
 
     public void setStart(int start) {
         this.start = start;
-    }
-
-    public boolean isAdmin() {
-        return admin;
     }
 
     public String getApartmentPermissionString() {

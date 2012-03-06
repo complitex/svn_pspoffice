@@ -327,6 +327,10 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     private Map<String, Object> newSearchByAddressParams(long addressId) {
         Map<String, Object> params = newHashMap();
+        params.put("apartmentCardAddressAT", ApartmentCardStrategy.ADDRESS);
+        params.put("apartmentCardApartmentVT", ApartmentCardStrategy.ADDRESS_APARTMENT);
+        params.put("apartmentCardRoomVT", ApartmentCardStrategy.ADDRESS_ROOM);
+        params.put("apartmentCardBuildingVT", ApartmentCardStrategy.ADDRESS_BUILDING);
         params.put("addressId", addressId);
         if (!sessionBean.isAdmin()) {
             params.put("userPermissionString", sessionBean.getPermissionString(getEntityTable()));

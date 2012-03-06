@@ -103,7 +103,9 @@ public class EnhancedAddressSearchComponent extends CollapsibleSearchComponent {
     }
 
     @Override
-    protected void onUpdate(AjaxRequestTarget target, String entity) {
+    protected void onSelect(AjaxRequestTarget target, String entity) {
+        super.onSelect(target, entity);
+        
         if (entity.equals("building")) {
             DomainObject building = getModelObject("building");
             if (apartmentComponent != null) {
@@ -120,7 +122,6 @@ public class EnhancedAddressSearchComponent extends CollapsibleSearchComponent {
                         target);
             }
         }
-        super.onUpdate(target, entity);
     }
 
     @Override

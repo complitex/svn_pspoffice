@@ -301,7 +301,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     of("city", "street", "building", "apartment", "room"), null, ShowMode.ACTIVE, true) {
 
                 @Override
-                protected void onUpdate(AjaxRequestTarget target, String entity, DomainObject object) {
+                protected void onSelect(AjaxRequestTarget target, String entity, DomainObject object) {
                     if (object != null && object.getId() != null && object.getId() > 0) {
                         permissionContainer.replace(newPermissionPanel(object.getSubjectIds()));
                         target.addComponent(permissionContainer);

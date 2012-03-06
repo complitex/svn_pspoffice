@@ -49,8 +49,7 @@ public class ApartmentsGridBean extends AbstractBean {
         final boolean isAdmin = sessionBean.isAdmin();
         return new ApartmentsGridFilter(buildingId,
                 !isAdmin ? sessionBean.getPermissionString("apartment") : null,
-                !isAdmin ? sessionBean.getPermissionString("room") : null,
-                isAdmin, locale);
+                !isAdmin ? sessionBean.getPermissionString("room") : null, locale);
     }
 
     private Map<String, Object> newParamsMap(ApartmentsGridFilter filter) {
@@ -59,7 +58,6 @@ public class ApartmentsGridBean extends AbstractBean {
         params.put("roomNameAT", RoomStrategy.NAME);
         params.put("buildingId", filter.getBuildingId());
         params.put("number", filter.getNumber());
-        params.put("admin", filter.isAdmin());
         params.put("apartmentPermissionString", filter.getApartmentPermissionString());
         params.put("roomPermissionString", filter.getRoomPermissionString());
         params.put("start", filter.getStart());

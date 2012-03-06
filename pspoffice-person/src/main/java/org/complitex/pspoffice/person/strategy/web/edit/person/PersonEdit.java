@@ -16,7 +16,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
-import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -105,7 +105,7 @@ public class PersonEdit extends FormTemplatePage {
 
     private void back() {
         if (!Strings.isEmpty(backInfoSessionKey)) {
-            IBackInfo backInfo = BackInfoManager.get(this, backInfoSessionKey);
+            BackInfo backInfo = BackInfoManager.get(this, backInfoSessionKey);
             if (backInfo != null) {
                 backInfo.back(this);
                 return;

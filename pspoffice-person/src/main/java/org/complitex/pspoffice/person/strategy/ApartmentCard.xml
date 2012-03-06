@@ -19,13 +19,15 @@
 
     <sql id="findByApartmentSql">
         LEFT JOIN `apartment_card_attribute` apartment_a ON (apartment_a.`object_id` = e.`object_id` AND apartment_a.`status` = 'ACTIVE'
-            AND apartment_a.`attribute_type_id` = 2402 AND apartment_a.`value_type_id` = 2403)
+            AND apartment_a.`attribute_type_id` = ${apartmentCardAddressAT} 
+            AND apartment_a.`value_type_id` = ${apartmentCardApartmentVT})
         LEFT JOIN `apartment_card_attribute` room_a ON (room_a.`object_id` = e.`object_id` AND room_a.`status` = 'ACTIVE'
-            AND room_a.`attribute_type_id` = 2402 AND room_a.`value_type_id` = 2402)
+            AND room_a.`attribute_type_id` = ${apartmentCardAddressAT} 
+            AND room_a.`value_type_id` = ${apartmentCardRoomVT})
             
-        LEFT JOIN `room` room ON (room.`object_id` = room_a.`value_id` AND room.`status` IN ('ACTIVE', 'INACTIVE'))
-        LEFT JOIN `apartment` apartment ON (apartment.`status` IN ('ACTIVE', 'INACTIVE')
-            AND apartment.`object_id` = room.`parent_id` AND room.`parent_entity_id` = 100)
+        LEFT JOIN `room` room ON (room.`object_id` = room_a.`value_id` AND room.`status` = 'ACTIVE')
+        LEFT JOIN `apartment` apartment ON (apartment.`status` = 'ACTIVE' AND apartment.`object_id` = room.`parent_id` 
+            AND room.`parent_entity_id` = 100)
 
         WHERE (apartment_a.`value_id` = #{addressId} OR apartment.`object_id` = #{addressId})
         <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.permissionFilter"/>
@@ -35,7 +37,10 @@
     <select id="findByApartment" parameterType="map" resultType="long">
         SELECT DISTINCT e.`object_id` FROM `apartment_card` e
         <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByApartmentSql"/>
-        LIMIT ${start},${size}
+        
+        <if test="size > 0">
+            LIMIT ${start},${size}
+        </if>
     </select>
 
     <select id="countByApartment" parameterType="map" resultType="integer">
@@ -45,23 +50,26 @@
 
     <sql id="findByBuildingSql">
         LEFT JOIN `apartment_card_attribute` building_a ON (building_a.`object_id` = e.`object_id` AND building_a.`status` = 'ACTIVE'
-            AND building_a.`attribute_type_id` = 2402 AND building_a.`value_type_id` = 2404)
+            AND building_a.`attribute_type_id` = ${apartmentCardAddressAT} 
+            AND building_a.`value_type_id` = ${apartmentCardBuildingVT})
         LEFT JOIN `apartment_card_attribute` apartment_a ON (apartment_a.`object_id` = e.`object_id` AND apartment_a.`status` = 'ACTIVE'
-            AND apartment_a.`attribute_type_id` = 2402 AND apartment_a.`value_type_id` = 2403)
+            AND apartment_a.`attribute_type_id` = ${apartmentCardAddressAT} 
+            AND apartment_a.`value_type_id` = ${apartmentCardApartmentVT})
         LEFT JOIN `apartment_card_attribute` room_a ON (room_a.`object_id` = e.`object_id` AND room_a.`status` = 'ACTIVE'
-            AND room_a.`attribute_type_id` = 2402 AND room_a.`value_type_id` = 2402)
+            AND room_a.`attribute_type_id` = ${apartmentCardAddressAT} 
+            AND room_a.`value_type_id` = ${apartmentCardRoomVT})
 
-        LEFT JOIN `room` room1 ON (room1.`object_id` = room_a.`value_id` AND room1.`status` IN ('ACTIVE', 'INACTIVE'))
-        LEFT JOIN `apartment` apartment1 ON (apartment1.`status` IN ('ACTIVE', 'INACTIVE')
+        LEFT JOIN `room` room1 ON (room1.`object_id` = room_a.`value_id` AND room1.`status` = 'ACTIVE')
+        LEFT JOIN `apartment` apartment1 ON (apartment1.`status` = 'ACTIVE'
             AND apartment1.`object_id` = room1.`parent_id` AND room1.`parent_entity_id` = 100)
-        LEFT JOIN `building` building1 ON (building1.`status` IN ('ACTIVE', 'INACTIVE') AND building1.`object_id` = apartment1.`parent_id`)
+        LEFT JOIN `building` building1 ON (building1.`status` = 'ACTIVE' AND building1.`object_id` = apartment1.`parent_id`)
 
-        LEFT JOIN `room` room2 ON (room2.`object_id` = room_a.`value_id` AND room2.`status` IN ('ACTIVE', 'INACTIVE'))
-        LEFT JOIN `building` building2 ON (building2.`status` IN ('ACTIVE', 'INACTIVE')
+        LEFT JOIN `room` room2 ON (room2.`object_id` = room_a.`value_id` AND room2.`status` = 'ACTIVE')
+        LEFT JOIN `building` building2 ON (building2.`status` = 'ACTIVE'
             AND building2.`object_id` = room2.`parent_id` AND room2.`parent_entity_id` = 500)
 
-        LEFT JOIN `apartment` apartment3 ON (apartment3.`status` IN ('ACTIVE', 'INACTIVE') AND apartment3.`object_id` = apartment_a.`value_id`)
-        LEFT JOIN `building` building3 ON (building3.`status` IN ('ACTIVE', 'INACTIVE') AND building3.`object_id` = apartment3.`parent_id`)
+        LEFT JOIN `apartment` apartment3 ON (apartment3.`status` = 'ACTIVE' AND apartment3.`object_id` = apartment_a.`value_id`)
+        LEFT JOIN `building` building3 ON (building3.`status` = 'ACTIVE' AND building3.`object_id` = apartment3.`parent_id`)
 
         WHERE (building_a.`value_id` = #{addressId} OR building1.`object_id` = #{addressId} OR building2.`object_id` = #{addressId}
                 OR building3.`object_id` = #{addressId})
@@ -72,7 +80,10 @@
     <select id="findByBuilding" parameterType="long" resultType="long">
         SELECT DISTINCT e.`object_id` FROM `apartment_card` e
         <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.findByBuildingSql"/>
-        LIMIT ${start},${size}
+        
+        <if test="size > 0">
+            LIMIT ${start},${size}
+        </if>
     </select>
 
     <select id="countByBuilding" parameterType="long" resultType="integer">

@@ -5,7 +5,7 @@
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
 import org.apache.wicket.PageParameters;
-import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.apache.wicket.model.LoadableDetachableModel;
 import java.text.MessageFormat;
@@ -837,7 +837,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     private void back() {
         if (!Strings.isEmpty(backInfoSessionKey)) {
-            IBackInfo backInfo = BackInfoManager.get(this, backInfoSessionKey);
+            BackInfo backInfo = BackInfoManager.get(this, backInfoSessionKey);
             if (backInfo != null) {
                 backInfo.back(this);
                 return;

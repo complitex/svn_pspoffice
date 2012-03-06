@@ -20,7 +20,7 @@ import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
-import org.complitex.dictionary.web.component.back.IBackInfo;
+import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridEntity;
@@ -41,7 +41,7 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class ApartmentCardsGrid extends ListPage {
 
-    public static final String APARTMENT_PARAM = "apartmentId";
+    public static final String APARTMENT_PARAM = "apartment_id";
     private static final String PAGE_SESSION_KEY = "apartment_cards_grid_page";
     @EJB
     private ApartmentCardsGridBean apartmentCardsGridBean;
@@ -101,6 +101,11 @@ public final class ApartmentCardsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
+                                PageParameters params = new PageParameters();
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                                params.put(RegistrationsGrid.APARTMENT_CARD_PARAM, apartmentCardsGridEntity.getApartmentCardId());
+                                params.put(RegistrationsGrid.BACK_PARAM, PAGE_SESSION_KEY);
+                                setResponsePage(RegistrationsGrid.class, params);
                             }
                         };
                         registeredLink.setVisible(registered > 0);
@@ -130,9 +135,7 @@ public final class ApartmentCardsGrid extends ListPage {
                         }));
                     }
                 };
-
         add(apartmentCards);
-
 
         Link<Void> backSearch = new Link<Void>("backSearch") {
 
@@ -144,7 +147,7 @@ public final class ApartmentCardsGrid extends ListPage {
         add(backSearch);
     }
 
-    private static IBackInfo gridBackInfo(long apartmentId) {
+    private static BackInfo gridBackInfo(long apartmentId) {
         PageParameters backPageParams = new PageParameters();
         backPageParams.put(APARTMENT_PARAM, apartmentId);
         return new BookmarkableBackInfo(ApartmentCardsGrid.class, backPageParams);

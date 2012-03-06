@@ -23,7 +23,7 @@
     <sql id="where">
         WHERE 
             b.`status` = 'ACTIVE'
-            <if test="not admin">
+            <if test="buildingPermissionString != null">
                 AND b.`permission_id` IN ${buildingPermissionString}
             </if>
             AND (
@@ -51,12 +51,12 @@
         SELECT DISTINCT b.`object_id` buildingId,
                 ((SELECT COUNT(1) FROM `apartment` a WHERE a.`status` = 'ACTIVE' AND a.`parent_id` = b.`object_id` 
                     AND a.`parent_entity_id` = 500
-                     <if test="not admin">
+                     <if test="apartmentPermissionString != null">
                         AND a.`permission_id` IN ${apartmentPermissionString}
                      </if>) + 
                  (SELECT COUNT(1) FROM `room` r WHERE r.`status` = 'ACTIVE' AND r.`parent_id` = b.`object_id` 
                     AND r.`parent_entity_id` = 500
-                     <if test="not admin">
+                     <if test="roomPermissionString != null">
                         AND r.`permission_id` IN ${roomPermissionString}
                      </if>)) apartments
         

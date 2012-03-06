@@ -32,14 +32,14 @@ class ApartmentCardAddressSearchPanel extends Panel {
                 callback, showMode, enabled, sessionBean.getUserOrganizationObjectIds()) {
 
             @Override
-            protected void onUpdate(AjaxRequestTarget target, String entity) {
-                super.onUpdate(target, entity);
-                ApartmentCardAddressSearchPanel.this.onUpdate(target, entity, getModelObject(entity));
+            protected void onSelect(AjaxRequestTarget target, String entity) {
+                super.onSelect(target, entity);
+
+                ApartmentCardAddressSearchPanel.this.onSelect(target, entity, getModelObject(entity));
             }
         });
     }
 
-    protected void onUpdate(AjaxRequestTarget target, String entity, DomainObject object) {
+    protected void onSelect(AjaxRequestTarget target, String entity, DomainObject object) {
     }
-;
 }

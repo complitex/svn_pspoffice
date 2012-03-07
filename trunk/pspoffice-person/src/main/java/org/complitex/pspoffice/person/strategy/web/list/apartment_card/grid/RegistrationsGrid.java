@@ -6,6 +6,7 @@ package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
 import java.util.List;
 import javax.ejb.EJB;
+import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
@@ -19,7 +20,8 @@ import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
-import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
+import org.complitex.pspoffice.person.menu.OperationMenu;
+import org.complitex.pspoffice.person.menu.PersonMenu;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
@@ -27,9 +29,9 @@ import org.complitex.pspoffice.person.strategy.entity.grid.RegistrationsGridEnti
 import org.complitex.pspoffice.person.strategy.entity.grid.RegistrationsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.RegistrationsGridBean;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
-import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
+import org.complitex.template.web.template.MenuManager;
 
 /**
  *
@@ -38,8 +40,6 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class RegistrationsGrid extends ListPage {
 
-    public static final String APARTMENT_CARD_PARAM = "apartment_card_id";
-    public static final String BACK_PARAM = "registrations_grid_back";
     private static final String PAGE_SESSION_KEY = "registrations_grid_page";
     @EJB
     private RegistrationsGridBean registrationsGridBean;
@@ -50,10 +50,24 @@ public final class RegistrationsGrid extends ListPage {
     @EJB
     private PersonStrategy personStrategy;
 
-    public RegistrationsGrid(PageParameters parameters) {
-        final long apartmentCardId = parameters.getAsLong(APARTMENT_CARD_PARAM);
-        final String backInfoSessionKey = parameters.getString(BACK_PARAM);
+    private static class RegistrationsGridBackInfo extends BackInfo {
 
+        final long apartmentCardId;
+        final String backInfoSessionKey;
+
+        RegistrationsGridBackInfo(long buildingId, String backInfoSessionKey) {
+            this.apartmentCardId = buildingId;
+            this.backInfoSessionKey = backInfoSessionKey;
+        }
+
+        @Override
+        public void back(Component pageComponent) {
+            MenuManager.setMenuItem(OperationMenu.REGISTRATION_MENU_ITEM);
+            pageComponent.setResponsePage(new RegistrationsGrid(apartmentCardId, backInfoSessionKey));
+        }
+    }
+
+    public RegistrationsGrid(final long apartmentCardId, final String backInfoSessionKey) {
         final ApartmentCard apartmentCard = apartmentCardStrategy.findById(apartmentCardId, true);
 
         IModel<String> labelModel = new StringResourceModel("label", null,
@@ -85,9 +99,10 @@ public final class RegistrationsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
+                                MenuManager.setMenuItem(PersonMenu.PERSON_MENU_ITEM);
                                 PageParameters params = personStrategy.getEditPageParams(registrationsGridEntity.getPersonId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentCardId, backInfoSessionKey));
-                                params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(personStrategy.getEditPage(), params);
                             }
                         };
@@ -132,9 +147,6 @@ public final class RegistrationsGrid extends ListPage {
     }
 
     private static BackInfo gridBackInfo(long apartmentCardId, String backInfoSessionKey) {
-        PageParameters backPageParams = new PageParameters();
-        backPageParams.put(APARTMENT_CARD_PARAM, apartmentCardId);
-        backPageParams.put(BACK_PARAM, backInfoSessionKey);
-        return new BookmarkableBackInfo(RegistrationsGrid.class, backPageParams);
+        return new RegistrationsGridBackInfo(apartmentCardId, backInfoSessionKey);
     }
 }

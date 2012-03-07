@@ -5,6 +5,7 @@
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.apache.wicket.model.LoadableDetachableModel;
@@ -94,7 +95,6 @@ import org.complitex.pspoffice.person.strategy.web.list.apartment_card.Apartment
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.resources.WebCommonResourceInitializer;
-import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
@@ -112,7 +112,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 public final class ApartmentCardEdit extends FormTemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(ApartmentCardEdit.class);
-    public static final String PAGE_SESSION_KEY = "apartment_card_page";
+    public static final String PAGE_SESSION_KEY = "apartment_card_edit_page";
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
@@ -491,8 +491,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     public void onClick() {
                         PageParameters params = personStrategy.getEditPageParams(registration.getPerson().getId(), null, null);
-                        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(apartmentCard.getId()));
-                        params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(apartmentCard.getId(), backInfoSessionKey));
+                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(personStrategy.getEditPage(), params);
                     }
                 };
@@ -972,5 +972,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                         setVisible(disableApartmentCardDialog.isVisible());
                     }
                 });
+    }
+
+    @Override
+    protected void onProfileClick(Class<? extends WebPage> profilePageClass) {
+        PageParameters parameters = new PageParameters();
+        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(oldApartmentCard.getId(), backInfoSessionKey));
+        parameters.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+        setResponsePage(profilePageClass, parameters);
     }
 }

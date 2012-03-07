@@ -976,9 +976,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
     @Override
     protected void onProfileClick(Class<? extends WebPage> profilePageClass) {
-        PageParameters parameters = new PageParameters();
-        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(oldApartmentCard.getId(), backInfoSessionKey));
-        parameters.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
-        setResponsePage(profilePageClass, parameters);
+        if (oldApartmentCard != null) {
+            PageParameters parameters = new PageParameters();
+            BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(oldApartmentCard.getId(), backInfoSessionKey));
+            parameters.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+            setResponsePage(profilePageClass, parameters);
+        } else {
+            super.onProfileClick(profilePageClass);
+        }
     }
 }

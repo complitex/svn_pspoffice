@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
@@ -111,9 +110,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
                     final int count = apartmentCardStrategy.countByAddress("apartment", apartmentId);
                     if (count > 1) {
                         // выводим грид поквартирных карточек.
-                        PageParameters parameters = new PageParameters();
-                        parameters.put(ApartmentCardsGrid.APARTMENT_PARAM, apartmentId);
-                        setResponsePage(ApartmentCardsGrid.class, parameters);
+                        setResponsePage(new ApartmentCardsGrid(apartmentId));
                         return;
                     } else if (count == 1) {
                         // переходим на страницу редактирования поквартирной карточки.
@@ -130,9 +127,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
                 if (buildingId != null) {
                     storeAddressSearchInfo();
                     //дом введен -> выводим грид квартир для заданного дома.
-                    PageParameters parameters = new PageParameters();
-                    parameters.put(ApartmentsGrid.BUILDING_PARAM, buildingId);
-                    setResponsePage(ApartmentsGrid.class, parameters);
+                    setResponsePage(new ApartmentsGrid(buildingId));
                     return;
                 }
                 // дом не введен.
@@ -142,10 +137,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
                 if (cityId != null && streetId != null) {
                     storeAddressSearchInfo();
                     //город и улица введены -> выводим грид домов для заданного города и улицы.
-                    PageParameters parameters = new PageParameters();
-                    parameters.put(BuildingsGrid.CITY_PARAM, cityId);
-                    parameters.put(BuildingsGrid.STREET_PARAM, streetId);
-                    setResponsePage(BuildingsGrid.class, parameters);
+                    setResponsePage(new BuildingsGrid(cityId, streetId));
                     return;
                 }
                 // улица не введена.
@@ -153,9 +145,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
                 if (cityId != null) {
                     storeAddressSearchInfo();
                     // город введен -> выводим грид домов.
-                    PageParameters parameters = new PageParameters();
-                    parameters.put(BuildingsGrid.CITY_PARAM, cityId);
-                    setResponsePage(BuildingsGrid.class, parameters);
+                    setResponsePage(new BuildingsGrid(cityId));
                     return;
                 }
 

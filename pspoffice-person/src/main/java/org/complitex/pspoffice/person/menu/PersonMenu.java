@@ -25,6 +25,8 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.PERSON_MODULE_VIEW)
 public class PersonMenu extends ResourceTemplateMenu {
 
+    public static final String PERSON_MENU_ITEM = "person_item";
+
     private static IStrategy getPersonStrategy() {
         return EjbBeanLocator.getBean(StrategyFactory.class).getStrategy("person");
     }
@@ -56,103 +58,14 @@ public class PersonMenu extends ResourceTemplateMenu {
 
                     @Override
                     public String getTagId() {
-                        return "person_item";
+                        return PERSON_MENU_ITEM;
                     }
-                }
-//                new ITemplateLink() {
-//
-//                    @Override
-//                    public String getLabel(Locale locale) {
-//                        return getString(MenuResources.class, locale, "family_and_apartment_info");
-//                    }
-//
-//                    @Override
-//                    public Class<? extends Page> getPage() {
-//                        return FamilyAndApartmentInfoAddressParamPage.class;
-//                    }
-//
-//                    @Override
-//                    public PageParameters getParameters() {
-//                        return PageParameters.NULL;
-//                    }
-//
-//                    @Override
-//                    public String getTagId() {
-//                        return "family_and_apartment_info_item";
-//                    }
-//                },
-//                new ITemplateLink() {
-//
-//                    @Override
-//                    public String getLabel(Locale locale) {
-//                        return getString(MenuResources.class, locale, "family_and_communal_apartment_info");
-//                    }
-//
-//                    @Override
-//                    public Class<? extends Page> getPage() {
-//                        return FamilyAndCommunalApartmentInfoParamPage.class;
-//                    }
-//
-//                    @Override
-//                    public PageParameters getParameters() {
-//                        return PageParameters.NULL;
-//                    }
-//
-//                    @Override
-//                    public String getTagId() {
-//                        return "family_and_communal_apartment_info_item";
-//                    }
-//                },
-//                new ITemplateLink() {
-//
-//                    @Override
-//                    public String getLabel(Locale locale) {
-//                        return getString(MenuResources.class, locale, "family_and_housing_payments");
-//                    }
-//
-//                    @Override
-//                    public Class<? extends Page> getPage() {
-//                        return FamilyAndHousingPaymentsAddressParamPage.class;
-//                    }
-//
-//                    @Override
-//                    public PageParameters getParameters() {
-//                        return PageParameters.NULL;
-//                    }
-//
-//                    @Override
-//                    public String getTagId() {
-//                        return "family_and_housing_payments_item";
-//                    }
-//                },
-//                new ITemplateLink() {
-//
-//                    @Override
-//                    public String getLabel(Locale locale) {
-//                        return getString(MenuResources.class, locale, "housing_payments");
-//                    }
-//
-//                    @Override
-//                    public Class<? extends Page> getPage() {
-//                        return HousingPaymentsAddressParamPage.class;
-//                    }
-//
-//                    @Override
-//                    public PageParameters getParameters() {
-//                        return PageParameters.NULL;
-//                    }
-//
-//                    @Override
-//                    public String getTagId() {
-//                        return "housing_payments_item";
-//                    }
-//                }
-                );
+                });
         return links;
     }
 
     @Override
     public String getTagId() {
-        return "registration_menu";
+        return "person_menu";
     }
 }

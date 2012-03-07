@@ -7,6 +7,7 @@ package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import javax.ejb.EJB;
+import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -25,6 +26,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.complitex.address.menu.AddressMenu;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.address.strategy.building.BuildingStrategy;
 import org.complitex.address.strategy.district.DistrictStrategy;
@@ -40,17 +42,18 @@ import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
-import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
 import org.complitex.dictionary.web.component.datatable.DataProvider;
 import org.complitex.dictionary.web.component.paging.PagingNavigator;
+import org.complitex.organization.web.OrganizationMenu;
+import org.complitex.pspoffice.person.menu.OperationMenu;
 import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.BuildingsGridBean;
 import org.complitex.pspoffice.person.strategy.web.component.grid.FilterSearchComponent;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
-import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
+import org.complitex.template.web.template.MenuManager;
 
 /**
  *
@@ -59,8 +62,6 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class BuildingsGrid extends ListPage {
 
-    public static final String CITY_PARAM = "city_id";
-    public static final String STREET_PARAM = "street_id";
     private static final String PAGE_SESSION_KEY = "buildings_grid_page";
     @EJB
     private DistrictStrategy districtStrategy;
@@ -115,9 +116,28 @@ public final class BuildingsGrid extends ListPage {
         }
     }
 
-    public BuildingsGrid(PageParameters parameters) {
-        final long cityId = parameters.getAsLong(CITY_PARAM);
-        final Long streetId = parameters.getAsLong(STREET_PARAM);
+    private static class BuildingsGridBackInfo extends BackInfo {
+
+        final long cityId;
+        final Long streetId;
+
+        BuildingsGridBackInfo(long cityId, Long streetId) {
+            this.cityId = cityId;
+            this.streetId = streetId;
+        }
+
+        @Override
+        public void back(Component pageComponent) {
+            MenuManager.setMenuItem(OperationMenu.REGISTRATION_MENU_ITEM);
+            pageComponent.setResponsePage(new BuildingsGrid(cityId, streetId));
+        }
+    }
+
+    public BuildingsGrid(long cityId) {
+        this(cityId, null);
+    }
+
+    public BuildingsGrid(final long cityId, final Long streetId) {
         final boolean streetEnabled = streetId != null && streetId > 0;
 
         IModel<String> labelModel = new StringResourceModel("label", null,
@@ -201,9 +221,10 @@ public final class BuildingsGrid extends ListPage {
 
                     @Override
                     public void onClick() {
+                        MenuManager.setMenuItem("district" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = districtStrategy.getEditPageParams(buildingsGridEntity.getDistrictId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(districtStrategy.getEditPage(), params);
                     }
                 };
@@ -215,9 +236,10 @@ public final class BuildingsGrid extends ListPage {
 
                     @Override
                     public void onClick() {
+                        MenuManager.setMenuItem("street" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = streetStrategy.getEditPageParams(buildingsGridEntity.getStreetId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(streetStrategy.getEditPage(), params);
                     }
                 };
@@ -229,9 +251,10 @@ public final class BuildingsGrid extends ListPage {
 
                     @Override
                     public void onClick() {
+                        MenuManager.setMenuItem("building" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = buildingStrategy.getEditPageParams(buildingsGridEntity.getBuildingId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(buildingStrategy.getEditPage(), params);
                     }
                 };
@@ -245,10 +268,7 @@ public final class BuildingsGrid extends ListPage {
                     @Override
                     public void onClick() {
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        PageParameters params = new PageParameters();
-                        params.put(ApartmentsGrid.BUILDING_PARAM, buildingsGridEntity.getBuildingId());
-                        params.put(ApartmentsGrid.BACK_PARAM, PAGE_SESSION_KEY);
-                        setResponsePage(ApartmentsGrid.class, params);
+                        setResponsePage(new ApartmentsGrid(buildingsGridEntity.getBuildingId(), PAGE_SESSION_KEY));
                     }
                 };
                 apartmentsLink.setEnabled(apartments > 0);
@@ -266,9 +286,10 @@ public final class BuildingsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
+                                MenuManager.setMenuItem(OrganizationMenu.ORGANIZATION_MENU_ITEM);
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                                params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
                         };
@@ -318,11 +339,6 @@ public final class BuildingsGrid extends ListPage {
     }
 
     private static BackInfo gridBackInfo(long cityId, Long streetId) {
-        PageParameters backPageParams = new PageParameters();
-        backPageParams.put(CITY_PARAM, cityId);
-        if (streetId != null) {
-            backPageParams.put(STREET_PARAM, streetId);
-        }
-        return new BookmarkableBackInfo(BuildingsGrid.class, backPageParams);
+        return new BuildingsGridBackInfo(cityId, streetId);
     }
 }

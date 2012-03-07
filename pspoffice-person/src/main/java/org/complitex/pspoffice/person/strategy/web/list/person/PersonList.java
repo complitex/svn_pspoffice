@@ -12,6 +12,7 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.authorization.UnauthorizedInstantiationException;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
@@ -85,6 +86,10 @@ public final class PersonList extends ScrollListPage {
     }
 
     private void init() {
+        if (!hasAnyRole(personStrategy.getListRoles())) {
+            throw new UnauthorizedInstantiationException(getClass());
+        }
+
         IModel<String> labelModel = new AbstractReadOnlyModel<String>() {
 
             @Override

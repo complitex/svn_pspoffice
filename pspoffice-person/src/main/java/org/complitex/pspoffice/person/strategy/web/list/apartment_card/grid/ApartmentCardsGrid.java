@@ -7,6 +7,7 @@ package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.ejb.EJB;
+import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
@@ -22,17 +23,18 @@ import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
-import org.complitex.dictionary.web.component.back.BookmarkableBackInfo;
+import org.complitex.organization.web.OrganizationMenu;
+import org.complitex.pspoffice.person.menu.OperationMenu;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.ApartmentCardsGridBean;
 import org.complitex.pspoffice.person.strategy.web.component.AddApartmentCardButton;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
-import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
+import org.complitex.template.web.template.MenuManager;
 
 /**
  *
@@ -41,7 +43,6 @@ import org.complitex.template.web.security.SecurityRole;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class ApartmentCardsGrid extends ListPage {
 
-    public static final String APARTMENT_PARAM = "apartment_id";
     private static final String PAGE_SESSION_KEY = "apartment_cards_grid_page";
     @EJB
     private ApartmentCardsGridBean apartmentCardsGridBean;
@@ -51,8 +52,23 @@ public final class ApartmentCardsGrid extends ListPage {
     private AddressRendererBean addressRendererBean;
     private final long apartmentId;
 
-    public ApartmentCardsGrid(PageParameters parameters) {
-        apartmentId = parameters.getAsLong(APARTMENT_PARAM);
+    private static class ApartmentCardsGridBackInfo extends BackInfo {
+
+        final long apartmentId;
+
+        ApartmentCardsGridBackInfo(long apartmentId) {
+            this.apartmentId = apartmentId;
+        }
+
+        @Override
+        public void back(Component pageComponent) {
+            MenuManager.setMenuItem(OperationMenu.REGISTRATION_MENU_ITEM);
+            pageComponent.setResponsePage(new ApartmentCardsGrid(apartmentId));
+        }
+    }
+
+    public ApartmentCardsGrid(final long apartmentId) {
+        this.apartmentId = apartmentId;
 
         IModel<String> labelModel = new StringResourceModel("label", null,
                 new Object[]{addressRendererBean.displayAddress("apartment", apartmentId, getLocale())});
@@ -101,11 +117,9 @@ public final class ApartmentCardsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
-                                PageParameters params = new PageParameters();
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
-                                params.put(RegistrationsGrid.APARTMENT_CARD_PARAM, apartmentCardsGridEntity.getApartmentCardId());
-                                params.put(RegistrationsGrid.BACK_PARAM, PAGE_SESSION_KEY);
-                                setResponsePage(RegistrationsGrid.class, params);
+                                setResponsePage(new RegistrationsGrid(apartmentCardsGridEntity.getApartmentCardId(),
+                                        PAGE_SESSION_KEY));
                             }
                         };
                         registeredLink.setVisible(registered > 0);
@@ -118,9 +132,10 @@ public final class ApartmentCardsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
+                                MenuManager.setMenuItem(OrganizationMenu.ORGANIZATION_MENU_ITEM);
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
-                                params.put(TemplateStrategy.BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
                         };
@@ -148,9 +163,7 @@ public final class ApartmentCardsGrid extends ListPage {
     }
 
     private static BackInfo gridBackInfo(long apartmentId) {
-        PageParameters backPageParams = new PageParameters();
-        backPageParams.put(APARTMENT_PARAM, apartmentId);
-        return new BookmarkableBackInfo(ApartmentCardsGrid.class, backPageParams);
+        return new ApartmentCardsGridBackInfo(apartmentId);
     }
 
     @Override

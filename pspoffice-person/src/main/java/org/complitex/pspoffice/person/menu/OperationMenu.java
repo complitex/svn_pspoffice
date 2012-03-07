@@ -22,6 +22,8 @@ import org.complitex.template.web.template.ResourceTemplateMenu;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class OperationMenu extends ResourceTemplateMenu {
 
+    public static final String REGISTRATION_MENU_ITEM = "registration_item";
+
     @Override
     public String getTitle(Locale locale) {
         return getString(MenuResources.class, locale, "operation_menu");
@@ -48,7 +50,7 @@ public class OperationMenu extends ResourceTemplateMenu {
 
             @Override
             public String getTagId() {
-                return "registration_item";
+                return REGISTRATION_MENU_ITEM;
             }
         });
     }

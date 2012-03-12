@@ -7,7 +7,7 @@ ECHO Local database and Realm
 ECHO ---------------------------------------------------
 ECHO.
 ECHO Register the JDBC connection pool
-call %GLASSFISH_ASADMIN% create-jdbc-connection-pool --driverclassname com.mysql.jdbc.Driver --restype java.sql.Driver --property url=jdbc\:mysql\://localhost\:3306/pspoffice:user=pspoffice:password=pspoffice pspofficePool
+call %GLASSFISH_ASADMIN% create-jdbc-connection-pool --driverclassname com.mysql.jdbc.Driver --restype java.sql.Driver --property url=jdbc\:mysql\://localhost\:3306/pspoffice:user=pspoffice:password=pspoffice:characterResultSets=utf8:characterEncoding=utf8:useUnicode=true pspofficePool
 
 ECHO.
 ECHO Create a JDBC resource with the specified JNDI name

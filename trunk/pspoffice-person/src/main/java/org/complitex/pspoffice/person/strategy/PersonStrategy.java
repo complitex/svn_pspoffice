@@ -169,6 +169,11 @@ public class PersonStrategy extends TemplateStrategy {
     }
 
     @Override
+    public long getDefaultSortAttributeTypeId() {
+        return OrderBy.LAST_NAME.getOrderByAttributeId();
+    }
+
+    @Override
     public String displayDomainObject(DomainObject object, Locale locale) {
         Person person = (Person) object;
         Locale systemLocale = localeBean.getSystemLocale();

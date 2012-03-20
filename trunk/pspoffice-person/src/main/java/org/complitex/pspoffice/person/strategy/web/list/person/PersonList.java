@@ -152,7 +152,9 @@ public final class PersonList extends ScrollListPage {
                 return personStrategy.count(example);
             }
         };
-        dataProvider.setSort(getSortProperty(""), getSortOrder(true));
+        final String sortProperty = getSortProperty(String.valueOf(personStrategy.getDefaultSortAttributeTypeId()));
+        final boolean sortOrder = getSortOrder(true);
+        dataProvider.setSort(sortProperty, sortOrder);
 
         //Filters
         filterForm.add(new TextField<String>("lastNameFilter", new Model<String>() {

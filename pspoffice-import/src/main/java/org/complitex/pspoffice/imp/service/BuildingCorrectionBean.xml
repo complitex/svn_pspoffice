@@ -19,7 +19,7 @@
     </update>
     
     <select id="exists" parameterType="string" resultType="int">
-        SELECT COUNT(*) FROM `building_correction` WHERE `idjek` = #{idjek}
+        SELECT COUNT(1) FROM `building_correction` WHERE `idjek` = #{idjek}
     </select>
     
     <delete id="delete" parameterType="map">
@@ -37,7 +37,7 @@
     </update>
     
     <select id="countForProcessingForJeks" parameterType="map" resultType="int">
-        SELECT COUNT(*) FROM `building_correction` WHERE `system_building_id` IS NULL
+        SELECT COUNT(1) FROM `building_correction` WHERE `system_building_id` IS NULL
             AND `processed` = 0 AND `idjek` IN 
             <foreach open="(" close=")" separator="," collection="value" item="idjek">
                 #{idjek}
@@ -45,7 +45,7 @@
     </select>
     
     <select id="countForProcessing" parameterType="string" resultType="int">
-        SELECT COUNT(*) FROM `building_correction` WHERE `system_building_id` IS NULL
+        SELECT COUNT(1) FROM `building_correction` WHERE `system_building_id` IS NULL
             AND `processed` = 0 AND `idjek` = #{idjek}
     </select>
     

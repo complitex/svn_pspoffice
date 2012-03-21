@@ -35,7 +35,7 @@
     </delete>
     
     <select id="exists" resultType="int">
-        SELECT COUNT(*) FROM `person_correction`
+        SELECT COUNT(1) FROM `person_correction`
     </select>
     
     <update id="clearProcessingStatus">
@@ -43,11 +43,11 @@
     </update>
     
     <select id="countForProcessing" parameterType="string" resultType="int">
-        SELECT COUNT(*) FROM `person_correction` WHERE `processed` = 0 AND `larc` = #{NONARCHIVE_INDICATOR}
+        SELECT COUNT(1) FROM `person_correction` WHERE `processed` = 0 AND `larc` = #{NONARCHIVE_INDICATOR}
     </select>
     
     <select id="archiveCount" parameterType="string" resultType="int">
-        SELECT COUNT(*) FROM `person_correction` WHERE `larc` != #{NONARCHIVE_INDICATOR}
+        SELECT COUNT(1) FROM `person_correction` WHERE `larc` != #{NONARCHIVE_INDICATOR}
     </select>
     
     <select id="findForProcessing" resultMap="org.complitex.pspoffice.imp.service.PersonCorrectionBean.personCorrection"

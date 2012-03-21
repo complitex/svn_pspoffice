@@ -75,7 +75,7 @@
     </select>
 
     <select id="count" resultType="integer" parameterType="DomainObjectExample">
-        SELECT COUNT(*) FROM `person` e
+        SELECT COUNT(1) FROM `person` e
             <include refid="org.complitex.pspoffice.person.strategy.Person.join"/>
         WHERE
         <include refid="org.complitex.dictionary.entity.DomainObject.statusFilter"/>

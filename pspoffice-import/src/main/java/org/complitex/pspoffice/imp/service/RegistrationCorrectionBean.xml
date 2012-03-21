@@ -18,7 +18,7 @@
     </update>
     
     <select id="countForProcessing" resultType="int">
-        SELECT COUNT(*) FROM `apartment_card_correction` WHERE `processed` = 0 
+        SELECT COUNT(1) FROM `apartment_card_correction` WHERE `processed` = 0 
         AND `system_apartment_card_id` IS NOT NULL
     </select>
     

@@ -30,7 +30,7 @@
     </delete>
     
     <select id="exists" parameterType="string" resultType="int">
-        SELECT COUNT(*) FROM `street_correction` WHERE `idjek` = #{idjek}
+        SELECT COUNT(1) FROM `street_correction` WHERE `idjek` = #{idjek}
     </select>
     
     <update id="clearProcessingStatus" parameterType="string">

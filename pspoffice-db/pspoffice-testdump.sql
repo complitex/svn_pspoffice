@@ -25,8 +25,8 @@ insert into `organization`(`object_id`) values (1),(2);
 insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1, 1, UPPER('Паспортный стол №1')),(2, 1, UPPER('1')),
 (3, 1, UPPER('Паспортный стол №2')),(4, 1, UPPER('2'));
 insert into `organization_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values
-(1,1,900,1,900), (1,1,901,2,901), (1,1,905,1,905),
-(1,2,900,3,900), (1,2,901,4,901), (1,2,905,1,905);
+(1,1,900,1,900), (1,1,901,2,901), (1,1,904,1,904),
+(1,2,900,3,900), (1,2,901,4,901), (1,2,904,1,904);
 
 -- Test users
 -- User '1'

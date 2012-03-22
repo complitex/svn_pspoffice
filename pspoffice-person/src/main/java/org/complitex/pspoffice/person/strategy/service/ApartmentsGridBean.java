@@ -19,6 +19,7 @@ import org.complitex.address.strategy.room.RoomStrategy;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
@@ -44,6 +45,8 @@ public class ApartmentsGridBean extends AbstractBean {
     private SessionBean sessionBean;
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
+    @EJB
+    private LocaleBean localeBean;
 
     public ApartmentsGridFilter newFilter(long buildingId, Locale locale) {
         final boolean isAdmin = sessionBean.isAdmin();
@@ -76,7 +79,10 @@ public class ApartmentsGridBean extends AbstractBean {
     }
 
     public List<ApartmentsGridEntity> find(ApartmentsGridFilter filter) {
-        List<Map<String, Object>> data = sqlSession().selectList(MAPPING + ".find", newParamsMap(filter));
+        Map<String, Object> params = newParamsMap(filter);
+        params.put("sortLocaleId", localeBean.convert(filter.getLocale()).getId());
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> data = sqlSession().selectList(MAPPING + ".find", params);
         final List<ApartmentsGridEntity> result = Lists.newArrayList();
         if (data != null && !data.isEmpty()) {
             for (Map<String, Object> item : data) {

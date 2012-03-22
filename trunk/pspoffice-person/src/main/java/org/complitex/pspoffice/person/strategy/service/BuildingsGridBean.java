@@ -18,8 +18,10 @@ import org.complitex.address.strategy.building.entity.Building;
 import org.complitex.address.strategy.building_address.BuildingAddressStrategy;
 import org.complitex.address.strategy.district.DistrictStrategy;
 import org.complitex.address.strategy.street.StreetStrategy;
+import org.complitex.address.strategy.street_type.StreetTypeStrategy;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.AbstractBean;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridEntity;
@@ -43,6 +45,8 @@ public class BuildingsGridBean extends AbstractBean {
     private SessionBean sessionBean;
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
+    @EJB
+    private LocaleBean localeBean;
 
     public BuildingsGridFilter newFilter(long cityId, Long streetId, Locale locale) {
         final boolean isAdmin = sessionBean.isAdmin();
@@ -70,12 +74,24 @@ public class BuildingsGridBean extends AbstractBean {
         return params;
     }
 
+    private Map<String, Object> enhanceParams(Map<String, Object> params, Locale locale) {
+        params.put("sortLocaleId", localeBean.convert(locale).getId());
+        params.put("buildingAddressCorpAT", BuildingAddressStrategy.CORP);
+        params.put("buildingAddressStructureAT", BuildingAddressStrategy.STRUCTURE);
+        params.put("streetNameAT", StreetStrategy.NAME);
+        params.put("streetTypeAT", StreetStrategy.STREET_TYPE);
+        params.put("streetTypeNameAT", StreetTypeStrategy.NAME);
+        return params;
+    }
+
     public int count(BuildingsGridFilter filter) {
         return (Integer) sqlSession().selectOne(MAPPING + ".count", newParamsMap(filter));
     }
 
     public List<BuildingsGridEntity> find(BuildingsGridFilter filter) {
-        List<Map<String, Long>> data = sqlSession().selectList(MAPPING + ".find", newParamsMap(filter));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Long>> data = sqlSession().selectList(MAPPING + ".find",
+                enhanceParams(newParamsMap(filter), filter.getLocale()));
         final List<BuildingsGridEntity> result = Lists.newArrayList();
         if (data != null && !data.isEmpty()) {
             for (Map<String, Long> item : data) {

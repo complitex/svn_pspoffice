@@ -58,7 +58,6 @@ public final class PersonList extends ScrollListPage {
     private LocaleBean localeBean;
     @EJB
     private StringCultureBean stringBean;
-    private DomainObjectExample example;
     private CollapsibleSearchPanel searchPanel;
 
     private class ColumnLabelModel extends AbstractReadOnlyModel<String> {
@@ -111,12 +110,7 @@ public final class PersonList extends ScrollListPage {
         add(content);
 
         //Example
-        example = (DomainObjectExample) getFilterObject(null);
-
-        if (example == null) {
-            example = new DomainObjectExample();
-            setFilterObject(example);
-        }
+        final DomainObjectExample example = new DomainObjectExample();
 
         //Form
         final Form<Void> filterForm = new Form<Void>("filterForm");
@@ -127,12 +121,8 @@ public final class PersonList extends ScrollListPage {
 
             @Override
             protected Iterable<Person> getData(int first, int count) {
-                boolean asc = getSort().isAscending();
-                String sortProperty = getSort().getProperty();
-
-                setSortProperty(sortProperty);
-                setSortOrder(asc);
-                setFilterObject(example);
+                final boolean asc = getSort().isAscending();
+                final String sortProperty = getSort().getProperty();
 
                 if (!Strings.isEmpty(sortProperty)) {
                     example.setOrderByAttributeTypeId(Long.valueOf(sortProperty));
@@ -152,9 +142,7 @@ public final class PersonList extends ScrollListPage {
                 return personStrategy.count(example);
             }
         };
-        final String sortProperty = getSortProperty(String.valueOf(personStrategy.getDefaultSortAttributeTypeId()));
-        final boolean sortOrder = getSortOrder(true);
-        dataProvider.setSort(sortProperty, sortOrder);
+        dataProvider.setSort(String.valueOf(personStrategy.getDefaultSortAttributeTypeId()), true);
 
         //Filters
         filterForm.add(new TextField<String>("lastNameFilter", new Model<String>() {

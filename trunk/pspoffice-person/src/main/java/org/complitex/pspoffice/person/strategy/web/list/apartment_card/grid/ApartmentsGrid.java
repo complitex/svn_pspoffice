@@ -255,7 +255,7 @@ public final class ApartmentsGrid extends ListPage {
         };
         filterForm.add(submit);
 
-        content.add(new PagingNavigator("navigator", apartments, getPreferencesPage(), content));
+        content.add(new PagingNavigator("navigator", apartments, content));
 
         Link<Void> backSearch = new Link<Void>("backSearch") {
 

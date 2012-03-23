@@ -4,11 +4,13 @@
  */
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -51,6 +53,7 @@ import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.BuildingsGridBean;
 import org.complitex.pspoffice.person.strategy.web.component.grid.FilterSearchComponent;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
@@ -75,6 +78,8 @@ public final class BuildingsGrid extends ListPage {
     private IOrganizationStrategy organizationStrategy;
     @EJB
     private AddressRendererBean addressRendererBean;
+    private final long cityId;
+    private final Long streetId;
 
     private static class BuildingsGridFilterSearchComponent extends FilterSearchComponent {
 
@@ -138,6 +143,9 @@ public final class BuildingsGrid extends ListPage {
     }
 
     public BuildingsGrid(final long cityId, final Long streetId) {
+        this.cityId = cityId;
+        this.streetId = streetId;
+
         final boolean streetEnabled = streetId != null && streetId > 0;
 
         IModel<String> labelModel = new StringResourceModel("label", null,
@@ -340,5 +348,33 @@ public final class BuildingsGrid extends ListPage {
 
     private static BackInfo gridBackInfo(long cityId, Long streetId) {
         return new BuildingsGridBackInfo(cityId, streetId);
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        if (hasAnyRole(buildingStrategy.getEditRoles())) {
+            class AddBuildingButton extends ToolbarButton {
+
+                static final String IMAGE_SRC = "images/icon-addItem.gif";
+                static final String TITLE_KEY = "addBuilding";
+
+                AddBuildingButton(String id) {
+                    super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY);
+                }
+
+                @Override
+                protected void onClick() {
+                    MenuManager.setMenuItem("building" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
+                    final long parentId = streetId != null ? streetId : cityId;
+                    final String parentEntity = streetId != null ? "street" : "city";
+                    PageParameters params = buildingStrategy.getEditPageParams(null, parentId, parentEntity);
+                    BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
+                    params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                    setResponsePage(buildingStrategy.getEditPage(), params);
+                }
+            }
+            return ImmutableList.of(new AddBuildingButton(id));
+        }
+        return null;
     }
 }

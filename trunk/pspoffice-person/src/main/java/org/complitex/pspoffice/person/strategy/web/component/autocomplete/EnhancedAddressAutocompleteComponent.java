@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.component.autocomplete;
 
+import org.complitex.pspoffice.person.strategy.web.component.AbstractAddressCreateDialog;
 import java.util.List;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -56,26 +57,25 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
 
             @Override
             protected void onEvent(AjaxRequestTarget target) {
-                addressCreateDialog.open(target, EnhancedAddressAutocompleteComponent.this.entity,
-                        getLastSearchTerm(), getParentEntity(), getParentObject());
+                addressCreateDialog.open(target, getLastSearchTerm(), getParentEntity(), getParentObject());
             }
         });
     }
 
     private AbstractAddressCreateDialog newAddressCreateDialog(String id, List<Long> userOrganizationIds) {
         if (entity.equals("apartment")) {
-            return new ApartmentCreateDialog(id, getAutocompleteField(), userOrganizationIds) {
+            return new AutocompleteApartmentCreateDialog(id, getAutocompleteField(), userOrganizationIds) {
 
                 @Override
-                void onCreate(AjaxRequestTarget target, DomainObject saved) {
+                protected void onCreate(AjaxRequestTarget target, DomainObject saved) {
                     EnhancedAddressAutocompleteComponent.this.onCreate(target, saved);
                 }
             };
         } else {
-            return new RoomCreateDialog(id, getAutocompleteField(), userOrganizationIds) {
+            return new AutocompleteRoomCreateDialog(id, getAutocompleteField(), userOrganizationIds) {
 
                 @Override
-                void onCreate(AjaxRequestTarget target, DomainObject saved) {
+                protected void onCreate(AjaxRequestTarget target, DomainObject saved) {
                     EnhancedAddressAutocompleteComponent.this.onCreate(target, saved);
                 }
             };

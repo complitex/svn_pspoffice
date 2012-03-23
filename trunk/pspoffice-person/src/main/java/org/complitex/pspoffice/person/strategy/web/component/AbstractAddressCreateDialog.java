@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.complitex.pspoffice.person.strategy.web.component.autocomplete;
+package org.complitex.pspoffice.person.strategy.web.component;
 
 import java.text.MessageFormat;
 import static com.google.common.collect.Sets.*;
@@ -25,10 +25,8 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.dictionary.util.AddressNumberParser;
 import org.odlabs.wiquery.core.javascript.JsStatement;
-import org.odlabs.wiquery.ui.autocomplete.Autocomplete;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 import org.odlabs.wiquery.ui.dialog.Dialog;
 import org.slf4j.Logger;
@@ -38,44 +36,36 @@ import org.slf4j.LoggerFactory;
  *
  * @author Artem
  */
-abstract class AbstractAddressCreateDialog extends Panel {
+public abstract class AbstractAddressCreateDialog extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractAddressCreateDialog.class);
     @EJB
     private AddressRendererBean addressRendererBean;
-    private String entity;
     private Dialog dialog;
     private IModel<String> numberModel;
     private WebMarkupContainer content;
-    private Form form;
-    private Autocomplete<String> autocomplete;
+    private Form<Void> form;
     private String parentEntity;
     private DomainObject parentObject;
     private List<Long> userOrganizationIds;
     private final Set<Long> subjectIds;
 
-    AbstractAddressCreateDialog(String id, Autocomplete<String> autocomplete, List<Long> userOrganizationIds) {
+    protected AbstractAddressCreateDialog(String id, List<Long> userOrganizationIds) {
         super(id);
-        this.autocomplete = autocomplete;
         this.userOrganizationIds = userOrganizationIds;
         this.subjectIds = newHashSet();
         init();
     }
 
-    String getEntity() {
-        return entity;
-    }
-
-    DomainObject getParentObject() {
+    protected DomainObject getParentObject() {
         return parentObject;
     }
 
-    String getParentEntity() {
+    protected String getParentEntity() {
         return parentEntity;
     }
 
-    void open(AjaxRequestTarget target, String entity, String number, String parentEntity, DomainObject parentObject) {
-        this.entity = entity;
+    public void open(AjaxRequestTarget target, String number, String parentEntity, DomainObject parentObject) {
         this.parentEntity = parentEntity;
         this.parentObject = parentObject;
         this.numberModel.setObject(number);
@@ -86,7 +76,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
         target.addComponent(content);
     }
 
-    void init() {
+    private void init() {
         dialog = new Dialog("dialog");
         dialog.setModal(true);
         dialog.setOpenEvent(JsScopeUiEvent.quickScope(new JsStatement().self().chain("parents", "'.ui-dialog:first'").
@@ -107,7 +97,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
         messages.setOutputMarkupId(true);
         content.add(messages);
 
-        form = new Form("form");
+        form = new Form<Void>("form");
         content.add(form);
         form.add(new Label("address", new AbstractReadOnlyModel<String>() {
 
@@ -155,13 +145,13 @@ abstract class AbstractAddressCreateDialog extends Panel {
                                     } catch (Exception e) {
                                         bulkOperationSuccess = false;
                                         log.error("", e);
-                                        onFailBulkSave(object, numberModel.getObject(), number);
+                                        onFailBulkSave(target, object, numberModel.getObject(), number);
                                     }
                                 } else {
-                                    onInvalidateBulkSave(object, numberModel.getObject(), number);
+                                    onInvalidateBulkSave(target, object, numberModel.getObject(), number);
                                 }
                             }
-                            afterBulkSave(numberModel.getObject(), bulkOperationSuccess);
+                            afterBulkSave(target, numberModel.getObject(), bulkOperationSuccess);
 
                             getSession().getFeedbackMessages().clear();
 
@@ -186,7 +176,7 @@ abstract class AbstractAddressCreateDialog extends Panel {
             }
         });
 
-        form.add(new AjaxLink("cancel") {
+        form.add(new AjaxLink<Void>("cancel") {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -196,11 +186,11 @@ abstract class AbstractAddressCreateDialog extends Panel {
         });
     }
 
-    PermissionPanel newPermissionPanel(Set<Long> subjectIds, Set<Long> parentSubjectIds) {
+    private PermissionPanel newPermissionPanel(Set<Long> subjectIds, Set<Long> parentSubjectIds) {
         return new PermissionPanel("permissionPanel", userOrganizationIds, subjectIds, parentSubjectIds);
     }
 
-    abstract String getTitle();
+    protected abstract String getTitle();
 
     private IModel<String> getTitleModel() {
         return new AbstractReadOnlyModel<String>() {
@@ -222,26 +212,26 @@ abstract class AbstractAddressCreateDialog extends Panel {
         };
     }
 
-    String getLabel() {
+    private String getLabel() {
         return getTitle();
     }
 
-    abstract DomainObject initObject(String numbers);
+    protected abstract DomainObject initObject(String numbers);
 
-    abstract boolean validate(DomainObject object);
+    protected abstract boolean validate(DomainObject object);
 
-    abstract String getNumberLabel();
+    protected abstract String getNumberLabel();
 
-    void beforeBulkSave(String numbers) {
+    protected void beforeBulkSave(String numbers) {
     }
 
-    void afterBulkSave(String numbers, boolean operationSuccessed) {
+    protected void afterBulkSave(AjaxRequestTarget target, String numbers, boolean operationSuccessed) {
     }
 
-    void onFailBulkSave(DomainObject failObject, String numbers, String failNumber) {
+    protected void onFailBulkSave(AjaxRequestTarget target, DomainObject failObject, String numbers, String failNumber) {
     }
 
-    void onInvalidateBulkSave(DomainObject invalidObject, String numbers, String invalidNumber) {
+    protected void onInvalidateBulkSave(AjaxRequestTarget target, DomainObject invalidObject, String numbers, String invalidNumber) {
     }
 
     private IModel<String> getNumberLabelModel() {
@@ -254,21 +244,18 @@ abstract class AbstractAddressCreateDialog extends Panel {
         };
     }
 
-    abstract void bulkSave(DomainObject object);
+    protected abstract void bulkSave(DomainObject object);
 
-    abstract DomainObject save(DomainObject object);
+    protected abstract DomainObject save(DomainObject object);
 
-    void close(AjaxRequestTarget target) {
+    private void close(AjaxRequestTarget target) {
         dialog.close(target);
         content.setVisible(false);
         target.addComponent(content);
     }
 
-    private void onCancel(AjaxRequestTarget target) {
-        autocomplete.setModelObject(null);
-        target.addComponent(autocomplete);
-        target.focusComponent(autocomplete);
+    protected void onCancel(AjaxRequestTarget target) {
     }
 
-    abstract void onCreate(AjaxRequestTarget target, DomainObject object);
+    protected abstract void onCreate(AjaxRequestTarget target, DomainObject object);
 }

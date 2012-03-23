@@ -4,10 +4,13 @@
  */
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -28,9 +31,11 @@ import org.apache.wicket.util.string.Strings;
 import org.complitex.address.menu.AddressMenu;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.address.strategy.apartment.ApartmentStrategy;
+import org.complitex.address.strategy.building.BuildingStrategy;
 import org.complitex.address.strategy.room.RoomStrategy;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.LocaleBean;
+import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.util.StringUtil;
@@ -45,8 +50,11 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.ApartmentsGridBean;
+import org.complitex.pspoffice.person.strategy.web.component.ApartmentCreateDialog;
+import org.complitex.pspoffice.person.strategy.web.component.RoomCreateDialog;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
+import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
@@ -62,6 +70,8 @@ public final class ApartmentsGrid extends ListPage {
     @EJB
     private ApartmentStrategy apartmentStrategy;
     @EJB
+    private BuildingStrategy buildingStrategy;
+    @EJB
     private RoomStrategy roomStrategy;
     @EJB
     private ApartmentsGridBean apartmentGridBean;
@@ -71,7 +81,12 @@ public final class ApartmentsGrid extends ListPage {
     private AddressRendererBean addressRendererBean;
     @EJB
     private LocaleBean localeBean;
+    @EJB
+    private SessionBean sessionBean;
     private final Locale systemLocale = localeBean.getSystemLocale();
+    private final long buildingId;
+    private final ApartmentCreateDialog apartmentCreateDialog;
+    private final RoomCreateDialog roomCreateDialog;
 
     private static class ApartmentsGridBackInfo extends BackInfo {
 
@@ -95,6 +110,8 @@ public final class ApartmentsGrid extends ListPage {
     }
 
     public ApartmentsGrid(final long buildingId, final String backInfoSessionKey) {
+        this.buildingId = buildingId;
+
         IModel<String> labelModel = new StringResourceModel("label", null,
                 new Object[]{addressRendererBean.displayAddress("building", buildingId, getLocale())});
 
@@ -277,6 +294,38 @@ public final class ApartmentsGrid extends ListPage {
         };
         back.setVisible(backInfo != null);
         content.add(back);
+
+        final List<Long> userOrganizationObjectIds = sessionBean.getUserOrganizationObjectIds();
+
+        apartmentCreateDialog = new ApartmentCreateDialog("apartmentCreateDialog", userOrganizationObjectIds) {
+
+            @Override
+            protected void onCreate(AjaxRequestTarget target, DomainObject object) {
+                target.addComponent(content);
+            }
+
+            @Override
+            protected void afterBulkSave(AjaxRequestTarget target, String numbers, boolean operationSuccessed) {
+                super.afterBulkSave(target, numbers, operationSuccessed);
+                target.addComponent(content);
+            }
+        };
+        add(apartmentCreateDialog);
+
+        roomCreateDialog = new RoomCreateDialog("roomCreateDialog", userOrganizationObjectIds) {
+
+            @Override
+            protected void onCreate(AjaxRequestTarget target, DomainObject object) {
+                target.addComponent(content);
+            }
+
+            @Override
+            protected void afterBulkSave(AjaxRequestTarget target, String numbers, boolean operationSuccessed) {
+                super.afterBulkSave(target, numbers, operationSuccessed);
+                target.addComponent(content);
+            }
+        };
+        add(roomCreateDialog);
     }
 
     private static BackInfo gridBackInfo(long buildingId, String backInfoSessionKey) {
@@ -288,5 +337,36 @@ public final class ApartmentsGrid extends ListPage {
         return owner.getLastName(locale, systemLocale) + " "
                 + owner.getFirstName(locale, systemLocale).substring(0, 1).toUpperCase(locale) + "."
                 + owner.getMiddleName(locale, systemLocale).substring(0, 1).toUpperCase(locale) + ".";
+    }
+
+    @Override
+    protected List<? extends ToolbarButton> getToolbarButtons(String id) {
+        final DomainObject building = buildingStrategy.findById(buildingId, true);
+
+        class AddApartmentRoomButton extends ToolbarButton {
+
+            static final String IMAGE_SRC = "images/icon-addItem.gif";
+            static final String TITLE_KEY = "add";
+
+            AddApartmentRoomButton(String id, String entity) {
+                super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY + Strings.capitalize(entity), true);
+            }
+        }
+
+        return ImmutableList.of(
+                new AddApartmentRoomButton(id, "apartment") {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        apartmentCreateDialog.open(target, null, building);
+                    }
+                },
+                new AddApartmentRoomButton(id, "room") {
+
+                    @Override
+                    protected void onClick(AjaxRequestTarget target) {
+                        roomCreateDialog.open(target, null, "building", building);
+                    }
+                });
     }
 }

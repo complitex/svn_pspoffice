@@ -29,7 +29,7 @@ insert into `organization_attribute`(`attribute_id`, `object_id`, `attribute_typ
 (1,2,900,3,900), (1,2,901,4,901), (1,2,904,1,904);
 
 -- Test users
--- User '1'
+-- Plain employee user '1'
 insert into `first_name` (`id`, `name`) values(3,'1');
 insert into `last_name` (`id`, `name`) values(3,'1');
 insert into `middle_name` (`id`, `name`) values(3,'1');
@@ -41,7 +41,21 @@ insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_
 
 insert into `user` (`id`, `login`, `password`, `user_info_object_id`) values(3,'1','c4ca4238a0b923820dcc509a6f75849b',3);
 insert into `user_organization` (`id`, `user_id`, `organization_object_id`, `main`) values(1,3,1,1);
-insert into `usergroup` (`id`, `login`, `group_name`) values(4,1,'EMPLOYEES');
+insert into `usergroup` (`id`, `login`, `group_name`) values(4,'1','EMPLOYEES');
+
+-- Employee-child-view  user '2'
+insert into `first_name` (`id`, `name`) values(4,'2');
+insert into `last_name` (`id`, `name`) values(4,'2');
+insert into `middle_name` (`id`, `name`) values(4,'2');
+
+insert into `user_info` (`object_id`) values(4);
+insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values(1,4,1000,4,1000);
+insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values(1,4,1001,4,1001);
+insert into `user_info_attribute` (`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values(1,4,1002,4,1002);
+
+insert into `user` (`id`, `login`, `password`, `user_info_object_id`) values(4,'2','c81e728d9d4c2f636f067f89cc14862c',4);
+insert into `user_organization` (`id`, `user_id`, `organization_object_id`, `main`) values(2,4,1,1);
+insert into `usergroup` (`id`, `login`, `group_name`) values(5,'2','EMPLOYEES_CHILD_VIEW');
 
 --insert into config(`name`, `value`) values ('IMPORT_FILE_STORAGE_DIR', 'D:\\Artem\\Projects\\org.complitex\\storage\\import3');
 --insert into config(`name`, `value`) values ('DEFAULT_IMPORT_FILE_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada');

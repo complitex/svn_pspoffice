@@ -34,9 +34,9 @@
             </classpath>
 
             <transaction src="../../complitex/complitex-db/complitex-testdump.sql"/>
-            <transaction src="../../complitex/complitex-db/complitex-sequence.sql"/>
-
             <transaction src="pspoffice-testdump.sql"/>
+            
+            <transaction src="../../complitex/complitex-db/complitex-sequence.sql"/>
             <transaction src="pspoffice-sequence.sql"/>
         </sql>
     </target>

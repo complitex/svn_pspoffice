@@ -326,7 +326,7 @@ public final class BuildingsGrid extends ListPage {
         };
         filterForm.add(submit);
 
-        content.add(new PagingNavigator("navigator", buildings, getPreferencesPage(), content));
+        content.add(new PagingNavigator("navigator", buildings, content));
 
         Link<Void> backSearch = new Link<Void>("backSearch") {
 

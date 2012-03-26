@@ -200,7 +200,12 @@ public final class ApartmentsGrid extends ListPage {
                 });
 
                 //apartment cards
-                item.add(new ListView<ApartmentCard>("apartmentCards", apartmentsGridEntity.getApartmentCards()) {
+                final boolean hasApartmentCards = !apartmentsGridEntity.getApartmentCards().isEmpty();
+                WebMarkupContainer apartmentCardsContainer = new WebMarkupContainer("apartmentCardsContainer");
+                apartmentCardsContainer.setVisible(hasApartmentCards);
+                item.add(apartmentCardsContainer);
+                apartmentCardsContainer.add(new ListView<ApartmentCard>("apartmentCards",
+                        apartmentsGridEntity.getApartmentCards()) {
 
                     @Override
                     protected void populateItem(ListItem<ApartmentCard> item) {
@@ -218,10 +223,19 @@ public final class ApartmentsGrid extends ListPage {
                         apartmentCardLink.add(new Label("apartmentCard", apartmentCardInfo(apartmentCard, getLocale(), systemLocale)));
                     }
                 });
+                Link<Void> apartmentCardsGridLink = new Link<Void>("apartmentCardsGridLink") {
+
+                    @Override
+                    public void onClick() {
+                        BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
+                        setResponsePage(new ApartmentCardsGrid(apartmentsGridEntity.getObjectId(), PAGE_SESSION_KEY));
+                    }
+                };
+                apartmentCardsGridLink.setVisible(!hasApartmentCards && "apartment".equals(apartmentsGridEntity.getEntity()));
+                item.add(apartmentCardsGridLink);
 
                 //registered
-                item.add(new Label("registered", apartmentsGridEntity.getApartmentCards().isEmpty() ? null
-                        : String.valueOf(apartmentsGridEntity.getRegistered())));
+                item.add(new Label("registered", String.valueOf(apartmentsGridEntity.getRegistered())));
 
                 //organizations
                 item.add(new ListView<DomainObject>("organizations", apartmentsGridEntity.getOrganizations()) {
@@ -282,7 +296,6 @@ public final class ApartmentsGrid extends ListPage {
             }
         };
         content.add(backSearch);
-
 
         final BackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
         Link<Void> back = new Link<Void>("back") {

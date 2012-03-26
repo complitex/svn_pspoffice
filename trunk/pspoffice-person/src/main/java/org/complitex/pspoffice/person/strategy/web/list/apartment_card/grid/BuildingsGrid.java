@@ -279,7 +279,6 @@ public final class BuildingsGrid extends ListPage {
                         setResponsePage(new ApartmentsGrid(buildingsGridEntity.getBuildingId(), PAGE_SESSION_KEY));
                     }
                 };
-                apartmentsLink.setEnabled(apartments > 0);
                 item.add(apartmentsLink);
                 apartmentsLink.add(new Label("apartments", String.valueOf(apartments)));
 

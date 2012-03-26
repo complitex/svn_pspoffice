@@ -17,6 +17,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
@@ -51,24 +52,32 @@ public final class ApartmentCardsGrid extends ListPage {
     @EJB
     private AddressRendererBean addressRendererBean;
     private final long apartmentId;
+    private final String backInfoSessionKey;
 
     private static class ApartmentCardsGridBackInfo extends BackInfo {
 
         final long apartmentId;
+        final String backInfoSessionKey;
 
-        ApartmentCardsGridBackInfo(long apartmentId) {
+        ApartmentCardsGridBackInfo(long apartmentId, String backInfoSessionKey) {
             this.apartmentId = apartmentId;
+            this.backInfoSessionKey = backInfoSessionKey;
         }
 
         @Override
         public void back(Component pageComponent) {
             MenuManager.setMenuItem(OperationMenu.REGISTRATION_MENU_ITEM);
-            pageComponent.setResponsePage(new ApartmentCardsGrid(apartmentId));
+            pageComponent.setResponsePage(new ApartmentCardsGrid(apartmentId, backInfoSessionKey));
         }
     }
 
-    public ApartmentCardsGrid(final long apartmentId) {
+    public ApartmentCardsGrid(long apartmentId) {
+        this(apartmentId, null);
+    }
+    
+    public ApartmentCardsGrid(final long apartmentId, final String backInfoSessionKey) {
         this.apartmentId = apartmentId;
+        this.backInfoSessionKey = backInfoSessionKey;
 
         IModel<String> labelModel = new StringResourceModel("label", null,
                 new Object[]{addressRendererBean.displayAddress("apartment", apartmentId, getLocale())});
@@ -97,7 +106,7 @@ public final class ApartmentCardsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
-                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId, backInfoSessionKey));
                                 setResponsePage(new ApartmentCardEdit(apartmentCardsGridEntity.getApartmentCardId(),
                                         PAGE_SESSION_KEY));
                             }
@@ -117,7 +126,7 @@ public final class ApartmentCardsGrid extends ListPage {
 
                             @Override
                             public void onClick() {
-                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId, backInfoSessionKey));
                                 setResponsePage(new RegistrationsGrid(apartmentCardsGridEntity.getApartmentCardId(),
                                         PAGE_SESSION_KEY));
                             }
@@ -134,7 +143,7 @@ public final class ApartmentCardsGrid extends ListPage {
                             public void onClick() {
                                 MenuManager.setMenuItem(OrganizationMenu.ORGANIZATION_MENU_ITEM);
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
-                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId, backInfoSessionKey));
                                 params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
@@ -160,10 +169,21 @@ public final class ApartmentCardsGrid extends ListPage {
             }
         };
         add(backSearch);
+        
+        final BackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
+        Link<Void> back = new Link<Void>("back") {
+
+            @Override
+            public void onClick() {
+                backInfo.back(this);
+            }
+        };
+        back.setVisible(backInfo != null);
+        add(back);
     }
 
-    private static BackInfo gridBackInfo(long apartmentId) {
-        return new ApartmentCardsGridBackInfo(apartmentId);
+    private static BackInfo gridBackInfo(long apartmentId, String backInfoSessionKey) {
+        return new ApartmentCardsGridBackInfo(apartmentId, backInfoSessionKey);
     }
 
     @Override
@@ -172,7 +192,7 @@ public final class ApartmentCardsGrid extends ListPage {
 
             @Override
             protected void onClick() {
-                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId));
+                BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId, backInfoSessionKey));
                 setResponsePage(new ApartmentCardEdit("apartment", apartmentId, PAGE_SESSION_KEY));
             }
         });

@@ -12,9 +12,9 @@ import org.complitex.address.strategy.apartment.ApartmentStrategy;
 import org.complitex.address.strategy.apartment.web.edit.ApartmentEdit;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.Log;
+import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.LogBean;
-import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.person.Module;
 
@@ -24,8 +24,6 @@ import org.complitex.pspoffice.person.Module;
  */
 public abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog {
 
-    @EJB
-    private StringCultureBean stringBean;
     @EJB
     private LocaleBean localeBean;
     @EJB
@@ -52,9 +50,9 @@ public abstract class ApartmentCreateDialog extends AbstractAddressCreateDialog 
     }
 
     @Override
-    protected DomainObject initObject(String number) {
+    protected DomainObject initObject(List<StringCulture> number) {
         DomainObject apartment = apartmentStrategy.newInstance();
-        stringBean.getSystemStringCulture(apartment.getAttribute(ApartmentStrategy.NAME).getLocalizedValues()).setValue(number);
+        apartment.getAttribute(ApartmentStrategy.NAME).setLocalizedValues(number);
         apartment.setParentEntityId(ApartmentStrategy.PARENT_ENTITY_ID);
         apartment.setParentId(getParentObject().getId());
         return apartment;

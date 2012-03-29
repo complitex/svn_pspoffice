@@ -4,7 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.component;
 
-import java.text.MessageFormat;
 import static com.google.common.collect.Sets.*;
 import java.util.List;
 import java.util.Set;
@@ -12,20 +11,20 @@ import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.RequiredTextField;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.util.AddressNumberParser;
+import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.web.component.RangeNumbersPanel;
+import org.complitex.dictionary.web.component.RangeNumbersPanel.NumbersList;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 import org.odlabs.wiquery.ui.dialog.Dialog;
@@ -42,18 +41,20 @@ public abstract class AbstractAddressCreateDialog extends Panel {
     @EJB
     private AddressRendererBean addressRendererBean;
     private Dialog dialog;
-    private IModel<String> numberModel;
+    private final NumbersList numbersList = new NumbersList();
     private WebMarkupContainer content;
     private Form<Void> form;
     private String parentEntity;
     private DomainObject parentObject;
-    private List<Long> userOrganizationIds;
+    private final List<Long> userOrganizationIds;
     private final Set<Long> subjectIds;
 
     protected AbstractAddressCreateDialog(String id, List<Long> userOrganizationIds) {
         super(id);
         this.userOrganizationIds = userOrganizationIds;
         this.subjectIds = newHashSet();
+        add(CSSPackageResource.getHeaderContribution(AbstractAddressCreateDialog.class,
+                AbstractAddressCreateDialog.class.getSimpleName() + ".css"));
         init();
     }
 
@@ -68,7 +69,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
     public void open(AjaxRequestTarget target, String number, String parentEntity, DomainObject parentObject) {
         this.parentEntity = parentEntity;
         this.parentObject = parentObject;
-        this.numberModel.setObject(number);
+        this.numbersList.reset(number);
         dialog.open(target);
         content.setVisible(true);
         subjectIds.clear();
@@ -84,6 +85,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                 chain("hide").render()));
         dialog.setCloseOnEscape(false);
         dialog.setWidth(600);
+        dialog.setResizable(false);
         dialog.setTitle(getTitleModel());
         add(dialog);
 
@@ -99,6 +101,8 @@ public abstract class AbstractAddressCreateDialog extends Panel {
 
         form = new Form<Void>("form");
         content.add(form);
+
+        //parent address
         form.add(new Label("address", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -106,25 +110,33 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                 return addressRendererBean.displayAddress(parentEntity, parentObject.getId(), getLocale());
             }
         }));
-        final IModel<String> numberLabelModel = getNumberLabelModel();
-        form.add(new Label("numberLabel", numberLabelModel));
-        numberModel = new Model<String>();
-        TextField<String> numberField = new RequiredTextField<String>("number", numberModel);
-        numberField.setOutputMarkupId(true);
-        numberField.setLabel(numberLabelModel);
-        form.add(numberField);
 
+        //range numbers panel
+        final RangeNumbersPanel rangeNumbersPanel = new RangeNumbersPanel("rangeNumbersPanel",
+                getNumberLabelModel(), numbersList) {
+
+            @Override
+            protected FeedbackPanel initializeMessages() {
+                return messages;
+            }
+        };
+        form.add(rangeNumbersPanel);
+
+        //permission panel
         form.add(new EmptyPanel("permissionPanel").setRenderBodyOnly(true));
 
+        //submit button
         form.add(new IndicatingAjaxButton("submit", form) {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    if (AddressNumberParser.matches(numberModel.getObject())) {
-                        final String[] numbers = AddressNumberParser.parse(numberModel.getObject());
-                        if (numbers.length == 1) {
-                            DomainObject object = initObject(numbers[0]);
+                    if (rangeNumbersPanel.validate()) {
+                        final String numbersAsString = numbersList.asString();
+                        final List<List<StringCulture>> numbers = numbersList.getNumbers();
+
+                        if (numbers.size() == 1) {
+                            DomainObject object = initObject(numbers.get(0));
                             object.setSubjectIds(subjectIds);
                             if (AbstractAddressCreateDialog.this.validate(object)) {
                                 DomainObject saved = save(object);
@@ -134,9 +146,9 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                                 target.addComponent(messages);
                             }
                         } else {
-                            beforeBulkSave(numberModel.getObject());
+                            beforeBulkSave(numbersAsString);
                             boolean bulkOperationSuccess = true;
-                            for (String number : numbers) {
+                            for (List<StringCulture> number : numbers) {
                                 DomainObject object = initObject(number);
                                 object.setSubjectIds(subjectIds);
                                 if (AbstractAddressCreateDialog.this.validate(object)) {
@@ -145,13 +157,13 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                                     } catch (Exception e) {
                                         bulkOperationSuccess = false;
                                         log.error("", e);
-                                        onFailBulkSave(target, object, numberModel.getObject(), number);
+                                        onFailBulkSave(target, object, numbersAsString, numbersList.asString(number));
                                     }
                                 } else {
-                                    onInvalidateBulkSave(target, object, numberModel.getObject(), number);
+                                    onInvalidateBulkSave(target, object, numbersAsString, numbersList.asString(number));
                                 }
                             }
-                            afterBulkSave(target, numberModel.getObject(), bulkOperationSuccess);
+                            afterBulkSave(target, numbersAsString, bulkOperationSuccess);
 
                             getSession().getFeedbackMessages().clear();
 
@@ -159,7 +171,6 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                             onCancel(target);
                         }
                     } else {
-                        error(MessageFormat.format(getString("invalid_number_format"), numberLabelModel.getObject()));
                         target.addComponent(messages);
                     }
                 } catch (Exception e) {
@@ -176,6 +187,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
             }
         });
 
+        //cancel button
         form.add(new AjaxLink<Void>("cancel") {
 
             @Override
@@ -216,7 +228,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
         return getTitle();
     }
 
-    protected abstract DomainObject initObject(String numbers);
+    protected abstract DomainObject initObject(List<StringCulture> number);
 
     protected abstract boolean validate(DomainObject object);
 

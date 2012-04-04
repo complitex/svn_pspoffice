@@ -547,6 +547,214 @@ CREATE TABLE `document_string_culture` (
   CONSTRAINT `fk_document_string_culture__locales` FOREIGN KEY (`locale_id`) REFERENCES `locales` (`id`)
 ) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Локализированное значение атрибута документа';
 
+-- Military service relation
+DROP TABLE IF EXISTS `military_service_relation`;
+
+CREATE TABLE `military_service_relation` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `object_id` BIGINT(20) NOT NULL,
+  `parent_id` BIGINT(20),
+  `parent_entity_id` BIGINT(20),
+  `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
+  `permission_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `external_id` BIGINT(20),
+  PRIMARY KEY  (`pk_id`),
+  UNIQUE KEY `unique_object_id__start_date` (`object_id`,`start_date`),
+  UNIQUE KEY `unique_external_id` (`external_id`),
+  KEY `key_object_id` (`object_id`),
+  KEY `key_parent_id` (`parent_id`),
+  KEY `key_parent_entity_id` (`parent_entity_id`),
+  KEY `key_start_date` (`start_date`),
+  KEY `key_end_date` (`end_date`),
+  KEY `key_status` (`status`),
+  KEY `key_permission_id` (`permission_id`),
+  CONSTRAINT `fk_military_service_relation__entity` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `fk_military_service_relation__permission` FOREIGN KEY (`permission_id`) REFERENCES `permission` (`permission_id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Отношение к воинской обязанности';
+
+DROP TABLE IF EXISTS `military_service_relation_attribute`;
+
+CREATE TABLE `military_service_relation_attribute` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `attribute_id` BIGINT(20) NOT NULL,
+  `object_id` BIGINT(20) NOT NULL,
+  `attribute_type_id` BIGINT(20) NOT NULL,
+  `value_id` BIGINT(20),
+  `value_type_id` BIGINT(20) NOT NULL,
+  `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL DEFAULT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+  PRIMARY KEY  (`pk_id`),
+  UNIQUE KEY `unique_id` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `key_object_id` (`object_id`),
+  KEY `key_attribute_type_id` (`attribute_type_id`),
+  KEY `key_value_id` (`value_id`),
+  KEY `key_value_type_id` (`value_type_id`),
+  KEY `key_start_date` (`start_date`),
+  KEY `key_end_date` (`end_date`),
+  KEY `key_status` (`status`),
+  CONSTRAINT `fk_military_attribute__ownership` FOREIGN KEY (`object_id`) REFERENCES `military_service_relation`(`object_id`),
+  CONSTRAINT `fk_military_attribute__entity_attribute_type` FOREIGN KEY (`attribute_type_id`)
+    REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `fk_military_attribute__entity_attribute_value_type` FOREIGN KEY (`value_type_id`)
+    REFERENCES `entity_attribute_value_type` (`id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Атрибуты отношения к воинской обязанности';
+
+DROP TABLE IF EXISTS `military_service_relation_string_culture`;
+
+CREATE TABLE `military_service_relation_string_culture` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `locale_id` BIGINT(20) NOT NULL,
+  `value` VARCHAR(1000),
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `unique_id__locale` (`id`,`locale_id`),
+  KEY `key_locale` (`locale_id`),
+  KEY `key_value` (`value`),
+  CONSTRAINT `fk_military_service_relation_string_culture__locales` FOREIGN KEY (`locale_id`) REFERENCES `locales` (`id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Локализированное значение атрибута отношения к воинской обязанности';
+
+-- Departure reason
+DROP TABLE IF EXISTS `departure_reason`;
+
+CREATE TABLE `departure_reason` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `object_id` BIGINT(20) NOT NULL,
+  `parent_id` BIGINT(20),
+  `parent_entity_id` BIGINT(20),
+  `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
+  `permission_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `external_id` BIGINT(20),
+  PRIMARY KEY  (`pk_id`),
+  UNIQUE KEY `unique_object_id__start_date` (`object_id`,`start_date`),
+  UNIQUE KEY `unique_external_id` (`external_id`),
+  KEY `key_object_id` (`object_id`),
+  KEY `key_parent_id` (`parent_id`),
+  KEY `key_parent_entity_id` (`parent_entity_id`),
+  KEY `key_start_date` (`start_date`),
+  KEY `key_end_date` (`end_date`),
+  KEY `key_status` (`status`),
+  KEY `key_permission_id` (`permission_id`),
+  CONSTRAINT `fk_departure_reason__entity` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `fk_departure_reason__permission` FOREIGN KEY (`permission_id`) REFERENCES `permission` (`permission_id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Причина выбытия';
+
+DROP TABLE IF EXISTS `departure_reason_attribute`;
+
+CREATE TABLE `departure_reason_attribute` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `attribute_id` BIGINT(20) NOT NULL,
+  `object_id` BIGINT(20) NOT NULL,
+  `attribute_type_id` BIGINT(20) NOT NULL,
+  `value_id` BIGINT(20),
+  `value_type_id` BIGINT(20) NOT NULL,
+  `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL DEFAULT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+  PRIMARY KEY  (`pk_id`),
+  UNIQUE KEY `unique_id` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `key_object_id` (`object_id`),
+  KEY `key_attribute_type_id` (`attribute_type_id`),
+  KEY `key_value_id` (`value_id`),
+  KEY `key_value_type_id` (`value_type_id`),
+  KEY `key_start_date` (`start_date`),
+  KEY `key_end_date` (`end_date`),
+  KEY `key_status` (`status`),
+  CONSTRAINT `fk_departure_reason_attribute__ownership` FOREIGN KEY (`object_id`) REFERENCES `departure_reason`(`object_id`),
+  CONSTRAINT `fk_departure_reason_attribute__entity_attribute_type` FOREIGN KEY (`attribute_type_id`)
+    REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `fk_departure_reason_attribute__entity_attribute_value_type` FOREIGN KEY (`value_type_id`)
+    REFERENCES `entity_attribute_value_type` (`id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Атрибуты причины выбытия';
+
+DROP TABLE IF EXISTS `departure_reason_string_culture`;
+
+CREATE TABLE `departure_reason_string_culture` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `locale_id` BIGINT(20) NOT NULL,
+  `value` VARCHAR(1000),
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `unique_id__locale` (`id`,`locale_id`),
+  KEY `key_locale` (`locale_id`),
+  KEY `key_value` (`value`),
+  CONSTRAINT `fk_departure_reason_string_culture__locales` FOREIGN KEY (`locale_id`) REFERENCES `locales` (`id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Локализированное значение атрибута причины выбытия';
+
+-- Housing rights
+DROP TABLE IF EXISTS `housing_rights`;
+
+CREATE TABLE `housing_rights` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `object_id` BIGINT(20) NOT NULL,
+  `parent_id` BIGINT(20),
+  `parent_entity_id` BIGINT(20),
+  `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
+  `permission_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `external_id` BIGINT(20),
+  PRIMARY KEY  (`pk_id`),
+  UNIQUE KEY `unique_object_id__start_date` (`object_id`,`start_date`),
+  UNIQUE KEY `unique_external_id` (`external_id`),
+  KEY `key_object_id` (`object_id`),
+  KEY `key_parent_id` (`parent_id`),
+  KEY `key_parent_entity_id` (`parent_entity_id`),
+  KEY `key_start_date` (`start_date`),
+  KEY `key_end_date` (`end_date`),
+  KEY `key_status` (`status`),
+  KEY `key_permission_id` (`permission_id`),
+  CONSTRAINT `fk_housing_rights__entity` FOREIGN KEY (`parent_entity_id`) REFERENCES `entity` (`id`),
+  CONSTRAINT `fk_housing_rights__permission` FOREIGN KEY (`permission_id`) REFERENCES `permission` (`permission_id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Документ права на жилплощадь';
+
+DROP TABLE IF EXISTS `housing_rights_attribute`;
+
+CREATE TABLE `housing_rights_attribute` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `attribute_id` BIGINT(20) NOT NULL,
+  `object_id` BIGINT(20) NOT NULL,
+  `attribute_type_id` BIGINT(20) NOT NULL,
+  `value_id` BIGINT(20),
+  `value_type_id` BIGINT(20) NOT NULL,
+  `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL DEFAULT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+  PRIMARY KEY  (`pk_id`),
+  UNIQUE KEY `unique_id` (`attribute_id`,`object_id`,`attribute_type_id`, `start_date`),
+  KEY `key_object_id` (`object_id`),
+  KEY `key_attribute_type_id` (`attribute_type_id`),
+  KEY `key_value_id` (`value_id`),
+  KEY `key_value_type_id` (`value_type_id`),
+  KEY `key_start_date` (`start_date`),
+  KEY `key_end_date` (`end_date`),
+  KEY `key_status` (`status`),
+  CONSTRAINT `fk_housing_rights_attribute__ownership` FOREIGN KEY (`object_id`) REFERENCES `housing_rights`(`object_id`),
+  CONSTRAINT `fk_housing_rights_attribute__entity_attribute_type` FOREIGN KEY (`attribute_type_id`)
+    REFERENCES `entity_attribute_type` (`id`),
+  CONSTRAINT `fk_housing_rights_attribute__entity_attribute_value_type` FOREIGN KEY (`value_type_id`)
+    REFERENCES `entity_attribute_value_type` (`id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Атрибуты документа права на жилплощадь';
+
+DROP TABLE IF EXISTS `housing_rights_string_culture`;
+
+CREATE TABLE `housing_rights_string_culture` (
+  `pk_id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `id` BIGINT(20) NOT NULL,
+  `locale_id` BIGINT(20) NOT NULL,
+  `value` VARCHAR(1000),
+  PRIMARY KEY (`pk_id`),
+  UNIQUE KEY `unique_id__locale` (`id`,`locale_id`),
+  KEY `key_locale` (`locale_id`),
+  KEY `key_value` (`value`),
+  CONSTRAINT `fk_housing_rights_string_culture__locales` FOREIGN KEY (`locale_id`) REFERENCES `locales` (`id`)
+) ENGINE=InnoDB DEFAULT  CHARSET=utf8 COMMENT 'Локализированное значение атрибута документа права на жилплощадь';
+
+
 -- ------------------------------
 -- Person First Name
 -- ------------------------------

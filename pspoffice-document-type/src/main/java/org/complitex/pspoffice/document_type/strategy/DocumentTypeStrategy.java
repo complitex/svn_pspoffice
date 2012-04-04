@@ -77,6 +77,7 @@ public class DocumentTypeStrategy extends TemplateStrategy {
     }
 
     @Transactional
+    @SuppressWarnings("unchecked")
     public List<DomainObject> getAll() {
         DomainObjectExample example = new DomainObjectExample();
         example.setOrderByAttributeTypeId(NAME);
@@ -108,12 +109,12 @@ public class DocumentTypeStrategy extends TemplateStrategy {
 
     @Override
     public String[] getEditRoles() {
-        return new String[]{SecurityRole.DOCUMENT_TYPE_MODULE_EDIT};
+        return new String[]{SecurityRole.REFERENCE_DATA_MODULE_EDIT};
     }
 
     @Override
     public String[] getListRoles() {
-        return new String[]{SecurityRole.DOCUMENT_TYPE_MODULE_VIEW};
+        return new String[]{SecurityRole.REFERENCE_DATA_MODULE_VIEW};
     }
 
     @Transactional

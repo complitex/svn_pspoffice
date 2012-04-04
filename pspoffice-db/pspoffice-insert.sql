@@ -281,3 +281,39 @@ insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2802, 2802, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2803, 2803, UPPER('string'));
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2804, 2804, UPPER('masked_date'));
+
+-- Military service relation --
+INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('military_service_relation',1), ('military_service_relation_string_culture',1);
+
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2900, 1, 'Отношение к воинской обязанности'), (2900, 2, 'Отношение к воинской обязанности');
+INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (2900, 'military_service_relation', 2900, '');
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2901, 1, UPPER('Название')), (2901, 2, UPPER('Назва'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2900, 2900, 1, 2901, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2902, 1, UPPER('Код')), (2902, 2, UPPER('Код'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2901, 2900, 1, 2902, 1);
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2900, 2900, UPPER('string_culture'));
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2901, 2901, UPPER('integer'));
+
+-- Departure reason --
+INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('departure_reason',1), ('departure_reason_string_culture',1);
+
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (3000, 1, 'Причина выбытия'), (3000, 2, 'Причина вибуття');
+INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (3000, 'departure_reason', 3000, '');
+insert into `string_culture`(`id`, `locale_id`, `value`) values (3001, 1, UPPER('Название')), (3001, 2, UPPER('Назва'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (3000, 3000, 1, 3001, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (3002, 1, UPPER('Код')), (3002, 2, UPPER('Код'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (3001, 3000, 1, 3002, 1);
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3000, 3000, UPPER('string_culture'));
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3001, 3001, UPPER('integer'));
+
+-- Housing rights --
+INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('housing_rights',1), ('housing_rights_string_culture',1);
+
+INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (3100, 1, 'Документ права на жилплощадь'), (3100, 2, 'Документ права на жилплощадь');
+INSERT INTO `entity`(`id`, `entity_table`, `entity_name_id`, `strategy_factory`) VALUES (3100, 'housing_rights', 3100, '');
+insert into `string_culture`(`id`, `locale_id`, `value`) values (3101, 1, UPPER('Название')), (3101, 2, UPPER('Назва'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (3100, 3100, 1, 3101, 1);
+insert into `string_culture`(`id`, `locale_id`, `value`) values (3102, 1, UPPER('Код')), (3102, 2, UPPER('Код'));
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (3101, 3100, 1, 3102, 1);
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3100, 3100, UPPER('string_culture'));
+INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3101, 3101, UPPER('integer'));

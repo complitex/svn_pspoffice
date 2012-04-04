@@ -45,12 +45,12 @@ public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu
 
             @Override
             public String getLabel(Locale locale) {
-                return getString(org.complitex.pspoffice.imp.web.ImportPage.class, locale, "title");
+                return getString(org.complitex.pspoffice.legacy_import.web.ImportPage.class, locale, "title");
             }
 
             @Override
             public Class<? extends Page> getPage() {
-                return org.complitex.pspoffice.imp.web.ImportPage.class;
+                return org.complitex.pspoffice.legacy_import.web.ImportPage.class;
             }
 
             @Override

@@ -29,6 +29,9 @@
         <module>pspoffice-registration-type</module>
         <module>pspoffice-document-type</module>
         <module>pspoffice-document</module>
+        <module>pspoffice-military-service-relation</module>
+        <module>pspoffice-departure-reason</module>
+        <module>pspoffice-housing-rights</module>
         <module>pspoffice-import</module>
         <module>pspoffice-street</module>
 
@@ -144,6 +147,24 @@
             <dependency>
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-document</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-military-service-relation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-departure-reason</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-housing-rights</artifactId>
                 <version>${project.version}</version>
             </dependency>
             

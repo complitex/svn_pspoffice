@@ -63,29 +63,12 @@
     <security-role>
         <role-name>CHILD_ORGANIZATION_VIEW</role-name>
     </security-role>
+    
     <security-role>
-        <role-name>OWNER_RELATIONSHIP_MODULE_VIEW</role-name>
+        <role-name>REFERENCE_DATA_MODULE_VIEW</role-name>
     </security-role>
     <security-role>
-        <role-name>OWNER_RELATIONSHIP_MODULE_EDIT</role-name>
-    </security-role>
-    <security-role>
-        <role-name>OWNERSHIP_MODULE_VIEW</role-name>
-    </security-role>
-    <security-role>
-        <role-name>OWNERSHIP_MODULE_EDIT</role-name>
-    </security-role>
-    <security-role>
-        <role-name>REGISTRATION_TYPE_MODULE_VIEW</role-name>
-    </security-role>
-    <security-role>
-        <role-name>REGISTRATION_TYPE_MODULE_EDIT</role-name>
-    </security-role>
-    <security-role>
-        <role-name>DOCUMENT_TYPE_MODULE_VIEW</role-name>
-    </security-role>
-    <security-role>
-        <role-name>DOCUMENT_TYPE_MODULE_EDIT</role-name>
+        <role-name>REFERENCE_DATA_MODULE_EDIT</role-name>
     </security-role>
 
     <login-config>

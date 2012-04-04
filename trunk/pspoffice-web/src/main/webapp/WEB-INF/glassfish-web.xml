@@ -69,40 +69,14 @@
         <role-name>PERSON_MODULE_DESCRIPTION_EDIT</role-name>
         <group-name>ADMINISTRATORS</group-name>
     </security-role-mapping>
+    
     <security-role-mapping>
-        <role-name>OWNER_RELATIONSHIP_MODULE_VIEW</role-name>
+        <role-name>REFERENCE_DATA_MODULE_VIEW</role-name>
         <group-name>EMPLOYEES_CHILD_VIEW</group-name>
         <group-name>ADMINISTRATORS</group-name>
     </security-role-mapping>
     <security-role-mapping>
-        <role-name>OWNER_RELATIONSHIP_MODULE_EDIT</role-name>
-        <group-name>ADMINISTRATORS</group-name>
-    </security-role-mapping>
-    <security-role-mapping>
-        <role-name>OWNERSHIP_MODULE_VIEW</role-name>
-        <group-name>EMPLOYEES_CHILD_VIEW</group-name>
-        <group-name>ADMINISTRATORS</group-name>
-    </security-role-mapping>
-    <security-role-mapping>
-        <role-name>OWNERSHIP_MODULE_EDIT</role-name>
-        <group-name>ADMINISTRATORS</group-name>
-    </security-role-mapping>
-    <security-role-mapping>
-        <role-name>REGISTRATION_TYPE_MODULE_VIEW</role-name>
-        <group-name>EMPLOYEES_CHILD_VIEW</group-name>
-        <group-name>ADMINISTRATORS</group-name>
-    </security-role-mapping>
-    <security-role-mapping>
-        <role-name>REGISTRATION_TYPE_MODULE_EDIT</role-name>
-        <group-name>ADMINISTRATORS</group-name>
-    </security-role-mapping>
-    <security-role-mapping>
-        <role-name>DOCUMENT_TYPE_MODULE_VIEW</role-name>
-        <group-name>EMPLOYEES_CHILD_VIEW</group-name>
-        <group-name>ADMINISTRATORS</group-name>
-    </security-role-mapping>
-    <security-role-mapping>
-        <role-name>DOCUMENT_TYPE_MODULE_EDIT</role-name>
+        <role-name>REFERENCE_DATA_MODULE_EDIT</role-name>
         <group-name>ADMINISTRATORS</group-name>
     </security-role-mapping>
   

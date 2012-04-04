@@ -59,12 +59,12 @@
         <mapper resource="org/complitex/pspoffice/person/strategy/service/PersonNameBean.xml"/>
         <mapper resource="org/complitex/pspoffice/person/report/service/RegistrationStopCouponBean.xml"/>
         
-        <!-- import -->
-        <mapper resource="org/complitex/pspoffice/imp/service/StreetCorrectionBean.xml"/>
-        <mapper resource="org/complitex/pspoffice/imp/service/BuildingCorrectionBean.xml"/>
-        <mapper resource="org/complitex/pspoffice/imp/service/ReferenceDataCorrectionBean.xml"/>
-        <mapper resource="org/complitex/pspoffice/imp/service/PersonCorrectionBean.xml"/>
-        <mapper resource="org/complitex/pspoffice/imp/service/ApartmentCardCorrectionBean.xml"/>
-        <mapper resource="org/complitex/pspoffice/imp/service/RegistrationCorrectionBean.xml"/>
+        <!-- legacy import -->
+        <mapper resource="org/complitex/pspoffice/legacy_import/service/StreetCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/legacy_import/service/BuildingCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/legacy_import/service/ReferenceDataCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/legacy_import/service/PersonCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/legacy_import/service/ApartmentCardCorrectionBean.xml"/>
+        <mapper resource="org/complitex/pspoffice/legacy_import/service/RegistrationCorrectionBean.xml"/>
     </mappers>
 </configuration>

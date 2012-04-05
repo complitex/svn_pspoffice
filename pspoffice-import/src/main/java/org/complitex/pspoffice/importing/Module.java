@@ -5,7 +5,7 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import org.complitex.dictionary.service.ConfigBean;
-import org.complitex.pspoffice.importing.legacy.entity.PspImportConfig;
+import org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportConfig;
 
 @Singleton(name = "PspImportModule")
 @Startup
@@ -17,6 +17,6 @@ public class Module {
 
     @PostConstruct
     public void init() {
-        configBean.init(PspImportConfig.class.getName(), PspImportConfig.values());
+        configBean.init(LegacyDataImportConfig.class.getName(), LegacyDataImportConfig.values());
     }
 }

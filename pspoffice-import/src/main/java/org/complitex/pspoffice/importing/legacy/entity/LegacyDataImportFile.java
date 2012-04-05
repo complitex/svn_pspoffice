@@ -10,7 +10,7 @@ import org.complitex.dictionary.entity.IImportFile;
  *
  * @author Artem
  */
-public enum PspImportFile implements IImportFile {
+public enum LegacyDataImportFile implements IImportFile {
 
     STREET("sul.csv", "ID	UTYPE	NKOD	RTYPE	NKOD1"),
     BUILDING("sbud.csv",
@@ -35,7 +35,7 @@ public enum PspImportFile implements IImportFile {
     private final String fileName;
     private final String csvHeader;
 
-    private PspImportFile(String fileName, String csvHeader) {
+    private LegacyDataImportFile(String fileName, String csvHeader) {
         this.fileName = fileName;
         this.csvHeader = csvHeader;
     }

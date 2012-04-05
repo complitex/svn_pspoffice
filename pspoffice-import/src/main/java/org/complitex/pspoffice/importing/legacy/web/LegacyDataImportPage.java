@@ -44,24 +44,24 @@ import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.importing.legacy.entity.ImportMessage;
-import org.complitex.pspoffice.importing.legacy.entity.PspImportFile;
-import org.complitex.pspoffice.importing.legacy.service.PspImportService;
+import org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportFile;
+import org.complitex.pspoffice.importing.legacy.service.LegacyDataImportService;
 import org.complitex.pspoffice.importing.legacy.entity.ImportStatus;
 import org.complitex.pspoffice.importing.legacy.entity.ProcessItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.complitex.pspoffice.importing.legacy.entity.PspImportConfig.*;
+import static org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportConfig.*;
 
 /**
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.ADMIN_MODULE_EDIT)
-public class ImportPage extends TemplatePage {
+public class LegacyDataImportPage extends TemplatePage {
 
-    private static final Logger log = LoggerFactory.getLogger(ImportPage.class);
+    private static final Logger log = LoggerFactory.getLogger(LegacyDataImportPage.class);
     @EJB
-    private PspImportService importService;
+    private LegacyDataImportService importService;
     @EJB(name = "OrganizationStrategy")
     private IOrganizationStrategy organizationStrategy;
     @EJB
@@ -73,8 +73,8 @@ public class ImportPage extends TemplatePage {
     private final IModel<String> importDirectoryModel;
     private final IModel<String> errorsDirectoryModel;
 
-    public ImportPage() {
-        add(CSSPackageResource.getHeaderContribution(ImportPage.class, ImportPage.class.getSimpleName() + ".css"));
+    public LegacyDataImportPage() {
+        add(CSSPackageResource.getHeaderContribution(LegacyDataImportPage.class, LegacyDataImportPage.class.getSimpleName() + ".css"));
 
         add(new Label("title", getString("title")));
 
@@ -85,10 +85,10 @@ public class ImportPage extends TemplatePage {
         Form<Void> dataForm = new Form<Void>("dataForm");
         add(dataForm);
 
-        importDirectoryModel = new Model<String>(configBean.getString(DEFAULT_IMPORT_FILE_DIR, true));
+        importDirectoryModel = new Model<String>(configBean.getString(DEFAULT_LEGACY_IMPORT_FILE_DIR, true));
         dataForm.add(new TextField<String>("importDirectory", importDirectoryModel).setRequired(true));
 
-        errorsDirectoryModel = new Model<String>(configBean.getString(DEFAULT_IMPORT_FILE_ERRORS_DIR, true));
+        errorsDirectoryModel = new Model<String>(configBean.getString(DEFAULT_LEGACY_IMPORT_FILE_ERRORS_DIR, true));
         dataForm.add(new TextField<String>("errorsDirectory", errorsDirectoryModel).setRequired(true));
 
         citySearchComponentState = new SearchComponentState();
@@ -171,11 +171,11 @@ public class ImportPage extends TemplatePage {
             }
         }.setReuseItems(true));
 
-        container.add(new ListView<PspImportFile>("files", Lists.newArrayList(PspImportFile.values())) {
+        container.add(new ListView<LegacyDataImportFile>("files", Lists.newArrayList(LegacyDataImportFile.values())) {
 
             @Override
-            protected void populateItem(ListItem<PspImportFile> item) {
-                final PspImportFile importFile = item.getModelObject();
+            protected void populateItem(ListItem<LegacyDataImportFile> item) {
+                final LegacyDataImportFile importFile = item.getModelObject();
                 item.add(new Label("file", new AbstractReadOnlyModel<String>() {
 
                     @Override
@@ -235,7 +235,7 @@ public class ImportPage extends TemplatePage {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (!importService.isProcessing()) {
-                    if (ImportPage.this.validate()) {
+                    if (LegacyDataImportPage.this.validate()) {
                         Map<String, Long> organizationMap = getSelectedOrganizations();
                         long cityId = citySearchComponentState.get("city").getId();
 
@@ -314,7 +314,7 @@ public class ImportPage extends TemplatePage {
             Set<String> notFoundFiles = Sets.newLinkedHashSet();
             Set<String> notFiles = Sets.newLinkedHashSet();
 
-            for (PspImportFile importFile : PspImportFile.values()) {
+            for (LegacyDataImportFile importFile : LegacyDataImportFile.values()) {
                 final File file = new File(importDirectory, importFile.getFileName());
                 if (!file.exists()) {
                     notFoundFiles.add(importFile.getFileName());

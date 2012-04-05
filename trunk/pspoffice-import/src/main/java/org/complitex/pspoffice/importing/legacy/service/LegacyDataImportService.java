@@ -55,7 +55,7 @@ import org.complitex.pspoffice.importing.legacy.entity.BuildingCorrection;
 import org.complitex.pspoffice.importing.legacy.entity.ImportMessage;
 import org.complitex.pspoffice.importing.legacy.entity.PersonCorrection;
 import org.complitex.pspoffice.importing.legacy.entity.ProcessItem;
-import org.complitex.pspoffice.importing.legacy.entity.PspImportFile;
+import org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportFile;
 import org.complitex.pspoffice.importing.legacy.entity.ReferenceDataCorrection;
 import org.complitex.pspoffice.importing.legacy.entity.StreetCorrection;
 import org.complitex.pspoffice.importing.legacy.service.exception.OpenErrorDescriptionFileException;
@@ -82,10 +82,10 @@ import static org.complitex.pspoffice.importing.legacy.entity.ImportMessage.Impo
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @TransactionManagement(TransactionManagementType.BEAN)
-public class PspImportService {
+public class LegacyDataImportService {
 
-    private static final Logger log = LoggerFactory.getLogger(PspImportService.class);
-    private static final String RESOURCE_BUNDLE = PspImportService.class.getName();
+    private static final Logger log = LoggerFactory.getLogger(LegacyDataImportService.class);
+    private static final String RESOURCE_BUNDLE = LegacyDataImportService.class.getName();
     private static final char SEPARATOR = '\t';
     private static final String CHARSET = "UTF-8";
     private static final String ERROR_FILE_SUFFIX = "_errors.csv";
@@ -136,7 +136,7 @@ public class PspImportService {
     private Map<String, Long> organizationMap;
     private String importDirectory;
     private String errorsDirectory;
-    private Map<PspImportFile, ImportStatus> loadingStatuses = new EnumMap<PspImportFile, ImportStatus>(PspImportFile.class);
+    private Map<LegacyDataImportFile, ImportStatus> loadingStatuses = new EnumMap<LegacyDataImportFile, ImportStatus>(LegacyDataImportFile.class);
     private Map<ProcessItem, ImportStatus> processingStatuses = new EnumMap<ProcessItem, ImportStatus>(ProcessItem.class);
     private Queue<ImportMessage> messages = new ConcurrentLinkedQueue<ImportMessage>();
 
@@ -144,7 +144,7 @@ public class PspImportService {
         return processing;
     }
 
-    public ImportStatus getLoadingStatus(PspImportFile importFile) {
+    public ImportStatus getLoadingStatus(LegacyDataImportFile importFile) {
         return loadingStatuses.get(importFile);
     }
 
@@ -225,13 +225,13 @@ public class PspImportService {
     private void loadFiles() throws ImportFileReadException, ImportFileNotFoundException {
         loadStreets();
         loadBuildings();
-        loadReferenceData(PspImportFile.OWNERSHIP_FORM, "ownership_form");
-        loadReferenceData(PspImportFile.MILITARY_DUTY, "military_duty");
-        loadReferenceData(PspImportFile.OWNER_RELATIONSHIP, "owner_relationship");
-        loadReferenceData(PspImportFile.DEPARTURE_REASON, "departure_reason");
-        loadReferenceData(PspImportFile.REGISTRATION_TYPE, "registration_type");
-        loadReferenceData(PspImportFile.DOCUMENT_TYPE, "document_type");
-        loadReferenceData(PspImportFile.OWNER_TYPE, "owner_type");
+        loadReferenceData(LegacyDataImportFile.OWNERSHIP_FORM, "ownership_form");
+        loadReferenceData(LegacyDataImportFile.MILITARY_DUTY, "military_duty");
+        loadReferenceData(LegacyDataImportFile.OWNER_RELATIONSHIP, "owner_relationship");
+        loadReferenceData(LegacyDataImportFile.DEPARTURE_REASON, "departure_reason");
+        loadReferenceData(LegacyDataImportFile.REGISTRATION_TYPE, "registration_type");
+        loadReferenceData(LegacyDataImportFile.DOCUMENT_TYPE, "document_type");
+        loadReferenceData(LegacyDataImportFile.OWNER_TYPE, "owner_type");
         loadPersons();
         loadApartmentCards();
     }
@@ -240,7 +240,7 @@ public class PspImportService {
      * id    Street type string(ukr)     Street name(ukr)     Street type string(rus)     Street name(rus)
      */
     private void loadStreets() throws ImportFileReadException, ImportFileNotFoundException {
-        final PspImportFile file = PspImportFile.STREET;
+        final LegacyDataImportFile file = LegacyDataImportFile.STREET;
 
         final Map<String, Boolean> loadFileStatusMap = Maps.newHashMap();
         for (String idjek : jekIds) {
@@ -303,7 +303,7 @@ public class PspImportService {
      * id   idjek   idul    dom     korpus
      */
     private void loadBuildings() throws ImportFileReadException, ImportFileNotFoundException {
-        final PspImportFile file = PspImportFile.BUILDING;
+        final LegacyDataImportFile file = LegacyDataImportFile.BUILDING;
 
         final Map<String, Boolean> loadFileStatusMap = Maps.newHashMap();
         for (String idjek : jekIds) {
@@ -367,7 +367,7 @@ public class PspImportService {
     /**
      * id    nkod
      */
-    private void loadReferenceData(final PspImportFile file, final String entity) throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadReferenceData(final LegacyDataImportFile file, final String entity) throws ImportFileReadException, ImportFileNotFoundException {
         final Map<String, Boolean> loadFileStatusMap = Maps.newHashMap();
         for (String idjek : jekIds) {
             loadFileStatusMap.put(idjek, !referenceDataCorrectionBean.exists(entity, idjek));
@@ -436,7 +436,7 @@ public class PspImportService {
      * vidul vbud vkorp vkv vdata idvip parentnom larc nom
      */
     private void loadPersons() throws ImportFileReadException, ImportFileNotFoundException {
-        final PspImportFile file = PspImportFile.PERSON;
+        final LegacyDataImportFile file = LegacyDataImportFile.PERSON;
 
         final boolean exists = personCorrectionBean.exists();
 
@@ -536,7 +536,7 @@ public class PspImportService {
      * id idbud rah kv fio idprivat larc
      */
     private void loadApartmentCards() throws ImportFileReadException, ImportFileNotFoundException {
-        final PspImportFile file = PspImportFile.APARTMENT_CARD;
+        final LegacyDataImportFile file = LegacyDataImportFile.APARTMENT_CARD;
 
         final boolean exists = apartmentCardCorrectionBean.exists();
 
@@ -696,13 +696,13 @@ public class PspImportService {
                                 if (streetErrorDescription != null) {
                                     wasErrors = true;
                                     if (streetErrorFile == null) {
-                                        streetErrorFile = getErrorFile(errorsDirectory, PspImportFile.STREET);
-                                        streetErrorFile.write(PspImportFile.STREET.getCsvHeader());
+                                        streetErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.STREET);
+                                        streetErrorFile.write(LegacyDataImportFile.STREET.getCsvHeader());
                                         streetErrorFile.newLine();
                                     }
                                     if (streetErrorDescriptionFile == null) {
                                         streetErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                                PspImportFile.STREET);
+                                                LegacyDataImportFile.STREET);
                                     }
 
                                     streetErrorFile.write(street.getContent());
@@ -715,13 +715,13 @@ public class PspImportService {
                                 if (buildingErrorDescription != null) {
                                     wasErrors = true;
                                     if (buildingErrorFile == null) {
-                                        buildingErrorFile = getErrorFile(errorsDirectory, PspImportFile.BUILDING);
-                                        buildingErrorFile.write(PspImportFile.BUILDING.getCsvHeader());
+                                        buildingErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.BUILDING);
+                                        buildingErrorFile.write(LegacyDataImportFile.BUILDING.getCsvHeader());
                                         buildingErrorFile.newLine();
                                     }
                                     if (buildingErrorDescriptionFile == null) {
                                         buildingErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                                PspImportFile.BUILDING);
+                                                LegacyDataImportFile.BUILDING);
                                     }
 
                                     buildingErrorFile.write(building.getContent());
@@ -851,13 +851,13 @@ public class PspImportService {
                             if (errorDescription != null) {
                                 wasErrors = true;
                                 if (ownershipFormErrorFile == null) {
-                                    ownershipFormErrorFile = getErrorFile(errorsDirectory, PspImportFile.OWNERSHIP_FORM);
-                                    ownershipFormErrorFile.write(PspImportFile.OWNERSHIP_FORM.getCsvHeader());
+                                    ownershipFormErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.OWNERSHIP_FORM);
+                                    ownershipFormErrorFile.write(LegacyDataImportFile.OWNERSHIP_FORM.getCsvHeader());
                                     ownershipFormErrorFile.newLine();
                                 }
                                 if (ownershipFormErrorDescriptionFile == null) {
                                     ownershipFormErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            PspImportFile.OWNERSHIP_FORM);
+                                            LegacyDataImportFile.OWNERSHIP_FORM);
                                 }
 
                                 ownershipFormErrorFile.write(ownershipForm.getContent());
@@ -983,13 +983,13 @@ public class PspImportService {
                             if (errorDescription != null) {
                                 wasErrors = true;
                                 if (ownerRelationshipErrorFile == null) {
-                                    ownerRelationshipErrorFile = getErrorFile(errorsDirectory, PspImportFile.OWNER_RELATIONSHIP);
-                                    ownerRelationshipErrorFile.write(PspImportFile.OWNER_RELATIONSHIP.getCsvHeader());
+                                    ownerRelationshipErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.OWNER_RELATIONSHIP);
+                                    ownerRelationshipErrorFile.write(LegacyDataImportFile.OWNER_RELATIONSHIP.getCsvHeader());
                                     ownerRelationshipErrorFile.newLine();
                                 }
                                 if (ownerRelationshipErrorDescriptionFile == null) {
                                     ownerRelationshipErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            PspImportFile.OWNER_RELATIONSHIP);
+                                            LegacyDataImportFile.OWNER_RELATIONSHIP);
                                 }
 
                                 ownerRelationshipErrorFile.write(ownerRelationship.getContent());
@@ -1031,7 +1031,7 @@ public class PspImportService {
                     String error = getString("reserved_owner_relationship_not_resolved", sb.toString(), jekIds.toString());
                     if (ownerRelationshipErrorDescriptionFile == null) {
                         ownerRelationshipErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                PspImportFile.OWNER_RELATIONSHIP);
+                                LegacyDataImportFile.OWNER_RELATIONSHIP);
                     }
                     ownerRelationshipErrorDescriptionFile.write(error);
                     ownerRelationshipErrorDescriptionFile.newLine();
@@ -1124,7 +1124,7 @@ public class PspImportService {
                 String error = getString("fail_finish_registration_type_processing", sb.toString(), jekIds.toString());
                 if (registrationTypeErrorDescriptionFile == null) {
                     registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                            PspImportFile.REGISTRATION_TYPE);
+                            LegacyDataImportFile.REGISTRATION_TYPE);
                 }
                 registrationTypeErrorDescriptionFile.write(error);
                 registrationTypeErrorDescriptionFile.newLine();
@@ -1186,7 +1186,7 @@ public class PspImportService {
                 sb.delete(sb.length() - 2, sb.length());
                 String error = getString("fail_finish_document_type_processing", sb.toString(), jekIds.toString());
 
-                documentTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, PspImportFile.DOCUMENT_TYPE);
+                documentTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, LegacyDataImportFile.DOCUMENT_TYPE);
                 documentTypeErrorDescriptionFile.write(error);
                 documentTypeErrorDescriptionFile.newLine();
 
@@ -1227,7 +1227,7 @@ public class PspImportService {
             } else {
                 String error = getString("fail_finish_owner_type_processing", jekIds.toString());
 
-                ownerTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, PspImportFile.OWNER_TYPE);
+                ownerTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, LegacyDataImportFile.OWNER_TYPE);
                 ownerTypeErrorDescriptionFile.write(error);
                 ownerTypeErrorDescriptionFile.newLine();
 
@@ -1344,13 +1344,13 @@ public class PspImportService {
                         if (errorDescription != null) {
                             wasErrors = true;
                             if (personErrorFile == null) {
-                                personErrorFile = getErrorFile(errorsDirectory, PspImportFile.PERSON);
-                                personErrorFile.write(PspImportFile.PERSON.getCsvHeader());
+                                personErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.PERSON);
+                                personErrorFile.write(LegacyDataImportFile.PERSON.getCsvHeader());
                                 personErrorFile.newLine();
                             }
                             if (personErrorDescriptionFile == null) {
                                 personErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                        PspImportFile.PERSON);
+                                        LegacyDataImportFile.PERSON);
                             }
 
                             personErrorFile.write(p.getContent());
@@ -1399,13 +1399,13 @@ public class PspImportService {
                         if (errorDescription != null) {
                             wasErrors = true;
                             if (personErrorFile == null) {
-                                personErrorFile = getErrorFile(errorsDirectory, PspImportFile.PERSON);
-                                personErrorFile.write(PspImportFile.PERSON.getCsvHeader());
+                                personErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.PERSON);
+                                personErrorFile.write(LegacyDataImportFile.PERSON.getCsvHeader());
                                 personErrorFile.newLine();
                             }
                             if (personErrorDescriptionFile == null) {
                                 personErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                        PspImportFile.PERSON);
+                                        LegacyDataImportFile.PERSON);
                             }
 
                             personErrorFile.write(child.getContent());
@@ -1615,13 +1615,13 @@ public class PspImportService {
                         if (errorDescription != null) {
                             wasErrors = true;
                             if (apartmentCardErrorFile == null) {
-                                apartmentCardErrorFile = getErrorFile(errorsDirectory, PspImportFile.APARTMENT_CARD);
-                                apartmentCardErrorFile.write(PspImportFile.APARTMENT_CARD.getCsvHeader());
+                                apartmentCardErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.APARTMENT_CARD);
+                                apartmentCardErrorFile.write(LegacyDataImportFile.APARTMENT_CARD.getCsvHeader());
                                 apartmentCardErrorFile.newLine();
                             }
                             if (apartmentCardErrorDescriptionFile == null) {
                                 apartmentCardErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                        PspImportFile.APARTMENT_CARD);
+                                        LegacyDataImportFile.APARTMENT_CARD);
                             }
 
                             apartmentCardErrorFile.write(c.getContent());
@@ -2070,11 +2070,11 @@ public class PspImportService {
         }
     }
 
-    private int getRecordCount(String dir, PspImportFile file) throws ImportFileNotFoundException, ImportFileReadException {
+    private int getRecordCount(String dir, LegacyDataImportFile file) throws ImportFileNotFoundException, ImportFileReadException {
         return ImportStorageUtil.getRecordCount(dir, file);
     }
 
-    private CSVReader getCsvReader(String dir, PspImportFile file, String charsetName, char separator) throws ImportFileNotFoundException {
+    private CSVReader getCsvReader(String dir, LegacyDataImportFile file, String charsetName, char separator) throws ImportFileNotFoundException {
         try {
             return new CSVReader(new InputStreamReader(new FileInputStream(
                     new File(dir, file.getFileName())), charsetName), separator, CSVWriter.NO_QUOTE_CHARACTER, 1);
@@ -2083,7 +2083,7 @@ public class PspImportService {
         }
     }
 
-    private BufferedWriter getErrorFile(String dir, PspImportFile file) throws OpenErrorFileException {
+    private BufferedWriter getErrorFile(String dir, LegacyDataImportFile file) throws OpenErrorFileException {
         return getErrorFile(dir, file.getFileName());
     }
 
@@ -2096,7 +2096,7 @@ public class PspImportService {
         }
     }
 
-    private BufferedWriter getErrorDescriptionFile(String dir, PspImportFile file) throws OpenErrorDescriptionFileException {
+    private BufferedWriter getErrorDescriptionFile(String dir, LegacyDataImportFile file) throws OpenErrorDescriptionFileException {
         return getErrorDescriptionFile(dir, file.getFileName());
     }
 

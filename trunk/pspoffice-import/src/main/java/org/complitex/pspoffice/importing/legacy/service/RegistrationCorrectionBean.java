@@ -13,7 +13,7 @@ import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.importing.legacy.entity.ApartmentCardCorrection;
 import org.complitex.pspoffice.importing.legacy.entity.PersonCorrection;
-import org.complitex.pspoffice.importing.legacy.entity.PspImportFile;
+import org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportFile;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
@@ -29,7 +29,7 @@ public class RegistrationCorrectionBean extends AbstractBean {
 
     private static final String MAPPING_NAMESPACE = RegistrationCorrectionBean.class.getName();
     public static final String REGISTRATION_FILE_NAME = "peop_registration.csv";
-    public static final String REGISTRATION_FILE_HEADER = PspImportFile.PERSON.getCsvHeader();
+    public static final String REGISTRATION_FILE_HEADER = LegacyDataImportFile.PERSON.getCsvHeader();
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB

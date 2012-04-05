@@ -10,14 +10,14 @@ import org.complitex.dictionary.entity.IConfig;
  *
  * @author Artem
  */
-public enum PspImportConfig implements IConfig{
+public enum LegacyDataImportConfig implements IConfig{
     
-    DEFAULT_IMPORT_FILE_DIR("c:\\storage\\pspoffice\\import"),
-    DEFAULT_IMPORT_FILE_ERRORS_DIR("c:\\storage\\pspoffice\\import\\errors");
+    DEFAULT_LEGACY_IMPORT_FILE_DIR("c:\\storage\\pspoffice\\legacy_data\\import"),
+    DEFAULT_LEGACY_IMPORT_FILE_ERRORS_DIR("c:\\storage\\pspoffice\\legacy_data\\import\\errors");
     
     private String defaultValue;
     
-    private PspImportConfig(String defaultValue) {
+    private LegacyDataImportConfig(String defaultValue) {
         this.defaultValue = defaultValue;
     }
 

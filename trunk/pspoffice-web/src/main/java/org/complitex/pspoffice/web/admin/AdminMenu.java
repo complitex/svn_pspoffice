@@ -1,17 +1,19 @@
-package org.complitex.pspoffice.web;
+package org.complitex.pspoffice.web.admin;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
-import org.complitex.address.web.ImportPage;
 import org.complitex.template.web.template.ITemplateLink;
 
 import java.util.List;
 import java.util.Locale;
+import org.complitex.admin.web.AdminTemplateMenu;
+import org.complitex.pspoffice.importing.legacy.web.LegacyDataImportPage;
+import org.complitex.pspoffice.importing.reference_data.web.ReferenceDataImportPage;
 
 /**
  * @author Artem
  */
-public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu {
+public class AdminMenu extends AdminTemplateMenu {
 
     @Override
     public List<ITemplateLink> getTemplateLinks(Locale locale) {
@@ -21,23 +23,23 @@ public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu
 
             @Override
             public String getLabel(Locale locale) {
-                return getString(ImportPage.class, locale, "title");
+                return getString(ReferenceDataImportPage.class, locale, "title");
             }
 
             @SuppressWarnings({"unchecked"})
             @Override
             public Class<? extends Page> getPage() {
-                return ImportPage.class;
+                return ReferenceDataImportPage.class;
             }
 
             @Override
             public PageParameters getParameters() {
-                return PageParameters.NULL;
+                return new PageParameters();
             }
 
             @Override
             public String getTagId() {
-                return "complitex_import";
+                return "reference_data_import";
             }
         });
 
@@ -45,22 +47,22 @@ public class AdminTemplateMenu extends org.complitex.admin.web.AdminTemplateMenu
 
             @Override
             public String getLabel(Locale locale) {
-                return getString(org.complitex.pspoffice.importing.legacy.web.ImportPage.class, locale, "title");
+                return getString(LegacyDataImportPage.class, locale, "title");
             }
 
             @Override
             public Class<? extends Page> getPage() {
-                return org.complitex.pspoffice.importing.legacy.web.ImportPage.class;
+                return LegacyDataImportPage.class;
             }
 
             @Override
             public PageParameters getParameters() {
-                return PageParameters.NULL;
+                return new PageParameters();
             }
 
             @Override
             public String getTagId() {
-                return "psp_import";
+                return "legacy_import";
             }
         });
 

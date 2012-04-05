@@ -7,7 +7,6 @@ package org.complitex.pspoffice.importing.reference_data.web;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
@@ -124,20 +123,18 @@ public final class ReferenceDataImportPage extends TemplatePage {
     }
 
     private AjaxSelfUpdatingTimerBehavior newTimer() {
-        final AtomicLong stopTimer = new AtomicLong(0);
-
         return new AjaxSelfUpdatingTimerBehavior(Duration.seconds(3)) {
+
+            long stopTimer = 0;
 
             @Override
             protected void onPostProcessTarget(AjaxRequestTarget target) {
                 if (!importService.isProcessing()) {
-
                     referenceDataModel.setObject(null);
-
-                    stopTimer.getAndIncrement();
+                    stopTimer++;
                 }
 
-                if (stopTimer.get() > 2) {
+                if (stopTimer > 2) {
                     if (importService.isSuccess()) {
                         info(getString("success"));
                     }

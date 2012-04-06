@@ -28,7 +28,7 @@ public enum LegacyDataImportConfig implements IConfig{
 
     @Override
     public String getGroupKey() {
-        return "psp_import";
+        return "legacy_data_import";
     }
     
 }

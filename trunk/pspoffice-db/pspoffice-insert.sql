@@ -42,7 +42,7 @@ insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_t
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2017, 1, UPPER('Пол')), (2017, 2, UPPER('Стать'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2016, 2000, 1, 2017, 1);
 /* Является ли гражданином Украины */
-insert into `string_culture`(`id`, `locale_id`, `value`) values (2021, 1, UPPER('Является гражданином Украины')), (2021, 2, UPPER('Свідоцтво про належність до громадянства України'));
+insert into `string_culture`(`id`, `locale_id`, `value`) values (2021, 1, UPPER('Является гражданином Украины')), (2021, 2, UPPER('Громадянин України'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2020, 2000, 1, 2021, 1);
 /* Обоснование изменения */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2022, 1, UPPER('Обоснование изменения')), (2022, 2, UPPER('Обоснование изменения'));

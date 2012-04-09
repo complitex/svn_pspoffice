@@ -87,25 +87,6 @@ public class ReferenceDataImportService {
     private volatile String errorMessage;
     private final Map<IImportFile, ImportMessage> referenceDataMap =
             Collections.synchronizedMap(new LinkedHashMap<IImportFile, ImportMessage>());
-    private final IImportListener referenceDataListener = new IImportListener() {
-
-        @Override
-        public void beginImport(IImportFile importFile, int recordCount) {
-            referenceDataMap.put(importFile, new ImportMessage(importFile, recordCount, 0));
-        }
-
-        @Override
-        public void recordProcessed(IImportFile importFile, int recordIndex) {
-            referenceDataMap.get(importFile).setIndex(recordIndex);
-        }
-
-        @Override
-        public void completeImport(IImportFile importFile, int recordCount) {
-            referenceDataMap.get(importFile).setCompleted();
-            logBean.info(Module.NAME, ReferenceDataImportService.class, importFile.getClass(), null, Log.EVENT.CREATE,
-                    "Имя файла: {0}, количество записей: {1}", importFile.getFileName(), recordCount);
-        }
-    };
 
     public boolean isProcessing() {
         return processing;
@@ -135,29 +116,51 @@ public class ReferenceDataImportService {
         errorMessage = null;
     }
 
-    private <T extends IImportFile> void processReferenceData(T importFile) throws ImportFileNotFoundException,
-            ImportObjectLinkException, ImportFileReadException {
+    private <T extends IImportFile> void processReferenceData(T importFile, final long localeId)
+            throws ImportFileNotFoundException, ImportObjectLinkException, ImportFileReadException {
+
+        final IImportListener referenceDataListener = new IImportListener() {
+
+            @Override
+            public void beginImport(IImportFile importFile, int recordCount) {
+                referenceDataMap.put(importFile, new ImportMessage(importFile, recordCount, 0));
+            }
+
+            @Override
+            public void recordProcessed(IImportFile importFile, int recordIndex) {
+                referenceDataMap.get(importFile).setIndex(recordIndex);
+            }
+
+            @Override
+            public void completeImport(IImportFile importFile, int recordCount) {
+                referenceDataMap.get(importFile).setCompleted();
+                logBean.info(Module.NAME, ReferenceDataImportService.class, importFile.getClass(), null, Log.EVENT.CREATE,
+                        "Имя файла: {0}, количество записей: {1}, Идентификатор локали: {2}",
+                        importFile.getFileName(), recordCount, localeId);
+            }
+        };
+
         if (importFile instanceof AddressImportFile) { //address
             addressImportService.process(importFile, referenceDataListener);
         } else if (importFile instanceof OwnerRelationshipImportFile) { // owner relationship
-            ownerRelationshipImportService.process(referenceDataListener);
+            ownerRelationshipImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof OwnershipFormImportFile) { //ownership form
-            ownershipFormImportService.process(referenceDataListener);
+            ownershipFormImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof RegistrationTypeImportFile) {//registration type
-            registrationTypeImportService.process(referenceDataListener);
+            registrationTypeImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof DocumentTypeImportFile) {//document type
-            documentTypeImportService.process(referenceDataListener);
+            documentTypeImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof MilitaryServiceRelationImportFile) {//military service relation
-            militaryServiceRelationImportService.process(referenceDataListener);
+            militaryServiceRelationImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof DepartureReasonImportFile) {//departure reason
-            departureReasonImportService.process(referenceDataListener);
+            departureReasonImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof HousingRightsImportFile) {//housing rights
-            housingRightsImportService.process(referenceDataListener);
+            housingRightsImportService.process(referenceDataListener, localeId);
         }
     }
 
     @Asynchronous
-    public <T extends IImportFile> void process(List<T> referenceDataFiles) {
+    public <T extends IImportFile> void process(List<T> referenceDataFiles, long localeId) {
         if (processing) {
             return;
         }
@@ -169,18 +172,18 @@ public class ReferenceDataImportService {
             for (T referenceDataFile : referenceDataFiles) {
                 userTransaction.begin();
 
-                processReferenceData(referenceDataFile);
+                processReferenceData(referenceDataFile, localeId);
 
                 userTransaction.commit();
             }
             success = true;
         } catch (Exception e) {
-            log.error("Ошибка импорта", e);
+            log.error("Import error.", e);
 
             try {
                 userTransaction.rollback();
             } catch (Exception e1) {
-                log.error("Ошибка отката транзакции", e1);
+                log.error("Couldn't rollback transaction.", e1);
             }
 
             error = true;

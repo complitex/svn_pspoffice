@@ -1,11 +1,12 @@
 package org.complitex.pspoffice.registration_type.service;
 
+import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.util.CloneUtil;
 import au.com.bytecode.opencsv.CSVReader;
 import org.complitex.dictionary.entity.AbstractImportService;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.IImportListener;
-import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
 import org.slf4j.Logger;
@@ -24,9 +25,15 @@ public class RegistrationTypeImportService extends AbstractImportService {
 
     private final static Logger log = LoggerFactory.getLogger(RegistrationTypeImportService.class);
     @EJB
-    private RegistrationTypeStrategy registrationTypeStrategy;
-    @EJB
-    private StringCultureBean stringCultureBean;
+    private RegistrationTypeStrategy strategy;
+
+    private void setValue(Attribute attribute, String value, long localeId) {
+        for (StringCulture string : attribute.getLocalizedValues()) {
+            if (string.getLocaleId().equals(localeId)) {
+                string.setValue(value);
+            }
+        }
+    }
 
     /**
      * REGISTRATION_TYPE_ID	Код	Название
@@ -34,7 +41,7 @@ public class RegistrationTypeImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener)
+    public void process(IImportListener listener, long localeId)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(REGISTRATION_TYPE, getRecordCount(REGISTRATION_TYPE));
 
@@ -48,17 +55,26 @@ public class RegistrationTypeImportService extends AbstractImportService {
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
-                DomainObject domainObject = registrationTypeStrategy.newInstance();
+                final long externalId = Long.parseLong(line[0].trim());
+                final String name = line[1].trim();
 
-                //REGISTRATION_TYPE_ID
-                domainObject.setExternalId(Long.parseLong(line[0].trim()));
-
-                //Название
-                Attribute name = domainObject.getAttribute(RegistrationTypeStrategy.NAME);
-                stringCultureBean.getSystemStringCulture(name.getLocalizedValues()).setValue(line[1].trim());
-
-                registrationTypeStrategy.insert(domainObject, DateUtil.getCurrentDate());
-
+                // Ищем по externalId в базе.
+                final Long objectId = strategy.getObjectId(externalId);
+                if (objectId != null) {
+                    DomainObject oldObject = strategy.findById(objectId, true);
+                    if (oldObject != null) {
+                        // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
+                        DomainObject newObject = CloneUtil.cloneObject(oldObject);
+                        setValue(newObject.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
+                        strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                    }
+                } else {
+                    // не нашли, создаём объект заполняем его атрибуты и сохраняем.
+                    DomainObject object = strategy.newInstance();
+                    object.setExternalId(externalId);
+                    setValue(object.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
+                    strategy.insert(object, DateUtil.getCurrentDate());
+                }
                 listener.recordProcessed(REGISTRATION_TYPE, recordIndex);
             }
 

@@ -5,7 +5,6 @@ import org.complitex.dictionary.entity.AbstractImportService;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.IImportListener;
-import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
 import org.slf4j.Logger;
@@ -14,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
+import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
@@ -24,9 +25,15 @@ public class OwnerRelationshipImportService extends AbstractImportService {
 
     private final static Logger log = LoggerFactory.getLogger(OwnerRelationshipImportService.class);
     @EJB
-    private OwnerRelationshipStrategy ownerRelationshipStrategy;
-    @EJB
-    private StringCultureBean stringCultureBean;
+    private OwnerRelationshipStrategy strategy;
+
+    private void setValue(Attribute attribute, String value, long localeId) {
+        for (StringCulture string : attribute.getLocalizedValues()) {
+            if (string.getLocaleId().equals(localeId)) {
+                string.setValue(value);
+            }
+        }
+    }
 
     /**
      * OWNER_RELATIONSHIP_ID	Название
@@ -34,7 +41,7 @@ public class OwnerRelationshipImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener)
+    public void process(IImportListener listener, long localeId)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(OWNER_RELATIONSHIP, getRecordCount(OWNER_RELATIONSHIP));
 
@@ -48,17 +55,26 @@ public class OwnerRelationshipImportService extends AbstractImportService {
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
-                DomainObject domainObject = ownerRelationshipStrategy.newInstance();
+                final long externalId = Long.parseLong(line[0].trim());
+                final String name = line[1].trim();
 
-                //OWNER_RELATIONSHIP_ID
-                domainObject.setExternalId(Long.parseLong(line[0].trim()));
-
-                //Название
-                Attribute name = domainObject.getAttribute(OwnerRelationshipStrategy.NAME);
-                stringCultureBean.getSystemStringCulture(name.getLocalizedValues()).setValue(line[1].trim());
-
-                ownerRelationshipStrategy.insert(domainObject, DateUtil.getCurrentDate());
-
+                // Ищем по externalId в базе.
+                final Long objectId = strategy.getObjectId(externalId);
+                if (objectId != null) {
+                    DomainObject oldObject = strategy.findById(objectId, true);
+                    if (oldObject != null) {
+                        // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
+                        DomainObject newObject = CloneUtil.cloneObject(oldObject);
+                        setValue(newObject.getAttribute(OwnerRelationshipStrategy.NAME), name, localeId);
+                        strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                    }
+                } else {
+                    // не нашли, создаём объект заполняем его атрибуты и сохраняем.
+                    DomainObject object = strategy.newInstance();
+                    object.setExternalId(externalId);
+                    setValue(object.getAttribute(OwnerRelationshipStrategy.NAME), name, localeId);
+                    strategy.insert(object, DateUtil.getCurrentDate());
+                }
                 listener.recordProcessed(OWNER_RELATIONSHIP, recordIndex);
             }
 

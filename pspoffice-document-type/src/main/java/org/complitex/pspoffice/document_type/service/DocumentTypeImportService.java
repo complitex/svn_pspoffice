@@ -1,11 +1,12 @@
 package org.complitex.pspoffice.document_type.service;
 
+import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.util.CloneUtil;
 import au.com.bytecode.opencsv.CSVReader;
 import org.complitex.dictionary.entity.AbstractImportService;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.IImportListener;
-import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
 import org.slf4j.Logger;
@@ -24,9 +25,15 @@ public class DocumentTypeImportService extends AbstractImportService {
 
     private final static Logger log = LoggerFactory.getLogger(DocumentTypeImportService.class);
     @EJB
-    private DocumentTypeStrategy documentTypeStrategy;
-    @EJB
-    private StringCultureBean stringCultureBean;
+    private DocumentTypeStrategy strategy;
+
+    private void setValue(Attribute attribute, String value, long localeId) {
+        for (StringCulture string : attribute.getLocalizedValues()) {
+            if (string.getLocaleId().equals(localeId)) {
+                string.setValue(value);
+            }
+        }
+    }
 
     /**
      * DOCUMENT_TYPE_ID     Название
@@ -34,7 +41,7 @@ public class DocumentTypeImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener)
+    public void process(IImportListener listener, long localeId)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(DOCUMENT_TYPE, getRecordCount(DOCUMENT_TYPE));
 
@@ -48,17 +55,26 @@ public class DocumentTypeImportService extends AbstractImportService {
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
-                DomainObject domainObject = documentTypeStrategy.newInstance();
+                final long externalId = Long.parseLong(line[0].trim());
+                final String name = line[1].trim();
 
-                //DOCUMENT_TYPE_ID
-                domainObject.setExternalId(Long.parseLong(line[0].trim()));
-
-                //Название
-                Attribute name = domainObject.getAttribute(DocumentTypeStrategy.NAME);
-                stringCultureBean.getSystemStringCulture(name.getLocalizedValues()).setValue(line[1].trim());
-
-                documentTypeStrategy.insert(domainObject, DateUtil.getCurrentDate());
-
+                // Ищем по externalId в базе.
+                final Long objectId = strategy.getObjectId(externalId);
+                if (objectId != null) {
+                    DomainObject oldObject = strategy.findById(objectId, true);
+                    if (oldObject != null) {
+                        // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
+                        DomainObject newObject = CloneUtil.cloneObject(oldObject);
+                        setValue(newObject.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
+                        strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                    }
+                } else {
+                    // не нашли, создаём объект заполняем его атрибуты и сохраняем.
+                    DomainObject object = strategy.newInstance();
+                    object.setExternalId(externalId);
+                    setValue(object.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
+                    strategy.insert(object, DateUtil.getCurrentDate());
+                }
                 listener.recordProcessed(DOCUMENT_TYPE, recordIndex);
             }
 

@@ -153,8 +153,13 @@ final class RegistrationHistoryPanel extends Panel {
                         return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
                     }
                 });
+        ownerRelationship.setNullValid(true);
         ownerRelationship.setEnabled(false);
-        ownerRelationship.add(new CssAttributeBehavior(modification.getAttributeModificationType(OWNER_RELATIONSHIP).getCssClass()));
+
+        final ModificationType ownerRelationModificationType = modification.getAttributeModificationType(OWNER_RELATIONSHIP);
+        if (ownerRelationModificationType != null) {
+            ownerRelationship.add(new CssAttributeBehavior(ownerRelationModificationType.getCssClass()));
+        }
         ownerRelationshipContainer.add(ownerRelationship);
         content.add(ownerRelationshipContainer);
 

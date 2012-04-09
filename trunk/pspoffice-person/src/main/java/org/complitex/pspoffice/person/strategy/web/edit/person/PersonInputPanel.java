@@ -723,7 +723,7 @@ public class PersonInputPanel extends Panel {
                 Date registrationEndDate = personRegistration.getRegistration().getDepartureDate();
                 item.add(new Label("registrationEndDate", registrationEndDate != null ? PersonDateFormatter.format(registrationEndDate)
                         : getString("live_registration_end_date")));
-                DomainObject ownerRelationship = personRegistration.getRegistration().getOwnerRelationship();
+                final DomainObject ownerRelationship = personRegistration.getRegistration().getOwnerRelationship();
                 item.add(new Label("registrationOwnerRelationship", ownerRelationship != null
                         ? ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null));
             }

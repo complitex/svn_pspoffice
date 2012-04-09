@@ -41,49 +41,49 @@ public class HousingPaymentsDownload extends AbstractReportDownload<HousingPayme
             switch (counter) {
                 case 0: {
                     map.put(NAME0, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION0, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION0, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE0, member.getPerson().getBirthDate());
                     map.put(PASSPORT0, member.getPassport());
                 }
                 break;
                 case 1: {
                     map.put(NAME1, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION1, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION1, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE1, member.getPerson().getBirthDate());
                     map.put(PASSPORT1, member.getPassport());
                 }
                 break;
                 case 2: {
                     map.put(NAME2, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION2, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION2, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE2, member.getPerson().getBirthDate());
                     map.put(PASSPORT2, member.getPassport());
                 }
                 break;
                 case 3: {
                     map.put(NAME3, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION3, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION3, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE3, member.getPerson().getBirthDate());
                     map.put(PASSPORT3, member.getPassport());
                 }
                 break;
                 case 4: {
                     map.put(NAME4, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION4, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION4, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE4, member.getPerson().getBirthDate());
                     map.put(PASSPORT4, member.getPassport());
                 }
                 break;
                 case 5: {
                     map.put(NAME5, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION5, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION5, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE5, member.getPerson().getBirthDate());
                     map.put(PASSPORT5, member.getPassport());
                 }
                 break;
                 case 6: {
                     map.put(NAME6, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION6, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION6, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE6, member.getPerson().getBirthDate());
                     map.put(PASSPORT6, member.getPassport());
                 }

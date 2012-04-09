@@ -33,7 +33,6 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
     /**
      * Owner relationships consts
      */
-    public static final long OWNER = 85;
     public static final long DAUGHTER = 3;
     public static final long SON = 4;
     /**
@@ -113,22 +112,16 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
 
     public static class OwnerRelationshipsNotResolved extends Exception {
 
-        private final boolean ownerResolved;
         private final boolean daughterResolved;
         private final boolean sonResolved;
 
-        public OwnerRelationshipsNotResolved(boolean ownerResolved, boolean daughterResolved, boolean sonResolved) {
-            this.ownerResolved = ownerResolved;
+        public OwnerRelationshipsNotResolved(boolean daughterResolved, boolean sonResolved) {
             this.daughterResolved = daughterResolved;
             this.sonResolved = sonResolved;
         }
 
         public boolean isDaughterResolved() {
             return daughterResolved;
-        }
-
-        public boolean isOwnerResolved() {
-            return ownerResolved;
         }
 
         public boolean isSonResolved() {
@@ -138,11 +131,10 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
 
     public void checkReservedOwnerRelationships(Set<String> jekIds) throws OwnerRelationshipsNotResolved {
         final String entity = "owner_relationship";
-        final boolean ownerResolved = isReservedObjectResolved(entity, OWNER, jekIds);
         final boolean daughterResolved = isReservedObjectResolved(entity, DAUGHTER, jekIds);
         final boolean sonResolved = isReservedObjectResolved(entity, SON, jekIds);
-        if (!ownerResolved || !daughterResolved || !sonResolved) {
-            throw new OwnerRelationshipsNotResolved(ownerResolved, daughterResolved, sonResolved);
+        if (!daughterResolved || !sonResolved) {
+            throw new OwnerRelationshipsNotResolved(daughterResolved, sonResolved);
         }
     }
 

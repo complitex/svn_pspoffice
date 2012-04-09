@@ -951,9 +951,7 @@ public class LegacyDataImportService {
                         for (ReferenceDataCorrection ownerRelationship : ownerRelationships) {
                             String errorDescription = null;
 
-                            if (ownerRelationship.getId() == ReferenceDataCorrectionBean.OWNER) { //владелец квартиры
-                                ownerRelationship.setSystemObjectId(OwnerRelationshipStrategy.OWNER);
-                            } else if (ownerRelationship.getId() == ReferenceDataCorrectionBean.DAUGHTER) { // дочь
+                            if (ownerRelationship.getId() == ReferenceDataCorrectionBean.DAUGHTER) { // дочь
                                 ownerRelationship.setSystemObjectId(OwnerRelationshipStrategy.DAUGHTER);
                             } else if (ownerRelationship.getId() == ReferenceDataCorrectionBean.SON) { // сын
                                 ownerRelationship.setSystemObjectId(OwnerRelationshipStrategy.SON);
@@ -1012,11 +1010,6 @@ public class LegacyDataImportService {
                     wasErrors = true;
 
                     StringBuilder sb = new StringBuilder();
-                    if (!e.isOwnerResolved()) {
-                        sb.append(ownerRelationshipStrategy.displayDomainObject(
-                                ownerRelationshipStrategy.findById(OwnerRelationshipStrategy.OWNER, true), localeBean.getSystemLocale())).
-                                append(", ");
-                    }
                     if (!e.isDaughterResolved()) {
                         sb.append(ownerRelationshipStrategy.displayDomainObject(
                                 ownerRelationshipStrategy.findById(OwnerRelationshipStrategy.DAUGHTER, true), localeBean.getSystemLocale())).
@@ -1890,16 +1883,6 @@ public class LegacyDataImportService {
                                                                     errorDescriptions.add(getString("registration_permanent_registration_type_validation_error",
                                                                             p.getId(), address));
                                                                 }
-                                                            }
-
-                                                            //owner and owner relationship
-                                                            String ownerName = registrationStrategy.checkOwner(systemApartmentCard.getId(),
-                                                                    ownerRelationship.getSystemObjectId(),
-                                                                    registration.getPerson().getId(), localeBean.getSystemLocale());
-                                                            if (!Strings.isEmpty(ownerName)) {
-                                                                isValid = false;
-                                                                errorDescriptions.add(getString("registration_owner_is_another_man_validation_error",
-                                                                        p.getId(), ownerName));
                                                             }
 
                                                             //duplicate person registration check

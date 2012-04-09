@@ -110,7 +110,9 @@ public final class F3ReferencePage extends WebPage {
                     final FamilyMember member = item.getModelObject();
                     item.add(new Label("familyMemberName", personStrategy.displayDomainObject(member.getPerson(), getLocale())));
                     item.add(new Label("familyMemberBirthDate", format(member.getPerson().getBirthDate())));
-                    item.add(new Label("familyMemberRelation", ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale())));
+                    item.add(new Label("familyMemberRelation", member.getRelation() != null ? 
+                            ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale()) : 
+                            null));
                     item.add(new Label("familyMemberRegistrationDate", format(member.getRegistrationDate())));
                 }
             };

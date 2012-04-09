@@ -506,7 +506,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 item.add(new Label("registrationStartDate", registrationStartDate != null ? PersonDateFormatter.format(registrationStartDate) : null));
                 Date registrationEndDate = registration.getDepartureDate();
                 item.add(new Label("registrationEndDate", registrationEndDate != null ? PersonDateFormatter.format(registrationEndDate) : null));
-                DomainObject ownerRelationship = registration.getOwnerRelationship();
+                final DomainObject ownerRelationship = registration.getOwnerRelationship();
                 item.add(new Label("registrationOwnerRelationship", ownerRelationship != null
                         ? ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null));
 
@@ -780,19 +780,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             }
         }
 
-        //one of registered people can have OWNER owner relationship but house owner can be another man
-        long ownerId = newApartmentCard.getOwner().getId();
-        for (Registration registration : newApartmentCard.getRegistrations()) {
-            if (!registration.isFinished()) {
-                if (registration.getOwnerRelationship().getId().equals(OwnerRelationshipStrategy.OWNER)
-                        && !registration.getPerson().getId().equals(ownerId)) {
-                    error(getString("owner_relationship_mismatch"));
-                    break;
-                }
-            }
-        }
-
         //check address-owner pair is unique
+        final long ownerId = newApartmentCard.getOwner().getId();
         if (addressObjectId != null && addressTypeId != null) {
             if (!apartmentCardStrategy.validateOwnerAddressUniqueness(addressObjectId, addressTypeId, ownerId, newApartmentCard.getId())) {
                 error(getString("owner_address_uniqueness_error"));

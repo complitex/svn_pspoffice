@@ -36,56 +36,56 @@ public class FamilyAndApartmentInfoDownload extends AbstractReportDownload<Famil
             switch (counter) {
                 case 0: {
                     map.put(NAME0, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION0, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION0, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE0, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE0, member.getRegistrationDate());
                 }
                 break;
                 case 1: {
                     map.put(NAME1, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION1, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION1, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE1, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE1, member.getRegistrationDate());
                 }
                 break;
                 case 2: {
                     map.put(NAME2, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION2, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION2, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE2, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE2, member.getRegistrationDate());
                 }
                 break;
                 case 3: {
                     map.put(NAME3, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION3, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION3, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE3, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE3, member.getRegistrationDate());
                 }
                 break;
                 case 4: {
                     map.put(NAME4, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION4, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION4, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE4, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE4, member.getRegistrationDate());
                 }
                 break;
                 case 5: {
                     map.put(NAME5, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION5, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION5, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE5, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE5, member.getRegistrationDate());
                 }
                 break;
                 case 6: {
                     map.put(NAME6, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION6, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION6, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE6, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE6, member.getRegistrationDate());
                 }
                 break;
                 case 7: {
                     map.put(NAME7, personStrategy.displayDomainObject(member.getPerson(), locale));
-                    map.put(RELATION7, ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale));
+                    map.put(RELATION7, member.getRelation() != null ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), locale) :  "");
                     map.put(BIRTH_DATE7, member.getPerson().getBirthDate());
                     map.put(REGISTRATION_DATE7, member.getRegistrationDate());
                 }

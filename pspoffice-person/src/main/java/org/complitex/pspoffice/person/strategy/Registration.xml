@@ -32,6 +32,10 @@
                 AND a.`start_date` <![CDATA[ < ]]> #{date}
                 <include refid="org.complitex.pspoffice.person.strategy.Registration.nontraceblaAttributesSql"/>
             UNION
+            SELECT a.`end_date` `date` FROM `registration_attribute` a WHERE a.`object_id` = #{registrationId} 
+                AND a.`end_date` <![CDATA[ < ]]> #{date}
+                <include refid="org.complitex.pspoffice.person.strategy.Registration.nontraceblaAttributesSql"/>
+            UNION
             SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ < ]]> #{date} 
                 AND r.`object_id` = #{registrationId}
         ) d
@@ -41,6 +45,10 @@
         SELECT MIN(d.`date`) FROM (
             SELECT a.`start_date` `date` FROM `registration_attribute` a WHERE a.`object_id` = #{registrationId} 
                 AND a.`start_date` <![CDATA[ > ]]> #{date}
+                <include refid="org.complitex.pspoffice.person.strategy.Registration.nontraceblaAttributesSql"/>
+            UNION
+            SELECT a.`end_date` `date` FROM `registration_attribute` a WHERE a.`object_id` = #{registrationId} 
+                AND a.`end_date` <![CDATA[ > ]]> #{date}
                 <include refid="org.complitex.pspoffice.person.strategy.Registration.nontraceblaAttributesSql"/>
             UNION
             SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ > ]]> #{date} 

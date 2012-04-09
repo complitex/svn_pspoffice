@@ -535,7 +535,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         Person owner = apartmentCard.getOwner();
         //owner registration
         addRegistration(apartmentCard,
-                newRegistration(owner.getId(), registerOwnerCard, OwnerRelationshipStrategy.OWNER), attributeId++, insertDate);
+                newRegistration(owner.getId(), registerOwnerCard, null), attributeId++, insertDate);
 
         //children registration
         if (registerOwnerCard.isRegisterChildren()) {
@@ -548,10 +548,14 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         }
     }
 
-    private Registration newRegistration(long personId, RegisterOwnerCard registerOwnerCard, long ownerRelationshipId) {
+    private Registration newRegistration(long personId, RegisterOwnerCard registerOwnerCard, Long ownerRelationshipId) {
         Registration registration = registrationStrategy.newInstance();
         registration.getAttribute(RegistrationStrategy.PERSON).setValueId(personId);
-        registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(ownerRelationshipId);
+        
+        if (ownerRelationshipId != null) {
+            registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(ownerRelationshipId);
+        }
+        
         stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.REGISTRATION_DATE).getLocalizedValues()).
                 setValue(new DateConverter().toString(registerOwnerCard.getRegistrationDate()));
         registration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registerOwnerCard.getRegistrationType().getId());

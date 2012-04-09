@@ -66,6 +66,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 final class ApartmentCardHistoryPanel extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(ApartmentCardHistoryPanel.class);
+    private static final String EMPTY_OWNER_RELATIONSHIP = "               ";
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB
@@ -179,11 +180,14 @@ final class ApartmentCardHistoryPanel extends Panel {
                 item.add(new Label("registrationEndDate", registrationEndDate != null
                         ? PersonDateFormatter.format(registrationEndDate) : null));
 
-                DomainObject ownerRelationship = registration.getOwnerRelationship();
+                final DomainObject ownerRelationship = registration.getOwnerRelationship();
                 Component registrationOwnerRelationship = new Label("registrationOwnerRelationship", ownerRelationship != null
-                        ? ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : null);
+                        ? ownerRelationshipStrategy.displayDomainObject(ownerRelationship, getLocale()) : EMPTY_OWNER_RELATIONSHIP);
                 addRegistrationAttributeCss(registrationOwnerRelationship, RegistrationStrategy.OWNER_RELATIONSHIP,
                         registrationModification);
+                if (ownerRelationship == null) {
+                    registrationOwnerRelationship.add(new CssAttributeBehavior("empty_owner_relationship"));
+                }
                 item.add(registrationOwnerRelationship);
 
                 if (registration.isFinished()) {

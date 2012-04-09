@@ -167,7 +167,7 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2121, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2120, 2100, 1, 2121, 1);
 /* Отношение к владельцу */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2122, 1, UPPER('Отношение к владельцу')), (2122, 2, UPPER('Отношение к владельцу'));
-insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2121, 2100, 1, 2122, 1);
+insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2121, 2100, 0, 2122, 1);
 /* Ссылка на Person */
 insert into `string_culture`(`id`, `locale_id`, `value`) values (2123, 1, UPPER('Персона')), (2123, 2, UPPER('Персона'));
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2122, 2100, 1, 2123, 1);
@@ -212,13 +212,12 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (2201, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (2200, 2200, 1, 2201, 1);
 insert into `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) values (2200, 2200, UPPER('string_culture'));
 
-INSERT INTO `owner_relationship`(`object_id`) VALUES (1),(2),(3);
+INSERT INTO `owner_relationship`(`object_id`) VALUES (1),(2);
 INSERT INTO `owner_relationship_string_culture`(`id`, `locale_id`, `value`) VALUES
-(1, 1, UPPER('владелец')), (1, 2,UPPER('ВЛАСНИК КВАРТИРИ')),
-(2, 1, UPPER('сын')), (2, 2, UPPER('СИН')),
-(3, 1, UPPER('дочь')), (3, 2, UPPER('ДОЧКА'));
+(1, 1, UPPER('сын')), (1, 2, UPPER('СИН')),
+(2, 1, UPPER('дочь')), (2, 2, UPPER('ДОЧКА'));
 INSERT INTO `owner_relationship_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
-(1,1,2200,1,2200),(1,2,2200,2,2200),(1,3,2200,3,2200);
+(1,1,2200,1,2200),(1,2,2200,2,2200);
 
 -- Forms of ownerships -- 
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('ownership_form',1), ('ownership_form_string_culture',1);

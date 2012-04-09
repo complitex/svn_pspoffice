@@ -137,6 +137,11 @@
                     AND aca.`start_date` <![CDATA[ < ]]> #{date} AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
                 <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.registrationNontraceblaAttributesSql"/>
             UNION
+            SELECT ra.`end_date` `date` FROM `registration_attribute` ra WHERE ra.`end_date` <![CDATA[ < ]]> #{date}
+                AND ra.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
+                    AND aca.`start_date` <![CDATA[ < ]]> #{date} AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
+                <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.registrationNontraceblaAttributesSql"/>
+            UNION
             SELECT r.`end_date` FROM `registration` r WHERE r.`end_date` <![CDATA[ < ]]> #{date} 
                 AND r.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
                     AND aca.`start_date` <![CDATA[ < ]]> #{date} AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
@@ -150,6 +155,11 @@
                 <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.nontraceblaAttributesSql"/>
             UNION 
             SELECT ra.`start_date` FROM `registration_attribute` ra WHERE ra.`start_date` <![CDATA[ > ]]> #{date}
+                AND ra.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
+                    AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
+                <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.registrationNontraceblaAttributesSql"/>
+            UNION
+            SELECT ra.`end_date` `date` FROM `registration_attribute` ra WHERE ra.`end_date` <![CDATA[ > ]]> #{date}
                 AND ra.`object_id` IN (SELECT aca.`value_id` FROM `apartment_card_attribute` aca WHERE aca.`object_id` = #{apartmentCardId}
                     AND aca.`attribute_type_id` = #{apartmentCardRegisrationAT})
                 <include refid="org.complitex.pspoffice.person.strategy.ApartmentCard.registrationNontraceblaAttributesSql"/>

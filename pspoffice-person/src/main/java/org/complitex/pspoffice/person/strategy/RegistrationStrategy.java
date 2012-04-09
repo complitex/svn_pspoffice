@@ -27,7 +27,6 @@ import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.Strategy;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
-import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
@@ -124,9 +123,14 @@ public class RegistrationStrategy extends Strategy {
 
     @Transactional
     private void loadOwnerRelationship(Registration registration) {
-        long ownerRelationshipId = registration.getAttribute(OWNER_RELATIONSHIP).getValueId();
-        DomainObject ownerRelationship = ownerRelationshipStrategy.findById(ownerRelationshipId, true);
-        registration.setOwnerRelationship(ownerRelationship);
+        Attribute ownerRelationshipAttribute = registration.getAttribute(OWNER_RELATIONSHIP);
+        if (ownerRelationshipAttribute != null) {
+            Long ownerRelationshipId = ownerRelationshipAttribute.getValueId();
+            if (ownerRelationshipId != null) {
+                DomainObject ownerRelationship = ownerRelationshipStrategy.findById(ownerRelationshipId, true);
+                registration.setOwnerRelationship(ownerRelationship);
+            }
+        }
     }
 
     @Transactional
@@ -275,22 +279,6 @@ public class RegistrationStrategy extends Strategy {
     @Override
     public Page getObjectNotFoundPage() {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Transactional
-    public String checkOwner(long apartmentCardId, Long ownerRelationshipId, long personId, Locale locale) {
-        if (ownerRelationshipId == null || !ownerRelationshipId.equals(OwnerRelationshipStrategy.OWNER)) {
-            return null;
-        }
-
-        ApartmentCard apartmentCard = apartmentCardStrategy.findById(apartmentCardId, true, false, false, false);
-        long ownerId = apartmentCard.getAttribute(ApartmentCardStrategy.OWNER).getValueId();
-        if (ownerId != personId) {
-            Person owner = personStrategy.findById(ownerId, true, true, false, false);
-            return personStrategy.displayDomainObject(owner, locale);
-        } else {
-            return null;
-        }
     }
 
     @Transactional

@@ -47,6 +47,7 @@ import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
+import org.complitex.dictionary.util.Numbers;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
@@ -372,6 +373,7 @@ public class RegistrationEdit extends FormTemplatePage {
                 return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
             }
         });
+        ownerRelationship.setNullValid(true);
         ownerRelationship.setRequired(ownerRelationshipAttributeType.isMandatory());
         ownerRelationship.setLabel(labelModel);
         ownerRelationship.setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
@@ -482,15 +484,6 @@ public class RegistrationEdit extends FormTemplatePage {
             }
         }
 
-        //owner and owner relationship
-        DomainObject ownerRelationship = newRegistration.getOwnerRelationship();
-        Long ownerRelationshipId = ownerRelationship != null ? ownerRelationship.getId() : null;
-        String ownerName = registrationStrategy.checkOwner(apartmentCard.getId(), ownerRelationshipId,
-                newRegistration.getPerson().getId(), getLocale());
-        if (!Strings.isEmpty(ownerName)) {
-            error(MessageFormat.format(getString("owner_is_another_man"), ownerName));
-        }
-
         //duplicate person registration check
         if (isNew() && !registrationStrategy.validateDuplicatePerson(apartmentCard.getId(), newRegistration.getPerson().getId())) {
             error(getString("person_already_registered"));
@@ -520,10 +513,16 @@ public class RegistrationEdit extends FormTemplatePage {
         }
 
         Set<String> modifiedAttributes = newHashSet();
+        //registration type
         if (!oldRegistration.getRegistrationType().getId().equals(newRegistration.getRegistrationType().getId())) {
             modifiedAttributes.add(labelModel(ENTITY.getAttributeType(REGISTRATION_TYPE).getAttributeNames(), getLocale()).getObject());
         }
-        if (!oldRegistration.getOwnerRelationship().getId().equals(newRegistration.getOwnerRelationship().getId())) {
+        //owner relationship
+        final Long oldOwnerRelationshipId = oldRegistration.getOwnerRelationship() != null
+                ? oldRegistration.getOwnerRelationship().getId() : null;
+        final Long newOwnerRelationshipId = newRegistration.getOwnerRelationship() != null
+                ? newRegistration.getOwnerRelationship().getId() : null;
+        if (!Numbers.isEqual(oldOwnerRelationshipId, newOwnerRelationshipId)) {
             modifiedAttributes.add(labelModel(ENTITY.getAttributeType(OWNER_RELATIONSHIP).getAttributeNames(), getLocale()).getObject());
         }
 

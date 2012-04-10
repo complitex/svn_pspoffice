@@ -73,14 +73,6 @@
         </foreach>
     </update>
     
-    <update id="putReservedRegistrationType" parameterType="map">
-        UPDATE `registration_type_correction` SET `system_object_id` = #{systemObjectId} 
-        WHERE `id` = #{id} AND `idjek` IN 
-        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
-            #{idjek}
-        </foreach>
-    </update>
-    
     <select id="getReservedOwnerType" parameterType="map" resultType="string">
         SELECT DISTINCT(`nkod`) FROM `owner_type_correction` WHERE `id` = #{OWNER_TYPE}
         AND `idjek` IN 

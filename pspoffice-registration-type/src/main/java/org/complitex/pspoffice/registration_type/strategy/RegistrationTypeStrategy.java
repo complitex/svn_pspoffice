@@ -38,8 +38,7 @@ public class RegistrationTypeStrategy extends TemplateStrategy {
      */
     public static final long NAME = 2600;
     public static final long PERMANENT = 1;
-    public static final long TEMPORAL = 2;
-    private static final Set<Long> RESERVED_INSTANCE_IDS = of(PERMANENT, TEMPORAL);
+    private static final Set<Long> RESERVED_INSTANCE_IDS = of(PERMANENT);
 
     @Override
     public String getEntityTable() {

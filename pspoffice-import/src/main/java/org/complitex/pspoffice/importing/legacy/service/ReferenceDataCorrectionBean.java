@@ -20,7 +20,6 @@ import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.importing.legacy.entity.ReferenceDataCorrection;
 import org.complitex.pspoffice.importing.legacy.service.exception.TooManyResultsException;
-import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 
 /**
  *
@@ -39,7 +38,6 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
      * Registration types consts
      */
     public static final long PERMANENT = 1;
-    public static final long TEMPORAL = 2;
     /**
      * Document types consts
      */
@@ -143,31 +141,12 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
                 ImmutableMap.of("entity", entity, "objectId", objectId, "jekIds", jekIds)) == 1;
     }
 
-    public static class RegistrationTypesNotResolved extends Exception {
-
-        private final boolean permanentResolved;
-        private final boolean temporalResolved;
-
-        public RegistrationTypesNotResolved(boolean permanentResolved, boolean temporalResolved) {
-            this.permanentResolved = permanentResolved;
-            this.temporalResolved = temporalResolved;
-        }
-
-        public boolean isPermanentResolved() {
-            return permanentResolved;
-        }
-
-        public boolean isTemporalResolved() {
-            return temporalResolved;
-        }
+    public static class RegistrationTypeNotResolved extends Exception {
     }
 
-    public void checkReservedRegistrationTypes(Set<String> jekIds) throws RegistrationTypesNotResolved {
-        final String entity = "registration_type";
-        final boolean permanentResolved = isReservedObjectResolved(entity, PERMANENT, jekIds);
-        final boolean temporalResolved = isReservedObjectResolved(entity, TEMPORAL, jekIds);
-        if (!permanentResolved || !temporalResolved) {
-            throw new RegistrationTypesNotResolved(permanentResolved, temporalResolved);
+    public void checkReservedRegistrationTypes(Set<String> jekIds) throws RegistrationTypeNotResolved {
+        if (!isReservedObjectResolved("registration_type", PERMANENT, jekIds)) {
+            throw new RegistrationTypeNotResolved();
         }
     }
 
@@ -200,16 +179,6 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
                 "jekIds", jekIds));
     }
 
-    public void putReservedRegistrationTypes(Set<String> jekIds) {
-        final String operation = ".putReservedRegistrationType";
-        sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", PERMANENT, "systemObjectId", RegistrationTypeStrategy.PERMANENT,
-                "jekIds", jekIds));
-        sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", TEMPORAL, "systemObjectId", RegistrationTypeStrategy.TEMPORAL,
-                "jekIds", jekIds));
-    }
-
     public void checkReservedDocumentTypes(Set<String> jekIds) throws DocumentTypesNotResolved {
         final String entity = "document_type";
         final boolean passportResolved = isReservedObjectResolved(entity, PASSPORT, jekIds);
@@ -218,7 +187,7 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
             throw new DocumentTypesNotResolved(passportResolved, birthCertificateResolved);
         }
     }
-
+    
     public String getReservedOwnerType(Set<String> jekIds) {
         List<String> ownerTypes = sqlSession().selectList(MAPPING_NAMESPACE + ".getReservedOwnerType",
                 ImmutableMap.of("OWNER_TYPE", OWNER_TYPE, "jekIds", jekIds));

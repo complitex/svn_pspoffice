@@ -4,10 +4,12 @@
  */
 package org.complitex.pspoffice.registration_type.strategy;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import static com.google.common.collect.ImmutableSet.*;
 import static org.complitex.dictionary.util.ResourceUtil.*;
-import com.google.common.collect.Lists;
+import static com.google.common.collect.Lists.*;
+import java.util.Collection;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.AttributeExample;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.strategy.DeleteException;
 import static org.complitex.dictionary.util.AttributeUtil.*;
@@ -47,7 +50,7 @@ public class RegistrationTypeStrategy extends TemplateStrategy {
 
     @Override
     protected List<Long> getListAttributeTypes() {
-        return Lists.newArrayList(NAME);
+        return newArrayList(NAME);
     }
 
     @Override
@@ -97,5 +100,18 @@ public class RegistrationTypeStrategy extends TemplateStrategy {
             throw new DeleteException(getString(RESOURCE_BUNDLE, "delete_reserved_instance_error", locale));
         }
         super.deleteChecks(objectId, locale);
+    }
+
+    public Collection<StringCulture> reservedNames() {
+        final Collection<StringCulture> reservedNames = newArrayList();
+
+        for (long id : RESERVED_INSTANCE_IDS) {
+            final DomainObject o = findById(id, true);
+            if (o != null) {
+                reservedNames.addAll(ImmutableList.copyOf(o.getAttribute(NAME).getLocalizedValues()));
+            }
+        }
+
+        return ImmutableList.copyOf(reservedNames);
     }
 }

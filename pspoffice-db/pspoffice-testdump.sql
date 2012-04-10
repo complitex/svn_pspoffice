@@ -20,6 +20,13 @@ INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_t
 (1,1,2500,1,2500),(1,2,2500,2,2500),(1,3,2500,3,2500),(1,4,2500,4,2500),(1,5,2500,5,2500),(1,6,2500,6,2500), (1,7,2500,7,2500),
  (1,8,2500,8,2500);
 
+-- Registration type -- 
+INSERT INTO `registration_type`(`object_id`) VALUES (2);
+INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUES 
+(2, 1, UPPER('временная'));
+INSERT INTO `registration_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
+(1,2,2600,2,2600);
+
 -- Test user organizations
 insert into `organization`(`object_id`) values (1),(2);
 insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1, 1, UPPER('Паспортный стол №1')),(2, 1, UPPER('1')),

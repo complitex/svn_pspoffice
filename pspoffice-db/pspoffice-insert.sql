@@ -235,10 +235,11 @@ INSERT INTO `string_culture`(`id`, `locale_id`, `value`) VALUES (2601, 1, UPPER(
 INSERT INTO `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) VALUES (2600, 2600, 1, 2601, 1);
 INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (2600, 2600, UPPER('string_culture'));
 
-INSERT INTO `registration_type`(`object_id`) VALUES (1),(2);
-INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('постоянная')), (2, 1, UPPER('временная'));
+INSERT INTO `registration_type`(`object_id`) VALUES (1);
+INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUES 
+(1, 1, UPPER('постоянная')), (1, 2, UPPER('постійна'));
 INSERT INTO `registration_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
-(1,1,2600,1,2600),(1,2,2600,2,2600);
+(1,1,2600,1,2600);
 
 -- Document type --
 INSERT INTO `sequence` (`sequence_name`, `sequence_value`) VALUES ('document_type',1), ('document_type_string_culture',1);

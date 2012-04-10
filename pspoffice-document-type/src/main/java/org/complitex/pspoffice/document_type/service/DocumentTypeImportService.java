@@ -1,5 +1,6 @@
 package org.complitex.pspoffice.document_type.service;
 
+import java.util.Collection;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.util.CloneUtil;
 import au.com.bytecode.opencsv.CSVReader;
@@ -52,32 +53,47 @@ public class DocumentTypeImportService extends AbstractImportService {
         try {
             String[] line;
 
+            final Collection<StringCulture> reservedObjectNames = strategy.reservedNames();
+
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
                 final long externalId = Long.parseLong(line[0].trim());
                 final String name = line[1].trim();
 
-                // Ищем по externalId в базе.
-                final Long objectId = strategy.getObjectId(externalId);
-                if (objectId != null) {
-                    DomainObject oldObject = strategy.findById(objectId, true);
-                    if (oldObject != null) {
-                        // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
-                        DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                        setValue(newObject.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
-                        strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                // Сначала ищем среди предопределенных системой объектов.
+                boolean isReserved = false;
+                for (StringCulture string : reservedObjectNames) {
+                    final String reservedName = string.getValue();
+                    if (reservedName != null && reservedName.equalsIgnoreCase(name)) {
+                        // нашли
+                        isReserved = true;
+                        break;
                     }
-                } else {
-                    // не нашли, создаём объект заполняем его атрибуты и сохраняем.
-                    DomainObject object = strategy.newInstance();
-                    object.setExternalId(externalId);
-                    setValue(object.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
-                    strategy.insert(object, DateUtil.getCurrentDate());
                 }
-                listener.recordProcessed(DOCUMENT_TYPE, recordIndex);
+                if (isReserved) {
+                    // это зарезервированный системой объект, пропускаем его.
+                } else {
+                    // Ищем по externalId в базе.
+                    final Long objectId = strategy.getObjectId(externalId);
+                    if (objectId != null) {
+                        DomainObject oldObject = strategy.findById(objectId, true);
+                        if (oldObject != null) {
+                            // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
+                            DomainObject newObject = CloneUtil.cloneObject(oldObject);
+                            setValue(newObject.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
+                            strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                        }
+                    } else {
+                        // не нашли, создаём объект заполняем его атрибуты и сохраняем.
+                        DomainObject object = strategy.newInstance();
+                        object.setExternalId(externalId);
+                        setValue(object.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
+                        strategy.insert(object, DateUtil.getCurrentDate());
+                    }
+                    listener.recordProcessed(DOCUMENT_TYPE, recordIndex);
+                }
             }
-
             listener.completeImport(DOCUMENT_TYPE, recordIndex);
         } catch (IOException e) {
             throw new ImportFileReadException(e, DOCUMENT_TYPE.getFileName(), recordIndex);

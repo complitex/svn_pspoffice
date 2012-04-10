@@ -4,6 +4,9 @@
  */
 package org.complitex.pspoffice.document_type.strategy;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Collection;
+import org.complitex.dictionary.entity.StringCulture;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -132,5 +135,18 @@ public class DocumentTypeStrategy extends TemplateStrategy {
 
     public static boolean isAdultDocumentType(long documentTypeId) {
         return documentTypeId == PASSPORT || documentTypeId == BIRTH_CERTIFICATE;
+    }
+
+    public Collection<StringCulture> reservedNames() {
+        final Collection<StringCulture> reservedNames = newArrayList();
+
+        for (long id : RESERVED_INSTANCE_IDS) {
+            final DomainObject o = findById(id, true);
+            if (o != null) {
+                reservedNames.addAll(ImmutableList.copyOf(o.getAttribute(NAME).getLocalizedValues()));
+            }
+        }
+
+        return ImmutableList.copyOf(reservedNames);
     }
 }

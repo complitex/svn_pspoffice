@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.ownerrelationship.strategy;
 
+import com.google.common.collect.ImmutableList;
 import static com.google.common.collect.ImmutableSet.*;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import static com.google.common.collect.Lists.*;
+import java.util.Collection;
 import javax.ejb.Stateless;
 import static org.apache.wicket.util.string.Strings.*;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.example.AttributeExample;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
@@ -38,8 +41,8 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
     /**
      * Owner relationship instance ids
      */
-    public static final long SON = 2;
-    public static final long DAUGHTER = 3;
+    public static final long SON = 1;
+    public static final long DAUGHTER = 2;
     private static final Set<Long> RESERVED_INSTANCE_IDS = of(SON, DAUGHTER);
 
     @Override
@@ -100,5 +103,18 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
             throw new DeleteException(getString(RESOURCE_BUNDLE, "delete_reserved_instance_error", locale));
         }
         super.deleteChecks(objectId, locale);
+    }
+
+    public Collection<StringCulture> reservedNames() {
+        final Collection<StringCulture> reservedNames = newArrayList();
+
+        for (long id : RESERVED_INSTANCE_IDS) {
+            final DomainObject o = findById(id, true);
+            if (o != null) {
+                reservedNames.addAll(ImmutableList.copyOf(o.getAttribute(NAME).getLocalizedValues()));
+            }
+        }
+
+        return ImmutableList.copyOf(reservedNames);
     }
 }

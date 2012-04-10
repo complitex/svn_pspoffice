@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
+import java.util.Collection;
 import org.complitex.dictionary.util.DateUtil;
 
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -52,28 +53,44 @@ public class RegistrationTypeImportService extends AbstractImportService {
         try {
             String[] line;
 
+            final Collection<StringCulture> reservedObjectNames = strategy.reservedNames();
+
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
                 final long externalId = Long.parseLong(line[0].trim());
                 final String name = line[1].trim();
 
-                // Ищем по externalId в базе.
-                final Long objectId = strategy.getObjectId(externalId);
-                if (objectId != null) {
-                    DomainObject oldObject = strategy.findById(objectId, true);
-                    if (oldObject != null) {
-                        // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
-                        DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                        setValue(newObject.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
-                        strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                // Сначала ищем среди предопределенных системой объектов.
+                boolean isReserved = false;
+                for (StringCulture string : reservedObjectNames) {
+                    final String reservedName = string.getValue();
+                    if (reservedName != null && reservedName.equalsIgnoreCase(name)) {
+                        // нашли
+                        isReserved = true;
+                        break;
                     }
+                }
+                if (isReserved) {
+                    // это зарезервированный системой объект, пропускаем его.
                 } else {
-                    // не нашли, создаём объект заполняем его атрибуты и сохраняем.
-                    DomainObject object = strategy.newInstance();
-                    object.setExternalId(externalId);
-                    setValue(object.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
-                    strategy.insert(object, DateUtil.getCurrentDate());
+                    // Ищем по externalId в базе.
+                    final Long objectId = strategy.getObjectId(externalId);
+                    if (objectId != null) {
+                        DomainObject oldObject = strategy.findById(objectId, true);
+                        if (oldObject != null) {
+                            // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
+                            DomainObject newObject = CloneUtil.cloneObject(oldObject);
+                            setValue(newObject.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
+                            strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
+                        }
+                    } else {
+                        // не нашли, создаём объект заполняем его атрибуты и сохраняем.
+                        DomainObject object = strategy.newInstance();
+                        object.setExternalId(externalId);
+                        setValue(object.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
+                        strategy.insert(object, DateUtil.getCurrentDate());
+                    }
                 }
                 listener.recordProcessed(REGISTRATION_TYPE, recordIndex);
             }

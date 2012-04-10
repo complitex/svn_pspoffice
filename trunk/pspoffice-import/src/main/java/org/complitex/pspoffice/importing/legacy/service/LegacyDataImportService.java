@@ -632,7 +632,7 @@ public class LegacyDataImportService {
                                 String idul = building.getIdul();
                                 final StreetCorrection street = streetCorrectionBean.getById(idul, idjek);
                                 if (street == null) {
-                                    buildingErrorDescription = getString("buiding_invalid_street_id",
+                                    buildingErrorDescription = getString("building_invalid_street_id",
                                             building.getId(), building.getIdjek(), idul);
                                 } else {
                                     Long systemStreetId = street.getSystemStreetId();
@@ -1087,64 +1087,151 @@ public class LegacyDataImportService {
     }
 
     private void processRegistrationsTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final ProcessItem item = ProcessItem.REGISTRATION_TYPE;
-        BufferedWriter registrationTypeErrorDescriptionFile = null;
-
+        final String entity = "registration_type";
         try {
-            userTransaction.begin();
-            referenceDataCorrectionBean.putReservedRegistrationTypes(jekIds);
-            userTransaction.commit();
+            final ProcessItem item = ProcessItem.REGISTRATION_TYPE;
+
+            BufferedWriter registrationTypeErrorFile = null;
+            BufferedWriter registrationTypeErrorDescriptionFile = null;
+
+            processingStatuses.put(item, new ImportStatus(0));
+            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
+            messages.add(new ImportMessage(getString("begin_registration_type_processing", count), INFO));
+            boolean wasErrors = false;
 
             try {
-                referenceDataCorrectionBean.checkReservedRegistrationTypes(jekIds);
-                messages.add(new ImportMessage(getString("success_finish_registration_type_processing"), INFO));
-                reservedRegistrationTypesResolved = true;
-            } catch (ReferenceDataCorrectionBean.RegistrationTypesNotResolved e) {
-                StringBuilder sb = new StringBuilder();
-                if (!e.isPermanentResolved()) {
-                    sb.append(registrationTypeStrategy.displayDomainObject(
-                            registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true),
-                            localeBean.getSystemLocale())).
-                            append(", ");
-                }
-                if (!e.isTemporalResolved()) {
-                    sb.append(registrationTypeStrategy.displayDomainObject(
-                            registrationTypeStrategy.findById(RegistrationTypeStrategy.TEMPORAL, true),
-                            localeBean.getSystemLocale())).
-                            append(", ");
-                }
-                sb.delete(sb.length() - 2, sb.length());
-                String error = getString("fail_finish_registration_type_processing", sb.toString(), jekIds.toString());
-                if (registrationTypeErrorDescriptionFile == null) {
-                    registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                            LegacyDataImportFile.REGISTRATION_TYPE);
-                }
-                registrationTypeErrorDescriptionFile.write(error);
-                registrationTypeErrorDescriptionFile.newLine();
+                for (String idjek : jekIds) {
+                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
+                    while (jekCount > 0) {
+                        List<ReferenceDataCorrection> registrationTypes =
+                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
 
-                messages.add(new ImportMessage(error, WARN));
-            }
+                        userTransaction.begin();
+                        for (ReferenceDataCorrection registrationType : registrationTypes) {
+                            String errorDescription = null;
 
-            ImportStatus status = new ImportStatus(2);
-            status.finish();
-            processingStatuses.put(item, status);
-        } catch (Exception e) {
-            try {
-                if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                    userTransaction.rollback();
+                            if (registrationType.getId() == ReferenceDataCorrectionBean.PERMANENT) { // постоянная регистрация
+                                registrationType.setSystemObjectId(RegistrationTypeStrategy.PERMANENT);
+                            } else {
+                                try {
+                                    Long systemRegistrationTypeId =
+                                            referenceDataCorrectionBean.findSystemObject(entity, registrationType.getNkod());
+                                    if (systemRegistrationTypeId == null) {
+                                        DomainObject systemRegistrationType = registrationTypeStrategy.newInstance();
+                                        Utils.setValue(systemRegistrationType.getAttribute(RegistrationTypeStrategy.NAME),
+                                                registrationType.getNkod());
+                                        registrationTypeStrategy.insert(systemRegistrationType, DateUtil.getCurrentDate());
+                                        systemRegistrationTypeId = systemRegistrationType.getId();
+                                    }
+                                    registrationType.setSystemObjectId(systemRegistrationTypeId);
+                                } catch (TooManyResultsException e) {
+                                    errorDescription = getString("registration_type_system_many_objects", registrationType.getId(),
+                                            idjek, registrationType.getNkod());
+                                }
+                            }
+
+                            registrationType.setProcessed(true);
+                            referenceDataCorrectionBean.update(registrationType);
+
+                            processingStatuses.get(item).increment();
+
+                            if (errorDescription != null) {
+                                wasErrors = true;
+                                if (registrationTypeErrorFile == null) {
+                                    registrationTypeErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.REGISTRATION_TYPE);
+                                    registrationTypeErrorFile.write(LegacyDataImportFile.REGISTRATION_TYPE.getCsvHeader());
+                                    registrationTypeErrorFile.newLine();
+                                }
+                                if (registrationTypeErrorDescriptionFile == null) {
+                                    registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                            LegacyDataImportFile.REGISTRATION_TYPE);
+                                }
+
+                                registrationTypeErrorFile.write(registrationType.getContent());
+                                registrationTypeErrorFile.newLine();
+
+                                registrationTypeErrorDescriptionFile.write(errorDescription);
+                                registrationTypeErrorDescriptionFile.newLine();
+                            }
+                        }
+
+                        userTransaction.commit();
+                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
+                    }
                 }
-            } catch (Exception e1) {
-                log.error("Couldn't to rollback transaction.", e1);
-            }
 
-            throw new RuntimeException(e);
-        } finally {
-            if (registrationTypeErrorDescriptionFile != null) {
                 try {
-                    registrationTypeErrorDescriptionFile.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close file stream.", e);
+                    referenceDataCorrectionBean.checkReservedRegistrationTypes(jekIds);
+                    reservedRegistrationTypesResolved = true;
+                } catch (ReferenceDataCorrectionBean.RegistrationTypeNotResolved e) {
+                    wasErrors = true;
+
+                    final String error = getString("reserved_registration_type_not_resolved",
+                            registrationTypeStrategy.displayDomainObject(
+                            registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true),
+                            localeBean.getSystemLocale()),
+                            jekIds.toString());
+
+                    if (registrationTypeErrorDescriptionFile == null) {
+                        registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                LegacyDataImportFile.REGISTRATION_TYPE);
+                    }
+                    registrationTypeErrorDescriptionFile.write(error);
+                    registrationTypeErrorDescriptionFile.newLine();
+
+                    messages.add(new ImportMessage(error, WARN));
                 }
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (Exception e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+
+                throw new RuntimeException(e);
+            } finally {
+                if (registrationTypeErrorFile != null) {
+                    try {
+                        registrationTypeErrorFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+                if (registrationTypeErrorDescriptionFile != null) {
+                    try {
+                        registrationTypeErrorDescriptionFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+            }
+
+            if (wasErrors) {
+                messages.add(new ImportMessage(getString("fail_finish_registration_type_processing", count), WARN));
+            } else {
+                messages.add(new ImportMessage(getString("success_finish_registration_type_processing", count), INFO));
+            }
+            processingStatuses.get(item).finish();
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            try {
+                userTransaction.begin();
+
+                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
+
+                userTransaction.commit();
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (SystemException e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+                log.error("Couldn't to clear processing status for registration types.", e);
             }
         }
     }
@@ -1766,10 +1853,11 @@ public class LegacyDataImportService {
                                                 if (registrationType == null) {
                                                     errorDescriptions.add(getString("registration_registration_type_not_found",
                                                             p.getId(), p.getIdrel(), building.getIdjek()));
+                                                } else if (registrationType.getSystemObjectId() == null) {
+                                                    errorDescriptions.add(getString("registration_system_registration_type_not_resolved",
+                                                            p.getId(), p.getIdvidp(), building.getIdjek()));
                                                 } else {
-                                                    // if registration type is not permanent then is is temporal:
-                                                    final long systemRegistrationTypeId = registrationType.getSystemObjectId() != null
-                                                            ? registrationType.getSystemObjectId() : RegistrationTypeStrategy.TEMPORAL;
+                                                    final long systemRegistrationTypeId = registrationType.getSystemObjectId();
 
                                                     //arrival street
                                                     String arrivalStreet = null;

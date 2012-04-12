@@ -110,7 +110,7 @@ public final class PersonList extends ScrollListPage {
         add(content);
 
         //Example
-        final DomainObjectExample example = new DomainObjectExample();
+        final DomainObjectExample example = (DomainObjectExample) getFilterObject(new DomainObjectExample());
 
         //Form
         final Form<Void> filterForm = new Form<Void>("filterForm");
@@ -121,6 +121,8 @@ public final class PersonList extends ScrollListPage {
 
             @Override
             protected Iterable<Person> getData(int first, int count) {
+                setFilterObject(example);
+
                 final boolean asc = getSort().isAscending();
                 final String sortProperty = getSort().getProperty();
 

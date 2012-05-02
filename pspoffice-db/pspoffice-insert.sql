@@ -317,3 +317,6 @@ insert into `string_culture`(`id`, `locale_id`, `value`) values (3102, 1, UPPER(
 insert into `entity_attribute_type`(`id`, `entity_id`, `mandatory`, `attribute_type_name_id`, `system`) values (3101, 3100, 1, 3102, 1);
 INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3100, 3100, UPPER('string_culture'));
 INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3101, 3101, UPPER('integer'));
+
+-- Current database version
+-- INSERT INTO `update` (`version`) VALUE ('');

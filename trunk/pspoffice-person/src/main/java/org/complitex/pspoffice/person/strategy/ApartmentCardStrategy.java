@@ -11,7 +11,6 @@ import java.util.Comparator;
 import static com.google.common.collect.Maps.*;
 import java.util.Date;
 import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.ImmutableList.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -101,17 +100,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             this.ownerId = ownerId;
         }
 
-        @Override
-        public int compare(Registration o1, Registration o2) {
-            // Владелец всегда первый в списке.
-            {
-                long p1 = o1.getAttribute(RegistrationStrategy.PERSON).getValueId();
-                long p2 = o2.getAttribute(RegistrationStrategy.PERSON).getValueId();
-                if (p1 == ownerId || p2 == ownerId) {
-                    return p1 == ownerId ? -1 : 1;
-                }
-            }
-
+        private int compareByRegistrationDates(Registration o1, Registration o2) {
             // Персоны недавно выписавшиеся должны быть выше в списке чем персоны, выписавшиеся давно.
             {
                 if (o1.isFinished() && o2.isFinished()) {
@@ -137,6 +126,26 @@ public class ApartmentCardStrategy extends TemplateStrategy {
                 return d2.compareTo(d1);
             }
         }
+
+        @Override
+        public int compare(Registration o1, Registration o2) {
+            // Владелец всегда первый в списке.
+            {
+                long p1 = o1.getAttribute(RegistrationStrategy.PERSON).getValueId();
+                long p2 = o2.getAttribute(RegistrationStrategy.PERSON).getValueId();
+
+                // Если оба владельцы, значит один из них - выписан. Т.е. можно сравнивать по датам прописки и выписки.
+                if (p1 == ownerId && p2 == ownerId) {
+                    return compareByRegistrationDates(o1, o2);
+                }
+
+                if (p1 == ownerId || p2 == ownerId) {
+                    return p1 == ownerId ? -1 : 1;
+                }
+            }
+
+            return compareByRegistrationDates(o1, o2);
+        }
     }
     @EJB
     private PersonStrategy personStrategy;
@@ -159,11 +168,6 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Override
     public String getEntityTable() {
         return "apartment_card";
-    }
-
-    @Override
-    protected List<Long> getListAttributeTypes() {
-        return of(PERSONAL_ACCOUNT);
     }
 
     @Override

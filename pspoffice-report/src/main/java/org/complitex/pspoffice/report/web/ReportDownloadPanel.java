@@ -13,7 +13,6 @@ import org.apache.wicket.model.Model;
 import org.odlabs.wiquery.ui.dialog.Dialog;
 
 import java.util.Arrays;
-import java.util.Locale;
 import javax.servlet.http.HttpSession;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
@@ -79,13 +78,12 @@ public class ReportDownloadPanel extends Panel {
 
         private ResourceStreamRequestTarget getResourceStreamRequestTarget(AbstractReportDownload<?> reportDownload,
                 String type, String locale) {
-            Locale l = ReportGenerationUtil.getLocale(locale);
-            return new ResourceStreamRequestTarget(getResourceStreamWriter(reportDownload, type, l),
-                    reportDownload.getFileName(l));
+            return new ResourceStreamRequestTarget(getResourceStreamWriter(reportDownload, type, locale),
+                    reportDownload.getFileName(ReportGenerationUtil.getLocale(locale)));
         }
 
         private IResourceStream getResourceStreamWriter(final AbstractReportDownload<?> reportDownload, final String type,
-                final Locale locale) {
+                final String locale) {
             return new AbstractResourceStreamWriter() {
 
                 @Override

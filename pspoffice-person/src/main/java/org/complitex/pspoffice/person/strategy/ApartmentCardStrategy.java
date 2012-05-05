@@ -92,30 +92,52 @@ public class ApartmentCardStrategy extends TemplateStrategy {
      * Set of persistable search state entities
      */
     private static final Set<String> SEARCH_STATE_ENTITES = ImmutableSet.of("country", "region", "city", "street", "building");
-    private static final Comparator<Registration> REGISTRATION_COMPARATOR = new Comparator<Registration>() {
+
+    private static class RegistrationsComparator implements Comparator<Registration> {
+
+        long ownerId;
+
+        RegistrationsComparator(long ownerId) {
+            this.ownerId = ownerId;
+        }
 
         @Override
         public int compare(Registration o1, Registration o2) {
-            if (o1.isFinished() && o2.isFinished()) {
-                Date d1 = o1.getDepartureDate();
-                if (d1 == null) {
-                    d1 = o1.getEndDate();
+            // Владелец всегда первый в списке.
+            {
+                long p1 = o1.getAttribute(RegistrationStrategy.PERSON).getValueId();
+                long p2 = o2.getAttribute(RegistrationStrategy.PERSON).getValueId();
+                if (p1 == ownerId || p2 == ownerId) {
+                    return p1 == ownerId ? -1 : 1;
                 }
-                Date d2 = o2.getDepartureDate();
-                if (d2 == null) {
-                    d2 = o2.getEndDate();
-                }
-                return d2.compareTo(d1);
-            }
-            if (o1.isFinished() || o2.isFinished()) {
-                return o1.isFinished() ? 1 : -1;
             }
 
-            Date d1 = o1.getRegistrationDate();
-            Date d2 = o2.getRegistrationDate();
-            return d2.compareTo(d1);
+            // Персоны недавно выписавшиеся должны быть выше в списке чем персоны, выписавшиеся давно.
+            {
+                if (o1.isFinished() && o2.isFinished()) {
+                    Date d1 = o1.getDepartureDate();
+                    if (d1 == null) {
+                        d1 = o1.getEndDate();
+                    }
+                    Date d2 = o2.getDepartureDate();
+                    if (d2 == null) {
+                        d2 = o2.getEndDate();
+                    }
+                    return d2.compareTo(d1);
+                }
+                if (o1.isFinished() || o2.isFinished()) {
+                    return o1.isFinished() ? 1 : -1;
+                }
+            }
+
+            // Персоны недавно прописанные должны быть выше в списке, чем персоны, прописанные давно.
+            {
+                Date d1 = o1.getRegistrationDate();
+                Date d2 = o2.getRegistrationDate();
+                return d2.compareTo(d1);
+            }
         }
-    };
+    }
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -424,7 +446,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
             }
         }
         if (!registrations.isEmpty()) {
-            Collections.sort(registrations, REGISTRATION_COMPARATOR);
+            final long ownerId = apartmentCard.getAttribute(OWNER).getValueId();
+            Collections.sort(registrations, new RegistrationsComparator(ownerId));
         }
         apartmentCard.setRegistrations(registrations);
     }
@@ -551,11 +574,11 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     private Registration newRegistration(long personId, RegisterOwnerCard registerOwnerCard, Long ownerRelationshipId) {
         Registration registration = registrationStrategy.newInstance();
         registration.getAttribute(RegistrationStrategy.PERSON).setValueId(personId);
-        
+
         if (ownerRelationshipId != null) {
             registration.getAttribute(RegistrationStrategy.OWNER_RELATIONSHIP).setValueId(ownerRelationshipId);
         }
-        
+
         stringBean.getSystemStringCulture(registration.getAttribute(RegistrationStrategy.REGISTRATION_DATE).getLocalizedValues()).
                 setValue(new DateConverter().toString(registerOwnerCard.getRegistrationDate()));
         registration.getAttribute(RegistrationStrategy.REGISTRATION_TYPE).setValueId(registerOwnerCard.getRegistrationType().getId());
@@ -821,7 +844,8 @@ public class ApartmentCardStrategy extends TemplateStrategy {
         }
 
         if (!registrations.isEmpty()) {
-            Collections.sort(registrations, REGISTRATION_COMPARATOR);
+            final long ownerId = apartmentCard.getAttribute(OWNER).getValueId();
+            Collections.sort(registrations, new RegistrationsComparator(ownerId));
         }
         apartmentCard.setRegistrations(registrations);
     }

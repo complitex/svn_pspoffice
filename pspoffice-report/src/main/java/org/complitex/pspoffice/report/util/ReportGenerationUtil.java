@@ -26,9 +26,9 @@ public final class ReportGenerationUtil {
     private ReportGenerationUtil() {
     }
 
-    public static void write(String type, AbstractReportDownload<?> reportDownload, OutputStream output, Locale locale)
+    public static void write(String type, AbstractReportDownload<?> reportDownload, OutputStream output, String locale)
             throws CreateReportException {
-        Map<IReportField, Object> values = reportDownload.getValues(locale);
+        Map<IReportField, Object> values = reportDownload.getValues(getLocale(locale));
         Map<String, String> map = new HashMap<String, String>();
 
         for (IReportField key : reportDownload.getReportFields()) {

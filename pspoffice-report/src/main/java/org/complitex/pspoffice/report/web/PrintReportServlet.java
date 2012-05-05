@@ -41,7 +41,7 @@ public class PrintReportServlet extends HttpServlet {
             AbstractReportDownload<?> reportDownload = (AbstractReportDownload) request.getSession().getAttribute(sessionKey);
             request.getSession().removeAttribute(sessionKey);
 
-            ReportGenerationUtil.write("pdf", reportDownload, servletOutputStream, ReportGenerationUtil.getLocale(locale));
+            ReportGenerationUtil.write("pdf", reportDownload, servletOutputStream, locale);
         } catch (Exception e) {
             String error = "Ошибка генерации отчета";
             log.error(error, e);

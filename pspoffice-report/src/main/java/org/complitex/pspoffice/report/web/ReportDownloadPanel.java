@@ -13,6 +13,7 @@ import org.apache.wicket.model.Model;
 import org.odlabs.wiquery.ui.dialog.Dialog;
 
 import java.util.Arrays;
+import java.util.Locale;
 import javax.servlet.http.HttpSession;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
@@ -37,6 +38,10 @@ import org.slf4j.LoggerFactory;
 public class ReportDownloadPanel extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(ReportDownloadPanel.class);
+    public static final String RUSSIAN_REPORT_LOCALE = "ru_RU";
+    public static final String UKRAIN_REPORT_LOCALE = "uk_UA";
+    public static final String PDF_REPORT_FORMAT = "PDF";
+    public static final String RTF_REPORT_FORMAT = "RTF";
     private Dialog dialog;
 
     private class AttributeModifier extends AbstractBehavior {
@@ -61,8 +66,10 @@ public class ReportDownloadPanel extends Panel {
 
         public DownloadPage(PageParameters parameters) {
             String sessionKey = parameters.getString("key");
-            String type = parameters.getString("type") != null ? parameters.getString("type").toLowerCase() : "pdf";
-            String locale = parameters.getString("locale") != null ? parameters.getString("locale") : "ru_RU";
+            String type = parameters.getString("type") != null ? parameters.getString("type").toLowerCase()
+                    : PDF_REPORT_FORMAT.toLowerCase();
+            String locale = parameters.getString("locale") != null ? parameters.getString("locale")
+                    : RUSSIAN_REPORT_LOCALE;
 
             AbstractReportDownload<?> reportDownload = retrieveReportDownload(sessionKey);
             getRequestCycle().setRequestTarget(getResourceStreamRequestTarget(reportDownload, type, locale));
@@ -88,9 +95,9 @@ public class ReportDownloadPanel extends Panel {
 
                 @Override
                 public String getContentType() {
-                    if ("pdf".equals(type)) {
+                    if (PDF_REPORT_FORMAT.equalsIgnoreCase(type)) {
                         return "application/pdf";
-                    } else if ("rtf".equals(type)) {
+                    } else if (RTF_REPORT_FORMAT.equalsIgnoreCase(type)) {
                         return "application/rtf";
                     }
                     return null;
@@ -125,20 +132,24 @@ public class ReportDownloadPanel extends Panel {
         typeContainer.setVisible(!print);
         form.add(typeContainer);
 
-        final IModel<String> typeModel = new Model<String>("PDF");
-        final IModel<String> localeModel = new Model<String>("ru_RU");
+        final IModel<String> typeModel = new Model<String>(PDF_REPORT_FORMAT);
+        final IModel<String> localeModel = new Model<String>(getLocale().equals(new Locale("ru"))
+                ? RUSSIAN_REPORT_LOCALE
+                : UKRAIN_REPORT_LOCALE);
 
-        typeContainer.add(new DropDownChoice<String>("type", typeModel, Arrays.asList("PDF", "RTF")));
+        typeContainer.add(new DropDownChoice<String>("type", typeModel,
+                Arrays.asList(PDF_REPORT_FORMAT, RTF_REPORT_FORMAT)));
 
-        form.add(new DropDownChoice<String>("locale", localeModel, Arrays.asList("ru_RU", "uk_UA"),
+        form.add(new DropDownChoice<String>("locale", localeModel,
+                Arrays.asList(RUSSIAN_REPORT_LOCALE, UKRAIN_REPORT_LOCALE),
                 new IChoiceRenderer<String>() {
 
                     @Override
                     public Object getDisplayValue(String object) {
-                        if ("ru_RU".equals(object)) {
+                        if (RUSSIAN_REPORT_LOCALE.equals(object)) {
                             return getString("ru");
                         }
-                        if ("uk_UA".equals(object)) {
+                        if (UKRAIN_REPORT_LOCALE.equals(object)) {
                             return getString("uk");
                         }
                         return null;

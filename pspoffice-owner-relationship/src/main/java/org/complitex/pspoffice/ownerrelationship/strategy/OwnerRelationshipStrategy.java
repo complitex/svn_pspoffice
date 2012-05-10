@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import static com.google.common.collect.Lists.*;
 import java.util.Collection;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import static org.apache.wicket.util.string.Strings.*;
 import org.complitex.dictionary.entity.DomainObject;
@@ -20,6 +21,7 @@ import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.example.AttributeExample;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.strategy.DeleteException;
 import static org.complitex.dictionary.util.AttributeUtil.*;
 import static org.complitex.dictionary.util.ResourceUtil.*;
@@ -44,6 +46,8 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
     public static final long SON = 1;
     public static final long DAUGHTER = 2;
     private static final Set<Long> RESERVED_INSTANCE_IDS = of(SON, DAUGHTER);
+    @EJB
+    private LocaleBean localeBean;
 
     @Override
     public String getEntityTable() {
@@ -78,10 +82,13 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    @SuppressWarnings("unchecked")
-    public List<DomainObject> getAll() {
+    public List<DomainObject> getAll(Locale sortLocale) {
         DomainObjectExample example = new DomainObjectExample();
-        example.setOrderByAttributeTypeId(NAME);
+        if (sortLocale != null) {
+            example.setLocaleId(localeBean.convert(sortLocale).getId());
+            example.setAsc(true);
+            example.setOrderByAttributeTypeId(NAME);
+        }
         configureExample(example, ImmutableMap.<String, Long>of(), null);
         return (List<DomainObject>) find(example);
     }

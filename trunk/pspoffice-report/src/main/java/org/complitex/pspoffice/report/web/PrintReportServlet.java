@@ -37,7 +37,8 @@ public class PrintReportServlet extends HttpServlet {
             response.setContentType("application/pdf");
 
             String sessionKey = request.getParameter("key");
-            String locale = request.getParameter("locale") != null ? request.getParameter("locale") : "ru_RU";
+            String locale = request.getParameter("locale") != null ? request.getParameter("locale")
+                    : ReportDownloadPanel.RUSSIAN_REPORT_LOCALE;
             AbstractReportDownload<?> reportDownload = (AbstractReportDownload) request.getSession().getAttribute(sessionKey);
             request.getSession().removeAttribute(sessionKey);
 

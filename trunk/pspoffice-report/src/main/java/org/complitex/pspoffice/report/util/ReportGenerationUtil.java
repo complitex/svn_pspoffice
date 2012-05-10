@@ -16,6 +16,7 @@ import org.complitex.pspoffice.report.entity.IReportField;
 import org.complitex.pspoffice.report.service.CreateReportException;
 import org.complitex.pspoffice.report.service.IReportService;
 import org.complitex.pspoffice.report.web.AbstractReportDownload;
+import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 
 /**
  *
@@ -52,10 +53,10 @@ public final class ReportGenerationUtil {
     }
 
     public static Locale getLocale(String locale) {
-        if ("ru_RU".equals(locale)) {
+        if (ReportDownloadPanel.RUSSIAN_REPORT_LOCALE.equals(locale)) {
             return new Locale("ru");
         }
-        if ("uk_UA".equals(locale)) {
+        if (ReportDownloadPanel.UKRAIN_REPORT_LOCALE.equals(locale)) {
             return new Locale("uk");
         }
         return null;

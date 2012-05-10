@@ -22,10 +22,15 @@ INSERT INTO `ownership_form_attribute`(`attribute_id`, `object_id`, `attribute_t
 
 -- Registration type -- 
 INSERT INTO `registration_type`(`object_id`) VALUES (2);
-INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUES 
-(2, 1, UPPER('временная'));
+INSERT INTO `registration_type_string_culture`(`id`, `locale_id`, `value`) VALUES (2, 1, UPPER('временная')), (2, 2, UPPER('временная'));
 INSERT INTO `registration_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,2,2600,2,2600);
+
+-- Custom document types --
+INSERT INTO `document_type`(`object_id`) VALUES (3);
+INSERT INTO `document_type_string_culture`(`id`, `locale_id`, `value`) VALUES (3, 1, UPPER('военный билет')), (3, 2, UPPER('военный билет'));
+INSERT INTO `document_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
+(1,3,2700,3,2700);
 
 -- Test user organizations
 insert into `organization`(`object_id`) values (1),(2);

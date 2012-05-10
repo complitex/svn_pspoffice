@@ -98,25 +98,10 @@ public class PersonInputPanel extends Panel {
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
     private Person person;
-    private Date date;
     private FeedbackPanel messages;
     private Component scrollToComponent;
     private boolean documentReplacedFlag;
     private final PersonAgeType personAgeType;
-
-    /**
-     * History constructor
-     * @param id
-     * @param person
-     * @param date
-     */
-    public PersonInputPanel(String id, Person person, Date date) {
-        super(id);
-        this.person = person;
-        this.date = date;
-        this.personAgeType = person.isKid() ? PersonAgeType.KID : PersonAgeType.ADULT;
-        init(null, null, null, null);
-    }
 
     public PersonInputPanel(String id, Person person, FeedbackPanel messages, Component scrollToComponent, PersonAgeType personAgeType,
             Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
@@ -490,6 +475,10 @@ public class PersonInputPanel extends Panel {
         documentButtonsContainer.setVisible(!isNew());
         documentFieldset.add(documentButtonsContainer);
 
+        final WebMarkupContainer documentInputPanelWrapper = new WebMarkupContainer("documentInputPanelWrapper");
+        documentInputPanelWrapper.setOutputMarkupId(true);
+        documentForm.add(documentInputPanelWrapper);
+
         documentInputPanelContainer = new WebMarkupContainer("documentInputPanelContainer");
         documentInputPanelContainer.setOutputMarkupId(true);
         if (isNew()) {
@@ -497,7 +486,7 @@ public class PersonInputPanel extends Panel {
         } else {
             documentInputPanelContainer.add(newDocumentInputPanel(person.getDocument()));
         }
-        documentForm.add(documentInputPanelContainer);
+        documentInputPanelWrapper.add(documentInputPanelContainer);
 
         //document type
         final EntityAttributeType documentTypeAttributeType =
@@ -510,7 +499,7 @@ public class PersonInputPanel extends Panel {
         documentTypeModel = new Model<DomainObject>();
         documentTypesModel = Model.ofList(null);
         if (!isNew()) {
-            documentTypesModel.setObject(documentTypeStrategy.getAll());
+            documentTypesModel.setObject(documentTypeStrategy.getAll(getLocale()));
             documentTypeModel.setObject(find(documentTypesModel.getObject(), new Predicate<DomainObject>() {
 
                 @Override
@@ -548,8 +537,10 @@ public class PersonInputPanel extends Panel {
                     documentInputPanelContainer.replace(newDocumentInputPanel(document));
                     target.addComponent(documentInputPanelContainer);
                     target.addComponent(documentType);
-                    target.prependJavascript("$('#documentInputPanelWrapper').hide();");
-                    target.appendJavascript("$('#documentInputPanelWrapper').slideDown('fast',"
+
+                    final String documentInputPanelWrapperId = documentInputPanelWrapper.getMarkupId();
+                    target.prependJavascript("$('#" + documentInputPanelWrapperId + "').hide();");
+                    target.appendJavascript("$('#" + documentInputPanelWrapperId + "').slideDown('fast',"
                             + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
                 }
             }
@@ -571,11 +562,12 @@ public class PersonInputPanel extends Panel {
                     initDocumentTypesModel();
                     updateDocumentTypeComponent();
 
+                    final String documentInputPanelWrapperId = documentInputPanelWrapper.getMarkupId();
                     if (documentTypesModel.getObject().size() > 1) {
-                        target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
+                        target.prependJavascript("$('#" + documentInputPanelWrapperId + "').hide('slide', {}, 750);");
                     } else {
-                        target.prependJavascript("$('#documentInputPanelWrapper').hide();");
-                        target.appendJavascript("$('#documentInputPanelWrapper').slideDown('fast',"
+                        target.prependJavascript("$('#" + documentInputPanelWrapperId + "').hide();");
+                        target.appendJavascript("$('#" + documentInputPanelWrapperId + "').slideDown('fast',"
                                 + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
                         target.addComponent(documentInputPanelContainer);
                     }
@@ -671,7 +663,7 @@ public class PersonInputPanel extends Panel {
                     documentTypesModel.setObject(person.isKid() ? documentTypeStrategy.getKidDocumentTypes()
                             : documentTypeStrategy.getAdultDocumentTypes());
                 } else {
-                    documentTypesModel.setObject(documentTypeStrategy.getAll());
+                    documentTypesModel.setObject(documentTypeStrategy.getAll(getLocale()));
                 }
                 break;
         }

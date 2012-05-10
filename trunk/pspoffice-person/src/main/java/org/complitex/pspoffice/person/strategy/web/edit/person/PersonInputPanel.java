@@ -329,6 +329,17 @@ public class PersonInputPanel extends Panel {
         }
     }
 
+    private boolean validateDocumentIssuedDate() {
+        final Date birthDate = person.getBirthDate();
+        final Document document = !documentReplacedFlag ? person.getDocument() : person.getReplacedDocument();
+        final Date documentIssued = document.getDateIssued();
+        if (documentIssued != null && birthDate.after(documentIssued)) {
+            error(getString("document_issued_later_birth_date"));
+            return false;
+        }
+        return true;
+    }
+
     public boolean validate() {
         //birth date and PersonAgeType
         if (!person.isKid() && personAgeType == PersonAgeType.KID) {
@@ -357,6 +368,9 @@ public class PersonInputPanel extends Panel {
                         documentTypeStrategy.displayDomainObject(documentTypeModel.getObject(), getLocale()).toLowerCase(getLocale())));
             }
         }
+
+        //document issued date must be later then person's birth date
+        validateDocumentIssuedDate();
 
         //children
         if (person.hasChildren() && person.isKid()) {
@@ -486,7 +500,8 @@ public class PersonInputPanel extends Panel {
         documentForm.add(documentInputPanelContainer);
 
         //document type
-        final EntityAttributeType documentTypeAttributeType = documentStrategy.getEntity().getAttributeType(DocumentStrategy.DOCUMENT_TYPE);
+        final EntityAttributeType documentTypeAttributeType =
+                documentStrategy.getEntity().getAttributeType(DocumentStrategy.DOCUMENT_TYPE);
         //label
         IModel<String> labelModel = labelModel(documentTypeAttributeType.getAttributeNames(), getLocale());
         documentForm.add(new Label("label", labelModel));
@@ -547,29 +562,34 @@ public class PersonInputPanel extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                documentReplacedFlag = true;
-                setVisible(false);
-                target.addComponent(documentButtonsContainer);
-                documentTypeModel.setObject(null);
-                documentType.setEnabled(true);
-                initDocumentTypesModel();
-                updateDocumentTypeComponent();
+                if (PersonInputPanel.this.validateDocumentIssuedDate()) {
+                    documentReplacedFlag = true;
+                    setVisible(false);
+                    target.addComponent(documentButtonsContainer);
+                    documentTypeModel.setObject(null);
+                    documentType.setEnabled(true);
+                    initDocumentTypesModel();
+                    updateDocumentTypeComponent();
 
-                if (documentTypesModel.getObject().size() > 1) {
-                    target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
+                    if (documentTypesModel.getObject().size() > 1) {
+                        target.prependJavascript("$('#documentInputPanelWrapper').hide('slide', {}, 750);");
+                    } else {
+                        target.prependJavascript("$('#documentInputPanelWrapper').hide();");
+                        target.appendJavascript("$('#documentInputPanelWrapper').slideDown('fast',"
+                                + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
+                        target.addComponent(documentInputPanelContainer);
+                    }
+                    target.focusComponent(documentType);
+                    target.addComponent(documentType);
                 } else {
-                    target.prependJavascript("$('#documentInputPanelWrapper').hide();");
-                    target.appendJavascript("$('#documentInputPanelWrapper').slideDown('fast',"
-                            + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
-                    target.addComponent(documentInputPanelContainer);
+                    target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
                 }
-                target.focusComponent(documentType);
-                target.addComponent(documentType);
                 target.addComponent(messages);
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
+                super.onError(target, form);
                 target.addComponent(messages);
                 target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
             }

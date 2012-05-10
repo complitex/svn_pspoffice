@@ -346,7 +346,22 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         //register owner
         WebMarkupContainer registerOwnerContainer = new WebMarkupContainer("registerOwnerContainer");
         form.add(registerOwnerContainer);
-        registerOwnerContainer.setVisible(isNew());
+        {
+            boolean allowRegisterOwner = false;
+            if (canEdit(null, apartmentCardStrategy.getEntityTable(), newApartmentCard)) {
+                allowRegisterOwner = true;
+                if (!isNew()) {
+                    for (Registration registration : newApartmentCard.getRegistrations()) {
+                        if (newApartmentCard.getOwner().getId().equals(registration.getPerson().getId())
+                                && !registration.isFinished()) {
+                            allowRegisterOwner = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            registerOwnerContainer.setVisible(allowRegisterOwner);
+        }
 
         final CheckBox registerOwnerCheckBox = new CheckBox("registerOwnerCheckBox", new Model<Boolean>(false));
         registerOwnerCheckBox.setOutputMarkupId(true);
@@ -393,7 +408,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         //registrations
         final Map<Long, IModel<Boolean>> selectedMap = newHashMap();
-        for (Registration registration : apartmentCard.getRegistrations()) {
+        for (Registration registration : newApartmentCard.getRegistrations()) {
             if (!registration.isFinished()) {
                 selectedMap.put(registration.getId(), new Model<Boolean>(false));
             }
@@ -409,15 +424,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                List<Registration> registrationsToRemove = newArrayList(filter(apartmentCard.getRegistrations(), new Predicate<Registration>() {
+                List<Registration> registrationsToRemove = newArrayList(filter(newApartmentCard.getRegistrations(),
+                        new Predicate<Registration>() {
 
-                    @Override
-                    public boolean apply(Registration registration) {
-                        IModel<Boolean> model = selectedMap.get(registration.getId());
-                        return model != null ? model.getObject() : false;
-                    }
-                }));
-                removeRegistrationDialog.open(target, apartmentCard.getId(), registrationsToRemove);
+                            @Override
+                            public boolean apply(Registration registration) {
+                                IModel<Boolean> model = selectedMap.get(registration.getId());
+                                return model != null ? model.getObject() : false;
+                            }
+                        }));
+                removeRegistrationDialog.open(target, newApartmentCard.getId(), registrationsToRemove);
             }
 
             @Override
@@ -442,15 +458,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                List<Registration> registrationsToChangeType = newArrayList(filter(apartmentCard.getRegistrations(), new Predicate<Registration>() {
+                List<Registration> registrationsToChangeType = newArrayList(filter(newApartmentCard.getRegistrations(),
+                        new Predicate<Registration>() {
 
-                    @Override
-                    public boolean apply(Registration registration) {
-                        IModel<Boolean> model = selectedMap.get(registration.getId());
-                        return model != null ? model.getObject() : false;
-                    }
-                }));
-                changeRegistrationTypeDialog.open(target, apartmentCard.getId(), registrationsToChangeType);
+                            @Override
+                            public boolean apply(Registration registration) {
+                                IModel<Boolean> model = selectedMap.get(registration.getId());
+                                return model != null ? model.getObject() : false;
+                            }
+                        }));
+                changeRegistrationTypeDialog.open(target, newApartmentCard.getId(), registrationsToChangeType);
             }
         };
         changeRegistrationType.add(changeRegistrationTypeButton);
@@ -469,7 +486,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         allSelected.setVisible(!selectedMap.isEmpty());
         form.add(allSelected);
 
-        ListView<Registration> registrations = new ListView<Registration>("registrations", apartmentCard.getRegistrations()) {
+        ListView<Registration> registrations = new ListView<Registration>("registrations", newApartmentCard.getRegistrations()) {
 
             @Override
             protected void populateItem(ListItem<Registration> item) {
@@ -491,7 +508,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     @Override
                     public void onClick() {
                         PageParameters params = personStrategy.getEditPageParams(registration.getPerson().getId(), null, null);
-                        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(apartmentCard.getId(), backInfoSessionKey));
+                        BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(newApartmentCard.getId(), backInfoSessionKey));
                         params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(personStrategy.getEditPage(), params);
                     }
@@ -567,7 +584,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
         List<Attribute> userAttributes = newArrayList();
         for (Long attributeTypeId : userAttributeTypeIds) {
-            Attribute userAttribute = apartmentCard.getAttribute(attributeTypeId);
+            Attribute userAttribute = newApartmentCard.getAttribute(attributeTypeId);
             if (userAttribute != null) {
                 userAttributes.add(userAttribute);
             }
@@ -587,12 +604,12 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         CollapsibleFieldset reports = new CollapsibleFieldset("reports", new ResourceModel("reports"));
         WebMarkupContainer familyAndApartmentInfoReportContainer =
                 new WebMarkupContainer("family_and_apartment_info_report_container");
-        familyAndApartmentInfoReportContainer.setVisible(!communalApartmentService.isCommunalApartmentCard(apartmentCard));
+        familyAndApartmentInfoReportContainer.setVisible(!communalApartmentService.isCommunalApartmentCard(newApartmentCard));
         familyAndApartmentInfoReportContainer.add(new Link<Void>("family_and_apartment_info_report") {
 
             @Override
             public void onClick() {
-                setResponsePage(new FamilyAndApartmentInfoPage(apartmentCard));
+                setResponsePage(new FamilyAndApartmentInfoPage(newApartmentCard));
             }
         });
         reports.add(familyAndApartmentInfoReportContainer);
@@ -600,25 +617,25 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
             @Override
             public void onClick() {
-                setResponsePage(new FamilyAndHousingPaymentsPage(apartmentCard));
+                setResponsePage(new FamilyAndHousingPaymentsPage(newApartmentCard));
             }
         });
         reports.add(new Link<Void>("housing_payments_report") {
 
             @Override
             public void onClick() {
-                setResponsePage(new HousingPaymentsPage(apartmentCard));
+                setResponsePage(new HousingPaymentsPage(newApartmentCard));
             }
         });
         WebMarkupContainer familyAndCommunalApartmentInfoReportContainer =
                 new WebMarkupContainer("family_and_communal_apartment_info_report_container");
-        familyAndCommunalApartmentInfoReportContainer.setVisible(communalApartmentService.isCommunalApartmentCard(apartmentCard));
+        familyAndCommunalApartmentInfoReportContainer.setVisible(communalApartmentService.isCommunalApartmentCard(newApartmentCard));
         familyAndCommunalApartmentInfoReportContainer.add(
                 new Link<Void>("family_and_communal_apartment_info_report") {
 
                     @Override
                     public void onClick() {
-                        setResponsePage(new FamilyAndCommunalApartmentInfoPage(apartmentCard));
+                        setResponsePage(new FamilyAndCommunalApartmentInfoPage(newApartmentCard));
                     }
                 });
         reports.add(familyAndCommunalApartmentInfoReportContainer);

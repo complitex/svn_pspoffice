@@ -143,7 +143,7 @@ final class RegistrationHistoryPanel extends Panel {
         WebMarkupContainer ownerRelationshipContainer = new WebMarkupContainer("ownerRelationshipContainer");
         ownerRelationshipContainer.add(new Label("label", labelModel(ownerRelationshipAttributeType.getAttributeNames(), getLocale())));
         ownerRelationshipContainer.add(new WebMarkupContainer("required").setVisible(ownerRelationshipAttributeType.isMandatory()));
-        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll();
+        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll(null);
         DisableAwareDropDownChoice<DomainObject> ownerRelationship = new DisableAwareDropDownChoice<DomainObject>("input",
                 new Model<DomainObject>(registration.getOwnerRelationship()), allOwnerRelationships,
                 new DomainObjectDisableAwareRenderer() {

@@ -351,7 +351,7 @@ public class RegistrationEdit extends FormTemplatePage {
         ownerRelationshipContainer.add(new WebMarkupContainer("required").setVisible(ownerRelationshipAttributeType.isMandatory()));
 
         //owner relationship
-        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll();
+        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll(getLocale());
         IModel<DomainObject> ownerRelationshipModel = new Model<DomainObject>() {
 
             @Override

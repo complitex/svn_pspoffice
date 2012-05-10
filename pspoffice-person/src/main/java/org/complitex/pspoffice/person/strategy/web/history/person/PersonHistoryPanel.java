@@ -245,7 +245,7 @@ final class PersonHistoryPanel extends Panel {
         IModel<String> documentTyleLabelModel = labelModel(documentTypeAttributeType.getAttributeNames(), getLocale());
         documentTypeContainer.add(new Label("label", documentTyleLabelModel));
         documentTypeContainer.add(new WebMarkupContainer("required").setVisible(documentTypeAttributeType.isMandatory()));
-        final List<DomainObject> documentTypes = documentTypeStrategy.getAll();
+        final List<DomainObject> documentTypes = documentTypeStrategy.getAll(null);
         IModel<DomainObject> documentTypeModel = new Model<DomainObject>();
         documentTypeModel.setObject(find(documentTypes, new Predicate<DomainObject>() {
 

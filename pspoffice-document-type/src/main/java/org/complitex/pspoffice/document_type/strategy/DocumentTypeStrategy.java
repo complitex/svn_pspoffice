@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.AttributeExample;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.strategy.DeleteException;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
@@ -46,6 +48,8 @@ public class DocumentTypeStrategy extends TemplateStrategy {
     public static final long PASSPORT = 1;
     public static final long BIRTH_CERTIFICATE = 2;
     private static final Set<Long> RESERVED_INSTANCE_IDS = of(PASSPORT, BIRTH_CERTIFICATE);
+    @EJB
+    private LocaleBean localeBean;
 
     @Override
     public String getEntityTable() {
@@ -80,17 +84,20 @@ public class DocumentTypeStrategy extends TemplateStrategy {
     }
 
     @Transactional
-    @SuppressWarnings("unchecked")
-    public List<DomainObject> getAll() {
+    public List<DomainObject> getAll(Locale sortLocale) {
         DomainObjectExample example = new DomainObjectExample();
-        example.setOrderByAttributeTypeId(NAME);
+        if (sortLocale != null) {
+            example.setLocaleId(localeBean.convert(sortLocale).getId());
+            example.setOrderByAttributeTypeId(NAME);
+            example.setAsc(true);
+        }
         configureExample(example, ImmutableMap.<String, Long>of(), null);
         return (List<DomainObject>) find(example);
     }
 
     @Transactional
     public List<DomainObject> getKidDocumentTypes() {
-        return newArrayList(Iterables.filter(getAll(), new Predicate<DomainObject>() {
+        return newArrayList(Iterables.filter(getAll(null), new Predicate<DomainObject>() {
 
             @Override
             public boolean apply(DomainObject documentType) {
@@ -101,7 +108,7 @@ public class DocumentTypeStrategy extends TemplateStrategy {
 
     @Transactional
     public List<DomainObject> getAdultDocumentTypes() {
-        return newArrayList(Iterables.filter(getAll(), new Predicate<DomainObject>() {
+        return newArrayList(Iterables.filter(getAll(null), new Predicate<DomainObject>() {
 
             @Override
             public boolean apply(DomainObject documentType) {
@@ -130,11 +137,15 @@ public class DocumentTypeStrategy extends TemplateStrategy {
     }
 
     public static boolean isKidDocumentType(long documentTypeId) {
-        return documentTypeId == BIRTH_CERTIFICATE;
+        if (RESERVED_INSTANCE_IDS.contains(documentTypeId)) {
+            return documentTypeId == BIRTH_CERTIFICATE;
+        } else {
+            return true;
+        }
     }
 
     public static boolean isAdultDocumentType(long documentTypeId) {
-        return documentTypeId == PASSPORT || documentTypeId == BIRTH_CERTIFICATE;
+        return true;
     }
 
     public Collection<StringCulture> reservedNames() {

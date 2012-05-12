@@ -66,7 +66,7 @@ public class OwnerRelationshipStrategy extends TemplateStrategy {
 
     @Override
     public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-        if (isEmpty(searchTextInput)) {
+        if (!isEmpty(searchTextInput)) {
             AttributeExample attrExample = example.getAttributeExample(NAME);
             if (attrExample == null) {
                 attrExample = new AttributeExample(NAME);

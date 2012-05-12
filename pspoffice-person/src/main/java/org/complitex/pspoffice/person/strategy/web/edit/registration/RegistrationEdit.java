@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.registration;
 
+import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import static com.google.common.collect.ImmutableList.*;
@@ -20,6 +21,7 @@ import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -50,11 +52,11 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.Numbers;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
+import org.complitex.dictionary.web.component.combobox.Combobox;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
 import org.complitex.dictionary.web.component.type.MaskedDateInputPanel;
-import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.report.web.F3ReferencePage;
 import org.complitex.pspoffice.person.report.web.RegistrationCardPage;
@@ -140,6 +142,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
     private void init() {
         add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
+        add(CSSPackageResource.getHeaderContribution(RegistrationEdit.class, RegistrationEdit.class.getSimpleName() + ".css"));
 
         IModel<String> addressModel = new LoadableDetachableModel<String>() {
 
@@ -365,18 +368,19 @@ public class RegistrationEdit extends FormTemplatePage {
             }
         };
 
-        DisableAwareDropDownChoice<DomainObject> ownerRelationship = new DisableAwareDropDownChoice<DomainObject>("input",
-                ownerRelationshipModel, allOwnerRelationships, new DomainObjectDisableAwareRenderer() {
+        Combobox<DomainObject> ownerRelationship = new Combobox<DomainObject>("input", ownerRelationshipModel,
+                allOwnerRelationships, new DomainObjectDisableAwareRenderer() {
 
             @Override
             public Object getDisplayValue(DomainObject object) {
                 return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
             }
         });
-        ownerRelationship.setNullValid(true);
-        ownerRelationship.setRequired(ownerRelationshipAttributeType.isMandatory());
-        ownerRelationship.setLabel(labelModel);
-        ownerRelationship.setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
+
+        ownerRelationship.setNullValid(true).
+                setRequired(ownerRelationshipAttributeType.isMandatory()).
+                setLabel(labelModel).
+                setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
         ownerRelationshipContainer.add(ownerRelationship);
         return ownerRelationshipContainer;
     }

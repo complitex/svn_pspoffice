@@ -39,6 +39,7 @@ import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
 import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.wicket.markup.html.form.TextField;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +118,7 @@ final class RegistrationHistoryPanel extends Panel {
         content.add(personContainer);
 
         //registration date
-        initSystemAttributeInput(registration, modification, content, "registrationDate", REGISTRATION_DATE, false);
+        initSystemAttributeInput(registration, modification, content, "registrationDate", REGISTRATION_DATE, true);
 
         //registration type
         final EntityAttributeType registrationTypeAttributeType = ENTITY.getAttributeType(REGISTRATION_TYPE);
@@ -141,19 +142,13 @@ final class RegistrationHistoryPanel extends Panel {
         //owner relationship
         final EntityAttributeType ownerRelationshipAttributeType = ENTITY.getAttributeType(OWNER_RELATIONSHIP);
         WebMarkupContainer ownerRelationshipContainer = new WebMarkupContainer("ownerRelationshipContainer");
+        final DomainObject ownerRelationshipObject = registration.getOwnerRelationship();
         ownerRelationshipContainer.add(new Label("label", labelModel(ownerRelationshipAttributeType.getAttributeNames(), getLocale())));
         ownerRelationshipContainer.add(new WebMarkupContainer("required").setVisible(ownerRelationshipAttributeType.isMandatory()));
-        final List<DomainObject> allOwnerRelationships = ownerRelationshipStrategy.getAll(null);
-        DisableAwareDropDownChoice<DomainObject> ownerRelationship = new DisableAwareDropDownChoice<DomainObject>("input",
-                new Model<DomainObject>(registration.getOwnerRelationship()), allOwnerRelationships,
-                new DomainObjectDisableAwareRenderer() {
-
-                    @Override
-                    public Object getDisplayValue(DomainObject object) {
-                        return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
-                    }
-                });
-        ownerRelationship.setNullValid(true);
+        final String ownerRelationshipValue = ownerRelationshipObject != null
+                ? ownerRelationshipStrategy.displayDomainObject(ownerRelationshipObject, getLocale())
+                : null;
+        TextField<String> ownerRelationship = new TextField<String>("input", new Model<String>(ownerRelationshipValue));
         ownerRelationship.setEnabled(false);
 
         final ModificationType ownerRelationModificationType = modification.getAttributeModificationType(OWNER_RELATIONSHIP);

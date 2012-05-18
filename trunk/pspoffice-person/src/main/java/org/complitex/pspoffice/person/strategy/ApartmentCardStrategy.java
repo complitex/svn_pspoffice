@@ -217,7 +217,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
     @Transactional
     private void loadOwner(ApartmentCard apartmentCard) {
         long ownerId = apartmentCard.getAttribute(OWNER).getValueId();
-        Person owner = personStrategy.findById(ownerId, true, true, false, false);
+        Person owner = personStrategy.findById(ownerId, true, true, false, false, false);
         apartmentCard.setOwner(owner);
     }
 

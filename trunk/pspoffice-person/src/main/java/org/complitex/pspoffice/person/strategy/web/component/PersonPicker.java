@@ -351,7 +351,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
             @Override
             protected void onSave(Person oldPerson, Person newPerson, AjaxRequestTarget target) {
-                Person createdPerson = personStrategy.findById(newPerson.getId(), false, true, false, false);
+                Person createdPerson = personStrategy.findById(newPerson.getId(), false, true, false, false, false);
                 PersonPicker.this.getModel().setObject(createdPerson);
 
                 target.addComponent(personLabelContainer);

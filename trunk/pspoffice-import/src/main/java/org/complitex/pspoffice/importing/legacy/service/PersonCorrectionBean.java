@@ -96,7 +96,7 @@ public class PersonCorrectionBean extends AbstractBean {
                 put("personId", p.getId()).
                 build());
         if (ids.size() == 1) {
-            return personStrategy.findById(ids.get(0), true, false, false, false);
+            return personStrategy.findById(ids.get(0), true, false, false, false, false);
         } else if (ids.isEmpty()) {
             return null;
         } else {
@@ -104,7 +104,7 @@ public class PersonCorrectionBean extends AbstractBean {
         }
     }
 
-    public Person newSystemPerson(PersonCorrection pc, Date birthDate, String militaryServiceRelation) {
+    public Person newSystemPerson(PersonCorrection pc, Date birthDate, Long systemMilitaryServiceRelationId) {
         Person p = personStrategy.newInstance();
 
         //ФИО
@@ -156,8 +156,8 @@ public class PersonCorrectionBean extends AbstractBean {
         p.setDocument(d);
 
         //отношение к воиской обязанности
-        if (militaryServiceRelation != null) {
-            Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.MILITARY_SERVICE_RELATION), militaryServiceRelation);
+        if (systemMilitaryServiceRelationId != null) {
+            p.getAttribute(PersonStrategy.MILITARY_SERVICE_RELATION).setValueId(systemMilitaryServiceRelationId);
         }
 
         //ID в файле импорта
@@ -196,7 +196,7 @@ public class PersonCorrectionBean extends AbstractBean {
             return;
         }
 
-        Person person = personStrategy.findById(personId, true, false, false, false);
+        Person person = personStrategy.findById(personId, true, false, false, false, false);
         Person newPerson = CloneUtil.cloneObject(person);
 
         List<Attribute> childrenAttributes = newPerson.getAttributes(PersonStrategy.CHILDREN);

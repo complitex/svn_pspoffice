@@ -7,9 +7,11 @@ import org.complitex.pspoffice.report.web.AbstractReportDownload;
 
 import java.util.Map;
 import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.util.EjbBeanLocator;
 import org.complitex.dictionary.util.ResourceUtil;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.pspoffice.person.report.entity.RegistrationCard;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -35,6 +37,7 @@ public class RegistrationCardDownload extends AbstractReportDownload<Registratio
         PersonStrategy personStrategy = EjbBeanLocator.getBean(PersonStrategy.class);
         AddressRendererBean addressRendererBean = EjbBeanLocator.getBean(AddressRendererBean.class);
         RegistrationTypeStrategy registrationTypeStrategy = EjbBeanLocator.getBean(RegistrationTypeStrategy.class);
+        MilitaryServiceRelationStrategy militaryServiceRelationStrategy = EjbBeanLocator.getBean(MilitaryServiceRelationStrategy.class);
         final Locale systemLocale = EjbBeanLocator.getBean(LocaleBean.class).getSystemLocale();
 
         Registration registration = report.getRegistration();
@@ -85,7 +88,10 @@ public class RegistrationCardDownload extends AbstractReportDownload<Registratio
                 break;
             }
         }
-        putMultilineValue(map, person.getMilitaryServiceRelation(), 50, MILITARY0, MILITARY1, MILITARY2);
+        final DomainObject militaryServiceRelation = person.getMilitaryServiceRelation();
+        putMultilineValue(map, militaryServiceRelation != null
+                ? militaryServiceRelationStrategy.displayDomainObject(militaryServiceRelation, locale) : null,
+                50, MILITARY0, MILITARY1, MILITARY2);
 
         map.put(REGISTRATION_DATE, registration.getRegistrationDate());
         map.put(REGISTRATION_TYPE, registrationTypeStrategy.displayDomainObject(registration.getRegistrationType(), locale));

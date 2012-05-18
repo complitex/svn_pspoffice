@@ -32,10 +32,18 @@ INSERT INTO `document_type_string_culture`(`id`, `locale_id`, `value`) VALUES (3
 INSERT INTO `document_type_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
 (1,3,2700,3,2700);
 
+-- Militar service relation --
+INSERT INTO `military_service_relation`(`object_id`) VALUES (1),(2),(3);
+INSERT INTO `military_service_relation_string_culture`(`id`, `locale_id`, `value`) VALUES (1, 1, UPPER('годен')), (1, 2, UPPER('годен'));
+INSERT INTO `military_service_relation_string_culture`(`id`, `locale_id`, `value`) VALUES (2, 1, UPPER('служил')), (2, 2, UPPER('служил'));
+INSERT INTO `military_service_relation_string_culture`(`id`, `locale_id`, `value`) VALUES (3, 1, UPPER('не годен')), (3, 2, UPPER('не годен'));
+INSERT INTO `military_service_relation_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) VALUES
+(1,1,2900,1,2900),(1,2,2900,2,2900),(1,3,2900,3,2900);
+
 -- Test user organizations
 insert into `organization`(`object_id`) values (1),(2);
-insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1, 1, UPPER('Паспортный стол №1')),(2, 1, UPPER('1')),
-(3, 1, UPPER('Паспортный стол №2')),(4, 1, UPPER('2'));
+insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1, 1, UPPER('Паспортный стол №1')),(2, 1, UPPER('3002')),
+(3, 1, UPPER('Паспортный стол №2')),(4, 1, UPPER('3003'));
 insert into `organization_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values
 (1,1,900,1,900), (1,1,901,2,901), (1,1,904,1,904),
 (1,2,900,3,900), (1,2,901,4,901), (1,2,904,1,904);
@@ -70,5 +78,5 @@ insert into `user_organization` (`id`, `user_id`, `organization_object_id`, `mai
 insert into `usergroup` (`id`, `login`, `group_name`) values(5,'2','EMPLOYEES_CHILD_VIEW');
 
 --insert into config(`name`, `value`) values ('IMPORT_FILE_STORAGE_DIR', 'D:\\Artem\\Projects\\org.complitex\\storage\\import');
---insert into config(`name`, `value`) values ('DEFAULT_LEGACY_IMPORT_FILE_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada');
---insert into config(`name`, `value`) values ('DEFAULT_LEGACY_IMPORT_FILE_ERRORS_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada\\errors');
+insert into config(`name`, `value`) values ('DEFAULT_LEGACY_IMPORT_FILE_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada');
+insert into config(`name`, `value`) values ('DEFAULT_LEGACY_IMPORT_FILE_ERRORS_DIR', 'D:\\Artem\\Projects\\org.complitex\\pspoffice\\docs\\PSW_Rada\\errors');

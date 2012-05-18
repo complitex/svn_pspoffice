@@ -32,12 +32,21 @@ public class Person extends DomainObject {
     private List<Person> children = newArrayList();
     private Document document;
     private Document replacedDocument;
+    private DomainObject militaryServiceRelation;
 
     public Person(DomainObject copy) {
         super(copy);
     }
 
     public Person() {
+    }
+
+    public DomainObject getMilitaryServiceRelation() {
+        return militaryServiceRelation;
+    }
+
+    public void setMilitaryServiceRelation(DomainObject militaryServiceRelation) {
+        this.militaryServiceRelation = militaryServiceRelation;
     }
 
     public Document getDocument() {
@@ -98,10 +107,6 @@ public class Person extends DomainObject {
 
     public Date getDeathDate() {
         return getDateValue(this, DEATH_DATE);
-    }
-
-    public String getMilitaryServiceRelation() {
-        return getStringValue(this, MILITARY_SERVICE_RELATION);
     }
 
     public Gender getGender() {

@@ -22,7 +22,9 @@ import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.complitex.address.service.AddressRendererBean;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.LocaleBean;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.pspoffice.person.report.download.RegistrationCardDownload;
 import org.complitex.pspoffice.person.report.entity.RegistrationCard;
 import org.complitex.pspoffice.person.report.service.RegistrationCardBean;
@@ -55,6 +57,8 @@ public class RegistrationCardPage extends WebPage {
     private LocaleBean localeBean;
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
+    @EJB
+    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
     @EJB
     private AddressRendererBean addressRendererBean;
 
@@ -116,7 +120,9 @@ public class RegistrationCardPage extends WebPage {
                             + format(child.getBirthDate()) + getString("children_birth_date_suffix")));
                 }
             });
-            add(new Label("military", person.getMilitaryServiceRelation()));
+            final DomainObject militaryServiceRelation = person.getMilitaryServiceRelation();
+            add(new Label("military", militaryServiceRelation != null
+                    ? militaryServiceRelationStrategy.displayDomainObject(militaryServiceRelation, getLocale()) : null));
             add(new Label("registrationDate", format(registration.getRegistrationDate())));
             add(new Label("registrationType", registrationTypeStrategy.displayDomainObject(registration.getRegistrationType(), getLocale())));
             add(new Label("departureRegion", registration.getDepartureRegion()));

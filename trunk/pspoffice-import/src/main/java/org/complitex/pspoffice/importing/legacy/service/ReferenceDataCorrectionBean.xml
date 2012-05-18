@@ -81,15 +81,8 @@
         </foreach>
     </select>
     
-    <select id="getMilitaryServiceRelationById" parameterType="map" resultType="string">
-        SELECT DISTINCT(`nkod`) FROM `military_duty_correction` WHERE `id` = #{id} AND
-        `idjek` IN 
-        <foreach open="(" close=")" separator="," collection="jekIds" item="idjek">
-            #{idjek}
-        </foreach>
-    </select>
-    
-    <select id="getByIdAndJek" parameterType="map" resultMap="org.complitex.pspoffice.importing.legacy.service.ReferenceDataCorrectionBean.referenceDataCorrection">
+    <select id="getByIdAndJek" parameterType="map" 
+        resultMap="org.complitex.pspoffice.importing.legacy.service.ReferenceDataCorrectionBean.referenceDataCorrection">
         SELECT * FROM `${entity}_correction` WHERE `id` = #{id} AND
         `idjek` = #{idjek}
     </select>

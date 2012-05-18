@@ -47,6 +47,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.StatusType;
+import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
@@ -59,6 +60,7 @@ import org.complitex.dictionary.web.component.type.MaskedDateInputPanel;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
@@ -72,7 +74,6 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.canEdit;
 import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
 import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
@@ -97,6 +98,8 @@ public class PersonInputPanel extends Panel {
     private RegistrationTypeStrategy registrationTypeStrategy;
     @EJB
     private OwnerRelationshipStrategy ownerRelationshipStrategy;
+    @EJB
+    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
     private Person person;
     private FeedbackPanel messages;
     private Component scrollToComponent;
@@ -121,7 +124,11 @@ public class PersonInputPanel extends Panel {
         return person.getId() == null;
     }
 
-    private boolean isHistory() {
+    private boolean canEdit() {
+        return DomainObjectAccessUtil.canEdit(null, personStrategy.getEntityTable(), person);
+    }
+
+    private boolean isInactive() {
         return person.getStatus() != StatusType.ACTIVE;
     }
 
@@ -133,7 +140,7 @@ public class PersonInputPanel extends Panel {
         PersonFullNamePanel personFullNamePanel = defaultNameLocale != null ? new PersonFullNamePanel("personFullNamePanel", person,
                 defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName)
                 : new PersonFullNamePanel("personFullNamePanel", person);
-        personFullNamePanel.setEnabled(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        personFullNamePanel.setEnabled(canEdit());
         add(personFullNamePanel);
 
         //system attributes:
@@ -166,7 +173,7 @@ public class PersonInputPanel extends Panel {
         initSystemAttributeInput(birthPlaceFieldset, "birthCity", BIRTH_CITY, false);
         initSystemAttributeInput(this, "ukraineCitizenship", UKRAINE_CITIZENSHIP, false);
         final WebMarkupContainer deathDateZone = new WebMarkupContainer("deathDateZone");
-        deathDateZone.setVisible(isHistory());
+        deathDateZone.setVisible(isInactive());
         add(deathDateZone);
         initSystemAttributeInput(deathDateZone, "deathDate", DEATH_DATE, false);
 
@@ -207,6 +214,16 @@ public class PersonInputPanel extends Panel {
                         return message.getReporter() == birthDateComponent && message.isError();
                     }
                 });
+            }
+
+            private void updateMilitaryServiceRelationComponent(AjaxRequestTarget target, boolean visible) {
+                boolean wasVisible = militaryServiceRelationHead.isVisible();
+                militaryServiceRelationHead.setVisible(visible);
+                militaryServiceRelationBody.setVisible(visible);
+                if (wasVisible ^ visible) {
+                    target.addComponent(militaryServiceRelationHead);
+                    target.addComponent(militaryServiceRelationBody);
+                }
             }
 
             private void updateChildrenComponent(AjaxRequestTarget target, boolean visible) {
@@ -265,9 +282,8 @@ public class PersonInputPanel extends Panel {
     }
 
     private boolean isBirthPlaceFieldsetVisible() {
-        return !(isHistory() && (person.getAttribute(BIRTH_COUNTRY) == null) && (person.getAttribute(BIRTH_DISTRICT) == null)
-                && (person.getAttribute(BIRTH_REGION) == null)
-                && (person.getAttribute(BIRTH_CITY) == null));
+        return canEdit() || (person.getAttribute(BIRTH_COUNTRY) != null) || (person.getAttribute(BIRTH_DISTRICT) != null)
+                || (person.getAttribute(BIRTH_REGION) != null) || (person.getAttribute(BIRTH_CITY) != null);
     }
 
     private void initAttributeInput(MarkupContainer parent, long attributeTypeId, boolean showIfMissing) {
@@ -289,10 +305,22 @@ public class PersonInputPanel extends Panel {
             attribute.setAttributeTypeId(attributeTypeId);
             parent.setVisible(showIfMissing);
         }
-        parent.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute, getLocale(), isHistory()));
+        parent.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute, getLocale(), isInactive()));
     }
 
     public void beforePersist() {
+        //military service relation
+        person.removeAttribute(MILITARY_SERVICE_RELATION);
+        final DomainObject militaryServiceRelation = person.getMilitaryServiceRelation();
+        if (militaryServiceRelation != null) {
+            Attribute militaryServiceRelationAttribute = new Attribute();
+            militaryServiceRelationAttribute.setAttributeId(1L);
+            militaryServiceRelationAttribute.setAttributeTypeId(MILITARY_SERVICE_RELATION);
+            militaryServiceRelationAttribute.setValueTypeId(MILITARY_SERVICE_RELATION);
+            militaryServiceRelationAttribute.setValueId(militaryServiceRelation.getId());
+            person.addAttribute(militaryServiceRelationAttribute);
+        }
+
         //children
         person.getAttributes().removeAll(Collections2.filter(person.getAttributes(), new Predicate<Attribute>() {
 
@@ -430,12 +458,11 @@ public class PersonInputPanel extends Panel {
                 };
                 childModel.setObject(item.getModelObject());
 
-                PersonPicker personPicker = new PersonPicker("searchChildComponent", PersonAgeType.KID, childModel, false, null,
-                        !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+                PersonPicker personPicker = new PersonPicker("searchChildComponent", PersonAgeType.KID, childModel,
+                        false, null, canEdit());
                 item.add(personPicker);
 
-                addRemoveLink("removeChild", item, null, childrenContainer).
-                        setVisible(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+                addRemoveLink("removeChild", item, null, childrenContainer).setVisible(canEdit());
             }
         };
         AjaxLink<Void> addChild = new AjaxLink<Void>("addChild") {
@@ -447,16 +474,13 @@ public class PersonInputPanel extends Panel {
                 target.addComponent(childrenContainer);
             }
         };
-        addChild.setVisible(!isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        addChild.setVisible(canEdit());
         childrenFieldset.add(addChild);
         childrenContainer.add(children);
-        if (isHistory() && person.getChildren().isEmpty()) {
-            childrenFieldset.setVisible(false);
-        }
         return childrenFieldset;
     }
     /**
-     * Document UI related fields
+     * Document UI fields
      */
     private IModel<DomainObject> documentTypeModel;
     private IModel<List<? extends DomainObject>> documentTypesModel;
@@ -520,7 +544,7 @@ public class PersonInputPanel extends Panel {
         });
         documentType.setOutputMarkupId(true);
         documentType.setLabel(labelModel);
-        documentType.setEnabled(isNew() && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        documentType.setEnabled(isNew() && canEdit());
         documentType.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 
             @Override
@@ -586,7 +610,7 @@ public class PersonInputPanel extends Panel {
                 target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
             }
         };
-        replaceDocument.setVisible(!isNew() && !isHistory() && canEdit(null, personStrategy.getEntityTable(), person));
+        replaceDocument.setVisible(!isNew() && canEdit());
         documentButtonsContainer.add(replaceDocument);
 
         //previous documents
@@ -744,7 +768,7 @@ public class PersonInputPanel extends Panel {
         return registrationsFieldset;
     }
     /**
-     * military service relation UI fields.
+     * Military service relation UI fields.
      */
     private WebMarkupContainer militaryServiceRelationHead;
     private WebMarkupContainer militaryServiceRelationBody;
@@ -758,7 +782,8 @@ public class PersonInputPanel extends Panel {
 
         EntityAttributeType militaryAttruibuteType = personStrategy.getEntity().getAttributeType(MILITARY_SERVICE_RELATION);
         //label
-        militaryServiceRelationHead.add(new Label("label", labelModel(militaryAttruibuteType.getAttributeNames(), getLocale())));
+        final IModel<String> labelModel = labelModel(militaryAttruibuteType.getAttributeNames(), getLocale());
+        militaryServiceRelationHead.add(new Label("label", labelModel));
 
         //required container
         WebMarkupContainer requiredContainer = new WebMarkupContainer("required");
@@ -770,30 +795,38 @@ public class PersonInputPanel extends Panel {
         militaryServiceRelationContainer.add(militaryServiceRelationBody);
 
         //input component
-        Attribute attribute = person.getAttribute(MILITARY_SERVICE_RELATION);
-        if (attribute == null) {
-            attribute = new Attribute();
-            attribute.setLocalizedValues(stringBean.newStringCultures());
-            attribute.setAttributeTypeId(MILITARY_SERVICE_RELATION);
-            militaryServiceRelationContainer.setVisible(false);
-        }
-        militaryServiceRelationBody.add(newInputComponent(personStrategy.getEntityTable(), null, person, attribute,
-                getLocale(), isHistory()));
+        final List<DomainObject> allMilitaryServiceRelations = militaryServiceRelationStrategy.getAll(getLocale());
+        IModel<DomainObject> militaryServiceRelationModel = new Model<DomainObject>() {
+
+            @Override
+            public DomainObject getObject() {
+                return person.getMilitaryServiceRelation();
+            }
+
+            @Override
+            public void setObject(DomainObject object) {
+                person.setMilitaryServiceRelation(object);
+            }
+        };
+        DisableAwareDropDownChoice<DomainObject> militaryServiceRelation =
+                new DisableAwareDropDownChoice<DomainObject>("input", militaryServiceRelationModel,
+                allMilitaryServiceRelations, new DomainObjectDisableAwareRenderer() {
+
+            @Override
+            public Object getDisplayValue(DomainObject object) {
+                return militaryServiceRelationStrategy.displayDomainObject(object, getLocale());
+            }
+        });
+        militaryServiceRelation.setNullValid(true);
+        militaryServiceRelation.setLabel(labelModel);
+        militaryServiceRelation.setRequired(militaryAttruibuteType.isMandatory());
+        militaryServiceRelation.setEnabled(canEdit());
+        militaryServiceRelationBody.add(militaryServiceRelation);
 
         boolean initialVisibility = personAgeType == PersonAgeType.ADULT || (personAgeType == PersonAgeType.ANY && !person.isKid());
         militaryServiceRelationHead.setVisible(initialVisibility);
         militaryServiceRelationBody.setVisible(initialVisibility);
 
         return militaryServiceRelationContainer;
-    }
-
-    private void updateMilitaryServiceRelationComponent(AjaxRequestTarget target, boolean visible) {
-        boolean wasVisible = militaryServiceRelationHead.isVisible();
-        militaryServiceRelationHead.setVisible(visible);
-        militaryServiceRelationBody.setVisible(visible);
-        if (wasVisible ^ visible) {
-            target.addComponent(militaryServiceRelationHead);
-            target.addComponent(militaryServiceRelationBody);
-        }
     }
 }

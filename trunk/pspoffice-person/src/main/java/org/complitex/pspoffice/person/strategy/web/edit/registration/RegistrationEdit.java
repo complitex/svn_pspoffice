@@ -47,6 +47,7 @@ import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.Numbers;
@@ -82,7 +83,6 @@ import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 
@@ -136,7 +136,11 @@ public class RegistrationEdit extends FormTemplatePage {
         return oldRegistration == null;
     }
 
-    private boolean isHistory() {
+    private boolean canEdit() {
+        return DomainObjectAccessUtil.canEdit(null, registrationStrategy.getEntityTable(), newRegistration);
+    }
+
+    private boolean isInactive() {
         return newRegistration.getStatus() != StatusType.ACTIVE;
     }
 
@@ -174,22 +178,23 @@ public class RegistrationEdit extends FormTemplatePage {
         personContainer.add(new WebMarkupContainer("required").setVisible(personAttributeType.isMandatory()));
 
         PersonPicker person = new PersonPicker("person", PersonAgeType.ANY, new PropertyModel<Person>(newRegistration, "person"),
-                true, labelModel(personAttributeType.getAttributeNames(), getLocale()), isNew());
+                true, labelModel(personAttributeType.getAttributeNames(), getLocale()), isNew() && canEdit());
         personContainer.add(person);
         form.add(personContainer);
 
         //registration date
-        initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, true);
-        if (!isHistory()) {
-            if (newRegistration.getRegistrationDate() == null) {
-                stringBean.getSystemStringCulture(newRegistration.getAttribute(REGISTRATION_DATE).getLocalizedValues()).
-                        setValue(new DateConverter().toString(DateUtil.getCurrentDate()));
-            }
-
-            if (!isNew()) {
-                MaskedDateInput registrationDate = (MaskedDateInput) form.get("registrationDateContainer:input:"
-                        + MaskedDateInputPanel.DATE_INPUT_ID);
-                registrationDate.setMinDate(newRegistration.getPerson().getBirthDate());
+        {
+            initSystemAttributeInput(form, "registrationDate", REGISTRATION_DATE, true);
+            if (!isInactive()) {
+                if (newRegistration.getRegistrationDate() == null) {
+                    stringBean.getSystemStringCulture(newRegistration.getAttribute(REGISTRATION_DATE).getLocalizedValues()).
+                            setValue(new DateConverter().toString(DateUtil.getCurrentDate()));
+                }
+                if (!isNew()) {
+                    MaskedDateInput registrationDate = (MaskedDateInput) form.get("registrationDateContainer:input:"
+                            + MaskedDateInputPanel.DATE_INPUT_ID);
+                    registrationDate.setMinDate(newRegistration.getPerson().getBirthDate());
+                }
             }
         }
 
@@ -210,7 +215,7 @@ public class RegistrationEdit extends FormTemplatePage {
 
         CollapsibleFieldset departureAddressFieldset = new CollapsibleFieldset("departureAddressFieldset",
                 new ResourceModel("departure_address"), false);
-        departureAddressFieldset.setVisible(isHistory());
+        departureAddressFieldset.setVisible(isInactive());
         form.add(departureAddressFieldset);
         initSystemAttributeInput(departureAddressFieldset, "departureCountry", DEPARTURE_COUNTRY, true);
         initSystemAttributeInput(departureAddressFieldset, "departureRegion", DEPARTURE_REGION, true);
@@ -328,7 +333,7 @@ public class RegistrationEdit extends FormTemplatePage {
                 target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
-        submit.setVisible(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
+        submit.setVisible(canEdit());
         form.add(submit);
         Link<Void> back = new Link<Void>("back") {
 
@@ -375,12 +380,11 @@ public class RegistrationEdit extends FormTemplatePage {
             public Object getDisplayValue(DomainObject object) {
                 return ownerRelationshipStrategy.displayDomainObject(object, getLocale());
             }
-        });
+        }, canEdit());
 
         ownerRelationship.setNullValid(true).
                 setRequired(ownerRelationshipAttributeType.isMandatory()).
-                setLabel(labelModel).
-                setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
+                setLabel(labelModel);
         ownerRelationshipContainer.add(ownerRelationship);
         return ownerRelationshipContainer;
     }
@@ -422,7 +426,7 @@ public class RegistrationEdit extends FormTemplatePage {
         });
         registrationType.setRequired(registrationTypeAttributeType.isMandatory());
         registrationType.setLabel(labelModel);
-        registrationType.setEnabled(canEdit(null, registrationStrategy.getEntityTable(), newRegistration));
+        registrationType.setEnabled(canEdit());
         registrationTypeContainer.add(registrationType);
         return registrationTypeContainer;
     }
@@ -452,7 +456,8 @@ public class RegistrationEdit extends FormTemplatePage {
             attribute.setAttributeTypeId(attributeTypeId);
             parent.setVisible(showIfMissing);
         }
-        parent.add(newInputComponent(registrationStrategy.getEntityTable(), null, newRegistration, attribute, getLocale(), false));
+        parent.add(newInputComponent(registrationStrategy.getEntityTable(), null, newRegistration, attribute,
+                getLocale(), isInactive()));
     }
 
     public void beforePersist() {
@@ -557,7 +562,7 @@ public class RegistrationEdit extends FormTemplatePage {
             @Override
             protected void onBeforeRender() {
                 super.onBeforeRender();
-                setVisible(isHistory());
+                setVisible(isInactive());
             }
         }, new RegistrationCardButton(id) {
 
@@ -581,7 +586,7 @@ public class RegistrationEdit extends FormTemplatePage {
             @Override
             protected void onBeforeRender() {
                 super.onBeforeRender();
-                setVisible(!isHistory() && !isNew());
+                setVisible(!isNew() && canEdit());
             }
         });
     }

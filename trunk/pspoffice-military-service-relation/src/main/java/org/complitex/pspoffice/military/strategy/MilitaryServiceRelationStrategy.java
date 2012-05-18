@@ -4,6 +4,10 @@
  */
 package org.complitex.pspoffice.military.strategy;
 
+import com.google.common.collect.ImmutableMap;
+import javax.ejb.EJB;
+import org.complitex.dictionary.mybatis.Transactional;
+import org.complitex.dictionary.service.LocaleBean;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +35,8 @@ public class MilitaryServiceRelationStrategy extends TemplateStrategy {
      */
     public static final long NAME = 2900;
     public static final long CODE = 2901;
+    @EJB
+    private LocaleBean localeBean;
 
     @Override
     public String getEntityTable() {
@@ -49,7 +55,7 @@ public class MilitaryServiceRelationStrategy extends TemplateStrategy {
 
     @Override
     public void configureExample(DomainObjectExample example, Map<String, Long> ids, String searchTextInput) {
-        if (isEmpty(searchTextInput)) {
+        if (!isEmpty(searchTextInput)) {
             AttributeExample attrExample = example.getAttributeExample(NAME);
             if (attrExample == null) {
                 attrExample = new AttributeExample(NAME);
@@ -57,6 +63,18 @@ public class MilitaryServiceRelationStrategy extends TemplateStrategy {
             }
             attrExample.setValue(searchTextInput);
         }
+    }
+
+    @Transactional
+    public List<DomainObject> getAll(Locale sortLocale) {
+        DomainObjectExample example = new DomainObjectExample();
+        if (sortLocale != null) {
+            example.setLocaleId(localeBean.convert(sortLocale).getId());
+            example.setAsc(true);
+            example.setOrderByAttributeTypeId(NAME);
+        }
+        configureExample(example, ImmutableMap.<String, Long>of(), null);
+        return (List<DomainObject>) find(example);
     }
 
     @Override

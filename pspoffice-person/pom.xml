@@ -45,5 +45,9 @@
             <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-document</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-military-service-relation</artifactId>
+        </dependency>
     </dependencies>
 </project>

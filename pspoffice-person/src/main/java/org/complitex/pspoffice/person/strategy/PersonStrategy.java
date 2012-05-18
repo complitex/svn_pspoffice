@@ -41,6 +41,7 @@ import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.DocumentModification;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -122,6 +123,8 @@ public class PersonStrategy extends TemplateStrategy {
     private DocumentStrategy documentStrategy;
     @EJB
     private DocumentTypeStrategy documentTypeStrategy;
+    @EJB
+    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
     @EJB
     private LocaleBean localeBean;
     @EJB
@@ -233,11 +236,12 @@ public class PersonStrategy extends TemplateStrategy {
     @Transactional
     @Override
     public Person findById(long id, boolean runAsAdmin) {
-        return findById(id, runAsAdmin, true, true, true);
+        return findById(id, runAsAdmin, true, true, true, true);
     }
 
     @Transactional
-    public Person findById(long id, boolean runAsAdmin, boolean loadName, boolean loadChildren, boolean loadDocument) {
+    public Person findById(long id, boolean runAsAdmin, boolean loadName, boolean loadChildren,
+            boolean loadDocument, boolean loadMilitaryServiceRelation) {
         DomainObject personObject = super.findById(id, runAsAdmin);
         if (personObject == null) {
             return null;
@@ -251,6 +255,9 @@ public class PersonStrategy extends TemplateStrategy {
         }
         if (loadDocument) {
             loadDocument(person);
+        }
+        if (loadMilitaryServiceRelation) {
+            loadMilitaryServiceRelation(person);
         }
         return person;
     }
@@ -326,6 +333,19 @@ public class PersonStrategy extends TemplateStrategy {
                     if (child != null) {
                         person.addChild(child);
                     }
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public void loadMilitaryServiceRelation(Person person) {
+        if (person.getMilitaryServiceRelation() == null) {
+            Attribute militaryServiceRelationAttribute = person.getAttribute(MILITARY_SERVICE_RELATION);
+            if (militaryServiceRelationAttribute != null) {
+                final Long militaryServiceRelationId = militaryServiceRelationAttribute.getValueId();
+                if (militaryServiceRelationId != null) {
+                    person.setMilitaryServiceRelation(militaryServiceRelationStrategy.findById(militaryServiceRelationId, true));
                 }
             }
         }
@@ -833,6 +853,7 @@ public class PersonStrategy extends TemplateStrategy {
         updateNameAttributesForNewLocales(person);
         loadChildren(person);
         loadHistoryDocument(person, date);
+        loadMilitaryServiceRelation(person);
         return person;
     }
 

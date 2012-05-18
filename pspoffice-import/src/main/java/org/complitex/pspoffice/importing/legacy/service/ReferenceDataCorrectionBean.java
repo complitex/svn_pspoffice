@@ -187,23 +187,11 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
             throw new DocumentTypesNotResolved(passportResolved, birthCertificateResolved);
         }
     }
-    
+
     public String getReservedOwnerType(Set<String> jekIds) {
         List<String> ownerTypes = sqlSession().selectList(MAPPING_NAMESPACE + ".getReservedOwnerType",
                 ImmutableMap.of("OWNER_TYPE", OWNER_TYPE, "jekIds", jekIds));
         return ownerTypes.size() == 1 ? ownerTypes.get(0) : null;
-    }
-
-    public String getMilitaryServiceRelationById(String id, Set<String> jekIds) throws TooManyResultsException {
-        List<String> values = sqlSession().selectList(MAPPING_NAMESPACE + ".getMilitaryServiceRelationById",
-                ImmutableMap.of("id", id, "jekIds", jekIds));
-        if (values.isEmpty()) {
-            return null;
-        } else if (values.size() == 1) {
-            return values.get(0);
-        } else {
-            throw new TooManyResultsException();
-        }
     }
 
     public ReferenceDataCorrection getById(String entity, String id, String idjek) {

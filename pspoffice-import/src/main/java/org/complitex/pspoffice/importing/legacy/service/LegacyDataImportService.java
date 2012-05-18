@@ -61,6 +61,7 @@ import org.complitex.pspoffice.importing.legacy.entity.StreetCorrection;
 import org.complitex.pspoffice.importing.legacy.service.exception.OpenErrorDescriptionFileException;
 import org.complitex.pspoffice.importing.legacy.service.exception.OpenErrorFileException;
 import org.complitex.pspoffice.importing.legacy.service.exception.TooManyResultsException;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
@@ -123,6 +124,8 @@ public class LegacyDataImportService {
     private RegistrationCorrectionBean registrationCorrectionBean;
     @EJB
     private RegistrationStrategy registrationStrategy;
+    @EJB
+    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
     @EJB
     private LocaleBean localeBean;
     private boolean processing;
@@ -595,6 +598,7 @@ public class LegacyDataImportService {
         processStreetsAndBuildings();
         processOwnershipForms();
         processOwnerRelationships();
+        processMilitaryDuties();
         processRegistrationsTypes();
         processDocumentsTypes();
         processOwnerTypes();
@@ -1086,6 +1090,129 @@ public class LegacyDataImportService {
         }
     }
 
+    private void processMilitaryDuties() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+        final String entity = "military_duty";
+        try {
+            final ProcessItem item = ProcessItem.MILITARY_DUTY;
+
+            BufferedWriter militaryDutyErrorFile = null;
+            BufferedWriter militaryDutyErrorDescriptionFile = null;
+
+            processingStatuses.put(item, new ImportStatus(0));
+            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
+            messages.add(new ImportMessage(getString("begin_military_duty_processing", count), INFO));
+            boolean wasErrors = false;
+
+            try {
+                for (String idjek : jekIds) {
+                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
+                    while (jekCount > 0) {
+                        List<ReferenceDataCorrection> militaryDuties =
+                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
+
+                        userTransaction.begin();
+                        for (ReferenceDataCorrection militaryDuty : militaryDuties) {
+                            String errorDescription = null;
+                            try {
+                                Long systemMilitaryDutyId =
+                                        referenceDataCorrectionBean.findSystemObject("military_service_relation", militaryDuty.getNkod());
+                                if (systemMilitaryDutyId == null) {
+                                    DomainObject systemMilitaryDuty = militaryServiceRelationStrategy.newInstance();
+                                    Utils.setValue(systemMilitaryDuty.getAttribute(MilitaryServiceRelationStrategy.NAME),
+                                            militaryDuty.getNkod());
+                                    militaryServiceRelationStrategy.insert(systemMilitaryDuty, DateUtil.getCurrentDate());
+                                    systemMilitaryDutyId = systemMilitaryDuty.getId();
+                                }
+                                militaryDuty.setSystemObjectId(systemMilitaryDutyId);
+                            } catch (TooManyResultsException e) {
+                                errorDescription = getString("military_duty_system_many_objects", militaryDuty.getId(),
+                                        idjek, militaryDuty.getNkod());
+                            }
+
+                            militaryDuty.setProcessed(true);
+                            referenceDataCorrectionBean.update(militaryDuty);
+
+                            processingStatuses.get(item).increment();
+
+                            if (errorDescription != null) {
+                                wasErrors = true;
+                                if (militaryDutyErrorFile == null) {
+                                    militaryDutyErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.MILITARY_DUTY);
+                                    militaryDutyErrorFile.write(LegacyDataImportFile.MILITARY_DUTY.getCsvHeader());
+                                    militaryDutyErrorFile.newLine();
+                                }
+                                if (militaryDutyErrorDescriptionFile == null) {
+                                    militaryDutyErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                            LegacyDataImportFile.MILITARY_DUTY);
+                                }
+
+                                militaryDutyErrorFile.write(militaryDuty.getContent());
+                                militaryDutyErrorFile.newLine();
+
+                                militaryDutyErrorDescriptionFile.write(errorDescription);
+                                militaryDutyErrorDescriptionFile.newLine();
+                            }
+                        }
+
+                        userTransaction.commit();
+                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
+                    }
+                }
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (Exception e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+
+                throw new RuntimeException(e);
+            } finally {
+                if (militaryDutyErrorFile != null) {
+                    try {
+                        militaryDutyErrorFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+                if (militaryDutyErrorDescriptionFile != null) {
+                    try {
+                        militaryDutyErrorDescriptionFile.close();
+                    } catch (IOException e) {
+                        log.error("Couldn't to close file stream.", e);
+                    }
+                }
+            }
+
+            if (wasErrors) {
+                messages.add(new ImportMessage(getString("fail_finish_military_duty_processing", count), WARN));
+            } else {
+                messages.add(new ImportMessage(getString("success_finish_military_duty_processing", count), INFO));
+            }
+            processingStatuses.get(item).finish();
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            try {
+                userTransaction.begin();
+
+                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
+
+                userTransaction.commit();
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (SystemException e1) {
+                    log.error("Couldn't to rollback transaction.", e1);
+                }
+                log.error("Couldn't to clear processing status for military duties.", e);
+            }
+        }
+    }
+
     private void processRegistrationsTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
         final String entity = "registration_type";
         try {
@@ -1376,24 +1503,19 @@ public class LegacyDataImportService {
                                             if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
 
                                                 //military service relation
-                                                //TODO: disable for the present
-                                                /*
-                                                String militaryServiceRelation = null;
-                                                try {
-                                                militaryServiceRelation =
-                                                referenceDataCorrectionBean.getMilitaryServiceRelationById(p.getIdarm(), jekIds);
-                                                if (militaryServiceRelation == null) {
-                                                errorDescription = getString("person_military_duty_not_found", p.getId(),
-                                                p.getIdarm(), jekIds.toString());
+                                                final String searchIdJek = jekIds.iterator().next();
+                                                ReferenceDataCorrection militaryDity =
+                                                        referenceDataCorrectionBean.getById("military_duty", p.getIdarm(), searchIdJek);
+                                                if (militaryDity == null) {
+                                                    errorDescription = getString("person_military_duty_not_found",
+                                                            p.getId(), p.getIdarm(), searchIdJek);
+                                                } else if (militaryDity.getSystemObjectId() == null) {
+                                                    errorDescription = getString("person_military_duty_not_resolved",
+                                                            p.getId(), p.getIdarm(), searchIdJek);
                                                 }
-                                                } catch (TooManyResultsException e) {
-                                                errorDescription = getString("person_military_duty_too_many_objects", p.getId(),
-                                                p.getIdarm(), jekIds.toString());
-                                                }
-                                                 */
 
                                                 systemPerson = personCorrectionBean.newSystemPerson(p, birthDate,
-                                                        null/*militaryServiceRelation*/);
+                                                        militaryDity != null ? militaryDity.getSystemObjectId() : null);
                                                 personStrategy.insert(systemPerson, creationDate);
                                                 p.setSystemPersonId(systemPerson.getId());
                                             } else {

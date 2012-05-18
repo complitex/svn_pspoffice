@@ -183,7 +183,7 @@ final class RegisterOwnerDialog extends Panel {
         children = newArrayList();
         List<Attribute> childrenAttributes = apartmentCard.getOwner().getAttributes(PersonStrategy.CHILDREN);
         for (Attribute childAttribute : childrenAttributes) {
-            children.add(personStrategy.findById(childAttribute.getValueId(), true, true, false, false));
+            children.add(personStrategy.findById(childAttribute.getValueId(), true, true, false, false, false));
         }
         registerChildrenContainer.setVisible(children != null && !children.isEmpty());
 

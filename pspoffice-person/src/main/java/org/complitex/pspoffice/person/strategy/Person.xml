@@ -218,6 +218,10 @@
                 AND a.`start_date` <![CDATA[ < ]]> #{date}
                 <include refid="org.complitex.pspoffice.person.strategy.Person.nontraceblaAttributesSql"/>
             UNION
+            SELECT a.`end_date` `date` FROM `person_attribute` a WHERE a.`object_id` = #{personId} 
+                AND a.`end_date` <![CDATA[ < ]]> #{date}
+                <include refid="org.complitex.pspoffice.person.strategy.Person.nontraceblaAttributesSql"/>
+            UNION
             SELECT p.`end_date` FROM `person` p WHERE p.`end_date` <![CDATA[ < ]]> #{date} 
                 AND p.`object_id` = #{personId}
             UNION
@@ -233,6 +237,10 @@
                 AND a.`start_date` <![CDATA[ > ]]> #{date}
                 <include refid="org.complitex.pspoffice.person.strategy.Person.nontraceblaAttributesSql"/>
             UNION
+            SELECT a.`end_date` `date` FROM `person_attribute` a WHERE a.`object_id` = #{personId} 
+                AND a.`end_date` <![CDATA[ > ]]> #{date}
+                <include refid="org.complitex.pspoffice.person.strategy.Person.nontraceblaAttributesSql"/>
+            UNION
             SELECT p.`end_date` FROM `person` p WHERE p.`end_date` <![CDATA[ > ]]> #{date} 
                 AND p.`object_id` = #{personId}
             UNION
@@ -241,8 +249,5 @@
                     AND pa.`attribute_type_id` = #{personDocumentAT})
         ) d
     </select>
-    
-    
-    
 
 </mapper>

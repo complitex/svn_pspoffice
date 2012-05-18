@@ -117,7 +117,7 @@ public class RegistrationStrategy extends Strategy {
     @Transactional
     private void loadPerson(Registration registration) {
         long personId = registration.getAttribute(PERSON).getValueId();
-        Person person = personStrategy.findById(personId, true, true, false, false);
+        Person person = personStrategy.findById(personId, true, true, false, false, false);
         registration.setPerson(person);
     }
 

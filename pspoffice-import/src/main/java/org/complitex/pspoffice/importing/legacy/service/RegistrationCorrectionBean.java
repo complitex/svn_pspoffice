@@ -64,7 +64,7 @@ public class RegistrationCorrectionBean extends AbstractBean {
         Registration r = registrationStrategy.newInstance();
 
         //person
-        r.setPerson(personStrategy.findById(personId, true, false, false, false));
+        r.setPerson(personStrategy.findById(personId, true, false, false, false, false));
         r.getAttribute(RegistrationStrategy.PERSON).setValueId(personId);
 
         //owner relationship

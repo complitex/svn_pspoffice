@@ -39,6 +39,7 @@ import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Person;
@@ -75,6 +76,8 @@ final class PersonHistoryPanel extends Panel {
     private DocumentStrategy documentStrategy;
     @EJB
     private DocumentTypeStrategy documentTypeStrategy;
+    @EJB
+    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
     @EJB(name = "UserProfileBean")
     private IUserProfileBean userProfileBean;
     private final Entity ENTITY = personStrategy.getEntity();
@@ -171,9 +174,46 @@ final class PersonHistoryPanel extends Panel {
         add(ukraineCitizenshipContainer);
 
         //military service relation
-        WebMarkupContainer militaryServiceRelationContainer = new WebMarkupContainer("militaryServiceRelationContainer");
-        initAttributeInput(person, modification, militaryServiceRelationContainer, MILITARY_SERVICE_RELATION, false);
-        add(militaryServiceRelationContainer);
+        {
+            WebMarkupContainer militaryServiceRelationContainer = new WebMarkupContainer("militaryServiceRelationContainer");
+            final EntityAttributeType militaryServiceRelationAttributeType = ENTITY.getAttributeType(MILITARY_SERVICE_RELATION);
+
+            //label
+            militaryServiceRelationContainer.add(new Label("label",
+                    labelModel(militaryServiceRelationAttributeType.getAttributeNames(), getLocale())));
+
+            //required container
+            WebMarkupContainer militaryServiceRelationRequiredContainer = new WebMarkupContainer("required");
+            militaryServiceRelationRequiredContainer.setVisible(militaryServiceRelationAttributeType.isMandatory());
+            militaryServiceRelationContainer.add(militaryServiceRelationRequiredContainer);
+
+            final List<DomainObject> allMilitaryServiceRelations = militaryServiceRelationStrategy.getAll(getLocale());
+            DisableAwareDropDownChoice<DomainObject> militaryServiceRelation =
+                    new DisableAwareDropDownChoice<DomainObject>("input",
+                    new Model<DomainObject>(person.getMilitaryServiceRelation()),
+                    allMilitaryServiceRelations, new DomainObjectDisableAwareRenderer() {
+
+                @Override
+                public Object getDisplayValue(DomainObject object) {
+                    return militaryServiceRelationStrategy.displayDomainObject(object, getLocale());
+                }
+            });
+            militaryServiceRelation.setNullValid(true);
+            militaryServiceRelation.setEnabled(false);
+            militaryServiceRelationContainer.add(militaryServiceRelation);
+
+            final ModificationType militaryServiceRelationModificationType =
+                    modification.getModificationType(MILITARY_SERVICE_RELATION);
+            if (militaryServiceRelationModificationType != null) {
+                militaryServiceRelation.add(new CssAttributeBehavior(militaryServiceRelationModificationType.getCssClass()));
+            }
+            militaryServiceRelationContainer.setVisible(
+                    person.getMilitaryServiceRelation() != null
+                    || (militaryServiceRelationModificationType != null
+                    && militaryServiceRelationModificationType == ModificationType.REMOVE));
+
+            add(militaryServiceRelationContainer);
+        }
 
         //death date
         WebMarkupContainer deathDateContainer = new WebMarkupContainer("deathDateContainer");

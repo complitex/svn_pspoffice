@@ -53,6 +53,7 @@ public class RegistrationCardBean extends AbstractBean {
         }
         card.setAddressEntity(addressEntity);
         card.setAddressId(addressId);
+        personStrategy.loadMilitaryServiceRelation(person);
         personStrategy.loadChildren(person);
 
         return card;

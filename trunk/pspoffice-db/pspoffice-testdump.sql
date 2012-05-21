@@ -1,3 +1,6 @@
+-- Set mysql user-defined variable - system locale id.
+SELECT (@system_locale_id := `id`) FROM `locales` WHERE `system` = 1;
+
 -- Owner relationship --
 INSERT INTO `owner_relationship`(`object_id`) VALUES (4),(5),(6),(7),(8);
 INSERT INTO `owner_relationship_string_culture`(`id`, `locale_id`, `value`) VALUES
@@ -42,8 +45,8 @@ INSERT INTO `military_service_relation_attribute`(`attribute_id`, `object_id`, `
 
 -- Test user organizations
 insert into `organization`(`object_id`) values (1),(2);
-insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1, 1, UPPER('Паспортный стол №1')),(2, 1, UPPER('3002')),
-(3, 1, UPPER('Паспортный стол №2')),(4, 1, UPPER('3003'));
+insert into `organization_string_culture`(`id`, `locale_id`, `value`) values (1,@system_locale_id, UPPER('Паспортный стол №1')),(2,@system_locale_id, UPPER('3002')),
+(3,@system_locale_id, UPPER('Паспортный стол №2')),(4,@system_locale_id, UPPER('3003'));
 insert into `organization_attribute`(`attribute_id`, `object_id`, `attribute_type_id`, `value_id`, `value_type_id`) values
 (1,1,900,1,900), (1,1,901,2,901), (1,1,904,1,904),
 (1,2,900,3,900), (1,2,901,4,901), (1,2,904,1,904);

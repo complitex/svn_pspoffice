@@ -4,15 +4,17 @@
  */
 package org.complitex.pspoffice.importing.legacy.service;
 
+import java.io.Writer;
 import java.util.Date;
 import org.complitex.dictionary.util.DateUtil;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import org.complitex.pspoffice.importing.legacy.entity.ImportStatus;
-import org.complitex.dictionary.util.ImportStorageUtil;
 import java.io.IOException;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -20,6 +22,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +51,8 @@ import org.complitex.dictionary.service.exception.AbstractException;
 import org.complitex.dictionary.service.exception.ImportCriticalException;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
+import org.complitex.dictionary.strategy.IStrategy;
+import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.ResourceUtil;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.importing.legacy.entity.ApartmentCardCorrection;
@@ -77,6 +82,7 @@ import org.slf4j.LoggerFactory;
 import static org.complitex.pspoffice.importing.legacy.entity.ImportMessage.ImportMessageLevel.*;
 
 /**
+ * Concurrency note: thread-safe bean.
  *
  * @author Artem
  */
@@ -91,7 +97,9 @@ public class LegacyDataImportService {
     private static final String CHARSET = "UTF-8";
     private static final String ERROR_FILE_SUFFIX = "_errors.csv";
     private static final String ERROR_DESCRIPTION_FILE_SUFFIX = "_errors_description.txt";
-    private static final int PROCESSING_BATCH = 100;
+    private static final int PROCESSING_BATCH = 500;
+    @EJB
+    private StrategyFactory strategyFactory;
     @Resource
     private UserTransaction userTransaction;
     @EJB
@@ -100,14 +108,6 @@ public class LegacyDataImportService {
     private BuildingCorrectionBean buildingCorrectionBean;
     @EJB
     private BuildingStrategy buildingStrategy;
-    @EJB
-    private OwnershipFormStrategy ownershipFormStrategy;
-    @EJB
-    private OwnerRelationshipStrategy ownerRelationshipStrategy;
-    @EJB
-    private RegistrationTypeStrategy registrationTypeStrategy;
-    @EJB
-    private DocumentTypeStrategy documentTypeStrategy;
     @EJB
     private PersonStrategy personStrategy;
     @EJB
@@ -125,23 +125,65 @@ public class LegacyDataImportService {
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB
-    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
-    @EJB
     private LocaleBean localeBean;
-    private boolean processing;
-    private Locale locale;
-    private Long cityId;
-    private String ownerType;
-    private boolean reservedDocumentTypesResolved;
-    private boolean reservedRegistrationTypesResolved;
-    private boolean reservedOwnerRelationshipResolved;
-    private Set<String> jekIds;
-    private Map<String, Long> organizationMap;
-    private String importDirectory;
-    private String errorsDirectory;
-    private Map<LegacyDataImportFile, ImportStatus> loadingStatuses = new EnumMap<LegacyDataImportFile, ImportStatus>(LegacyDataImportFile.class);
-    private Map<ProcessItem, ImportStatus> processingStatuses = new EnumMap<ProcessItem, ImportStatus>(ProcessItem.class);
-    private Queue<ImportMessage> messages = new ConcurrentLinkedQueue<ImportMessage>();
+    /*
+     * Concurrency note: volatile boolean.
+     */
+    private volatile boolean processing;
+    /*
+     * Concurrency note: volatile immutable variable.
+     */
+    private volatile Locale locale;
+    /*
+     * Concurrency note: volatile immutable variable.
+     */
+    private volatile Long cityId;
+    /*
+     * Concurrency note: volatile immutable variable.
+     */
+    private volatile String ownerType;
+    /*
+     * Concurrency note: volatile boolean.
+     */
+    private volatile boolean reservedDocumentTypesResolved;
+    /*
+     * Concurrency note: volatile boolean.
+     */
+    private volatile boolean reservedRegistrationTypesResolved;
+    /*
+     * Concurrency note: volatile boolean.
+     */
+    private volatile boolean reservedOwnerRelationshipResolved;
+    /*
+     * Concurrency note: volatile immutable set containing immutable objects.
+     */
+    private volatile ImmutableSet<String> jekIds;
+    /*
+     * Concurrency note: volatile immutable map containing immutable objects.
+     */
+    private volatile ImmutableMap<String, Long> organizationMap;
+    /*
+     * Concurrency note: volatile immutable variable.
+     */
+    private volatile String importDirectory;
+    /*
+     * Concurrency note: volatile immutable variable.
+     */
+    private volatile String errorsDirectory;
+    /*
+     * Concurrency note: synchronized map containing enum keys and thread-safe values.
+     */
+    private final Map<LegacyDataImportFile, ImportStatus> loadingStatuses =
+            Collections.synchronizedMap(new EnumMap<LegacyDataImportFile, ImportStatus>(LegacyDataImportFile.class));
+    /*
+     * Concurrency note: synchronized map containing enum keys and thread-safe values.
+     */
+    private final Map<ProcessItem, ImportStatus> processingStatuses =
+            Collections.synchronizedMap(new EnumMap<ProcessItem, ImportStatus>(ProcessItem.class));
+    /*
+     * Concurrency note: thread-safe queue containing immutable objects.
+     */
+    private final Queue<ImportMessage> messages = new ConcurrentLinkedQueue<ImportMessage>();
 
     public boolean isProcessing() {
         return processing;
@@ -185,8 +227,8 @@ public class LegacyDataImportService {
         processing = true;
 
         this.cityId = cityId;
-        this.organizationMap = organizationMap;
-        this.jekIds = organizationMap.keySet();
+        this.organizationMap = ImmutableMap.copyOf(organizationMap);
+        this.jekIds = ImmutableSet.copyOf(this.organizationMap.keySet());
         this.importDirectory = importDirectiry;
         this.errorsDirectory = errorsDirectory;
         this.locale = locale;
@@ -201,8 +243,8 @@ public class LegacyDataImportService {
             log.error("File loading error.", e);
             try {
                 userTransaction.rollback();
-            } catch (SystemException e1) {
-                log.error("Couldn't to rollback transaction.", e1);
+            } catch (SystemException se) {
+                log.error("Couldn't to rollback transaction.", se);
             }
 
             String errorMessage = e instanceof AbstractException ? e.getMessage() : new ImportCriticalException(e).getMessage();
@@ -218,6 +260,7 @@ public class LegacyDataImportService {
             processFiles();
         } catch (Exception e) {
             log.error("Processing error.", e);
+            
             String errorMessage = e instanceof AbstractException ? e.getMessage() : new ImportCriticalException(e).getMessage();
             messages.add(new ImportMessage(errorMessage, ERROR));
         } finally {
@@ -225,7 +268,7 @@ public class LegacyDataImportService {
         }
     }
 
-    private void loadFiles() throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadFiles() throws Exception {
         loadStreets();
         loadBuildings();
         loadReferenceData(LegacyDataImportFile.OWNERSHIP_FORM, "ownership_form");
@@ -239,10 +282,57 @@ public class LegacyDataImportService {
         loadApartmentCards();
     }
 
+    private static interface ILoader {
+
+        void load() throws Exception;
+
+        int getCurrentRecordIndex();
+    }
+
+    private static abstract class Loader implements ILoader {
+
+        private int recordIndex;
+
+        @Override
+        public int getCurrentRecordIndex() {
+            return recordIndex;
+        }
+
+        protected void incrementRecordIndex() {
+            recordIndex++;
+        }
+    }
+
+    private static Exception wrapLoadException(Exception e, String fileName, int recordIndex) {
+        final Class<?> exceptionClass = e.getClass();
+        if (IOException.class == exceptionClass) {
+            return new ImportFileReadException(e, fileName, recordIndex);
+        } else if (NumberFormatException.class == exceptionClass) {
+            return new ImportFileReadException(e, fileName, recordIndex);
+        } else {
+            return e;
+        }
+    }
+
+    private void handleLoad(CSVReader reader, String fileName, ILoader loader)
+            throws Exception {
+        try {
+            loader.load();
+        } catch (Exception e) {
+            throw wrapLoadException(e, fileName, loader.getCurrentRecordIndex());
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                log.error("Couldn't to close csv reader.", e);
+            }
+        }
+    }
+
     /**
      * id    Street type string(ukr)     Street name(ukr)     Street type string(rus)     Street name(rus)
      */
-    private void loadStreets() throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadStreets() throws Exception {
         final LegacyDataImportFile file = LegacyDataImportFile.STREET;
 
         final Map<String, Boolean> loadFileStatusMap = Maps.newHashMap();
@@ -261,51 +351,41 @@ public class LegacyDataImportService {
         }
 
         if (!loadJekIds.isEmpty()) {
-
             //start file importing:
             loadingStatuses.put(file, new ImportStatus(0));
             messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
 
             final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+            handleLoad(reader, file.getFileName(), new Loader() {
 
-            int recordIndex = 0;
+                @Override
+                public void load() throws Exception {
+                    String[] line;
 
-            try {
-                String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        incrementRecordIndex();
 
-                while ((line = reader.readNext()) != null) {
-                    recordIndex++;
+                        long id = Long.parseLong(line[0].trim());
 
-                    long id = Long.parseLong(line[0].trim());
-
-                    for (String idjek : loadJekIds) {
-                        streetCorrectionBean.insert(new StreetCorrection(id, idjek, line[1].trim(), line[2].trim(),
-                                line[3].trim(), line[4].trim(), getContent(line)));
+                        for (String idjek : loadJekIds) {
+                            streetCorrectionBean.insert(new StreetCorrection(id, idjek, line[1].trim(), line[2].trim(),
+                                    line[3].trim(), line[4].trim(), getContent(line)));
+                        }
+                        loadingStatuses.get(file).increment();
                     }
-                    loadingStatuses.get(file).increment();
-                }
 
-                //finish file importing
-                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
-                loadingStatuses.get(file).finish();
-            } catch (IOException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } catch (NumberFormatException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close csv reader.", e);
+                    //finish file importing
+                    messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                    loadingStatuses.get(file).finish();
                 }
-            }
+            });
         }
     }
 
     /**
      * id   idjek   idul    dom     korpus
      */
-    private void loadBuildings() throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadBuildings() throws Exception {
         final LegacyDataImportFile file = LegacyDataImportFile.BUILDING;
 
         final Map<String, Boolean> loadFileStatusMap = Maps.newHashMap();
@@ -324,53 +404,43 @@ public class LegacyDataImportService {
         }
 
         if (!loadJekIds.isEmpty()) {
-
             //start file importing:
             loadingStatuses.put(file, new ImportStatus(0));
             messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
 
             final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+            handleLoad(reader, file.getFileName(), new Loader() {
 
-            int recordIndex = 0;
+                @Override
+                public void load() throws Exception {
+                    String[] line;
 
-            try {
-                String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        incrementRecordIndex();
 
-                while ((line = reader.readNext()) != null) {
-                    recordIndex++;
+                        long id = Long.parseLong(line[0].trim());
 
-                    long id = Long.parseLong(line[0].trim());
+                        String idjek = line[1].trim();
 
-                    String idjek = line[1].trim();
-
-                    if (loadJekIds.contains(idjek)) {
-                        buildingCorrectionBean.insert(new BuildingCorrection(id, idjek, line[2].trim(),
-                                line[3].trim(), line[4].trim(), getContent(line)));
-                        loadingStatuses.get(file).increment();
+                        if (loadJekIds.contains(idjek)) {
+                            buildingCorrectionBean.insert(new BuildingCorrection(id, idjek, line[2].trim(),
+                                    line[3].trim(), line[4].trim(), getContent(line)));
+                            loadingStatuses.get(file).increment();
+                        }
                     }
-                }
 
-                //finish file importing
-                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
-                loadingStatuses.get(file).finish();
-            } catch (IOException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } catch (NumberFormatException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close csv reader.", e);
+                    //finish file importing
+                    messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                    loadingStatuses.get(file).finish();
                 }
-            }
+            });
         }
     }
 
     /**
      * id    nkod
      */
-    private void loadReferenceData(final LegacyDataImportFile file, final String entity) throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadReferenceData(final LegacyDataImportFile file, final String entity) throws Exception {
         final Map<String, Boolean> loadFileStatusMap = Maps.newHashMap();
         for (String idjek : jekIds) {
             loadFileStatusMap.put(idjek, !referenceDataCorrectionBean.exists(entity, idjek));
@@ -387,44 +457,34 @@ public class LegacyDataImportService {
         }
 
         if (!loadJekIds.isEmpty()) {
-
             //start file importing:
             loadingStatuses.put(file, new ImportStatus(0));
             messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
 
             final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+            handleLoad(reader, file.getFileName(), new Loader() {
 
-            int recordIndex = 0;
+                @Override
+                public void load() throws Exception {
+                    String[] line;
 
-            try {
-                String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        incrementRecordIndex();
 
-                while ((line = reader.readNext()) != null) {
-                    recordIndex++;
+                        long id = Long.parseLong(line[0].trim());
 
-                    long id = Long.parseLong(line[0].trim());
-
-                    for (String idjek : loadJekIds) {
-                        referenceDataCorrectionBean.insert(new ReferenceDataCorrection(entity, id, idjek, line[1].trim(),
-                                getContent(line)));
+                        for (String idjek : loadJekIds) {
+                            referenceDataCorrectionBean.insert(new ReferenceDataCorrection(entity, id, idjek, line[1].trim(),
+                                    getContent(line)));
+                        }
+                        loadingStatuses.get(file).increment();
                     }
-                    loadingStatuses.get(file).increment();
-                }
 
-                //finish file importing
-                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
-                loadingStatuses.get(file).finish();
-            } catch (IOException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } catch (NumberFormatException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close csv reader.", e);
+                    //finish file importing
+                    messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                    loadingStatuses.get(file).finish();
                 }
-            }
+            });
         }
     }
 
@@ -438,7 +498,7 @@ public class LegacyDataImportService {
      * 47    48   49    50  51    52    53        56   57
      * vidul vbud vkorp vkv vdata idvip parentnom larc nom
      */
-    private void loadPersons() throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadPersons() throws Exception {
         final LegacyDataImportFile file = LegacyDataImportFile.PERSON;
 
         final boolean exists = personCorrectionBean.exists();
@@ -448,89 +508,78 @@ public class LegacyDataImportService {
         }
 
         if (!exists) {
-
             //start file importing:
             loadingStatuses.put(file, new ImportStatus(0));
             messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
 
             final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+            handleLoad(reader, file.getFileName(), new Loader() {
 
-            int recordIndex = 0;
+                @Override
+                public void load() throws Exception {
+                    String[] line;
 
-            try {
-                String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        incrementRecordIndex();
 
-                while ((line = reader.readNext()) != null) {
-                    recordIndex++;
+                        long id = Long.parseLong(line[0].trim());
+                        PersonCorrection p = new PersonCorrection(id, getContent(line));
+                        p.setIdbud(line[2].trim());
+                        p.setRah(line[3].trim());
+                        p.setKv(line[4].trim());
+                        p.setFam(line[5].trim());
+                        p.setIm(line[6].trim());
+                        p.setOt(line[7].trim());
+                        p.setDatar(line[8].trim());
+                        p.setReltovlaskv(line[9].trim());
+                        p.setGrajd(line[11].trim());
+                        p.setPol(line[12].trim());
+                        p.setIdrel(line[13].trim());
+                        p.setNkra(line[17].trim());
+                        p.setNobl(line[18].trim());
+                        p.setNrayon(line[19].trim());
+                        p.setNmisto(line[20].trim());
+                        p.setIddok(line[21].trim());
+                        p.setDokseria(line[22].trim());
+                        p.setDoknom(line[23].trim());
+                        p.setDokvidan(line[24].trim());
+                        p.setDokdatvid(line[25].trim());
+                        p.setIdarm(line[28].trim());
+                        p.setPkra(line[30].trim());
+                        p.setPobl(line[31].trim());
+                        p.setPrayon(line[32].trim());
+                        p.setPmisto(line[33].trim());
+                        p.setPdpribza(line[34].trim());
+                        p.setPidul(line[35].trim());
+                        p.setPbud(line[36].trim());
+                        p.setPkorp(line[37].trim());
+                        p.setPkv(line[38].trim());
+                        p.setPdpribvm(line[39].trim());
+                        p.setDprop(line[40].trim());
+                        p.setIdvidp(line[41].trim());
+                        p.setVkra(line[43].trim());
+                        p.setVobl(line[44].trim());
+                        p.setVrayon(line[45].trim());
+                        p.setVmisto(line[46].trim());
+                        p.setVidul(line[47].trim());
+                        p.setVbud(line[48].trim());
+                        p.setVkorp(line[49].trim());
+                        p.setVkv(line[50].trim());
+                        p.setVdata(line[51].trim());
+                        p.setIdvip(line[52].trim());
+                        p.setLarc(line[56].trim());
+                        p.setNom(line[57].trim());
+                        p.setParentnom(line[53].trim());
 
-                    long id = Long.parseLong(line[0].trim());
-                    PersonCorrection p = new PersonCorrection(id, getContent(line));
-                    p.setIdbud(line[2].trim());
-                    p.setRah(line[3].trim());
-                    p.setKv(line[4].trim());
-                    p.setFam(line[5].trim());
-                    p.setIm(line[6].trim());
-                    p.setOt(line[7].trim());
-                    p.setDatar(line[8].trim());
-                    p.setReltovlaskv(line[9].trim());
-                    p.setGrajd(line[11].trim());
-                    p.setPol(line[12].trim());
-                    p.setIdrel(line[13].trim());
-                    p.setNkra(line[17].trim());
-                    p.setNobl(line[18].trim());
-                    p.setNrayon(line[19].trim());
-                    p.setNmisto(line[20].trim());
-                    p.setIddok(line[21].trim());
-                    p.setDokseria(line[22].trim());
-                    p.setDoknom(line[23].trim());
-                    p.setDokvidan(line[24].trim());
-                    p.setDokdatvid(line[25].trim());
-                    p.setIdarm(line[28].trim());
-                    p.setPkra(line[30].trim());
-                    p.setPobl(line[31].trim());
-                    p.setPrayon(line[32].trim());
-                    p.setPmisto(line[33].trim());
-                    p.setPdpribza(line[34].trim());
-                    p.setPidul(line[35].trim());
-                    p.setPbud(line[36].trim());
-                    p.setPkorp(line[37].trim());
-                    p.setPkv(line[38].trim());
-                    p.setPdpribvm(line[39].trim());
-                    p.setDprop(line[40].trim());
-                    p.setIdvidp(line[41].trim());
-                    p.setVkra(line[43].trim());
-                    p.setVobl(line[44].trim());
-                    p.setVrayon(line[45].trim());
-                    p.setVmisto(line[46].trim());
-                    p.setVidul(line[47].trim());
-                    p.setVbud(line[48].trim());
-                    p.setVkorp(line[49].trim());
-                    p.setVkv(line[50].trim());
-                    p.setVdata(line[51].trim());
-                    p.setIdvip(line[52].trim());
-                    p.setLarc(line[56].trim());
-                    p.setNom(line[57].trim());
-                    p.setParentnom(line[53].trim());
+                        personCorrectionBean.insert(p);
+                        loadingStatuses.get(file).increment();
+                    }
 
-                    personCorrectionBean.insert(p);
-
-                    loadingStatuses.get(file).increment();
+                    //finish file importing
+                    messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                    loadingStatuses.get(file).finish();
                 }
-
-                //finish file importing
-                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
-                loadingStatuses.get(file).finish();
-            } catch (IOException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } catch (NumberFormatException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close csv reader.", e);
-                }
-            }
+            });
         }
     }
 
@@ -538,7 +587,7 @@ public class LegacyDataImportService {
      * 0  1     2   3  4   5        29
      * id idbud rah kv fio idprivat larc
      */
-    private void loadApartmentCards() throws ImportFileReadException, ImportFileNotFoundException {
+    private void loadApartmentCards() throws Exception {
         final LegacyDataImportFile file = LegacyDataImportFile.APARTMENT_CARD;
 
         final boolean exists = apartmentCardCorrectionBean.exists();
@@ -548,53 +597,42 @@ public class LegacyDataImportService {
         }
 
         if (!exists) {
-
             //start file importing:
             loadingStatuses.put(file, new ImportStatus(0));
             messages.add(new ImportMessage(getString("begin_loading_file", file.getFileName()), INFO));
 
             final CSVReader reader = getCsvReader(importDirectory, file, CHARSET, SEPARATOR);
+            handleLoad(reader, file.getFileName(), new Loader() {
 
-            int recordIndex = 0;
+                @Override
+                public void load() throws Exception {
+                    String[] line;
 
-            try {
-                String[] line;
+                    while ((line = reader.readNext()) != null) {
+                        incrementRecordIndex();
 
-                while ((line = reader.readNext()) != null) {
-                    recordIndex++;
+                        long id = Long.parseLong(line[0].trim());
+                        ApartmentCardCorrection c = new ApartmentCardCorrection(id, getContent(line));
+                        c.setIdbud(line[1].trim());
+                        c.setRah(line[2].trim());
+                        c.setKv(line[3].trim());
+                        c.setFio(line[4].trim());
+                        c.setIdprivat(line[5].trim());
+                        c.setLarc(line[29].trim());
 
-                    long id = Long.parseLong(line[0].trim());
-                    ApartmentCardCorrection c = new ApartmentCardCorrection(id, getContent(line));
-                    c.setIdbud(line[1].trim());
-                    c.setRah(line[2].trim());
-                    c.setKv(line[3].trim());
-                    c.setFio(line[4].trim());
-                    c.setIdprivat(line[5].trim());
-                    c.setLarc(line[29].trim());
+                        apartmentCardCorrectionBean.insert(c);
+                        loadingStatuses.get(file).increment();
+                    }
 
-                    apartmentCardCorrectionBean.insert(c);
-
-                    loadingStatuses.get(file).increment();
+                    //finish file importing
+                    messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
+                    loadingStatuses.get(file).finish();
                 }
-
-                //finish file importing
-                messages.add(new ImportMessage(getString("finish_loading_file", file.getFileName()), INFO));
-                loadingStatuses.get(file).finish();
-            } catch (IOException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } catch (NumberFormatException e) {
-                throw new ImportFileReadException(e, file.getFileName(), recordIndex);
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close csv reader.", e);
-                }
-            }
+            });
         }
     }
 
-    private void processFiles() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+    private void processFiles() throws Exception {
         processStreetsAndBuildings();
         processOwnershipForms();
         processOwnerRelationships();
@@ -607,29 +645,94 @@ public class LegacyDataImportService {
         processRegistrations();
     }
 
-    private void processStreetsAndBuildings() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+    private static interface IProcessor {
+
+        void process() throws Exception;
+
+        void clearProcessingStatus();
+
+        void closeFiles();
+    }
+
+    private static abstract class Processor implements IProcessor {
+
+        protected void closeFile(Writer fileStream) {
+            if (fileStream != null) {
+                try {
+                    fileStream.close();
+                } catch (IOException e) {
+                    log.error("Couldn't to close file stream.", e);
+                }
+            }
+        }
+    }
+
+    private Exception wrapProcessException(Exception e) {
+        if (e instanceof AbstractException) {
+            return e;
+        } else {
+            return new RuntimeException(e);
+        }
+    }
+
+    private void handleProcess(IProcessor processor) throws Exception {
         try {
-            final ProcessItem item = ProcessItem.STREET_BUILDING;
+            userTransaction.begin();
+            processor.process();
+            userTransaction.commit();
+        } catch (Exception e) {
+            try {
+                if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                    userTransaction.rollback();
+                }
+            } catch (Exception e1) {
+                log.error("Couldn't to rollback transaction.", e1);
+            }
 
-            BufferedWriter streetErrorFile = null;
-            BufferedWriter streetErrorDescriptionFile = null;
-            BufferedWriter buildingErrorFile = null;
-            BufferedWriter buildingErrorDescriptionFile = null;
-
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = buildingCorrectionBean.countForProcessing(jekIds);
-            messages.add(new ImportMessage(getString("begin_street_building_processing", count), INFO));
-            boolean wasErrors = false;
+            throw wrapProcessException(e);
+        } finally {
+            processor.closeFiles();
 
             try {
+                userTransaction.begin();
+                processor.clearProcessingStatus();
+                userTransaction.commit();
+            } catch (Exception e) {
+                try {
+                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                        userTransaction.rollback();
+                    }
+                } catch (SystemException se) {
+                    log.error("Couldn't to rollback transaction.", se);
+                }
+                log.error("Couldn't to clear processing status.", e);
+            }
+        }
+    }
+
+    private void processStreetsAndBuildings() throws Exception {
+        handleProcess(new Processor() {
+
+            BufferedWriter streetErrorFile;
+            BufferedWriter streetErrorDescriptionFile;
+            BufferedWriter buildingErrorFile;
+            BufferedWriter buildingErrorDescriptionFile;
+
+            @Override
+            public void process() throws Exception {
+                final ProcessItem item = ProcessItem.STREET_BUILDING;
+
+                processingStatuses.put(item, new ImportStatus(0));
+                final int count = buildingCorrectionBean.countForProcessing(jekIds);
+                messages.add(new ImportMessage(getString("begin_street_building_processing", count), INFO));
+                boolean wasErrors = false;
+
                 for (String idjek : jekIds) {
                     int jekCount = buildingCorrectionBean.countForProcessing(idjek);
                     while (jekCount > 0) {
                         List<BuildingCorrection> buildings = buildingCorrectionBean.findForProcessing(idjek, PROCESSING_BATCH);
                         for (BuildingCorrection building : buildings) {
                             if (building.getSystemBuildingId() == null) {
-                                userTransaction.begin();
-
                                 String buildingErrorDescription = null;
                                 String streetErrorDescription = null;
 
@@ -693,7 +796,6 @@ public class LegacyDataImportService {
 
                                 building.setProcessed(true);
                                 buildingCorrectionBean.update(building);
-                                userTransaction.commit();
 
                                 processingStatuses.get(item).increment();
 
@@ -739,749 +841,382 @@ public class LegacyDataImportService {
                         jekCount = buildingCorrectionBean.countForProcessing(idjek);
                     }
                 }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
 
-                throw new RuntimeException(e);
-            } finally {
-                if (streetErrorFile != null) {
-                    try {
-                        streetErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
+                if (wasErrors) {
+                    messages.add(new ImportMessage(getString("fail_finish_street_building_processing", count), WARN));
+                } else {
+                    messages.add(new ImportMessage(getString("success_finish_street_building_processing", count), INFO));
                 }
-                if (streetErrorDescriptionFile != null) {
-                    try {
-                        streetErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-                if (buildingErrorFile != null) {
-                    try {
-                        buildingErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-                if (buildingErrorDescriptionFile != null) {
-                    try {
-                        buildingErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
+                processingStatuses.get(item).finish();
             }
 
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_street_building_processing", count), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_street_building_processing", count), INFO));
-            }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
+            @Override
+            public void clearProcessingStatus() {
                 streetCorrectionBean.clearProcessingStatus(jekIds);
                 buildingCorrectionBean.clearProcessingStatus(jekIds);
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for streets and buildings.", e);
             }
-        }
+
+            @Override
+            public void closeFiles() {
+                closeFile(streetErrorFile);
+                closeFile(streetErrorDescriptionFile);
+                closeFile(buildingErrorFile);
+                closeFile(buildingErrorDescriptionFile);
+            }
+        });
     }
 
-    private void processOwnershipForms() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final String entity = "ownership_form";
-        try {
-            final ProcessItem item = ProcessItem.OWNERSHIP_FORM;
+    private class ReferenceDataProcessor extends Processor {
 
-            BufferedWriter ownershipFormErrorFile = null;
-            BufferedWriter ownershipFormErrorDescriptionFile = null;
+        private static final String BEGIN_PROCESSING_KEY_SUFFIX = "_begin_processing";
+        private static final String MANY_SYSTEM_OBJECTS_KEY_SUFFIX = "_system_many_objects";
+        private static final String FAIL_PROCESSING_KEY_SUFFIX = "_fail_finish_processing";
+        private static final String SUCCESS_PROCESSING_KEY_SUFFIX = "_success_finish_processing";
+        private final String entityTable;
+        private final long attributeTypeId;
+        private final String correctionTable;
+        private final ProcessItem item;
+        private final String beginProcessingMessageKey;
+        private final String manySystemObjectsMessageKey;
+        private final String failProcessingMessageKey;
+        private final String successProcessingMessageKey;
+        private final LegacyDataImportFile importFile;
+        private BufferedWriter errorFile;
+        protected BufferedWriter errorDescriptionFile;
+
+        ReferenceDataProcessor(String entityTable, long attributeTypeId, String correctionTable,
+                ProcessItem item, LegacyDataImportFile importFile) {
+            this.entityTable = entityTable;
+            this.attributeTypeId = attributeTypeId;
+            this.correctionTable = correctionTable;
+            this.item = item;
+            this.importFile = importFile;
+            this.beginProcessingMessageKey = correctionTable + BEGIN_PROCESSING_KEY_SUFFIX;
+            this.manySystemObjectsMessageKey = correctionTable + MANY_SYSTEM_OBJECTS_KEY_SUFFIX;
+            this.failProcessingMessageKey = correctionTable + FAIL_PROCESSING_KEY_SUFFIX;
+            this.successProcessingMessageKey = correctionTable + SUCCESS_PROCESSING_KEY_SUFFIX;
+        }
+
+        ReferenceDataProcessor(String entityTable, long attributeTypeId, ProcessItem item,
+                LegacyDataImportFile importFile) {
+            this(entityTable, attributeTypeId, entityTable, item, importFile);
+        }
+
+        protected final IStrategy strategy() {
+            return strategyFactory.getStrategy(entityTable);
+        }
+
+        @Override
+        public void clearProcessingStatus() {
+            referenceDataCorrectionBean.clearProcessingStatus(correctionTable, jekIds);
+        }
+
+        @Override
+        public void closeFiles() {
+            closeFile(errorFile);
+            closeFile(errorDescriptionFile);
+        }
+
+        /**
+         * Checks whether reserved corrections were loaded.
+         * @return false if and only if reserved corrections were loaded successfully.
+         */
+        protected boolean checkReservedCorrections() throws Exception {
+            return false;
+        }
+
+        /**
+         * Returns reserved correction ids mapped to corresponding reserved system object ids
+         * @return map where each reserved correction's id is mapped to corresponding reserved system object's id.
+         */
+        protected Map<Long, Long> getReservedIdMap() {
+            return null;
+        }
+
+        protected final LegacyDataImportFile getImportFile() {
+            return importFile;
+        }
+
+        @Override
+        public void process() throws Exception {
+            final Map<Long, Long> reservedIdMap = getReservedIdMap();
 
             processingStatuses.put(item, new ImportStatus(0));
-            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
-            messages.add(new ImportMessage(getString("begin_ownership_form_processing", count), INFO));
+            final int count = referenceDataCorrectionBean.countForProcessing(correctionTable, jekIds);
+            messages.add(new ImportMessage(getString(beginProcessingMessageKey, count), INFO));
             boolean wasErrors = false;
 
-            try {
-                for (String idjek : jekIds) {
-                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    while (jekCount > 0) {
-                        List<ReferenceDataCorrection> ownershipForms =
-                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
+            for (String idjek : jekIds) {
+                int jekCount = referenceDataCorrectionBean.countForProcessing(correctionTable, idjek);
+                while (jekCount > 0) {
+                    List<ReferenceDataCorrection> corrections =
+                            referenceDataCorrectionBean.findForProcessing(correctionTable, idjek, PROCESSING_BATCH);
 
-                        userTransaction.begin();
-                        for (ReferenceDataCorrection ownershipForm : ownershipForms) {
-                            String errorDescription = null;
+                    for (ReferenceDataCorrection correction : corrections) {
+                        String errorDescription = null;
+
+                        final long correctionId = correction.getId();
+                        if (reservedIdMap != null && reservedIdMap.keySet().contains(correctionId)) {
+                            correction.setSystemObjectId(reservedIdMap.get(correctionId));
+                        } else {
                             try {
-                                Long systemOwnershipFormId = referenceDataCorrectionBean.findSystemObject(entity, ownershipForm.getNkod());
-                                if (systemOwnershipFormId == null) {
-                                    DomainObject systemOwnershipForm = ownershipFormStrategy.newInstance();
-                                    Utils.setValue(systemOwnershipForm.getAttribute(OwnershipFormStrategy.NAME),
-                                            ownershipForm.getNkod());
-                                    ownershipFormStrategy.insert(systemOwnershipForm, DateUtil.getCurrentDate());
-                                    systemOwnershipFormId = systemOwnershipForm.getId();
+                                Long systemObjectId =
+                                        referenceDataCorrectionBean.findSystemObject(entityTable, correction.getNkod());
+                                if (systemObjectId == null) {
+                                    IStrategy strategy = strategy();
+                                    DomainObject systemObject = strategy.newInstance();
+                                    Utils.setValue(systemObject.getAttribute(attributeTypeId), correction.getNkod());
+                                    strategy.insert(systemObject, DateUtil.getCurrentDate());
+                                    systemObjectId = systemObject.getId();
                                 }
-                                ownershipForm.setSystemObjectId(systemOwnershipFormId);
+                                correction.setSystemObjectId(systemObjectId);
                             } catch (TooManyResultsException e) {
-                                errorDescription = getString("ownership_form_system_many_objects", ownershipForm.getId(),
-                                        idjek, ownershipForm.getNkod());
-                            }
-
-                            ownershipForm.setProcessed(true);
-                            referenceDataCorrectionBean.update(ownershipForm);
-
-                            processingStatuses.get(item).increment();
-
-                            if (errorDescription != null) {
-                                wasErrors = true;
-                                if (ownershipFormErrorFile == null) {
-                                    ownershipFormErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.OWNERSHIP_FORM);
-                                    ownershipFormErrorFile.write(LegacyDataImportFile.OWNERSHIP_FORM.getCsvHeader());
-                                    ownershipFormErrorFile.newLine();
-                                }
-                                if (ownershipFormErrorDescriptionFile == null) {
-                                    ownershipFormErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            LegacyDataImportFile.OWNERSHIP_FORM);
-                                }
-
-                                ownershipFormErrorFile.write(ownershipForm.getContent());
-                                ownershipFormErrorFile.newLine();
-
-                                ownershipFormErrorDescriptionFile.write(errorDescription);
-                                ownershipFormErrorDescriptionFile.newLine();
+                                errorDescription = getString(manySystemObjectsMessageKey, correction.getId(),
+                                        idjek, correction.getNkod());
                             }
                         }
 
-                        userTransaction.commit();
-                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    }
-                }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
+                        correction.setProcessed(true);
+                        referenceDataCorrectionBean.update(correction);
 
-                throw new RuntimeException(e);
-            } finally {
-                if (ownershipFormErrorFile != null) {
-                    try {
-                        ownershipFormErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
+                        processingStatuses.get(item).increment();
+
+                        if (errorDescription != null) {
+                            wasErrors = true;
+                            if (errorFile == null) {
+                                errorFile = getErrorFile(errorsDirectory, importFile);
+                                errorFile.write(importFile.getCsvHeader());
+                                errorFile.newLine();
+                            }
+                            if (errorDescriptionFile == null) {
+                                errorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
+                                        importFile);
+                            }
+
+                            errorFile.write(correction.getContent());
+                            errorFile.newLine();
+
+                            errorDescriptionFile.write(errorDescription);
+                            errorDescriptionFile.newLine();
+                        }
                     }
-                }
-                if (ownershipFormErrorDescriptionFile != null) {
-                    try {
-                        ownershipFormErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
+
+                    jekCount = referenceDataCorrectionBean.countForProcessing(correctionTable, idjek);
                 }
             }
+
+            wasErrors |= checkReservedCorrections();
 
             if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_ownership_form_processing", count), WARN));
+                messages.add(new ImportMessage(getString(failProcessingMessageKey, count), WARN));
             } else {
-                messages.add(new ImportMessage(getString("success_finish_ownership_form_processing", count), INFO));
+                messages.add(new ImportMessage(getString(successProcessingMessageKey, count), INFO));
             }
             processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
-                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for ownership forms.", e);
-            }
         }
     }
 
-    private void processOwnerRelationships() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final String entity = "owner_relationship";
-        try {
-            final ProcessItem item = ProcessItem.OWNER_RELATIONSHIP;
+    private void processOwnershipForms() throws Exception {
+        handleProcess(new ReferenceDataProcessor("ownership_form", OwnershipFormStrategy.NAME,
+                ProcessItem.OWNERSHIP_FORM, LegacyDataImportFile.OWNERSHIP_FORM));
+    }
 
-            BufferedWriter ownerRelationshipErrorFile = null;
-            BufferedWriter ownerRelationshipErrorDescriptionFile = null;
+    private void processOwnerRelationships() throws Exception {
+        handleProcess(new ReferenceDataProcessor("owner_relationship", OwnerRelationshipStrategy.NAME,
+                ProcessItem.OWNER_RELATIONSHIP, LegacyDataImportFile.OWNER_RELATIONSHIP) {
 
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
-            messages.add(new ImportMessage(getString("begin_owner_relationship_processing", count), INFO));
-            boolean wasErrors = false;
+            @Override
+            protected Map<Long, Long> getReservedIdMap() {
+                return ImmutableMap.of(ReferenceDataCorrectionBean.DAUGHTER, OwnerRelationshipStrategy.DAUGHTER,
+                        ReferenceDataCorrectionBean.SON, OwnerRelationshipStrategy.SON);
+            }
 
-            try {
-                for (String idjek : jekIds) {
-                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    while (jekCount > 0) {
-                        List<ReferenceDataCorrection> ownerRelationships =
-                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
-
-                        userTransaction.begin();
-                        for (ReferenceDataCorrection ownerRelationship : ownerRelationships) {
-                            String errorDescription = null;
-
-                            if (ownerRelationship.getId() == ReferenceDataCorrectionBean.DAUGHTER) { // дочь
-                                ownerRelationship.setSystemObjectId(OwnerRelationshipStrategy.DAUGHTER);
-                            } else if (ownerRelationship.getId() == ReferenceDataCorrectionBean.SON) { // сын
-                                ownerRelationship.setSystemObjectId(OwnerRelationshipStrategy.SON);
-                            } else {
-                                try {
-                                    Long systemOwnerRelationshipId =
-                                            referenceDataCorrectionBean.findSystemObject(entity, ownerRelationship.getNkod());
-                                    if (systemOwnerRelationshipId == null) {
-                                        DomainObject systemOwnerRelationship = ownerRelationshipStrategy.newInstance();
-                                        Utils.setValue(systemOwnerRelationship.getAttribute(OwnerRelationshipStrategy.NAME),
-                                                ownerRelationship.getNkod());
-                                        ownerRelationshipStrategy.insert(systemOwnerRelationship, DateUtil.getCurrentDate());
-                                        systemOwnerRelationshipId = systemOwnerRelationship.getId();
-                                    }
-                                    ownerRelationship.setSystemObjectId(systemOwnerRelationshipId);
-                                } catch (TooManyResultsException e) {
-                                    errorDescription = getString("owner_relationship_system_many_objects", ownerRelationship.getId(),
-                                            idjek, ownerRelationship.getNkod());
-                                }
-                            }
-
-                            ownerRelationship.setProcessed(true);
-                            referenceDataCorrectionBean.update(ownerRelationship);
-
-                            processingStatuses.get(item).increment();
-
-                            if (errorDescription != null) {
-                                wasErrors = true;
-                                if (ownerRelationshipErrorFile == null) {
-                                    ownerRelationshipErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.OWNER_RELATIONSHIP);
-                                    ownerRelationshipErrorFile.write(LegacyDataImportFile.OWNER_RELATIONSHIP.getCsvHeader());
-                                    ownerRelationshipErrorFile.newLine();
-                                }
-                                if (ownerRelationshipErrorDescriptionFile == null) {
-                                    ownerRelationshipErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            LegacyDataImportFile.OWNER_RELATIONSHIP);
-                                }
-
-                                ownerRelationshipErrorFile.write(ownerRelationship.getContent());
-                                ownerRelationshipErrorFile.newLine();
-
-                                ownerRelationshipErrorDescriptionFile.write(errorDescription);
-                                ownerRelationshipErrorDescriptionFile.newLine();
-                            }
-                        }
-
-                        userTransaction.commit();
-                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    }
-                }
-
+            @Override
+            protected boolean checkReservedCorrections() throws Exception {
                 try {
                     referenceDataCorrectionBean.checkReservedOwnerRelationships(jekIds);
                     reservedOwnerRelationshipResolved = true;
+                    return false;
                 } catch (ReferenceDataCorrectionBean.OwnerRelationshipsNotResolved e) {
-                    wasErrors = true;
-
                     StringBuilder sb = new StringBuilder();
+                    IStrategy strategy = strategy();
                     if (!e.isDaughterResolved()) {
-                        sb.append(ownerRelationshipStrategy.displayDomainObject(
-                                ownerRelationshipStrategy.findById(OwnerRelationshipStrategy.DAUGHTER, true), localeBean.getSystemLocale())).
+                        sb.append(strategy.displayDomainObject(
+                                strategy.findById(OwnerRelationshipStrategy.DAUGHTER, true), localeBean.getSystemLocale())).
                                 append(", ");
                     }
                     if (!e.isSonResolved()) {
-                        sb.append(ownerRelationshipStrategy.displayDomainObject(
-                                ownerRelationshipStrategy.findById(OwnerRelationshipStrategy.SON, true), localeBean.getSystemLocale())).
+                        sb.append(strategy.displayDomainObject(
+                                strategy.findById(OwnerRelationshipStrategy.SON, true), localeBean.getSystemLocale())).
                                 append(", ");
                     }
                     sb.delete(sb.length() - 2, sb.length());
                     String error = getString("reserved_owner_relationship_not_resolved", sb.toString(), jekIds.toString());
-                    if (ownerRelationshipErrorDescriptionFile == null) {
-                        ownerRelationshipErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                LegacyDataImportFile.OWNER_RELATIONSHIP);
+                    if (errorDescriptionFile == null) {
+                        errorDescriptionFile = getErrorDescriptionFile(errorsDirectory, getImportFile());
                     }
-                    ownerRelationshipErrorDescriptionFile.write(error);
-                    ownerRelationshipErrorDescriptionFile.newLine();
+                    errorDescriptionFile.write(error);
+                    errorDescriptionFile.newLine();
 
                     messages.add(new ImportMessage(error, WARN));
-                }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-
-                throw new RuntimeException(e);
-            } finally {
-                if (ownerRelationshipErrorFile != null) {
-                    try {
-                        ownerRelationshipErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-                if (ownerRelationshipErrorDescriptionFile != null) {
-                    try {
-                        ownerRelationshipErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
+                    return true;
                 }
             }
-
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_owner_relationship_processing", count), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_owner_relationship_processing", count), INFO));
-            }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
-                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for owner relationships.", e);
-            }
-        }
+        });
     }
 
-    private void processMilitaryDuties() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final String entity = "military_duty";
-        try {
-            final ProcessItem item = ProcessItem.MILITARY_DUTY;
-
-            BufferedWriter militaryDutyErrorFile = null;
-            BufferedWriter militaryDutyErrorDescriptionFile = null;
-
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
-            messages.add(new ImportMessage(getString("begin_military_duty_processing", count), INFO));
-            boolean wasErrors = false;
-
-            try {
-                for (String idjek : jekIds) {
-                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    while (jekCount > 0) {
-                        List<ReferenceDataCorrection> militaryDuties =
-                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
-
-                        userTransaction.begin();
-                        for (ReferenceDataCorrection militaryDuty : militaryDuties) {
-                            String errorDescription = null;
-                            try {
-                                Long systemMilitaryDutyId =
-                                        referenceDataCorrectionBean.findSystemObject("military_service_relation", militaryDuty.getNkod());
-                                if (systemMilitaryDutyId == null) {
-                                    DomainObject systemMilitaryDuty = militaryServiceRelationStrategy.newInstance();
-                                    Utils.setValue(systemMilitaryDuty.getAttribute(MilitaryServiceRelationStrategy.NAME),
-                                            militaryDuty.getNkod());
-                                    militaryServiceRelationStrategy.insert(systemMilitaryDuty, DateUtil.getCurrentDate());
-                                    systemMilitaryDutyId = systemMilitaryDuty.getId();
-                                }
-                                militaryDuty.setSystemObjectId(systemMilitaryDutyId);
-                            } catch (TooManyResultsException e) {
-                                errorDescription = getString("military_duty_system_many_objects", militaryDuty.getId(),
-                                        idjek, militaryDuty.getNkod());
-                            }
-
-                            militaryDuty.setProcessed(true);
-                            referenceDataCorrectionBean.update(militaryDuty);
-
-                            processingStatuses.get(item).increment();
-
-                            if (errorDescription != null) {
-                                wasErrors = true;
-                                if (militaryDutyErrorFile == null) {
-                                    militaryDutyErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.MILITARY_DUTY);
-                                    militaryDutyErrorFile.write(LegacyDataImportFile.MILITARY_DUTY.getCsvHeader());
-                                    militaryDutyErrorFile.newLine();
-                                }
-                                if (militaryDutyErrorDescriptionFile == null) {
-                                    militaryDutyErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            LegacyDataImportFile.MILITARY_DUTY);
-                                }
-
-                                militaryDutyErrorFile.write(militaryDuty.getContent());
-                                militaryDutyErrorFile.newLine();
-
-                                militaryDutyErrorDescriptionFile.write(errorDescription);
-                                militaryDutyErrorDescriptionFile.newLine();
-                            }
-                        }
-
-                        userTransaction.commit();
-                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    }
-                }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-
-                throw new RuntimeException(e);
-            } finally {
-                if (militaryDutyErrorFile != null) {
-                    try {
-                        militaryDutyErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-                if (militaryDutyErrorDescriptionFile != null) {
-                    try {
-                        militaryDutyErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-            }
-
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_military_duty_processing", count), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_military_duty_processing", count), INFO));
-            }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
-                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for military duties.", e);
-            }
-        }
+    private void processMilitaryDuties() throws Exception {
+        handleProcess(new ReferenceDataProcessor("military_service_relation", MilitaryServiceRelationStrategy.NAME,
+                "military_duty", ProcessItem.MILITARY_DUTY, LegacyDataImportFile.MILITARY_DUTY));
     }
 
-    private void processRegistrationsTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final String entity = "registration_type";
-        try {
-            final ProcessItem item = ProcessItem.REGISTRATION_TYPE;
+    private void processRegistrationsTypes() throws Exception {
+        handleProcess(new ReferenceDataProcessor("registration_type", RegistrationTypeStrategy.NAME,
+                ProcessItem.REGISTRATION_TYPE, LegacyDataImportFile.REGISTRATION_TYPE) {
 
-            BufferedWriter registrationTypeErrorFile = null;
-            BufferedWriter registrationTypeErrorDescriptionFile = null;
+            @Override
+            protected Map<Long, Long> getReservedIdMap() {
+                return ImmutableMap.of(ReferenceDataCorrectionBean.PERMANENT, RegistrationTypeStrategy.PERMANENT);
+            }
 
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = referenceDataCorrectionBean.countForProcessing(entity, jekIds);
-            messages.add(new ImportMessage(getString("begin_registration_type_processing", count), INFO));
-            boolean wasErrors = false;
-
-            try {
-                for (String idjek : jekIds) {
-                    int jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    while (jekCount > 0) {
-                        List<ReferenceDataCorrection> registrationTypes =
-                                referenceDataCorrectionBean.findForProcessing(entity, idjek, PROCESSING_BATCH);
-
-                        userTransaction.begin();
-                        for (ReferenceDataCorrection registrationType : registrationTypes) {
-                            String errorDescription = null;
-
-                            if (registrationType.getId() == ReferenceDataCorrectionBean.PERMANENT) { // постоянная регистрация
-                                registrationType.setSystemObjectId(RegistrationTypeStrategy.PERMANENT);
-                            } else {
-                                try {
-                                    Long systemRegistrationTypeId =
-                                            referenceDataCorrectionBean.findSystemObject(entity, registrationType.getNkod());
-                                    if (systemRegistrationTypeId == null) {
-                                        DomainObject systemRegistrationType = registrationTypeStrategy.newInstance();
-                                        Utils.setValue(systemRegistrationType.getAttribute(RegistrationTypeStrategy.NAME),
-                                                registrationType.getNkod());
-                                        registrationTypeStrategy.insert(systemRegistrationType, DateUtil.getCurrentDate());
-                                        systemRegistrationTypeId = systemRegistrationType.getId();
-                                    }
-                                    registrationType.setSystemObjectId(systemRegistrationTypeId);
-                                } catch (TooManyResultsException e) {
-                                    errorDescription = getString("registration_type_system_many_objects", registrationType.getId(),
-                                            idjek, registrationType.getNkod());
-                                }
-                            }
-
-                            registrationType.setProcessed(true);
-                            referenceDataCorrectionBean.update(registrationType);
-
-                            processingStatuses.get(item).increment();
-
-                            if (errorDescription != null) {
-                                wasErrors = true;
-                                if (registrationTypeErrorFile == null) {
-                                    registrationTypeErrorFile = getErrorFile(errorsDirectory, LegacyDataImportFile.REGISTRATION_TYPE);
-                                    registrationTypeErrorFile.write(LegacyDataImportFile.REGISTRATION_TYPE.getCsvHeader());
-                                    registrationTypeErrorFile.newLine();
-                                }
-                                if (registrationTypeErrorDescriptionFile == null) {
-                                    registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                            LegacyDataImportFile.REGISTRATION_TYPE);
-                                }
-
-                                registrationTypeErrorFile.write(registrationType.getContent());
-                                registrationTypeErrorFile.newLine();
-
-                                registrationTypeErrorDescriptionFile.write(errorDescription);
-                                registrationTypeErrorDescriptionFile.newLine();
-                            }
-                        }
-
-                        userTransaction.commit();
-                        jekCount = referenceDataCorrectionBean.countForProcessing(entity, idjek);
-                    }
-                }
-
+            @Override
+            protected boolean checkReservedCorrections() throws Exception {
                 try {
                     referenceDataCorrectionBean.checkReservedRegistrationTypes(jekIds);
                     reservedRegistrationTypesResolved = true;
+                    return false;
                 } catch (ReferenceDataCorrectionBean.RegistrationTypeNotResolved e) {
-                    wasErrors = true;
-
+                    IStrategy strategy = strategy();
                     final String error = getString("reserved_registration_type_not_resolved",
-                            registrationTypeStrategy.displayDomainObject(
-                            registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true),
+                            strategy.displayDomainObject(
+                            strategy.findById(RegistrationTypeStrategy.PERMANENT, true),
                             localeBean.getSystemLocale()),
                             jekIds.toString());
 
-                    if (registrationTypeErrorDescriptionFile == null) {
-                        registrationTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory,
-                                LegacyDataImportFile.REGISTRATION_TYPE);
+                    if (errorDescriptionFile == null) {
+                        errorDescriptionFile = getErrorDescriptionFile(errorsDirectory, getImportFile());
                     }
-                    registrationTypeErrorDescriptionFile.write(error);
-                    registrationTypeErrorDescriptionFile.newLine();
+                    errorDescriptionFile.write(error);
+                    errorDescriptionFile.newLine();
+
+                    messages.add(new ImportMessage(error, WARN));
+
+                    return true;
+                }
+            }
+        });
+    }
+
+    private void processDocumentsTypes() throws Exception {
+        handleProcess(new ReferenceDataProcessor("document_type", DocumentTypeStrategy.NAME,
+                ProcessItem.DOCUMENT_TYPE, LegacyDataImportFile.DOCUMENT_TYPE) {
+
+            @Override
+            protected Map<Long, Long> getReservedIdMap() {
+                return ImmutableMap.of(ReferenceDataCorrectionBean.PASSPORT, DocumentTypeStrategy.PASSPORT,
+                        ReferenceDataCorrectionBean.BIRTH_CERTIFICATE, DocumentTypeStrategy.BIRTH_CERTIFICATE);
+            }
+
+            @Override
+            protected boolean checkReservedCorrections() throws Exception {
+                try {
+                    referenceDataCorrectionBean.checkReservedDocumentTypes(jekIds);
+                    reservedDocumentTypesResolved = true;
+                    return false;
+                } catch (ReferenceDataCorrectionBean.DocumentTypesNotResolved e) {
+                    StringBuilder sb = new StringBuilder();
+                    IStrategy strategy = strategy();
+                    if (!e.isPassportResolved()) {
+                        sb.append(strategy.displayDomainObject(
+                                strategy.findById(DocumentTypeStrategy.PASSPORT, true),
+                                localeBean.getSystemLocale())).
+                                append(", ");
+                    }
+                    if (!e.isBirthCertificateResolved()) {
+                        sb.append(strategy.displayDomainObject(
+                                strategy.findById(DocumentTypeStrategy.BIRTH_CERTIFICATE, true),
+                                localeBean.getSystemLocale())).
+                                append(", ");
+                    }
+                    sb.delete(sb.length() - 2, sb.length());
+                    String error = getString("reserved_document_type_not_resolved", sb.toString(), jekIds.toString());
+
+                    if (errorDescriptionFile == null) {
+                        errorDescriptionFile = getErrorDescriptionFile(errorsDirectory, getImportFile());
+                    }
+                    errorDescriptionFile.write(error);
+                    errorDescriptionFile.newLine();
+
+                    messages.add(new ImportMessage(error, WARN));
+
+                    return true;
+                }
+            }
+        });
+    }
+
+    private void processOwnerTypes() throws Exception {
+        handleProcess(new Processor() {
+
+            BufferedWriter ownerTypeErrorDescriptionFile;
+
+            @Override
+            public void process() throws Exception {
+                ownerType = referenceDataCorrectionBean.getReservedOwnerType(jekIds);
+                if (!Strings.isEmpty(ownerType)) {
+                    messages.add(new ImportMessage(getString("owner_type_success_finish_processing"), INFO));
+                } else {
+                    String error = getString("owner_type_fail_finish_processing", jekIds.toString());
+
+                    ownerTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, LegacyDataImportFile.OWNER_TYPE);
+                    ownerTypeErrorDescriptionFile.write(error);
+                    ownerTypeErrorDescriptionFile.newLine();
 
                     messages.add(new ImportMessage(error, WARN));
                 }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
 
-                throw new RuntimeException(e);
-            } finally {
-                if (registrationTypeErrorFile != null) {
-                    try {
-                        registrationTypeErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
-                if (registrationTypeErrorDescriptionFile != null) {
-                    try {
-                        registrationTypeErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
+                ImportStatus status = new ImportStatus(1);
+                status.finish();
+                processingStatuses.put(ProcessItem.OWNER_TYPE, status);
             }
 
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_registration_type_processing", count), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_registration_type_processing", count), INFO));
+            @Override
+            public void clearProcessingStatus() {
             }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
 
-                referenceDataCorrectionBean.clearProcessingStatus(entity, jekIds);
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for registration types.", e);
+            @Override
+            public void closeFiles() {
+                closeFile(ownerTypeErrorDescriptionFile);
             }
-        }
+        });
     }
 
-    private void processDocumentsTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final ProcessItem item = ProcessItem.DOCUMENT_TYPE;
-        BufferedWriter documentTypeErrorDescriptionFile = null;
-
-        try {
-            userTransaction.begin();
-            referenceDataCorrectionBean.putReservedDocumentTypes(jekIds);
-            userTransaction.commit();
-
-            try {
-                referenceDataCorrectionBean.checkReservedDocumentTypes(jekIds);
-                messages.add(new ImportMessage(getString("success_finish_document_type_processing"), INFO));
-                reservedDocumentTypesResolved = true;
-            } catch (ReferenceDataCorrectionBean.DocumentTypesNotResolved e) {
-                StringBuilder sb = new StringBuilder();
-                if (!e.isPassportResolved()) {
-                    sb.append(documentTypeStrategy.displayDomainObject(
-                            documentTypeStrategy.findById(DocumentTypeStrategy.PASSPORT, true),
-                            localeBean.getSystemLocale())).
-                            append(", ");
-                }
-                if (!e.isBirthCertificateResolved()) {
-                    sb.append(documentTypeStrategy.displayDomainObject(
-                            documentTypeStrategy.findById(DocumentTypeStrategy.BIRTH_CERTIFICATE, true),
-                            localeBean.getSystemLocale())).
-                            append(", ");
-                }
-                sb.delete(sb.length() - 2, sb.length());
-                String error = getString("fail_finish_document_type_processing", sb.toString(), jekIds.toString());
-
-                documentTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, LegacyDataImportFile.DOCUMENT_TYPE);
-                documentTypeErrorDescriptionFile.write(error);
-                documentTypeErrorDescriptionFile.newLine();
-
-                messages.add(new ImportMessage(error, WARN));
-            }
-
-            ImportStatus status = new ImportStatus(2);
-            status.finish();
-            processingStatuses.put(item, status);
-        } catch (Exception e) {
-            try {
-                if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                    userTransaction.rollback();
-                }
-            } catch (Exception e1) {
-                log.error("Couldn't to rollback transaction.", e1);
-            }
-            throw new RuntimeException(e);
-        } finally {
-            if (documentTypeErrorDescriptionFile != null) {
-                try {
-                    documentTypeErrorDescriptionFile.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close file stream.", e);
-                }
-            }
-        }
-    }
-
-    private void processOwnerTypes() throws OpenErrorFileException, OpenErrorDescriptionFileException {
-        final ProcessItem item = ProcessItem.OWNER_TYPE;
-        BufferedWriter ownerTypeErrorDescriptionFile = null;
-
-        try {
-            ownerType = referenceDataCorrectionBean.getReservedOwnerType(jekIds);
-            if (!Strings.isEmpty(ownerType)) {
-                messages.add(new ImportMessage(getString("success_finish_owner_type_processing"), INFO));
-            } else {
-                String error = getString("fail_finish_owner_type_processing", jekIds.toString());
-
-                ownerTypeErrorDescriptionFile = getErrorDescriptionFile(errorsDirectory, LegacyDataImportFile.OWNER_TYPE);
-                ownerTypeErrorDescriptionFile.write(error);
-                ownerTypeErrorDescriptionFile.newLine();
-
-                messages.add(new ImportMessage(error, WARN));
-            }
-
-            ImportStatus status = new ImportStatus(1);
-            status.finish();
-            processingStatuses.put(item, status);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (ownerTypeErrorDescriptionFile != null) {
-                try {
-                    ownerTypeErrorDescriptionFile.close();
-                } catch (IOException e) {
-                    log.error("Couldn't to close file stream.", e);
-                }
-            }
-        }
-    }
-
-    private void processPersons() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+    private void processPersons() throws Exception {
         if (!reservedDocumentTypesResolved) {
             return;
         }
 
-        final Date creationDate = DateUtil.getCurrentDate();
+        handleProcess(new Processor() {
 
-        try {
-            final ProcessItem item = ProcessItem.PERSON;
+            BufferedWriter personErrorFile;
+            BufferedWriter personErrorDescriptionFile;
 
-            BufferedWriter personErrorFile = null;
-            BufferedWriter personErrorDescriptionFile = null;
+            @Override
+            public void process() throws Exception {
+                final Date creationDate = DateUtil.getCurrentDate();
+                final ProcessItem item = ProcessItem.PERSON;
+                final String searchIdJek = jekIds.iterator().next();
 
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = personCorrectionBean.countForProcessing();
-            final int archiveCount = personCorrectionBean.archiveCount();
-            messages.add(new ImportMessage(getString("begin_person_processing", count), INFO));
-            boolean wasErrors = false;
+                processingStatuses.put(item, new ImportStatus(0));
+                final int count = personCorrectionBean.countForProcessing();
+                final int archiveCount = personCorrectionBean.archiveCount();
+                messages.add(new ImportMessage(getString("begin_person_processing", count), INFO));
+                boolean wasErrors = false;
 
-            try {
                 int leftPersons = count;
                 while (leftPersons > 0) {
                     List<PersonCorrection> persons = personCorrectionBean.findForProcessing(PROCESSING_BATCH);
 
-                    userTransaction.begin();
                     for (PersonCorrection p : persons) {
                         String errorDescription = null;
 
@@ -1500,10 +1235,27 @@ public class LegacyDataImportService {
                                             Date birthDate = DateUtil.asDate(p.getDatar(), Utils.DATE_PATTERN);
                                             p.setKid(!DateUtil.isValidDateInterval(creationDate, birthDate, PersonStrategy.AGE_THRESHOLD));
 
-                                            if (PersonCorrectionBean.isSupportedDocumentType(p.getIddok())) {
+                                            //document type
+                                            Long systemDocumentTypeId = null;
+                                            /* Optimization: do not load reference data if it is reserved document type */
+                                            if (String.valueOf(ReferenceDataCorrectionBean.PASSPORT).equalsIgnoreCase(p.getIddok())) {
+                                                systemDocumentTypeId = DocumentTypeStrategy.PASSPORT;
+                                            } else if (String.valueOf(ReferenceDataCorrectionBean.BIRTH_CERTIFICATE).equalsIgnoreCase(p.getIddok())) {
+                                                systemDocumentTypeId = DocumentTypeStrategy.BIRTH_CERTIFICATE;
+                                            } else {
+                                                ReferenceDataCorrection documentType =
+                                                        referenceDataCorrectionBean.getById("document_type", p.getIddok(), searchIdJek);
+                                                if (documentType == null) {
+                                                    errorDescription = getString("person_document_type_not_found",
+                                                            p.getId(), p.getIddok(), searchIdJek);
+                                                } else if (documentType.getSystemObjectId() == null) {
+                                                    errorDescription = getString("person_document_type_not_resolved",
+                                                            p.getId(), p.getIdarm(), searchIdJek);
+                                                }
+                                            }
 
+                                            if (systemDocumentTypeId != null) {// document type resolved
                                                 //military service relation
-                                                final String searchIdJek = jekIds.iterator().next();
                                                 ReferenceDataCorrection militaryDity =
                                                         referenceDataCorrectionBean.getById("military_duty", p.getIdarm(), searchIdJek);
                                                 if (militaryDity == null) {
@@ -1514,12 +1266,10 @@ public class LegacyDataImportService {
                                                             p.getId(), p.getIdarm(), searchIdJek);
                                                 }
 
-                                                systemPerson = personCorrectionBean.newSystemPerson(p, birthDate,
+                                                systemPerson = personCorrectionBean.newSystemPerson(p, birthDate, systemDocumentTypeId,
                                                         militaryDity != null ? militaryDity.getSystemObjectId() : null);
                                                 personStrategy.insert(systemPerson, creationDate);
                                                 p.setSystemPersonId(systemPerson.getId());
-                                            } else {
-                                                errorDescription = getString("unsupported_document_type", p.getId(), p.getIddok());
                                             }
                                         } else {
                                             errorDescription = getString("invalid_person_data", p.getId(), p.getDatar(),
@@ -1563,18 +1313,14 @@ public class LegacyDataImportService {
                         }
                     }
 
-                    userTransaction.commit();
                     leftPersons = personCorrectionBean.countForProcessing();
                 }
 
                 //children
-                userTransaction.begin();
                 personCorrectionBean.clearProcessingStatus();
-                userTransaction.commit();
 
                 List<PersonCorrection> children = personCorrectionBean.findChildren(PROCESSING_BATCH);
                 while (!children.isEmpty()) {
-                    userTransaction.begin();
                     for (PersonCorrection child : children) {
                         String errorDescription = null;
                         if (PersonCorrectionBean.isParentDataValid(child.getIdbud(), child.getKv(), child.getParentnom())) {
@@ -1617,89 +1363,55 @@ public class LegacyDataImportService {
                             personErrorDescriptionFile.newLine();
                         }
                     }
-                    userTransaction.commit();
                     children = personCorrectionBean.findChildren(PROCESSING_BATCH);
                 }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
 
-                throw new RuntimeException(e);
-            } finally {
-                if (personErrorFile != null) {
-                    try {
-                        personErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
+                if (wasErrors) {
+                    messages.add(new ImportMessage(getString("fail_finish_person_processing", count, archiveCount), WARN));
+                } else {
+                    messages.add(new ImportMessage(getString("success_finish_person_processing", count, archiveCount), INFO));
                 }
-                if (personErrorDescriptionFile != null) {
-                    try {
-                        personErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
+                processingStatuses.get(item).finish();
             }
 
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_person_processing", count, archiveCount), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_person_processing", count, archiveCount), INFO));
-            }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
+            @Override
+            public void clearProcessingStatus() {
                 personCorrectionBean.clearProcessingStatus();
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for persons.", e);
             }
-        }
+
+            @Override
+            public void closeFiles() {
+                closeFile(personErrorFile);
+                closeFile(personErrorDescriptionFile);
+            }
+        });
     }
 
-    private void processApartmentCards() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+    private void processApartmentCards() throws Exception {
         if (Strings.isEmpty(ownerType) || !reservedDocumentTypesResolved) {
             return;
         }
 
-        try {
-            final ProcessItem item = ProcessItem.APARTMENT_CARD;
+        handleProcess(new Processor() {
 
-            BufferedWriter apartmentCardErrorFile = null;
-            BufferedWriter apartmentCardErrorDescriptionFile = null;
+            BufferedWriter apartmentCardErrorFile;
+            BufferedWriter apartmentCardErrorDescriptionFile;
 
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = apartmentCardCorrectionBean.countForProcessing();
-            final int archiveCount = apartmentCardCorrectionBean.archiveCount();
-            messages.add(new ImportMessage(getString("begin_apartment_card_processing", count), INFO));
-            boolean wasErrors = false;
+            @Override
+            public void process() throws Exception {
+                final ProcessItem item = ProcessItem.APARTMENT_CARD;
 
-            final Date creationDate = DateUtil.getCurrentDate();
+                processingStatuses.put(item, new ImportStatus(0));
+                final int count = apartmentCardCorrectionBean.countForProcessing();
+                final int archiveCount = apartmentCardCorrectionBean.archiveCount();
+                messages.add(new ImportMessage(getString("begin_apartment_card_processing", count), INFO));
+                boolean wasErrors = false;
 
-            try {
+                final Date creationDate = DateUtil.getCurrentDate();
+
                 int leftCards = count;
                 while (leftCards > 0) {
                     List<ApartmentCardCorrection> cards = apartmentCardCorrectionBean.findForProcessing(PROCESSING_BATCH);
-
-                    userTransaction.begin();
                     for (ApartmentCardCorrection c : cards) {
                         String errorDescription = null;
 
@@ -1834,86 +1546,55 @@ public class LegacyDataImportService {
                         }
                     }
 
-                    userTransaction.commit();
                     leftCards = apartmentCardCorrectionBean.countForProcessing();
                 }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
 
-                throw new RuntimeException(e);
-            } finally {
-                if (apartmentCardErrorFile != null) {
-                    try {
-                        apartmentCardErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
+                if (wasErrors) {
+                    messages.add(new ImportMessage(getString("fail_finish_apartment_card_processing", count, archiveCount), WARN));
+                } else {
+                    messages.add(new ImportMessage(getString("success_finish_apartment_card_processing", count, archiveCount), INFO));
                 }
-                if (apartmentCardErrorDescriptionFile != null) {
-                    try {
-                        apartmentCardErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
+                processingStatuses.get(item).finish();
             }
 
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_apartment_card_processing", count, archiveCount), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_apartment_card_processing", count, archiveCount), INFO));
-            }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
+            @Override
+            public void clearProcessingStatus() {
                 apartmentCardCorrectionBean.clearProcessingStatus();
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    userTransaction.rollback();
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for apartment cards.", e);
             }
-        }
+
+            @Override
+            public void closeFiles() {
+                closeFile(apartmentCardErrorFile);
+                closeFile(apartmentCardErrorDescriptionFile);
+            }
+        });
     }
 
-    private void processRegistrations() throws OpenErrorFileException, OpenErrorDescriptionFileException {
+    private void processRegistrations() throws Exception {
         if (Strings.isEmpty(ownerType) || !reservedDocumentTypesResolved
                 || !reservedOwnerRelationshipResolved || !reservedRegistrationTypesResolved) {
             return;
         }
 
-        try {
-            final ProcessItem item = ProcessItem.REGISTRATION;
+        handleProcess(new Processor() {
 
-            BufferedWriter registrationErrorFile = null;
-            BufferedWriter registrationErrorDescriptionFile = null;
+            BufferedWriter registrationErrorFile;
+            BufferedWriter registrationErrorDescriptionFile;
 
-            processingStatuses.put(item, new ImportStatus(0));
-            final int count = registrationCorrectionBean.countForProcessing();
-            messages.add(new ImportMessage(getString("begin_registration_processing", count), INFO));
-            boolean wasErrors = false;
+            @Override
+            public void process() throws Exception {
+                final ProcessItem item = ProcessItem.REGISTRATION;
 
-            final Date creationDate = DateUtil.getCurrentDate();
+                processingStatuses.put(item, new ImportStatus(0));
+                final int count = registrationCorrectionBean.countForProcessing();
+                messages.add(new ImportMessage(getString("begin_registration_processing", count), INFO));
+                boolean wasErrors = false;
 
-            try {
+                final Date creationDate = DateUtil.getCurrentDate();
+
                 int leftCards = count;
                 while (leftCards > 0) {
                     List<ApartmentCardCorrection> cards = registrationCorrectionBean.findApartmentCardsForProcessing(PROCESSING_BATCH);
-
                     for (ApartmentCardCorrection c : cards) {
                         List<String> errorDescriptions = Lists.newArrayList();
 
@@ -1943,7 +1624,6 @@ public class LegacyDataImportService {
                                         errorDescriptions.add(getString("registration_exists", p.getId()));
                                     } else {
                                         //create new system registration
-
                                         Long systemRegistrationId = null;
 
                                         //registration date
@@ -1959,6 +1639,7 @@ public class LegacyDataImportService {
                                                 //impossible case because we handle apartment cards that already 
                                                 // were processed by processApartmentCards() and that processing 
                                                 // includes search the building and check that there only one building found.
+                                                throw new IllegalStateException("There are too many building corrections. Illegal state.");
                                             }
                                             ReferenceDataCorrection ownerRelationship =
                                                     referenceDataCorrectionBean.getById("owner_relationship", p.getIdrel(), building.getIdjek());
@@ -2107,11 +1788,9 @@ public class LegacyDataImportService {
                                                                     registrationCorrectionBean.addRegistration(systemApartmentCard, registration, creationDate);
                                                         }
                                                     } else { // validation not needed.
-                                                        userTransaction.begin();
                                                         systemRegistrationId =
                                                                 registrationCorrectionBean.addRegistration(systemApartmentCard, registration, creationDate);
                                                         registrationStrategy.disable(registration, creationDate);
-                                                        userTransaction.commit();
                                                     }
                                                 }
                                             }
@@ -2121,9 +1800,7 @@ public class LegacyDataImportService {
 
                                         if (systemRegistrationId != null) {
                                             p.setSystemRegistrationId(systemRegistrationId);
-                                            userTransaction.begin();
                                             registrationCorrectionBean.updatePerson(p);
-                                            userTransaction.commit();
                                         }
                                     }
                                 }
@@ -2133,9 +1810,7 @@ public class LegacyDataImportService {
                         }
 
                         c.setProcessed(true);
-                        userTransaction.begin();
                         registrationCorrectionBean.updateApartmentCard(c);
-                        userTransaction.commit();
 
                         processingStatuses.get(item).increment();
 
@@ -2163,57 +1838,26 @@ public class LegacyDataImportService {
 
                     leftCards = registrationCorrectionBean.countForProcessing();
                 }
-            } catch (Exception e) {
-                try {
-                    if (userTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                        userTransaction.rollback();
-                    }
-                } catch (Exception e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
 
-                throw new RuntimeException(e);
-            } finally {
-                if (registrationErrorFile != null) {
-                    try {
-                        registrationErrorFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
+                if (wasErrors) {
+                    messages.add(new ImportMessage(getString("fail_finish_registration_processing", count), WARN));
+                } else {
+                    messages.add(new ImportMessage(getString("success_finish_registration_processing", count), INFO));
                 }
-                if (registrationErrorDescriptionFile != null) {
-                    try {
-                        registrationErrorDescriptionFile.close();
-                    } catch (IOException e) {
-                        log.error("Couldn't to close file stream.", e);
-                    }
-                }
+                processingStatuses.get(item).finish();
             }
 
-            if (wasErrors) {
-                messages.add(new ImportMessage(getString("fail_finish_registration_processing", count), WARN));
-            } else {
-                messages.add(new ImportMessage(getString("success_finish_registration_processing", count), INFO));
-            }
-            processingStatuses.get(item).finish();
-        } catch (RuntimeException e) {
-            throw e;
-        } finally {
-            try {
-                userTransaction.begin();
-
+            @Override
+            public void clearProcessingStatus() {
                 apartmentCardCorrectionBean.clearProcessingStatus();
-
-                userTransaction.commit();
-            } catch (Exception e) {
-                try {
-                    userTransaction.rollback();
-                } catch (SystemException e1) {
-                    log.error("Couldn't to rollback transaction.", e1);
-                }
-                log.error("Couldn't to clear processing status for registrations.", e);
             }
-        }
+
+            @Override
+            public void closeFiles() {
+                closeFile(registrationErrorFile);
+                closeFile(registrationErrorDescriptionFile);
+            }
+        });
     }
 
     private String getString(String key, Object... parameters) {
@@ -2261,10 +1905,6 @@ public class LegacyDataImportService {
             }
             throw new RuntimeException(e);
         }
-    }
-
-    private int getRecordCount(String dir, LegacyDataImportFile file) throws ImportFileNotFoundException, ImportFileReadException {
-        return ImportStorageUtil.getRecordCount(dir, file);
     }
 
     private CSVReader getCsvReader(String dir, LegacyDataImportFile file, String charsetName, char separator) throws ImportFileNotFoundException {

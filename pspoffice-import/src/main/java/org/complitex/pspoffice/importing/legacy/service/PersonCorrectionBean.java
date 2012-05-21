@@ -22,7 +22,6 @@ import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
-import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.importing.legacy.entity.PersonCorrection;
 import org.complitex.pspoffice.importing.legacy.service.exception.TooManyResultsException;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -104,7 +103,7 @@ public class PersonCorrectionBean extends AbstractBean {
         }
     }
 
-    public Person newSystemPerson(PersonCorrection pc, Date birthDate, Long systemMilitaryServiceRelationId) {
+    public Person newSystemPerson(PersonCorrection pc, Date birthDate, Long documentTypeId, Long systemMilitaryServiceRelationId) {
         Person p = personStrategy.newInstance();
 
         //ФИО
@@ -139,20 +138,16 @@ public class PersonCorrectionBean extends AbstractBean {
         Utils.setSystemLocaleValue(p.getAttribute(PersonStrategy.BIRTH_CITY), pc.getNmisto());
 
         //Документ
-        Long documentTypeId = null;
-        if (String.valueOf(ReferenceDataCorrectionBean.PASSPORT).equalsIgnoreCase(pc.getIddok())) {
-            documentTypeId = DocumentTypeStrategy.PASSPORT;
-        } else if (String.valueOf(ReferenceDataCorrectionBean.BIRTH_CERTIFICATE).equalsIgnoreCase(pc.getIddok())) {
-            documentTypeId = DocumentTypeStrategy.BIRTH_CERTIFICATE;
-        }
-        if (documentTypeId == null) {
-            throw new IllegalArgumentException("Person correction has invalid document type id: " + pc.getIddok());
-        }
         Document d = documentStrategy.newInstance(documentTypeId);
         Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DOCUMENT_SERIA), pc.getDokseria());
         Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DOCUMENT_NUMBER), pc.getDoknom());
         Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.ORGANIZATION_ISSUED), pc.getDokvidan());
-        Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DATE_ISSUED), pc.getDokdatvid());
+
+        /* Set document date issued only if that date is later person's birth date. */
+        final Date dateIssued = DateUtil.asDate(pc.getDokdatvid(), Utils.DATE_PATTERN);
+        if (dateIssued != null && birthDate.before(dateIssued)) {
+            Utils.setSystemLocaleValue(d.getAttribute(DocumentStrategy.DATE_ISSUED), pc.getDokdatvid());
+        }
         p.setDocument(d);
 
         //отношение к воиской обязанности

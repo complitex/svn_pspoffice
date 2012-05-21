@@ -16,8 +16,8 @@ public class ImportMessage implements Serializable {
 
         INFO, WARN, ERROR
     }
-    private String message;
-    private ImportMessageLevel level;
+    private final String message;
+    private final ImportMessageLevel level;
 
     public ImportMessage(String message, ImportMessageLevel level) {
         this.message = message;

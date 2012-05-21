@@ -17,7 +17,6 @@ import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
-import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.importing.legacy.entity.ReferenceDataCorrection;
 import org.complitex.pspoffice.importing.legacy.service.exception.TooManyResultsException;
 
@@ -167,16 +166,6 @@ public class ReferenceDataCorrectionBean extends AbstractBean {
         public boolean isPassportResolved() {
             return passportResolved;
         }
-    }
-
-    public void putReservedDocumentTypes(Set<String> jekIds) {
-        final String operation = ".putReservedDocumentType";
-        sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", PASSPORT, "systemObjectId", DocumentTypeStrategy.PASSPORT,
-                "jekIds", jekIds));
-        sqlSession().update(MAPPING_NAMESPACE + operation,
-                ImmutableMap.of("id", BIRTH_CERTIFICATE, "systemObjectId", DocumentTypeStrategy.BIRTH_CERTIFICATE,
-                "jekIds", jekIds));
     }
 
     public void checkReservedDocumentTypes(Set<String> jekIds) throws DocumentTypesNotResolved {

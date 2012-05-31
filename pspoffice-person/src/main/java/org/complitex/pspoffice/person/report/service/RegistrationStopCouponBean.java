@@ -80,8 +80,9 @@ public class RegistrationStopCouponBean extends AbstractBean {
     @Transactional
     public String getPreviousNames(long personId, Locale locale) {
         final long localeId = localeBean.convert(locale).getId();
-        TreeSet<Date> previousNameStartDates = newTreeSet(sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNameStartDates",
-                ImmutableMap.of("personId", personId, "localeId", localeId)));
+        List<Date> results = sqlSession().selectList(MAPPING_NAMESPACE + ".findPreviousNameStartDates",
+                ImmutableMap.of("personId", personId, "localeId", localeId));
+        TreeSet<Date> previousNameStartDates = newTreeSet(results);
         if (previousNameStartDates.isEmpty()) {
             return null;
         }

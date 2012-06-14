@@ -4,7 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.history.apartment_card;
 
-import org.apache.wicket.markup.html.CSSPackageResource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import java.util.Date;
@@ -13,6 +12,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.TextArea;
@@ -23,6 +23,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
@@ -81,6 +82,12 @@ final class ApartmentCardHistoryPanel extends Panel {
     private IUserProfileBean userProfileBean;
     private final Entity ENTITY = apartmentCardStrategy.getEntity();
 
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderCSSReference(new PackageResourceReference(ApartmentCardHistoryPanel.class,
+                ApartmentCardHistoryPanel.class.getSimpleName() + ".css"));
+    }
+
     ApartmentCardHistoryPanel(String id, long apartmentCardId, final Date endDate) {
         super(id);
 
@@ -91,9 +98,6 @@ final class ApartmentCardHistoryPanel extends Panel {
                     + ", startDate:" + startDate + ", endDate: " + endDate);
         }
         final ApartmentCardModification modification = apartmentCardStrategy.getDistinctions(card, startDate);
-
-        add(CSSPackageResource.getHeaderContribution(ApartmentCardHistoryPanel.class,
-                ApartmentCardHistoryPanel.class.getSimpleName() + ".css"));
 
         add(new Label("label", endDate != null ? new StringResourceModel("label", null,
                 new Object[]{apartmentCardId, HistoryDateFormatter.format(startDate),
@@ -134,8 +138,17 @@ final class ApartmentCardHistoryPanel extends Panel {
         formOfOwnershipContainer.add(new Label("label", labelModel));
         formOfOwnershipContainer.add(new WebMarkupContainer("required").setVisible(formOfOwnershipAttributeType.isMandatory()));
         final List<DomainObject> allOwnershipForms = ownershipFormStrategy.getAll();
+        IModel<DomainObject> ownershipFormModel = new Model<DomainObject>();
+        if (card.getOwnershipForm() != null) {
+            for (DomainObject ownershipForm : allOwnershipForms) {
+                if (ownershipForm.getId().equals(card.getOwnershipForm().getId())) {
+                    ownershipFormModel.setObject(ownershipForm);
+                    break;
+                }
+            }
+        }
         final Component formOfOwnership = new DisableAwareDropDownChoice<DomainObject>("formOfOwnership",
-                new Model<DomainObject>(card.getOwnershipForm()), allOwnershipForms, new DomainObjectDisableAwareRenderer() {
+                ownershipFormModel, allOwnershipForms, new DomainObjectDisableAwareRenderer() {
 
             @Override
             public Object getDisplayValue(DomainObject object) {

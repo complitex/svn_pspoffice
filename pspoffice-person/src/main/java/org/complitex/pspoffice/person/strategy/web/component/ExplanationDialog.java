@@ -77,8 +77,7 @@ public class ExplanationDialog extends Panel {
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
             }
         };
         form.add(submit);
@@ -88,7 +87,7 @@ public class ExplanationDialog extends Panel {
         this.submitAction = submitAction;
         dialog.open(target);
         labelModel.setObject(labelText);
-        target.addComponent(label);
+        target.add(label);
     }
 
     protected void close(AjaxRequestTarget target) {

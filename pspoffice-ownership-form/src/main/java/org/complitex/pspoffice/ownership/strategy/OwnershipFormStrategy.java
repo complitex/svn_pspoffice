@@ -65,7 +65,6 @@ public class OwnershipFormStrategy extends TemplateStrategy {
         return ResourceUtil.getString(RESOURCE_BUNDLE, getEntityTable(), locale);
     }
 
-    @SuppressWarnings("unchecked")
     public List<DomainObject> getAll() {
         DomainObjectExample example = new DomainObjectExample();
         example.setOrderByAttributeTypeId(NAME);

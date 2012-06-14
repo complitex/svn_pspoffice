@@ -11,6 +11,7 @@ import static com.google.common.collect.Iterables.*;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -39,7 +40,6 @@ import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.feedback.IFeedbackMessageFilter;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -132,10 +132,13 @@ public class PersonInputPanel extends Panel {
         return person.getStatus() != StatusType.ACTIVE;
     }
 
-    private void init(Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
-        add(JavascriptPackageResource.getHeaderContribution(CoreEffectJavaScriptResourceReference.get()));
-        add(JavascriptPackageResource.getHeaderContribution(SlideEffectJavaScriptResourceReference.get()));
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderJavaScriptReference(CoreEffectJavaScriptResourceReference.get());
+        response.renderJavaScriptReference(SlideEffectJavaScriptResourceReference.get());
+    }
 
+    private void init(Locale defaultNameLocale, String defaultLastName, String defaultFirstName, String defaultMiddleName) {
         //full name:
         PersonFullNamePanel personFullNamePanel = defaultNameLocale != null ? new PersonFullNamePanel("personFullNamePanel", person,
                 defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName)
@@ -221,8 +224,8 @@ public class PersonInputPanel extends Panel {
                 militaryServiceRelationHead.setVisible(visible);
                 militaryServiceRelationBody.setVisible(visible);
                 if (wasVisible ^ visible) {
-                    target.addComponent(militaryServiceRelationHead);
-                    target.addComponent(militaryServiceRelationBody);
+                    target.add(militaryServiceRelationHead);
+                    target.add(militaryServiceRelationBody);
                 }
             }
 
@@ -230,7 +233,7 @@ public class PersonInputPanel extends Panel {
                 boolean wasVisible = childrentComponent.isVisible();
                 childrentComponent.setVisible(visible);
                 if (wasVisible ^ visible) {
-                    target.addComponent(childrentComponent);
+                    target.add(childrentComponent);
                 }
             }
         });
@@ -380,10 +383,10 @@ public class PersonInputPanel extends Panel {
                 error(MessageFormat.format(getString("adult_document_type_error"),
                         documentTypeStrategy.displayDomainObject(documentTypeModel.getObject(), getLocale()).toLowerCase(getLocale())));
             }
-        }
 
-        //document issued date must be later then person's birth date
-        validateDocumentIssuedDate();
+            //document issued date must be later then person's birth date
+            validateDocumentIssuedDate();
+        }
 
         //children
         if (person.hasChildren() && person.isKid()) {
@@ -471,7 +474,7 @@ public class PersonInputPanel extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 Person newChild = null;
                 person.addChild(newChild);
-                target.addComponent(childrenContainer);
+                target.add(childrenContainer);
             }
         };
         addChild.setVisible(canEdit());
@@ -559,12 +562,12 @@ public class PersonInputPanel extends Panel {
                         person.setReplacedDocument(document);
                     }
                     documentInputPanelContainer.replace(newDocumentInputPanel(document));
-                    target.addComponent(documentInputPanelContainer);
-                    target.addComponent(documentType);
+                    target.add(documentInputPanelContainer);
+                    target.add(documentType);
 
                     final String documentInputPanelWrapperId = documentInputPanelWrapper.getMarkupId();
-                    target.prependJavascript("$('#" + documentInputPanelWrapperId + "').hide();");
-                    target.appendJavascript("$('#" + documentInputPanelWrapperId + "').slideDown('fast',"
+                    target.prependJavaScript("$('#" + documentInputPanelWrapperId + "').hide();");
+                    target.appendJavaScript("$('#" + documentInputPanelWrapperId + "').slideDown('fast',"
                             + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
                 }
             }
@@ -580,7 +583,7 @@ public class PersonInputPanel extends Panel {
                 if (PersonInputPanel.this.validateDocumentIssuedDate()) {
                     documentReplacedFlag = true;
                     setVisible(false);
-                    target.addComponent(documentButtonsContainer);
+                    target.add(documentButtonsContainer);
                     documentTypeModel.setObject(null);
                     documentType.setEnabled(true);
                     initDocumentTypesModel();
@@ -588,26 +591,25 @@ public class PersonInputPanel extends Panel {
 
                     final String documentInputPanelWrapperId = documentInputPanelWrapper.getMarkupId();
                     if (documentTypesModel.getObject().size() > 1) {
-                        target.prependJavascript("$('#" + documentInputPanelWrapperId + "').hide('slide', {}, 750);");
+                        target.prependJavaScript("$('#" + documentInputPanelWrapperId + "').hide('slide', {}, 750);");
                     } else {
-                        target.prependJavascript("$('#" + documentInputPanelWrapperId + "').hide();");
-                        target.appendJavascript("$('#" + documentInputPanelWrapperId + "').slideDown('fast',"
+                        target.prependJavaScript("$('#" + documentInputPanelWrapperId + "').hide();");
+                        target.appendJavaScript("$('#" + documentInputPanelWrapperId + "').slideDown('fast',"
                                 + "function(){ $('input, textarea, select', this).filter(':enabled:not(:hidden)').first().focus(); });");
-                        target.addComponent(documentInputPanelContainer);
+                        target.add(documentInputPanelContainer);
                     }
                     target.focusComponent(documentType);
-                    target.addComponent(documentType);
+                    target.add(documentType);
                 } else {
-                    target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
+                    target.appendJavaScript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
                 }
-                target.addComponent(messages);
+                target.add(messages);
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
-                target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
+                target.add(messages);
+                target.appendJavaScript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
             }
         };
         replaceDocument.setVisible(!isNew() && canEdit());
@@ -721,7 +723,7 @@ public class PersonInputPanel extends Panel {
             public void onExpand(AjaxRequestTarget target) {
                 if (!content.isVisible()) {
                     content.setVisible(true);
-                    target.addComponent(content);
+                    target.add(content);
                 }
             }
         };
@@ -808,6 +810,14 @@ public class PersonInputPanel extends Panel {
                 person.setMilitaryServiceRelation(object);
             }
         };
+        if (person.getMilitaryServiceRelation() != null) {
+            for (DomainObject msr : allMilitaryServiceRelations) {
+                if (msr.getId().equals(person.getMilitaryServiceRelation().getId())) {
+                    militaryServiceRelationModel.setObject(msr);
+                    break;
+                }
+            }
+        }
         DisableAwareDropDownChoice<DomainObject> militaryServiceRelation =
                 new DisableAwareDropDownChoice<DomainObject>("input", militaryServiceRelationModel,
                 allMilitaryServiceRelations, new DomainObjectDisableAwareRenderer() {

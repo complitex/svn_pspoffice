@@ -4,9 +4,9 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.registration.toolbar;
 
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.request.resource.SharedResourceReference;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 
 /**
@@ -19,11 +19,11 @@ public abstract class F3ReferenceButton extends ToolbarButton {
     private static final String TITLE_KEY = "image.title.f3reference";
 
     public F3ReferenceButton(String id) {
-        super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY);
+        super(id, new SharedResourceReference(IMAGE_SRC), TITLE_KEY);
     }
 
     @Override
-    protected Link newLink(String linkId) {
+    protected Link<Void> newLink(String linkId) {
         return new Link<Void>(linkId) {
 
             @Override

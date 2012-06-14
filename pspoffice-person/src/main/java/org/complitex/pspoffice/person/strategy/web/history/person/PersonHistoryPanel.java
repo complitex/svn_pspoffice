@@ -4,11 +4,11 @@
  */
 package org.complitex.pspoffice.person.strategy.web.history.person;
 
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.service.IUserProfileBean;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import java.util.Date;
@@ -28,6 +28,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
@@ -82,6 +83,12 @@ final class PersonHistoryPanel extends Panel {
     private IUserProfileBean userProfileBean;
     private final Entity ENTITY = personStrategy.getEntity();
 
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderCSSReference(new PackageResourceReference(PersonHistoryPanel.class,
+                PersonHistoryPanel.class.getSimpleName() + ".css"));
+    }
+
     PersonHistoryPanel(String id, long personId, final Date endDate) {
         super(id);
 
@@ -92,9 +99,6 @@ final class PersonHistoryPanel extends Panel {
                     + ", startDate:" + startDate + ", endDate: " + endDate);
         }
         final PersonModification modification = personStrategy.getDistinctions(person, startDate);
-
-        add(CSSPackageResource.getHeaderContribution(PersonHistoryPanel.class,
-                PersonHistoryPanel.class.getSimpleName() + ".css"));
 
         add(new Label("label", endDate != null ? new StringResourceModel("label", null,
                 new Object[]{personId, HistoryDateFormatter.format(startDate),
@@ -188,9 +192,17 @@ final class PersonHistoryPanel extends Panel {
             militaryServiceRelationContainer.add(militaryServiceRelationRequiredContainer);
 
             final List<DomainObject> allMilitaryServiceRelations = militaryServiceRelationStrategy.getAll(getLocale());
+            IModel<DomainObject> militaryServiceRelationModel = new Model<DomainObject>();
+            if (person.getMilitaryServiceRelation() != null) {
+                for (DomainObject msr : allMilitaryServiceRelations) {
+                    if (msr.getId().equals(person.getMilitaryServiceRelation().getId())) {
+                        militaryServiceRelationModel.setObject(msr);
+                        break;
+                    }
+                }
+            }
             DisableAwareDropDownChoice<DomainObject> militaryServiceRelation =
-                    new DisableAwareDropDownChoice<DomainObject>("input",
-                    new Model<DomainObject>(person.getMilitaryServiceRelation()),
+                    new DisableAwareDropDownChoice<DomainObject>("input", militaryServiceRelationModel,
                     allMilitaryServiceRelations, new DomainObjectDisableAwareRenderer() {
 
                 @Override
@@ -276,35 +288,37 @@ final class PersonHistoryPanel extends Panel {
         birthPlaceContainer.add(birthCityContainer);
 
         //document
-        WebMarkupContainer documentContainer = new WebMarkupContainer("documentContainer");
-        add(documentContainer);
-        WebMarkupContainer documentTypeContainer = new WebMarkupContainer("documentTypeContainer");
-        documentContainer.add(documentTypeContainer);
-        final EntityAttributeType documentTypeAttributeType = documentStrategy.getEntity().
-                getAttributeType(DocumentStrategy.DOCUMENT_TYPE);
-        IModel<String> documentTyleLabelModel = labelModel(documentTypeAttributeType.getAttributeNames(), getLocale());
-        documentTypeContainer.add(new Label("label", documentTyleLabelModel));
-        documentTypeContainer.add(new WebMarkupContainer("required").setVisible(documentTypeAttributeType.isMandatory()));
-        final List<DomainObject> documentTypes = documentTypeStrategy.getAll(null);
-        IModel<DomainObject> documentTypeModel = new Model<DomainObject>();
-        documentTypeModel.setObject(find(documentTypes, new Predicate<DomainObject>() {
+        {
+            WebMarkupContainer documentContainer = new WebMarkupContainer("documentContainer");
+            add(documentContainer);
+            WebMarkupContainer documentTypeContainer = new WebMarkupContainer("documentTypeContainer");
+            documentContainer.add(documentTypeContainer);
+            final EntityAttributeType documentTypeAttributeType = documentStrategy.getEntity().
+                    getAttributeType(DocumentStrategy.DOCUMENT_TYPE);
+            IModel<String> documentTyleLabelModel = labelModel(documentTypeAttributeType.getAttributeNames(), getLocale());
+            documentTypeContainer.add(new Label("label", documentTyleLabelModel));
+            documentTypeContainer.add(new WebMarkupContainer("required").setVisible(documentTypeAttributeType.isMandatory()));
+            final List<DomainObject> documentTypes = documentTypeStrategy.getAll(null);
+            IModel<DomainObject> documentTypeModel = new Model<DomainObject>();
+            documentTypeModel.setObject(find(documentTypes, new Predicate<DomainObject>() {
 
-            @Override
-            public boolean apply(DomainObject documentType) {
-                return documentType.getId().equals(person.getDocument().getDocumentTypeId());
-            }
-        }));
-        documentTypeContainer.add(new DisableAwareDropDownChoice<DomainObject>("documentType",
-                documentTypeModel, documentTypes, new DomainObjectDisableAwareRenderer() {
+                @Override
+                public boolean apply(DomainObject documentType) {
+                    return documentType.getId().equals(person.getDocument().getDocumentTypeId());
+                }
+            }));
+            documentTypeContainer.add(new DisableAwareDropDownChoice<DomainObject>("documentType",
+                    documentTypeModel, documentTypes, new DomainObjectDisableAwareRenderer() {
 
-            @Override
-            public Object getDisplayValue(DomainObject object) {
-                return documentTypeStrategy.displayDomainObject(object, getLocale());
-            }
-        }).setEnabled(false));
-        documentContainer.add(new DocumentHistoryPanel("documentInputPanel", person.getDocument(),
-                modification.getDocumentModification()));
-        documentContainer.add(new CssAttributeBehavior(modification.getDocumentModification().getModificationType().getCssClass()));
+                @Override
+                public Object getDisplayValue(DomainObject object) {
+                    return documentTypeStrategy.displayDomainObject(object, getLocale());
+                }
+            }).setEnabled(false));
+            documentContainer.add(new DocumentHistoryPanel("documentInputPanel", person.getDocument(),
+                    modification.getDocumentModification()));
+            documentContainer.add(new CssAttributeBehavior(modification.getDocumentModification().getModificationType().getCssClass()));
+        }
 
         //children
         WebMarkupContainer childrenFieldset = new WebMarkupContainer("childrenFieldset");

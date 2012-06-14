@@ -7,14 +7,14 @@ package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.util.StringUtil;
@@ -102,7 +102,7 @@ public final class RegistrationsGrid extends ListPage {
                                 MenuManager.setMenuItem(PersonMenu.PERSON_MENU_ITEM);
                                 PageParameters params = personStrategy.getEditPageParams(registrationsGridEntity.getPersonId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentCardId, backInfoSessionKey));
-                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(personStrategy.getEditPage(), params);
                             }
                         };

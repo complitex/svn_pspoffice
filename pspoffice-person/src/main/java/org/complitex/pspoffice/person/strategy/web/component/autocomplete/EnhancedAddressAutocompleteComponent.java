@@ -93,7 +93,7 @@ abstract class EnhancedAddressAutocompleteComponent extends EnhancedAutocomplete
         boolean wasVisible = openDialogButton.isVisible();
         openDialogButton.setVisible(canCreate);
         if (wasVisible ^ openDialogButton.isVisible()) {
-            target.addComponent(openDialogButton);
+            target.add(openDialogButton);
         }
 
         return this;

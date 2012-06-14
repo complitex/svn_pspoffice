@@ -9,12 +9,10 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -28,6 +26,8 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.SharedResourceReference;
 import org.complitex.address.menu.AddressMenu;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.address.strategy.building.BuildingStrategy;
@@ -64,7 +64,7 @@ import org.complitex.template.web.template.MenuManager;
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class BuildingsGrid extends ListPage {
-
+    
     private static final String PAGE_SESSION_KEY = "buildings_grid_page";
     @EJB
     private DistrictStrategy districtStrategy;
@@ -80,23 +80,23 @@ public final class BuildingsGrid extends ListPage {
     private AddressRendererBean addressRendererBean;
     private final long cityId;
     private final Long streetId;
-
+    
     private static class BuildingsGridFilterSearchComponent extends FilterSearchComponent {
-
+        
         @EJB
         private StrategyFactory strategyFactory;
         @EJB
         private LocaleBean localeBean;
         private final String entity;
         private final long cityId;
-
+        
         private BuildingsGridFilterSearchComponent(String id, String entity, long cityId, IModel<DomainObject> filterModel) {
             super(id, filterModel);
             this.entity = entity;
             this.cityId = cityId;
             super.init();
         }
-
+        
         @Override
         protected List<? extends DomainObject> find(ComparisonType comparisonType, String term, int size) {
             IStrategy strategy = strategy();
@@ -110,51 +110,51 @@ public final class BuildingsGrid extends ListPage {
             example.setStatus(ShowMode.ACTIVE.name());
             return strategy.find(example);
         }
-
+        
         @Override
         protected String render(DomainObject object) {
             return strategy().displayDomainObject(object, getLocale());
         }
-
+        
         private IStrategy strategy() {
             return strategyFactory.getStrategy(entity);
         }
     }
-
+    
     private static class BuildingsGridBackInfo extends BackInfo {
-
+        
         final long cityId;
         final Long streetId;
-
+        
         BuildingsGridBackInfo(long cityId, Long streetId) {
             this.cityId = cityId;
             this.streetId = streetId;
         }
-
+        
         @Override
         public void back(Component pageComponent) {
             MenuManager.setMenuItem(OperationMenu.REGISTRATION_MENU_ITEM);
             pageComponent.setResponsePage(new BuildingsGrid(cityId, streetId));
         }
     }
-
+    
     public BuildingsGrid(long cityId) {
         this(cityId, null);
     }
-
+    
     public BuildingsGrid(final long cityId, final Long streetId) {
         this.cityId = cityId;
         this.streetId = streetId;
-
+        
         final boolean streetEnabled = streetId != null && streetId > 0;
-
+        
         IModel<String> labelModel = new StringResourceModel("label", null,
                 new Object[]{addressRendererBean.displayAddress(streetEnabled ? "street" : "city",
                     streetEnabled ? streetId : cityId, getLocale())});
-
+        
         add(new Label("title", labelModel));
         add(new Label("label", labelModel));
-
+        
         final WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupPlaceholderTag(true);
         add(content);
@@ -168,14 +168,14 @@ public final class BuildingsGrid extends ListPage {
 
         //Data Provider
         final DataProvider<BuildingsGridEntity> dataProvider = new DataProvider<BuildingsGridEntity>() {
-
+            
             @Override
             protected Iterable<BuildingsGridEntity> getData(int first, int count) {
                 filter.setStart(first);
                 filter.setSize(count);
                 return buildingsGridBean.find(filter);
             }
-
+            
             @Override
             protected int getSize() {
                 return buildingsGridBean.count(filter);
@@ -185,7 +185,7 @@ public final class BuildingsGrid extends ListPage {
         //Filters
         //district
         final IModel<DomainObject> districtFilterModel = new Model<DomainObject>() {
-
+            
             @Override
             public void setObject(DomainObject district) {
                 super.setObject(district);
@@ -196,7 +196,7 @@ public final class BuildingsGrid extends ListPage {
 
         //street
         final IModel<DomainObject> streetFilterModel = new Model<DomainObject>() {
-
+            
             @Override
             public void setObject(DomainObject street) {
                 super.setObject(street);
@@ -216,23 +216,23 @@ public final class BuildingsGrid extends ListPage {
 
         //Data View
         DataView<BuildingsGridEntity> buildings = new DataView<BuildingsGridEntity>("buildings", dataProvider, 1) {
-
+            
             @Override
             protected void populateItem(Item<BuildingsGridEntity> item) {
                 final BuildingsGridEntity buildingsGridEntity = item.getModelObject();
 
                 //order
-                item.add(new Label("order", StringUtil.valueOf(getViewOffset() + item.getIndex() + 1)));
+                item.add(new Label("order", StringUtil.valueOf(getFirstItemOffset() + item.getIndex() + 1)));
 
                 //district
                 Link<Void> districtLink = new Link<Void>("districtLink") {
-
+                    
                     @Override
                     public void onClick() {
                         MenuManager.setMenuItem("district" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = districtStrategy.getEditPageParams(buildingsGridEntity.getDistrictId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(districtStrategy.getEditPage(), params);
                     }
                 };
@@ -241,13 +241,13 @@ public final class BuildingsGrid extends ListPage {
 
                 //street
                 Link<Void> streetLink = new Link<Void>("streetLink") {
-
+                    
                     @Override
                     public void onClick() {
                         MenuManager.setMenuItem("street" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = streetStrategy.getEditPageParams(buildingsGridEntity.getStreetId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(streetStrategy.getEditPage(), params);
                     }
                 };
@@ -256,13 +256,13 @@ public final class BuildingsGrid extends ListPage {
 
                 //building
                 Link<Void> buildingLink = new Link<Void>("buildingLink") {
-
+                    
                     @Override
                     public void onClick() {
                         MenuManager.setMenuItem("building" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = buildingStrategy.getEditPageParams(buildingsGridEntity.getBuildingId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(buildingStrategy.getEditPage(), params);
                     }
                 };
@@ -272,7 +272,7 @@ public final class BuildingsGrid extends ListPage {
                 //apartments
                 final int apartments = buildingsGridEntity.getApartments();
                 Link<Void> apartmentsLink = new Link<Void>("apartmentsLink") {
-
+                    
                     @Override
                     public void onClick() {
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
@@ -284,19 +284,19 @@ public final class BuildingsGrid extends ListPage {
 
                 //organizations
                 item.add(new ListView<DomainObject>("organizations", buildingsGridEntity.getOrganizations()) {
-
+                    
                     @Override
                     protected void populateItem(ListItem<DomainObject> item) {
                         final DomainObject organization = item.getModelObject();
-
+                        
                         Link<Void> organizationLink = new Link<Void>("organizationLink") {
-
+                            
                             @Override
                             public void onClick() {
                                 MenuManager.setMenuItem(OrganizationMenu.ORGANIZATION_MENU_ITEM);
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
                         };
@@ -311,32 +311,36 @@ public final class BuildingsGrid extends ListPage {
 
         //Reset Action
         AjaxLink<Void> reset = new AjaxLink<Void>("reset") {
-
+            
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filterForm.clearInput();
                 districtFilterModel.setObject(null);
                 streetFilterModel.setObject(null);
                 filter.reset(!streetEnabled);
-                target.addComponent(content);
+                target.add(content);
             }
         };
         filterForm.add(reset);
 
         //Submit Action
         AjaxButton submit = new AjaxButton("submit", filterForm) {
-
+            
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                target.addComponent(content);
+                target.add(content);
+            }
+            
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
             }
         };
         filterForm.add(submit);
-
+        
         content.add(new PagingNavigator("navigator", buildings, content));
-
+        
         Link<Void> backSearch = new Link<Void>("backSearch") {
-
+            
             @Override
             public void onClick() {
                 setResponsePage(ApartmentCardSearch.class);
@@ -344,23 +348,23 @@ public final class BuildingsGrid extends ListPage {
         };
         content.add(backSearch);
     }
-
+    
     private static BackInfo gridBackInfo(long cityId, Long streetId) {
         return new BuildingsGridBackInfo(cityId, streetId);
     }
-
+    
     @Override
     protected List<? extends ToolbarButton> getToolbarButtons(String id) {
         if (hasAnyRole(buildingStrategy.getEditRoles())) {
             class AddBuildingButton extends ToolbarButton {
-
+                
                 static final String IMAGE_SRC = "images/icon-addItem.gif";
                 static final String TITLE_KEY = "addBuilding";
-
+                
                 AddBuildingButton(String id) {
-                    super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY);
+                    super(id, new SharedResourceReference(IMAGE_SRC), TITLE_KEY);
                 }
-
+                
                 @Override
                 protected void onClick() {
                     MenuManager.setMenuItem("building" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
@@ -368,7 +372,7 @@ public final class BuildingsGrid extends ListPage {
                     final String parentEntity = streetId != null ? "street" : "city";
                     PageParameters params = buildingStrategy.getEditPageParams(null, parentId, parentEntity);
                     BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(cityId, streetId));
-                    params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                    params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                     setResponsePage(buildingStrategy.getEditPage(), params);
                 }
             }

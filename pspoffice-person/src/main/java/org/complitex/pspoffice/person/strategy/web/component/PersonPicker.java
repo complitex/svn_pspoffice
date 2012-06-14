@@ -7,13 +7,11 @@ package org.complitex.pspoffice.person.strategy.web.component;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -27,6 +25,8 @@ import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
@@ -93,10 +93,15 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         init();
     }
 
-    private void init() {
-        add(JavascriptPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName() + ".js"));
-        add(CSSPackageResource.getHeaderContribution(PersonPicker.class, PersonPicker.class.getSimpleName() + ".css"));
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderCSSReference(new PackageResourceReference(
+                PersonPicker.class, PersonPicker.class.getSimpleName() + ".css"));
+        response.renderJavaScriptReference(new PackageResourceReference(
+                PersonPicker.class, PersonPicker.class.getSimpleName() + ".js"));
+    }
 
+    private void init() {
         setRequired(required);
         setLabel(labelModel);
 
@@ -109,7 +114,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 MenuManager.setMenuItem(PersonMenu.PERSON_MENU_ITEM);
                 PageParameters params = personStrategy.getEditPageParams(person.getId(), null, null);
                 BackInfoManager.put(this, ApartmentCardEdit.PAGE_SESSION_KEY, new ApartmentCardBackInfo(apartmentCardId, null));
-                params.put(TemplatePage.BACK_INFO_SESSION_KEY, ApartmentCardEdit.PAGE_SESSION_KEY);
+                params.set(TemplatePage.BACK_INFO_SESSION_KEY, ApartmentCardEdit.PAGE_SESSION_KEY);
                 setResponsePage(personStrategy.getEditPage(), params);
             }
         };
@@ -227,7 +232,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                     PersonPicker.this.getModel().setObject(personModel.getObject());
                     clearAndCloseLookupDialog(personModel, personsModel,
                             target, lookupDialog, content, personNotFoundContainer, personsDataContainer, this);
-                    target.addComponent(personLabelContainer);
+                    target.add(personLabelContainer);
                 }
             }
         };
@@ -263,7 +268,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 personEditContainer.replace(newPersonEditPanel(personCreationDialog, personEditContainer, personLabelContainer,
                         lastNameModel.getObject(), firstNameModel.getObject(), middleNameModel.getObject()));
 
-                target.addComponent(personEditContainer);
+                target.add(personEditContainer);
                 personCreationDialog.open(target);
             }
         };
@@ -310,13 +315,17 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 personNotFoundContainer.setVisible(!isPersonsDataContainerVisible);
                 personsDataContainer.setVisible(isPersonsDataContainerVisible);
 
-                target.addComponent(personContainer);
+                target.add(personContainer);
                 toggleSelectButton(select, target, personModel);
                 if (!isPersonsDataContainerVisible) {
                     target.focusComponent(lastName.getAutocompleteField());
                 }
                 createNew.setVisible(true);
-                target.addComponent(createNew);
+                target.add(createNew);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
             }
         };
         filterForm.add(find);
@@ -354,14 +363,14 @@ public final class PersonPicker extends FormComponentPanel<Person> {
                 Person createdPerson = personStrategy.findById(newPerson.getId(), false, true, false, false, false);
                 PersonPicker.this.getModel().setObject(createdPerson);
 
-                target.addComponent(personLabelContainer);
+                target.add(personLabelContainer);
                 this.onBack(target);
             }
 
             @Override
             protected void onBack(AjaxRequestTarget target) {
                 personEditContainer.replace(new EmptyPanel("personEditPanel"));
-                target.addComponent(personEditContainer);
+                target.add(personEditContainer);
                 personCreationDialog.close(target);
             }
         };
@@ -377,7 +386,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         personNotFoundContainer.setVisible(false);
         personsDataContainer.setVisible(false);
 
-        target.addComponent(content);
+        target.add(content);
         lookupDialog.close(target);
     }
 
@@ -385,7 +394,7 @@ public final class PersonPicker extends FormComponentPanel<Person> {
         boolean wasVisible = select.isVisible();
         select.setVisible(personModel.getObject() != null);
         if (select.isVisible() ^ wasVisible) {
-            target.addComponent(select);
+            target.add(select);
         }
     }
 

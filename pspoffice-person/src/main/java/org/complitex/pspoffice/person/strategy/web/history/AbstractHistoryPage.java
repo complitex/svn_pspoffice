@@ -11,11 +11,12 @@ import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.template.web.template.TemplatePage;
 import org.odlabs.wiquery.core.javascript.JsQuery;
@@ -48,7 +49,7 @@ public abstract class AbstractHistoryPage extends TemplatePage {
             return new AjaxCallDecorator() {
 
                 @Override
-                public CharSequence decorateScript(CharSequence script) {
+                public CharSequence decorateScript(Component c, CharSequence script) {
                     return "(function(){$(this).attr('disabled', true); $('#load_indicator').show();})();" + script;
                 }
             };
@@ -57,13 +58,13 @@ public abstract class AbstractHistoryPage extends TemplatePage {
         @Override
         public void onClick(AjaxRequestTarget target) {
             historyContainer.replace(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
-            target.addComponent(historyContainer);
+            target.add(historyContainer);
             setHistoryButtonsVisibility(target);
         }
 
         protected final void postOnClick(AjaxRequestTarget target) {
             String enableButtonScript = new JsQuery(this).$().render(false) + ".attr('disabled', false);";
-            target.appendJavascript("(function(){" + enableButtonScript + "$('#load_indicator').hide()})();");
+            target.appendJavaScript("(function(){" + enableButtonScript + "$('#load_indicator').hide()})();");
         }
 
         @Override
@@ -73,7 +74,7 @@ public abstract class AbstractHistoryPage extends TemplatePage {
                 isPostBack = true;
                 if (!initiallyVisible) {
                     String style = "";
-                    CharSequence styleCS = tag.getString("style");
+                    String styleCS = tag.getAttribute("style");
                     if (!Strings.isEmpty(styleCS)) {
                         style = styleCS.toString();
                     }
@@ -91,10 +92,16 @@ public abstract class AbstractHistoryPage extends TemplatePage {
         this.objectId = objectId;
         this.objectLinkMessageModel = objectLinkMessageModel;
 
-        add(CSSPackageResource.getHeaderContribution(AbstractHistoryPage.class, AbstractHistoryPage.class.getSimpleName() + ".css"));
         add(new Label("title", titleModel));
 
         historyContainer = new WebMarkupContainer("historyContainer");
+    }
+
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.renderCSSReference(new PackageResourceReference(
+                AbstractHistoryPage.class, AbstractHistoryPage.class.getSimpleName() + ".css"));
     }
 
     @Override
@@ -169,7 +176,7 @@ public abstract class AbstractHistoryPage extends TemplatePage {
     }
 
     private void setHistoryButtonsVisibility(AjaxRequestTarget target) {
-        target.appendJavascript("(function(){ $('.history_back_button').css('visibility', '"
+        target.appendJavaScript("(function(){ $('.history_back_button').css('visibility', '"
                 + getCssVisibility(isBackButtonVisible()) + "');"
                 + "$('.history_forward_button').css('visibility', '" + getCssVisibility(isForwardButtonVisible()) + "'); })()");
     }

@@ -7,13 +7,13 @@ package org.complitex.pspoffice.web.reference_data.menu;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.complitex.template.web.template.ITemplateLink;
 import org.complitex.template.web.template.ResourceTemplateMenu;
 
 import java.util.List;
 import java.util.Locale;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.complitex.dictionary.strategy.IStrategy;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.EjbBeanLocator;
@@ -36,7 +36,7 @@ public class ReferenceDataMenu extends ResourceTemplateMenu {
 
     @Override
     public String getTitle(Locale locale) {
-        return getString(MenuResources.class, locale, "reference_data_menu");
+        return getString(ReferenceDataMenuResources.class, locale, "reference_data_menu");
     }
 
     @Override

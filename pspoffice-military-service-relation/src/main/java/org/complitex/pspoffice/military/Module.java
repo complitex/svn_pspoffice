@@ -5,8 +5,10 @@ import org.complitex.dictionary.service.LogManager;
 import org.complitex.template.web.pages.DomainObjectEdit;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 
 @Singleton(name = "MilitaryServiceRelationModule")
@@ -14,10 +16,12 @@ import org.complitex.template.strategy.TemplateStrategy;
 public class Module {
 
     public static final String NAME = "org.complitex.pspoffice.military_service_relation";
+    @EJB
+    private MilitaryServiceRelationStrategy militaryServiceRelationStrategy;
 
     @PostConstruct
     public void init() {
-        LogManager.get().registerLink(DomainObject.class.getName(), "military_service_relation", DomainObjectEdit.class,
-                "entity=military_service_relation", TemplateStrategy.OBJECT_ID);
+        LogManager.get().registerLink(DomainObject.class.getName(), militaryServiceRelationStrategy.getEntityTable(), DomainObjectEdit.class,
+                militaryServiceRelationStrategy.getEditPageParams(null, null, null), TemplateStrategy.OBJECT_ID);
     }
 }

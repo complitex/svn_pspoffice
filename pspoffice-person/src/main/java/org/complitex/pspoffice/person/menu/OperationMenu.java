@@ -8,8 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Locale;
 import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.ITemplateLink;
@@ -45,7 +45,7 @@ public class OperationMenu extends ResourceTemplateMenu {
 
             @Override
             public PageParameters getParameters() {
-                return PageParameters.NULL;
+                return new PageParameters();
             }
 
             @Override

@@ -1,5 +1,6 @@
 package org.complitex.pspoffice.importing.legacy.web;
 
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -9,7 +10,7 @@ import com.google.common.collect.Sets;
 import java.io.File;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -24,22 +25,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.ConfigBean;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.UserOrganizationPicker;
 import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
+import org.complitex.dictionary.web.component.image.StaticImage;
 import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
@@ -73,9 +76,14 @@ public class LegacyDataImportPage extends TemplatePage {
     private final IModel<String> importDirectoryModel;
     private final IModel<String> errorsDirectoryModel;
 
-    public LegacyDataImportPage() {
-        add(CSSPackageResource.getHeaderContribution(LegacyDataImportPage.class, LegacyDataImportPage.class.getSimpleName() + ".css"));
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.renderCSSReference(new PackageResourceReference(
+                LegacyDataImportPage.class, LegacyDataImportPage.class.getSimpleName() + ".css"));
+    }
 
+    public LegacyDataImportPage() {
         add(new Label("title", getString("title")));
 
         final FeedbackPanel messages = new FeedbackPanel("messages");
@@ -149,7 +157,7 @@ public class LegacyDataImportPage extends TemplatePage {
             public void onClick(AjaxRequestTarget target) {
                 DomainObject newOrganization = null;
                 selectedOrganizations.add(newOrganization);
-                target.addComponent(organizationsContainer);
+                target.add(organizationsContainer);
             }
         };
         dataForm.add(addOrganization);
@@ -244,17 +252,16 @@ public class LegacyDataImportPage extends TemplatePage {
                                 errorsDirectoryModel.getObject(), getLocale());
 
                         container.add(newTimer());
-                        target.addComponent(container);
-                        target.appendJavascript("(function(){$('.import_indicator').css('visibility','visible');})()");
+                        target.add(container);
+                        target.appendJavaScript("(function(){$('.import_indicator').css('visibility','visible');})()");
                     }
-                    target.addComponent(messages);
+                    target.add(messages);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
             }
 
             @Override
@@ -267,7 +274,7 @@ public class LegacyDataImportPage extends TemplatePage {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 messagesModel.getObject().clear();
-                target.addComponent(container);
+                target.add(container);
 
                 Map<String, Long> organizationMap = getSelectedOrganizations();
                 if (organizationMap.isEmpty()) {
@@ -281,7 +288,7 @@ public class LegacyDataImportPage extends TemplatePage {
                         error(getString("db_error"));
                     }
                 }
-                target.addComponent(messages);
+                target.add(messages);
             }
 
             @Override
@@ -289,6 +296,8 @@ public class LegacyDataImportPage extends TemplatePage {
                 return !importService.isProcessing();
             }
         });
+
+        add(new StaticImage("importIndicatorImage", AbstractDefaultAjaxBehavior.INDICATOR));
     }
 
     private Map<String, Long> getSelectedOrganizations() {
@@ -401,7 +410,7 @@ public class LegacyDataImportPage extends TemplatePage {
                 }
 
                 if (!importService.isProcessing()) {
-                    target.appendJavascript("(function(){$('.import_indicator').css('visibility','hidden');})()");
+                    target.appendJavaScript("(function(){$('.import_indicator').css('visibility','hidden');})()");
                     stopTimer++;
                 }
                 if (stopTimer > 2) {

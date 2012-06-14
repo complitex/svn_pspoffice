@@ -1,21 +1,22 @@
 package org.complitex.pspoffice.person.report.web;
 
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import static com.google.common.collect.Lists.*;
 import java.util.Collection;
 import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.feedback.FeedbackMessage;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import static org.apache.wicket.feedback.FeedbackMessage.*;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.strategy.StrategyFactory;
@@ -116,11 +117,15 @@ public class RegistrationStopCouponPage extends WebPage {
         }
     }
 
-    public RegistrationStopCouponPage(Registration registration, String addressEntity, long addressId) {
-        add(CSSPackageResource.getHeaderContribution(WebCommonResourceInitializer.STYLE_CSS));
-        add(CSSPackageResource.getHeaderContribution(RegistrationStopCouponPage.class,
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.renderCSSReference(WebCommonResourceInitializer.STYLE_CSS);
+        response.renderCSSReference(new PackageResourceReference(RegistrationStopCouponPage.class,
                 RegistrationStopCouponPage.class.getSimpleName() + ".css"));
+    }
 
+    public RegistrationStopCouponPage(Registration registration, String addressEntity, long addressId) {
         add(new Label("title", new ResourceModel("label")));
         Collection<FeedbackMessage> messages = newArrayList();
         RegistrationStopCoupon coupon = null;

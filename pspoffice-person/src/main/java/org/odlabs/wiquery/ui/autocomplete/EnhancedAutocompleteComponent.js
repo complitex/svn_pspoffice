@@ -11,7 +11,6 @@
             $.each( items, function(index, item) {
                 self._renderItem(ul, item);
             });
-
             
             var $openCreationDialogButton = self.element.siblings("input[data-open-create-dialog]:hidden");
             if($openCreationDialogButton.size() == 1){

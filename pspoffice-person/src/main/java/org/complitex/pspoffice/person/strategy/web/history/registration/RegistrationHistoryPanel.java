@@ -4,11 +4,11 @@
  */
 package org.complitex.pspoffice.person.strategy.web.history.registration;
 
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.service.IUserProfileBean;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.Model;
@@ -40,6 +40,8 @@ import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,12 @@ final class RegistrationHistoryPanel extends Panel {
     private IUserProfileBean userProfileBean;
     private final Entity ENTITY = registrationStrategy.getEntity();
 
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderCSSReference(new PackageResourceReference(RegistrationHistoryPanel.class,
+                RegistrationHistoryPanel.class.getSimpleName() + ".css"));
+    }
+
     RegistrationHistoryPanel(String id, long registrationId, final String addressEntity, final long addressId,
             Date endDate) {
         super(id);
@@ -83,9 +91,6 @@ final class RegistrationHistoryPanel extends Panel {
         }
 
         final RegistrationModification modification = registrationStrategy.getDistinctions(registration, startDate);
-
-        add(CSSPackageResource.getHeaderContribution(RegistrationHistoryPanel.class,
-                RegistrationHistoryPanel.class.getSimpleName() + ".css"));
 
         add(new Label("label", endDate != null ? new StringResourceModel("label", null,
                 new Object[]{registrationId, HistoryDateFormatter.format(startDate),
@@ -121,23 +126,34 @@ final class RegistrationHistoryPanel extends Panel {
         initSystemAttributeInput(registration, modification, content, "registrationDate", REGISTRATION_DATE, true);
 
         //registration type
-        final EntityAttributeType registrationTypeAttributeType = ENTITY.getAttributeType(REGISTRATION_TYPE);
-        WebMarkupContainer registrationTypeContainer = new WebMarkupContainer("registrationTypeContainer");
-        registrationTypeContainer.add(new Label("label", labelModel(registrationTypeAttributeType.getAttributeNames(), getLocale())));
-        registrationTypeContainer.add(new WebMarkupContainer("required").setVisible(registrationTypeAttributeType.isMandatory()));
-        final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
-        DisableAwareDropDownChoice<DomainObject> registrationType = new DisableAwareDropDownChoice<DomainObject>("input",
-                new Model<DomainObject>(registration.getRegistrationType()), allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
-
-            @Override
-            public Object getDisplayValue(DomainObject object) {
-                return registrationTypeStrategy.displayDomainObject(object, getLocale());
+        {
+            final EntityAttributeType registrationTypeAttributeType = ENTITY.getAttributeType(REGISTRATION_TYPE);
+            WebMarkupContainer registrationTypeContainer = new WebMarkupContainer("registrationTypeContainer");
+            registrationTypeContainer.add(new Label("label", labelModel(registrationTypeAttributeType.getAttributeNames(), getLocale())));
+            registrationTypeContainer.add(new WebMarkupContainer("required").setVisible(registrationTypeAttributeType.isMandatory()));
+            final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
+            IModel<DomainObject> registrationTypeModel = new Model<DomainObject>();
+            if (registration.getRegistrationType() != null) {
+                for (DomainObject regType : allRegistrationTypes) {
+                    if (regType.getId().equals(registration.getRegistrationType().getId())) {
+                        registrationTypeModel.setObject(regType);
+                        break;
+                    }
+                }
             }
-        });
-        registrationType.setEnabled(false);
-        registrationType.add(new CssAttributeBehavior(modification.getAttributeModificationType(REGISTRATION_TYPE).getCssClass()));
-        registrationTypeContainer.add(registrationType);
-        content.add(registrationTypeContainer);
+            DisableAwareDropDownChoice<DomainObject> registrationType = new DisableAwareDropDownChoice<DomainObject>("input",
+                    registrationTypeModel, allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
+
+                @Override
+                public Object getDisplayValue(DomainObject object) {
+                    return registrationTypeStrategy.displayDomainObject(object, getLocale());
+                }
+            });
+            registrationType.setEnabled(false);
+            registrationType.add(new CssAttributeBehavior(modification.getAttributeModificationType(REGISTRATION_TYPE).getCssClass()));
+            registrationTypeContainer.add(registrationType);
+            content.add(registrationTypeContainer);
+        }
 
         //owner relationship
         final EntityAttributeType ownerRelationshipAttributeType = ENTITY.getAttributeType(OWNER_RELATIONSHIP);

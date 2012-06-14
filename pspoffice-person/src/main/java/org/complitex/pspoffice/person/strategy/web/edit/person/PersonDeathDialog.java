@@ -76,7 +76,7 @@ final class PersonDeathDialog extends Panel {
         content.add(messages);
 
         deathDateModel = new Model<Date>();
-        Form form = new Form("form");
+        Form<Void> form = new Form<Void>("form");
         content.add(form);
 
         MaskedDateInput deathDate = new MaskedDateInput("date", deathDateModel);
@@ -93,19 +93,18 @@ final class PersonDeathDialog extends Panel {
                         registerDeath();
                         setResponsePage(personStrategy.getListPage(), personStrategy.getListPageParams());
                     } else {
-                        target.addComponent(messages);
+                        target.add(messages);
                     }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
-                    target.addComponent(messages);
+                    target.add(messages);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
             }
         };
         form.add(registerDeath);
@@ -134,7 +133,7 @@ final class PersonDeathDialog extends Panel {
         this.person = person;
         deathDateModel.setObject(DateUtil.getCurrentDate());
         personRegistrations = null;
-        target.addComponent(content);
+        target.add(content);
         dialog.open(target);
     }
 

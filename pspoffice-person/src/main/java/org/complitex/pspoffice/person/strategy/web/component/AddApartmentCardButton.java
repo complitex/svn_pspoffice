@@ -4,7 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.component;
 
-import org.apache.wicket.ResourceReference;
+import org.apache.wicket.request.resource.SharedResourceReference;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
 
 /**
@@ -17,6 +17,6 @@ public abstract class AddApartmentCardButton extends ToolbarButton {
     private static final String TITLE_KEY = "add_apartment_card";
 
     public AddApartmentCardButton(String id) {
-        super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY);
+        super(id, new SharedResourceReference(IMAGE_SRC), TITLE_KEY);
     }
 }

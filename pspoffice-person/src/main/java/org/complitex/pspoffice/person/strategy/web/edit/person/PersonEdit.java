@@ -7,13 +7,13 @@ package org.complitex.pspoffice.person.strategy.web.edit.person;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.ejb.EJB;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.RestartResponseException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authorization.UnauthorizedInstantiationException;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
@@ -50,7 +50,7 @@ public class PersonEdit extends FormTemplatePage {
             throw new UnauthorizedInstantiationException(getClass());
         }
 
-        Long objectId = parameters.getAsLong(TemplateStrategy.OBJECT_ID);
+        Long objectId = parameters.get(TemplateStrategy.OBJECT_ID).toOptionalLong();
         if (objectId == null) {
             //create new entity
             oldPerson = null;
@@ -65,7 +65,7 @@ public class PersonEdit extends FormTemplatePage {
             oldPerson = CloneUtil.cloneObject(newPerson);
         }
 
-        this.backInfoSessionKey = parameters.getString(BACK_INFO_SESSION_KEY);
+        this.backInfoSessionKey = parameters.get(BACK_INFO_SESSION_KEY).toString();
 
         init();
     }
@@ -108,7 +108,7 @@ public class PersonEdit extends FormTemplatePage {
         }
 
         PageParameters listPageParams = personStrategy.getListPageParams();
-        listPageParams.put(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
+        listPageParams.set(DomainObjectList.SCROLL_PARAMETER, newPerson.getId());
         setResponsePage(personStrategy.getListPage(), listPageParams);
     }
 

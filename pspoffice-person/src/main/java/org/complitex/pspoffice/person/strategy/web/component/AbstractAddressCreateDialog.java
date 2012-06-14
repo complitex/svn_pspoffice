@@ -11,7 +11,7 @@ import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
-import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -20,6 +20,7 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.StringCulture;
@@ -53,9 +54,13 @@ public abstract class AbstractAddressCreateDialog extends Panel {
         super(id);
         this.userOrganizationIds = userOrganizationIds;
         this.subjectIds = newHashSet();
-        add(CSSPackageResource.getHeaderContribution(AbstractAddressCreateDialog.class,
-                AbstractAddressCreateDialog.class.getSimpleName() + ".css"));
         init();
+    }
+
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderCSSReference(new PackageResourceReference(AbstractAddressCreateDialog.class,
+                AbstractAddressCreateDialog.class.getSimpleName() + ".css"));
     }
 
     protected DomainObject getParentObject() {
@@ -74,7 +79,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
         content.setVisible(true);
         subjectIds.clear();
         form.replace(newPermissionPanel(subjectIds, parentObject.getSubjectIds()));
-        target.addComponent(content);
+        target.add(content);
     }
 
     private void init() {
@@ -143,7 +148,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                                 close(target);
                                 onCreate(target, saved);
                             } else {
-                                target.addComponent(messages);
+                                target.add(messages);
                             }
                         } else {
                             beforeBulkSave(numbersAsString);
@@ -171,19 +176,18 @@ public abstract class AbstractAddressCreateDialog extends Panel {
                             onCancel(target);
                         }
                     } else {
-                        target.addComponent(messages);
+                        target.add(messages);
                     }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
-                    target.addComponent(messages);
+                    target.add(messages);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
             }
         });
 
@@ -263,7 +267,7 @@ public abstract class AbstractAddressCreateDialog extends Panel {
     private void close(AjaxRequestTarget target) {
         dialog.close(target);
         content.setVisible(false);
-        target.addComponent(content);
+        target.add(content);
     }
 
     protected void onCancel(AjaxRequestTarget target) {

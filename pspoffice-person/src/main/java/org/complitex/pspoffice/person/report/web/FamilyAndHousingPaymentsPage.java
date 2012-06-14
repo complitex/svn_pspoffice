@@ -9,11 +9,11 @@ import java.util.Collection;
 import javax.ejb.EJB;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.feedback.FeedbackMessage;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import static org.apache.wicket.feedback.FeedbackMessage.*;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -98,9 +98,9 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
                     item.add(new Label("familyMemberNumber", String.valueOf(item.getIndex() + 1)));
                     final FamilyMember member = item.getModelObject();
                     item.add(new Label("familyMemberName", personStrategy.displayDomainObject(member.getPerson(), getLocale())));
-                    item.add(new Label("familyMemberRelation", member.getRelation() != null ? 
-                            ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale()) : 
-                            null));
+                    item.add(new Label("familyMemberRelation", member.getRelation() != null
+                            ? ownerRelationshipStrategy.displayDomainObject(member.getRelation(), getLocale())
+                            : null));
                     item.add(new Label("familyMemberBirthDate", format(member.getPerson().getBirthDate())));
                     item.add(new Label("familyMemberPassport", member.getPassport()));
                 }
@@ -136,9 +136,13 @@ public final class FamilyAndHousingPaymentsPage extends WebPage {
         }
     }
 
-    public FamilyAndHousingPaymentsPage(ApartmentCard apartmentCard) {
-        add(CSSPackageResource.getHeaderContribution(WebCommonResourceInitializer.STYLE_CSS));
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.renderCSSReference(WebCommonResourceInitializer.STYLE_CSS);
+    }
 
+    public FamilyAndHousingPaymentsPage(ApartmentCard apartmentCard) {
         add(new Label("title", new ResourceModel("title")));
         Collection<FeedbackMessage> messages = newArrayList();
         FamilyAndHousingPayments payments = null;

@@ -11,7 +11,6 @@ import java.util.Comparator;
 import static com.google.common.collect.Lists.*;
 import java.util.Date;
 import java.util.List;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
@@ -22,6 +21,7 @@ import javax.ejb.Stateless;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.converter.BooleanConverter;
@@ -157,7 +157,7 @@ public class PersonStrategy extends TemplateStrategy {
     @Override
     public PageParameters getEditPageParams(Long objectId, Long parentId, String parentEntity) {
         PageParameters params = new PageParameters();
-        params.put(TemplateStrategy.OBJECT_ID, objectId);
+        params.set(TemplateStrategy.OBJECT_ID, objectId);
         return params;
     }
 

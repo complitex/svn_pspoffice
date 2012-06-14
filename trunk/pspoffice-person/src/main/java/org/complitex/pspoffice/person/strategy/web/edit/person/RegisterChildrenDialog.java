@@ -160,26 +160,25 @@ abstract class RegisterChildrenDialog extends Panel {
                         register();
                         close(target);
                     } else {
-                        target.addComponent(messages);
+                        target.add(messages);
                         scrollToMessages(target);
                     }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
-                    target.addComponent(messages);
+                    target.add(messages);
                     scrollToMessages(target);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
                 scrollToMessages(target);
             }
 
             private void scrollToMessages(AjaxRequestTarget target) {
-                target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
+                target.appendJavaScript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
         form.add(register);
@@ -210,8 +209,8 @@ abstract class RegisterChildrenDialog extends Panel {
             }
         }))));
 
-        target.addComponent(form);
-        target.addComponent(messages);
+        target.add(form);
+        target.add(messages);
         dialog.open(target);
     }
 

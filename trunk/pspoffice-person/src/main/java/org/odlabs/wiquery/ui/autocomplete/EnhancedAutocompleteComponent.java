@@ -8,28 +8,31 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.WicketAjaxReference;
 import org.apache.wicket.behavior.AbstractAjaxBehavior;
+import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.html.WicketEventReference;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.resources.JavascriptResourceReference;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.request.target.basic.StringRequestTarget;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.handler.TextRequestHandler;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.string.Strings;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.complitex.dictionary.entity.DomainObject;
-import org.odlabs.wiquery.core.commons.WiQueryResourceManager;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.core.javascript.JsUtils;
+import org.odlabs.wiquery.core.resources.WiQueryJavaScriptResourceReference;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 
 /**
@@ -48,21 +51,19 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
 
     /**
      * Ajax behavior to create the list of possibles values
+     * 
      * @author Julien Roche
-     *
+     * 
      */
     private class InnerAutocompleteAjaxBehavior extends AbstractAjaxBehavior {
         // Constants
 
-        /**	Constant of serialization */
+        /** Constant of serialization */
         private static final long serialVersionUID = -5411632961744455568L;
 
-        /**
-         * {@inheritDoc}
-         * @see org.apache.wicket.behavior.IBehaviorListener#onRequest()
-         */
         public void onRequest() {
-            term = this.getComponent().getRequest().getParameter("term");
+            term =
+                    this.getComponent().getRequest().getQueryParameters().getParameterValue("term").toString();
 
             if (!Strings.isEmpty(term)) {
                 StringWriter sw = new StringWriter();
@@ -85,8 +86,8 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
                     throw new WicketRuntimeException(e);
                 }
 
-                RequestCycle.get().setRequestTarget(
-                        new StringRequestTarget("application/json", "utf-8", sw.toString()));
+                RequestCycle.get().scheduleRequestHandlerAfterCurrent(
+                        new TextRequestHandler("application/json", "utf-8", sw.toString()));
             }
         }
     }
@@ -108,47 +109,32 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
          * @param id Wicket identifiant
          * @param model Model
          */
-        public InnerAutocomplete(String id, IModel<E> model) {
+        InnerAutocomplete(String id, IModel<E> model) {
             super(id, model);
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.odlabs.wiquery.ui.autocomplete.Autocomplete#contribute(org.odlabs.wiquery.core.commons.WiQueryResourceManager)
-         */
         @Override
-        public void contribute(WiQueryResourceManager wiQueryResourceManager) {
-            super.contribute(wiQueryResourceManager);
-            wiQueryResourceManager.addJavaScriptResource(WiQueryAutocompleteJavascriptResourceReference.get());
+        public void renderHead(IHeaderResponse response) {
+            response.renderJavaScriptReference(WicketEventReference.INSTANCE);
+            response.renderJavaScriptReference(WicketAjaxReference.INSTANCE);
+            response.renderJavaScriptReference(WiQueryAutocompleteJavaScriptResourceReference.get());
             /* Modified by Artem */
-            wiQueryResourceManager.addJavaScriptResource(EnhancedAutocompleteComponent.class,
-                    EnhancedAutocompleteComponent.class.getSimpleName() + ".js");
+            response.renderJavaScriptReference(new PackageResourceReference(EnhancedAutocompleteComponent.class,
+                    EnhancedAutocompleteComponent.class.getSimpleName() + ".js"));
             /* end modification */
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.apache.wicket.markup.html.form.AbstractTextComponent#onBeforeRender()
-         */
         @Override
         protected void onBeforeRender() {
             onBeforeRenderAutocomplete(this);
             super.onBeforeRender();
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.odlabs.wiquery.ui.autocomplete.Autocomplete#setCloseEvent(org.odlabs.wiquery.ui.core.JsScopeUiEvent)
-         */
         @Override
         public Autocomplete<E> setCloseEvent(JsScopeUiEvent close) {
             throw new WicketRuntimeException("You can't define the close event");
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.odlabs.wiquery.ui.autocomplete.Autocomplete#setSelectEvent(org.odlabs.wiquery.ui.core.JsScopeUiEvent)
-         */
         @Override
         public Autocomplete<E> setSelectEvent(JsScopeUiEvent select) {
             throw new WicketRuntimeException("You can't define the select event");
@@ -159,25 +145,18 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
             throw new WicketRuntimeException("You can't define the change event");
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.odlabs.wiquery.ui.autocomplete.Autocomplete#setSource(org.odlabs.wiquery.ui.autocomplete.AutocompleteSource)
-         */
         @Override
         public Autocomplete<E> setSource(AutocompleteSource source) {
             throw new WicketRuntimeException("You can't define the source");
         }
 
-        /**
-         * {@inheritDoc}
-         * @see org.odlabs.wiquery.ui.autocomplete.Autocomplete#statement()
-         */
         @Override
         public JsStatement statement() {
             StringBuilder js = new StringBuilder();
-            js.append("$.ui.autocomplete.wiquery.changeEvent(event, ui,").append(JsUtils.quotes(autocompleteHidden.getMarkupId()));
+            js.append("$.ui.autocomplete.wiquery.changeEvent(event, ui,").append(
+                    JsUtils.quotes(autocompleteHidden.getMarkupId()));
             if (isAutoUpdate()) {
-                js.append(",'").append(updateAjax.getCallbackUrl(true)).append("'");
+                js.append(",'").append(updateAjax.getCallbackUrl()).append("'");
             }
             js.append(");");
             super.setChangeEvent(JsScopeUiEvent.quickScope(js.toString()));
@@ -187,18 +166,18 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
         }
     }
     // Constants
-    /**	Constant of serialization */
+    /** Constant of serialization */
     private static final long serialVersionUID = -3377109382248062940L;
+    // Wicket components
+    private final InnerAutocompleteAjaxBehavior innerAutcompleteAjaxBehavior;
     /** Constant of wiQuery Autocomplete resource */
-    public static final JavascriptResourceReference WIQUERY_AUTOCOMPLETE_JS =
-            new JavascriptResourceReference(
-            AutocompleteAjaxComponent.class,
+    public static final WiQueryJavaScriptResourceReference WIQUERY_AUTOCOMPLETE_JS =
+            new WiQueryJavaScriptResourceReference(AutocompleteAjaxComponent.class,
             "wiquery-autocomplete.js");
     // Wicket components
     private final Autocomplete<String> autocompleteField;
     private final HiddenField<String> autocompleteHidden;
     private static final String NOT_ENTERED = "NOT_ENTERED";
-    private final InnerAutocompleteAjaxBehavior innerAutcompleteAjaxBehavior;
     /** The choiceRenderer used to generate display/id values for the objects. */
     private IChoiceRenderer<DomainObject> choiceRenderer;
     private AbstractDefaultAjaxBehavior updateAjax;
@@ -212,7 +191,8 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
         super(id, model);
         setOutputMarkupPlaceholderTag(true);
 
-        autocompleteHidden = new HiddenField<String>("autocompleteHidden", new Model<String>(NOT_ENTERED) {
+        autocompleteHidden =
+                new HiddenField<String>("autocompleteHidden", new Model<String>(NOT_ENTERED) {
 
             private static final long serialVersionUID = 1L;
 
@@ -292,10 +272,6 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
     protected void onUpdate(AjaxRequestTarget target) {
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.apache.wicket.markup.html.form.FormComponent#convertInput()
-     */
     @Override
     protected final void convertInput() {
         String valueId = autocompleteHidden.getConvertedInput();
@@ -303,11 +279,16 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
         final DomainObject object = this.getModelObject();
         final IChoiceRenderer<DomainObject> renderer = getChoiceRenderer();
 
+        if (NOT_ENTERED.equals(valueId)) {
+            valueId = null;
+        }
+
         if (valueId == null && Strings.isEmpty(input)) {
             setConvertedInput(null);
-
         } else if (valueId == null) {
             setConvertedInput(getValueOnSearchFail(input));
+        } else if (Strings.isEmpty(input)) {
+            setConvertedInput(null);
         } else if (object == null || input.compareTo((String) renderer.getDisplayValue(object)) != 0) {
             final List<DomainObject> choices = getChoices();
             boolean found = false;
@@ -322,8 +303,8 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
                 }
             }
             if (!found) {
-                //if it is still not entered, then it means this field was not touched
-                //so keep the original value
+                // if it is still not entered, then it means this field was not touched
+                // so keep the original value
                 if (valueId.equals(NOT_ENTERED)) {
                     setConvertedInput(getModelObject());
                 } else {
@@ -369,10 +350,12 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
 
     /**
      * Create an {@link AutocompleteJson}
+     * 
      * @param id
      * @param obj
      * @return a new instance of {@link AutocompleteJson}
      */
+    @SuppressWarnings("unchecked")
     protected AutocompleteJson newAutocompleteJson(int id, DomainObject obj) {
 
         boolean thisOneSelected = obj.equals(getModelObject());
@@ -427,8 +410,8 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
             getAutocompleteHidden().setModelObject(value.getValueId());
         }
 
-        autocomplete.getOptions().putLiteral(
-                "source", innerAutcompleteAjaxBehavior.getCallbackUrl().toString());
+        autocomplete.getOptions().putLiteral("source",
+                innerAutcompleteAjaxBehavior.getCallbackUrl().toString());
     }
 
     /* Modified by Artem */

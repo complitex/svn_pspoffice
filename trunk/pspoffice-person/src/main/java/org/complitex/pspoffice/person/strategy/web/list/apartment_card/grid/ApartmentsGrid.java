@@ -9,12 +9,10 @@ import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -27,6 +25,8 @@ import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.SharedResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.menu.AddressMenu;
 import org.complitex.address.service.AddressRendererBean;
@@ -157,7 +157,7 @@ public final class ApartmentsGrid extends ListPage {
                 final ApartmentsGridEntity apartmentsGridEntity = item.getModelObject();
 
                 //order
-                item.add(new Label("order", StringUtil.valueOf(getViewOffset() + item.getIndex() + 1)));
+                item.add(new Label("order", StringUtil.valueOf(getFirstItemOffset() + item.getIndex() + 1)));
 
                 //apartment/room
                 Link<Void> objectLink = new Link<Void>("objectLink") {
@@ -169,7 +169,7 @@ public final class ApartmentsGrid extends ListPage {
                         MenuManager.setMenuItem(strategy.getEntityTable() + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                         PageParameters params = strategy.getEditPageParams(apartmentsGridEntity.getObjectId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
-                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(strategy.getEditPage(), params);
                     }
                 };
@@ -190,7 +190,7 @@ public final class ApartmentsGrid extends ListPage {
                                 MenuManager.setMenuItem("room" + AddressMenu.ADDRESS_MENU_ITEM_SUFFIX);
                                 PageParameters params = roomStrategy.getEditPageParams(room.getId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
-                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(roomStrategy.getEditPage(), params);
                             }
                         };
@@ -251,7 +251,7 @@ public final class ApartmentsGrid extends ListPage {
                                 MenuManager.setMenuItem(OrganizationMenu.ORGANIZATION_MENU_ITEM);
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(buildingId, backInfoSessionKey));
-                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
                         };
@@ -271,7 +271,7 @@ public final class ApartmentsGrid extends ListPage {
             public void onClick(AjaxRequestTarget target) {
                 filterForm.clearInput();
                 filter.reset();
-                target.addComponent(content);
+                target.add(content);
             }
         };
         filterForm.add(reset);
@@ -281,7 +281,11 @@ public final class ApartmentsGrid extends ListPage {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                target.addComponent(content);
+                target.add(content);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
             }
         };
         filterForm.add(submit);
@@ -314,13 +318,13 @@ public final class ApartmentsGrid extends ListPage {
 
             @Override
             protected void onCreate(AjaxRequestTarget target, DomainObject object) {
-                target.addComponent(content);
+                target.add(content);
             }
 
             @Override
             protected void afterBulkSave(AjaxRequestTarget target, String numbers, boolean operationSuccessed) {
                 super.afterBulkSave(target, numbers, operationSuccessed);
-                target.addComponent(content);
+                target.add(content);
             }
         };
         add(apartmentCreateDialog);
@@ -329,13 +333,13 @@ public final class ApartmentsGrid extends ListPage {
 
             @Override
             protected void onCreate(AjaxRequestTarget target, DomainObject object) {
-                target.addComponent(content);
+                target.add(content);
             }
 
             @Override
             protected void afterBulkSave(AjaxRequestTarget target, String numbers, boolean operationSuccessed) {
                 super.afterBulkSave(target, numbers, operationSuccessed);
-                target.addComponent(content);
+                target.add(content);
             }
         };
         add(roomCreateDialog);
@@ -362,7 +366,7 @@ public final class ApartmentsGrid extends ListPage {
             static final String TITLE_KEY = "add";
 
             AddApartmentRoomButton(String id, String entity) {
-                super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY + Strings.capitalize(entity), true);
+                super(id, new SharedResourceReference(IMAGE_SRC), TITLE_KEY + Strings.capitalize(entity), true);
             }
         }
 

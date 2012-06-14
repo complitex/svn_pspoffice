@@ -53,11 +53,23 @@ final class ChangeRegistrationTypeDialog extends Panel {
     private TextArea<String> explanation;
     private List<Registration> registrationsToChangeType;
     private long apartmentCardId;
-    private final DomainObject permanentRegistrationType;
+    private final List<DomainObject> allRegistrationTypes;
+    private DomainObject defaultRegistrationType;
 
     ChangeRegistrationTypeDialog(String id) {
         super(id);
-        permanentRegistrationType = registrationTypeStrategy.findById(RegistrationTypeStrategy.PERMANENT, true);
+
+        allRegistrationTypes = registrationTypeStrategy.getAll();
+        for (DomainObject regType : allRegistrationTypes) {
+            if (regType.getId().equals(RegistrationTypeStrategy.PERMANENT)) {
+                defaultRegistrationType = regType;
+                break;
+            }
+        }
+        if (defaultRegistrationType == null) {
+            defaultRegistrationType = allRegistrationTypes.get(0);
+        }
+
         init();
     }
 
@@ -84,8 +96,7 @@ final class ChangeRegistrationTypeDialog extends Panel {
         form.setOutputMarkupId(true);
         dialog.add(form);
 
-        final List<DomainObject> allRegistrationTypes = registrationTypeStrategy.getAll();
-        model.getObject().setRegistrationType(permanentRegistrationType);
+        model.getObject().setRegistrationType(defaultRegistrationType);
         registrationType = new DisableAwareDropDownChoice<DomainObject>("registrationType",
                 allRegistrationTypes, new DomainObjectDisableAwareRenderer() {
 
@@ -110,19 +121,18 @@ final class ChangeRegistrationTypeDialog extends Panel {
                         changeRegistrationType();
                         setResponsePage(new ApartmentCardEdit(apartmentCardId, null));
                     } else {
-                        target.addComponent(messages);
+                        target.add(messages);
                     }
                 } catch (Exception e) {
                     log.error("", e);
                     error(getString("db_error"));
-                    target.addComponent(messages);
+                    target.add(messages);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
             }
         };
         form.add(submit);
@@ -143,14 +153,14 @@ final class ChangeRegistrationTypeDialog extends Panel {
 
         initializeModel();
 
-        target.addComponent(form);
-        target.addComponent(messages);
+        target.add(form);
+        target.add(messages);
         dialog.open(target);
     }
 
     private void initializeModel() {
         model.setObject(new ChangeRegistrationTypeCard());
-        model.getObject().setRegistrationType(permanentRegistrationType);
+        model.getObject().setRegistrationType(defaultRegistrationType);
     }
 
     private void changeRegistrationType() {

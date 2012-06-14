@@ -4,7 +4,7 @@
  */
 package org.complitex.pspoffice.person.toolbar;
 
-import org.apache.wicket.ResourceReference;
+import org.apache.wicket.request.resource.SharedResourceReference;
 import org.complitex.pspoffice.person.menu.OperationMenu;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
@@ -20,7 +20,7 @@ public class PspSearchButton extends ToolbarButton {
     private static final String TITLE_KEY = "psp_search_button";
 
     public PspSearchButton(String id) {
-        super(id, new ResourceReference(IMAGE_SRC), TITLE_KEY);
+        super(id, new SharedResourceReference(IMAGE_SRC), TITLE_KEY);
     }
 
     @Override

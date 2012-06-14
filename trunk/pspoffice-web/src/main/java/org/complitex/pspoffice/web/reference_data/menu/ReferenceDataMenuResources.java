@@ -8,8 +8,8 @@ package org.complitex.pspoffice.web.reference_data.menu;
  *
  * @author Artem
  */
-public final class MenuResources {
+public final class ReferenceDataMenuResources {
 
-    private MenuResources() {
+    private ReferenceDataMenuResources() {
     }
 }

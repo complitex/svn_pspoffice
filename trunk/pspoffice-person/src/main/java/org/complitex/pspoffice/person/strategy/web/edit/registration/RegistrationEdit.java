@@ -4,6 +4,8 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.registration;
 
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -19,10 +21,7 @@ import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -36,6 +35,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.converter.DateConverter;
@@ -144,10 +144,15 @@ public class RegistrationEdit extends FormTemplatePage {
         return newRegistration.getStatus() != StatusType.ACTIVE;
     }
 
-    private void init() {
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-        add(CSSPackageResource.getHeaderContribution(RegistrationEdit.class, RegistrationEdit.class.getSimpleName() + ".css"));
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.renderJavaScriptReference(WebCommonResourceInitializer.SCROLL_JS);
+        response.renderCSSReference(new PackageResourceReference(
+                RegistrationEdit.class, RegistrationEdit.class.getSimpleName() + ".css"));
+    }
 
+    private void init() {
         IModel<String> addressModel = new LoadableDetachableModel<String>() {
 
             @Override
@@ -302,7 +307,7 @@ public class RegistrationEdit extends FormTemplatePage {
                             });
                         }
                     } else {
-                        target.addComponent(messages);
+                        target.add(messages);
                         scrollToMessages(target);
                     }
                 } catch (Exception e) {
@@ -318,19 +323,18 @@ public class RegistrationEdit extends FormTemplatePage {
             private void onFatalError(AjaxRequestTarget target, Exception e) {
                 log.error("", e);
                 error(getString("db_error"));
-                target.addComponent(messages);
+                target.add(messages);
                 scrollToMessages(target);
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
                 scrollToMessages(target);
             }
 
             private void scrollToMessages(AjaxRequestTarget target) {
-                target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
+                target.appendJavaScript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
         submit.setVisible(canEdit());
@@ -372,6 +376,14 @@ public class RegistrationEdit extends FormTemplatePage {
                 return newRegistration.getOwnerRelationship();
             }
         };
+        if (newRegistration.getOwnerRelationship() != null) {
+            for (DomainObject ownerRelationship : allOwnerRelationships) {
+                if (ownerRelationship.getId().equals(newRegistration.getOwnerRelationship().getId())) {
+                    ownerRelationshipModel.setObject(ownerRelationship);
+                    break;
+                }
+            }
+        }
 
         Combobox<DomainObject> ownerRelationship = new Combobox<DomainObject>("input", ownerRelationshipModel,
                 allOwnerRelationships, new DomainObjectDisableAwareRenderer() {
@@ -415,6 +427,14 @@ public class RegistrationEdit extends FormTemplatePage {
                 return newRegistration.getRegistrationType();
             }
         };
+        if (newRegistration.getRegistrationType() != null) {
+            for (DomainObject registrationType : allRegistrationTypes) {
+                if (registrationType.getId().equals(newRegistration.getRegistrationType().getId())) {
+                    registrationTypeModel.setObject(registrationType);
+                    break;
+                }
+            }
+        }
 
         DisableAwareDropDownChoice<DomainObject> registrationType = new DisableAwareDropDownChoice<DomainObject>("input",
                 registrationTypeModel, allRegistrationTypes, new DomainObjectDisableAwareRenderer() {

@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.authorization.UnauthorizedInstantiationException;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.markup.html.repeater.data.sort.SortOrder;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -24,6 +24,7 @@ import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.example.DomainObjectExample;
@@ -149,7 +150,7 @@ public final class PersonList extends ScrollListPage {
                 return personStrategy.count(example);
             }
         };
-        dataProvider.setSort(String.valueOf(personStrategy.getDefaultSortAttributeTypeId()), true);
+        dataProvider.setSort(String.valueOf(personStrategy.getDefaultSortAttributeTypeId()), SortOrder.ASCENDING);
 
         //Filters
         filterForm.add(new TextField<String>("lastNameFilter", new Model<String>() {
@@ -197,7 +198,7 @@ public final class PersonList extends ScrollListPage {
             protected void populateItem(Item<Person> item) {
                 Person person = item.getModelObject();
 
-                item.add(new Label("order", StringUtil.valueOf(getViewOffset() + item.getIndex() + 1)));
+                item.add(new Label("order", StringUtil.valueOf(getFirstItemOffset() + item.getIndex() + 1)));
                 item.add(new Label("lastName", person.getLastName(getLocale(), systemLocale)));
                 item.add(new Label("firstName", person.getFirstName(getLocale(), systemLocale)));
                 item.add(new Label("middleName", person.getMiddleName(getLocale(), systemLocale)));
@@ -238,7 +239,7 @@ public final class PersonList extends ScrollListPage {
                 example.addAdditionalParam(PersonStrategy.LAST_NAME_FILTER, null);
                 example.addAdditionalParam(PersonStrategy.FIRST_NAME_FILTER, null);
                 example.addAdditionalParam(PersonStrategy.MIDDLE_NAME_FILTER, null);
-                target.addComponent(content);
+                target.add(content);
             }
         };
         filterForm.add(reset);
@@ -248,7 +249,11 @@ public final class PersonList extends ScrollListPage {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                target.addComponent(content);
+                target.add(content);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
             }
         };
         filterForm.add(submit);

@@ -4,7 +4,9 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
-import org.apache.wicket.PageParameters;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebPage;
 import org.complitex.dictionary.web.component.back.BackInfo;
 import org.complitex.dictionary.web.component.back.BackInfoManager;
@@ -34,11 +36,8 @@ import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.AjaxIndicatorAppender;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
@@ -52,6 +51,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
@@ -176,7 +176,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                         });
                     }
                 } else {
-                    target.addComponent(messages);
+                    target.add(messages);
                     scrollToMessages(target);
                 }
             } catch (Exception e) {
@@ -192,14 +192,13 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         private void onFatalError(AjaxRequestTarget target, Exception e) {
             log.error("", e);
             error(getString("db_error"));
-            target.addComponent(messages);
+            target.add(messages);
             scrollToMessages(target);
         }
 
         @Override
         protected void onError(AjaxRequestTarget target, Form<?> form) {
-            super.onError(target, form);
-            target.addComponent(messages);
+            target.add(messages);
             scrollToMessages(target);
         }
 
@@ -253,6 +252,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         init(apartmentCardStrategy.findById(apartmentCardId, true));
     }
 
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.renderJavaScriptReference(WebCommonResourceInitializer.SCROLL_JS);
+        response.renderJavaScriptReference(new PackageResourceReference(
+                ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js"));
+        response.renderCSSReference(new PackageResourceReference(
+                ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".css"));
+    }
+
     private void init(final ApartmentCard apartmentCard) {
         if (apartmentCard.getId() == null) {
             oldApartmentCard = null;
@@ -261,10 +270,6 @@ public final class ApartmentCardEdit extends FormTemplatePage {
             newApartmentCard = apartmentCard;
             oldApartmentCard = CloneUtil.cloneObject(newApartmentCard);
         }
-
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-        add(JavascriptPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js"));
-        add(CSSPackageResource.getHeaderContribution(ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".css"));
 
         IModel<String> labelModel = new LoadableDetachableModel<String>() {
 
@@ -304,7 +309,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 protected void onSelect(AjaxRequestTarget target, String entity, DomainObject object) {
                     if (object != null && object.getId() != null && object.getId() > 0) {
                         permissionContainer.replace(newPermissionPanel(object.getSubjectIds()));
-                        target.addComponent(permissionContainer);
+                        target.add(permissionContainer);
                     }
                 }
             };
@@ -382,16 +387,16 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                             registerOwnerDialog.open(target, newApartmentCard, saveDate);
                         } else {
                             registerOwnerCheckBox.setModelObject(false);
-                            target.addComponent(registerOwnerCheckBox);
-                            target.addComponent(messages);
+                            target.add(registerOwnerCheckBox);
+                            target.add(messages);
                             scrollToMessages(target);
                         }
                     } catch (Exception e) {
                         log.error("", e);
                         error(getString("db_error"));
                         registerOwnerCheckBox.setModelObject(false);
-                        target.addComponent(registerOwnerCheckBox);
-                        target.addComponent(messages);
+                        target.add(registerOwnerCheckBox);
+                        target.add(messages);
                         scrollToMessages(target);
                     }
                 }
@@ -399,9 +404,9 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
             @Override
             protected void onError(AjaxRequestTarget target) {
-                target.addComponent(messages);
+                target.add(messages);
                 registerOwnerCheckBox.clearInput();
-                target.addComponent(registerOwnerCheckBox);
+                target.add(registerOwnerCheckBox);
                 scrollToMessages(target);
             }
         });
@@ -479,8 +484,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 for (IModel<Boolean> selectedModel : selectedMap.values()) {
                     selectedModel.setObject(getModelObject());
                 }
-                target.addComponent(removeRegistration);
-                target.addComponent(changeRegistrationType);
+                target.add(removeRegistration);
+                target.add(changeRegistrationType);
             }
         };
         allSelected.setVisible(!selectedMap.isEmpty());
@@ -496,8 +501,8 @@ public final class ApartmentCardEdit extends FormTemplatePage {
 
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
-                        target.addComponent(removeRegistration);
-                        target.addComponent(changeRegistrationType);
+                        target.add(removeRegistration);
+                        target.add(changeRegistrationType);
                     }
                 };
                 selected.setEnabled(!registration.isFinished());
@@ -509,7 +514,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                     public void onClick() {
                         PageParameters params = personStrategy.getEditPageParams(registration.getPerson().getId(), null, null);
                         BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(newApartmentCard.getId(), backInfoSessionKey));
-                        params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                        params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                         setResponsePage(personStrategy.getEditPage(), params);
                     }
                 };
@@ -879,6 +884,14 @@ public final class ApartmentCardEdit extends FormTemplatePage {
                 return newApartmentCard.getOwnershipForm();
             }
         };
+        if (newApartmentCard.getOwnershipForm() != null) {
+            for (DomainObject ownershipForm : allOwnershipForms) {
+                if (ownershipForm.getId().equals(newApartmentCard.getOwnershipForm().getId())) {
+                    formOfOwnershipModel.setObject(ownershipForm);
+                    break;
+                }
+            }
+        }
 
         DisableAwareDropDownChoice<DomainObject> formOfOwnership = new DisableAwareDropDownChoice<DomainObject>("formOfOwnership",
                 formOfOwnershipModel, allOwnershipForms, new DomainObjectDisableAwareRenderer() {
@@ -911,7 +924,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     }
 
     private void scrollToMessages(AjaxRequestTarget target) {
-        target.appendJavascript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
+        target.appendJavaScript(ScrollToElementUtil.scrollTo(scrollToComponent.getMarkupId()));
     }
 
     private String needExplanationLabel() {
@@ -985,7 +998,7 @@ public final class ApartmentCardEdit extends FormTemplatePage {
         if (oldApartmentCard != null) {
             PageParameters parameters = new PageParameters();
             BackInfoManager.put(this, PAGE_SESSION_KEY, new ApartmentCardBackInfo(oldApartmentCard.getId(), backInfoSessionKey));
-            parameters.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+            parameters.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
             setResponsePage(profilePageClass, parameters);
         } else {
             super.onProfileClick(profilePageClass);

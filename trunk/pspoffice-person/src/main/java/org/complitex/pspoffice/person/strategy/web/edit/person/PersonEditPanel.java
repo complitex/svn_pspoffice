@@ -4,6 +4,7 @@
  */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.complitex.dictionary.service.SessionBean;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
@@ -23,7 +24,6 @@ import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -80,10 +80,13 @@ public abstract class PersonEditPanel extends Panel {
         init(personAgeType, defaultNameLocale, defaultLastName, defaultFirstName, defaultMiddleName);
     }
 
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        response.renderJavaScriptReference(WebCommonResourceInitializer.SCROLL_JS);
+    }
+
     private void init(PersonAgeType personAgeType, Locale defaultNameLocale,
             String defaultLastName, String defaultFirstName, String defaultMiddleName) {
-        add(JavascriptPackageResource.getHeaderContribution(WebCommonResourceInitializer.SCROLL_JS));
-
         final Label label = new Label("label", new AbstractReadOnlyModel<String>() {
 
             @Override
@@ -155,7 +158,7 @@ public abstract class PersonEditPanel extends Panel {
                             });
                         }
                     } else {
-                        target.addComponent(messages);
+                        target.add(messages);
                         scrollToMessages(target);
                     }
                 } catch (Exception e) {
@@ -189,19 +192,18 @@ public abstract class PersonEditPanel extends Panel {
             private void onFatalError(AjaxRequestTarget target, Exception e) {
                 log.error("", e);
                 error(getString("db_error"));
-                target.addComponent(messages);
+                target.add(messages);
                 scrollToMessages(target);
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                super.onError(target, form);
-                target.addComponent(messages);
+                target.add(messages);
                 scrollToMessages(target);
             }
 
             private void scrollToMessages(AjaxRequestTarget target) {
-                target.appendJavascript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
+                target.appendJavaScript(ScrollToElementUtil.scrollTo(label.getMarkupId()));
             }
         };
         submit.setVisible(canEdit(null, personStrategy.getEntityTable(), newPerson));

@@ -26,7 +26,7 @@ abstract class AutocompleteRoomCreateDialog extends RoomCreateDialog {
     protected void onCancel(AjaxRequestTarget target) {
         super.onCancel(target);
         autocomplete.setModelObject(null);
-        target.addComponent(autocomplete);
+        target.add(autocomplete);
         target.focusComponent(autocomplete);
     }
 }

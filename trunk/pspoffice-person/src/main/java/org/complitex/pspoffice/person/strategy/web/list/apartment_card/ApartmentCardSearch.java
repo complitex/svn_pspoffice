@@ -10,10 +10,10 @@ import java.util.Map;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import static com.google.common.collect.ImmutableList.*;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.Model;
@@ -50,7 +50,7 @@ public class ApartmentCardSearch extends FormTemplatePage {
         public void found(Component component, Map<String, Long> ids, AjaxRequestTarget target) {
             Long apartmentId = ids.get("apartment");
             if (apartmentId != null) {
-                target.appendJavascript(String.valueOf(new JsQuery(submit).$().chain("click").render()));
+                target.appendJavaScript(String.valueOf(new JsQuery(submit).$().chain("click").render()));
             }
         }
     }
@@ -151,9 +151,10 @@ public class ApartmentCardSearch extends FormTemplatePage {
 
                 // город не введен -> ошибка, это обязательное поле.
                 error(getString("address_invalid"));
-                target.addComponent(messages);
+                target.add(messages);
             }
         };
+        submit.setOutputMarkupId(true);
         add(submit);
     }
 

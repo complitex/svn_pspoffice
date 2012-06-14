@@ -1,11 +1,11 @@
 package org.complitex.pspoffice.web.admin;
 
 import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.complitex.template.web.template.ITemplateLink;
 
 import java.util.List;
 import java.util.Locale;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.complitex.admin.web.AdminTemplateMenu;
 import org.complitex.pspoffice.importing.legacy.web.LegacyDataImportPage;
 import org.complitex.pspoffice.importing.reference_data.web.ReferenceDataImportPage;
@@ -26,7 +26,6 @@ public class AdminMenu extends AdminTemplateMenu {
                 return getString(ReferenceDataImportPage.class, locale, "title");
             }
 
-            @SuppressWarnings({"unchecked"})
             @Override
             public Class<? extends Page> getPage() {
                 return ReferenceDataImportPage.class;

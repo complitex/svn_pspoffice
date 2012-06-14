@@ -8,8 +8,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -17,6 +16,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.DomainObject;
@@ -74,7 +74,7 @@ public final class ApartmentCardsGrid extends ListPage {
     public ApartmentCardsGrid(long apartmentId) {
         this(apartmentId, null);
     }
-    
+
     public ApartmentCardsGrid(final long apartmentId, final String backInfoSessionKey) {
         this.apartmentId = apartmentId;
         this.backInfoSessionKey = backInfoSessionKey;
@@ -144,7 +144,7 @@ public final class ApartmentCardsGrid extends ListPage {
                                 MenuManager.setMenuItem(OrganizationMenu.ORGANIZATION_MENU_ITEM);
                                 PageParameters params = organizationStrategy.getEditPageParams(organization.getId(), null, null);
                                 BackInfoManager.put(this, PAGE_SESSION_KEY, gridBackInfo(apartmentId, backInfoSessionKey));
-                                params.put(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
+                                params.set(BACK_INFO_SESSION_KEY, PAGE_SESSION_KEY);
                                 setResponsePage(organizationStrategy.getEditPage(), params);
                             }
                         };
@@ -169,7 +169,7 @@ public final class ApartmentCardsGrid extends ListPage {
             }
         };
         add(backSearch);
-        
+
         final BackInfo backInfo = !Strings.isEmpty(backInfoSessionKey) ? BackInfoManager.get(getPage(), backInfoSessionKey) : null;
         Link<Void> back = new Link<Void>("back") {
 

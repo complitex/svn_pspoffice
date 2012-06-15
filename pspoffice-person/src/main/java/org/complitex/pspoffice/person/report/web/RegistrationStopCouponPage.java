@@ -20,6 +20,7 @@ import org.apache.wicket.request.resource.PackageResourceReference;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.strategy.StrategyFactory;
+import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.pspoffice.person.report.download.RegistrationStopCouponDownload;
 import org.complitex.pspoffice.person.report.entity.RegistrationStopCoupon;
 import org.complitex.pspoffice.person.report.service.RegistrationStopCouponBean;
@@ -125,12 +126,17 @@ public class RegistrationStopCouponPage extends WebPage {
                 RegistrationStopCouponPage.class.getSimpleName() + ".css"));
     }
 
+    @Override
+    public DictionaryFwSession getSession() {
+        return (DictionaryFwSession) super.getSession();
+    }
+
     public RegistrationStopCouponPage(Registration registration, String addressEntity, long addressId) {
         add(new Label("title", new ResourceModel("label")));
         Collection<FeedbackMessage> messages = newArrayList();
         RegistrationStopCoupon coupon = null;
         try {
-            coupon = registrationStopCouponBean.get(registration, addressEntity, addressId);
+            coupon = registrationStopCouponBean.get(registration, addressEntity, addressId, getSession());
         } catch (Exception e) {
             messages.add(new FeedbackMessage(this, getString("db_error"), ERROR));
             log.error("", e);

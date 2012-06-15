@@ -17,6 +17,7 @@ import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.service.SessionBean;
+import org.complitex.dictionary.web.DictionaryFwSession;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
@@ -42,7 +43,8 @@ public class RegistrationStopCouponBean extends AbstractBean {
     private LocaleBean localeBean;
 
     @Transactional
-    public RegistrationStopCoupon get(Registration registration, String addressEntity, long addressId) {
+    public RegistrationStopCoupon get(Registration registration, String addressEntity, long addressId,
+            DictionaryFwSession session) {
         RegistrationStopCoupon coupon = new RegistrationStopCoupon();
         Person person = registration.getPerson();
 
@@ -50,7 +52,7 @@ public class RegistrationStopCouponBean extends AbstractBean {
         coupon.setRegistration(registration);
         coupon.setAddressEntity(addressEntity);
         coupon.setAddressId(addressId);
-        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganization());
+        coupon.setRegistrationOrganization(sessionBean.getMainUserOrganization(session));
         personStrategy.loadDocument(person);
 
         Document document = person.getDocument();

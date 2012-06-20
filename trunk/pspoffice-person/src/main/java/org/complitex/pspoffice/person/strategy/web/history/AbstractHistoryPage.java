@@ -31,7 +31,6 @@ public abstract class AbstractHistoryPage extends TemplatePage {
     private final WebMarkupContainer historyContainer;
     private final long objectId;
     private Date currentEndDate;
-    private boolean isPostBack;
     private final IModel<String> objectLinkMessageModel;
 
     private abstract class HistoryLink extends AjaxLink<Void> {
@@ -105,59 +104,56 @@ public abstract class AbstractHistoryPage extends TemplatePage {
     }
 
     @Override
-    protected void onBeforeRender() {
-        super.onBeforeRender();
-        if (!isPostBack) {
-            isPostBack = true;
+    protected void onInitialize() {
+        super.onInitialize();
 
-            //history container and content.
-            historyContainer.setOutputMarkupId(true);
-            historyContainer.add(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
-            add(historyContainer);
+        //history container and content.
+        historyContainer.setOutputMarkupId(true);
+        historyContainer.add(newHistoryContent(HISTORY_CONTENT_WICKET_ID, objectId, currentEndDate));
+        add(historyContainer);
 
-            //history buttons
-            boolean backButtonVisibleInitially = isBackButtonVisible();
-            boolean forwardButtonVisibleInitially = isForwardButtonVisible();
+        //history buttons
+        boolean backButtonVisibleInitially = isBackButtonVisible();
+        boolean forwardButtonVisibleInitially = isForwardButtonVisible();
 
-            WebMarkupContainer historyButtonsContainer = new WebMarkupContainer("historyButtonsContainer");
-            historyButtonsContainer.setVisible(backButtonVisibleInitially || forwardButtonVisibleInitially);
-            add(historyButtonsContainer);
+        WebMarkupContainer historyButtonsContainer = new WebMarkupContainer("historyButtonsContainer");
+        historyButtonsContainer.setVisible(backButtonVisibleInitially || forwardButtonVisibleInitially);
+        add(historyButtonsContainer);
 
-            historyButtonsContainer.add(new HistoryLink("back", backButtonVisibleInitially) {
+        historyButtonsContainer.add(new HistoryLink("back", backButtonVisibleInitially) {
 
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    Date newEndDate = getPreviousModificationDate(objectId, currentEndDate);
-                    if (getPreviousModificationDate(objectId, newEndDate) != null) {
-                        currentEndDate = newEndDate;
-                        super.onClick(target);
-                    }
-                    postOnClick(target);
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                Date newEndDate = getPreviousModificationDate(objectId, currentEndDate);
+                if (getPreviousModificationDate(objectId, newEndDate) != null) {
+                    currentEndDate = newEndDate;
+                    super.onClick(target);
                 }
-            });
+                postOnClick(target);
+            }
+        });
 
-            historyButtonsContainer.add(new HistoryLink("forward", forwardButtonVisibleInitially) {
+        historyButtonsContainer.add(new HistoryLink("forward", forwardButtonVisibleInitially) {
 
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    if (currentEndDate != null) {
-                        currentEndDate = getNextModificationDate(objectId, currentEndDate);
-                        super.onClick(target);
-                    }
-                    postOnClick(target);
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                if (currentEndDate != null) {
+                    currentEndDate = getNextModificationDate(objectId, currentEndDate);
+                    super.onClick(target);
                 }
-            });
+                postOnClick(target);
+            }
+        });
 
-            Link<Void> objectLink = new Link<Void>("objectLink") {
+        Link<Void> objectLink = new Link<Void>("objectLink") {
 
-                @Override
-                public void onClick() {
-                    returnBackToObject(objectId);
-                }
-            };
-            objectLink.add(new Label("objectLinkMessage", objectLinkMessageModel));
-            add(objectLink);
-        }
+            @Override
+            public void onClick() {
+                returnBackToObject(objectId);
+            }
+        };
+        objectLink.add(new Label("objectLinkMessage", objectLinkMessageModel));
+        add(objectLink);
     }
 
     protected abstract void returnBackToObject(long objectId);

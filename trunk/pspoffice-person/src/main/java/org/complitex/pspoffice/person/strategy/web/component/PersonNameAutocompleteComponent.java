@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import javax.ejb.EJB;
 import org.apache.wicket.Component;
+import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
@@ -28,6 +29,7 @@ import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
 public class PersonNameAutocompleteComponent extends AutocompleteAjaxComponent<String> {
 
     private static final int AUTOCOMPLETE_SIZE = 5;
+    private static final int AUTOCOMPLETE_MIN_LENGTH = 3;
     @EJB
     private PersonNameBean personNameBean;
     private final PersonNameType personNameType;
@@ -108,10 +110,13 @@ public class PersonNameAutocompleteComponent extends AutocompleteAjaxComponent<S
         setModel(new PersonNameComponentModel(defaultPersonName));
 
         //UI corrections
+        //autocomplete delay.
         getAutocompleteField().setDelay(1000);
 
-        //TODO: add minLength option
-        //getAutocompleteField().setMinLength(3);
+        //in DEPLOYMENT mode make sure that autocomplete triggered only if at least AUTOCOMPLETE_MIN_LENGTH characters have been entered.
+        if (getApplication().getConfigurationType() == RuntimeConfigurationType.DEPLOYMENT) {
+            getAutocompleteField().setMinLength(AUTOCOMPLETE_MIN_LENGTH);
+        }
 
         getAutocompleteField().setOpenEvent(JsScopeUiEvent.quickScope(
                 "var input = $(this);"+

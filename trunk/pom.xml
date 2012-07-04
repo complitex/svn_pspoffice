@@ -24,6 +24,7 @@
         <module>pspoffice-web</module>
         <module>pspoffice-person</module>
         <module>pspoffice-report</module>
+        <module>pspoffice-report-html</module>
         <module>pspoffice-owner-relationship</module>
         <module>pspoffice-ownership-form</module>
         <module>pspoffice-registration-type</module>
@@ -117,6 +118,12 @@
             <dependency>
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-report</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.complitex.pspoffice</groupId>
+                <artifactId>pspoffice-report-html</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

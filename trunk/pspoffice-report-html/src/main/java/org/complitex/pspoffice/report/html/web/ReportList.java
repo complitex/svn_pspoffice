@@ -101,7 +101,7 @@ public class ReportList extends TemplatePage {
 
                 link.add(new Label("name", report.getName()));
 
-                item.add(DateLabel.forDateStyle("updated", Model.of(report.getUpdated()), "S"));
+                item.add(DateLabel.forDatePattern("updated", Model.of(report.getUpdated()), "dd.MM.yy HH:mm:ss"));
 
                 item.add(new BookmarkablePageLinkPanel<>("view", getString("view"), ReportView.class, report.getId()));
                 item.add(new BookmarkablePageLinkPanel<>("html", getString("html"), ReportHtml.class, report.getId()));

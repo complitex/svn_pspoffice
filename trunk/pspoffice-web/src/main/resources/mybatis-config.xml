@@ -66,5 +66,8 @@
         <mapper resource="org/complitex/pspoffice/importing/legacy/service/PersonCorrectionBean.xml"/>
         <mapper resource="org/complitex/pspoffice/importing/legacy/service/ApartmentCardCorrectionBean.xml"/>
         <mapper resource="org/complitex/pspoffice/importing/legacy/service/RegistrationCorrectionBean.xml"/>
+
+        <!--report html-->
+        <mapper resource="org/complitex/pspoffice/report/html/service/ReportBean.xml"/>
     </mappers>
 </configuration>

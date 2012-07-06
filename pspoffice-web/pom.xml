@@ -96,6 +96,10 @@
         </dependency>
         <dependency>
             <groupId>org.complitex.pspoffice</groupId>
+            <artifactId>pspoffice-report-html</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.complitex.pspoffice</groupId>
             <artifactId>pspoffice-report</artifactId>
             <!--todo xerces bug-->
             <exclusions>
@@ -129,7 +133,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
+                <version>2.2</version>
             </plugin>
         </plugins>
     </build>

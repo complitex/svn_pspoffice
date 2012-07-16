@@ -46,7 +46,7 @@
         <module>../complitex/complitex-organization-type</module>
         <module>../complitex/complitex-organization</module>
     
-  </modules>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -180,6 +180,27 @@
                 <groupId>org.complitex.pspoffice</groupId>
                 <artifactId>pspoffice-street</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            
+            <!-- iText -->
+            <dependency>
+                <groupId>com.lowagie</groupId>
+                <artifactId>itext</artifactId>
+                <version>2.0.8</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>bouncycastle</groupId>
+                        <artifactId>bcmail-jdk14</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>bouncycastle</groupId>
+                        <artifactId>bcprov-jdk14</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bctsp-jdk14</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
         </dependencies>

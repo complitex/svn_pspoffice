@@ -25,22 +25,22 @@ import java.util.Map;
 public class ReportBean extends AbstractBean {
     private final static Logger log = LoggerFactory.getLogger(ReportBean.class);
 
-    public static final String NS = ReportBean.class.getName();
+    private static final String NS = ReportBean.class.getName();
 
-    public ReportSql getReportSql(Long id){
-        return sqlSession().selectOne(NS + ".selectReportSql", id);
+    public ReportSql getReportSql(Long id) {
+        return (ReportSql) sqlSession().selectOne(NS + ".selectReportSql", id);
     }
 
-    public Report getReport(Long id){
-        return sqlSession().selectOne(NS + ".selectReport", id);
+    public Report getReport(Long id) {
+        return (Report) sqlSession().selectOne(NS + ".selectReport", id);
     }
 
-    public List<Report> getReportList(FilterWrapper<Report> filterWrapper){
+    public List<Report> getReportList(FilterWrapper<Report> filterWrapper) {
         return sqlSession().selectList(NS + ".selectReportList", filterWrapper);
     }
 
-    public Integer getReportListCount(FilterWrapper<Report> filterWrapper){
-        return sqlSession().selectOne(NS + ".selectReportListCount", filterWrapper);
+    public int getReportListCount(FilterWrapper<Report> filterWrapper) {
+        return (Integer) sqlSession().selectOne(NS + ".selectReportListCount", filterWrapper);
     }
 
     public void save(final Report report){

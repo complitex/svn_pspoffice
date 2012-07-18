@@ -319,4 +319,4 @@ INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_
 INSERT INTO `entity_attribute_value_type`(`id`, `attribute_type_id`, `attribute_value_type`) VALUES (3101, 3101, UPPER('integer'));
 
 -- Current database version
- INSERT INTO `update` (`version`) VALUE ('20120518_409_0.0.1');
+ INSERT INTO `update` (`version`) VALUE ('20120704_420_0.0.2');

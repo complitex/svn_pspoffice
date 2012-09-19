@@ -28,6 +28,7 @@ import org.complitex.dictionary.service.IImportListener;
 import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.exception.AbstractException;
 import org.complitex.dictionary.service.exception.ImportCriticalException;
+import org.complitex.dictionary.service.exception.ImportDuplicateException;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
 import org.complitex.dictionary.service.exception.ImportObjectLinkException;
@@ -117,7 +118,7 @@ public class ReferenceDataImportService {
     }
 
     private <T extends IImportFile> void processReferenceData(T importFile, final long localeId)
-            throws ImportFileNotFoundException, ImportObjectLinkException, ImportFileReadException {
+            throws ImportFileNotFoundException, ImportObjectLinkException, ImportFileReadException, ImportDuplicateException {
 
         final IImportListener referenceDataListener = new IImportListener() {
 

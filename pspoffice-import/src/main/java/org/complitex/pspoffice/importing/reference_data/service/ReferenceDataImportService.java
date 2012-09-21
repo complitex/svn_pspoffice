@@ -142,7 +142,7 @@ public class ReferenceDataImportService {
         };
 
         if (importFile instanceof AddressImportFile) { //address
-            addressImportService.process(importFile, referenceDataListener);
+            addressImportService.process(importFile, referenceDataListener, localeId);
         } else if (importFile instanceof OwnerRelationshipImportFile) { // owner relationship
             ownerRelationshipImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof OwnershipFormImportFile) { //ownership form

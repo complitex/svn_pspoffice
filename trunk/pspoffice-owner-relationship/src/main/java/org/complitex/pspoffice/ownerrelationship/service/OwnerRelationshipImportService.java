@@ -2,7 +2,7 @@ package org.complitex.pspoffice.ownerrelationship.service;
 
 import java.util.Collection;
 import au.com.bytecode.opencsv.CSVReader;
-import org.complitex.dictionary.entity.AbstractImportService;
+import org.complitex.dictionary.service.AbstractImportService;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.IImportListener;

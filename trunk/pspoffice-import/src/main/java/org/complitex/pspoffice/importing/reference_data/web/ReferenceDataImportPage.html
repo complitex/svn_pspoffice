@@ -20,7 +20,9 @@
                     </ul>
 
                     <form action="#" wicket:id="form">
-                        <h2>
+                        <div wicket:id="localePicker" style="margin-bottom: 5px;"></div>
+                        
+                        <h2 style="margin-top: 5px;">
                             <wicket:message key="addressData"/>
                         </h2>
                         <div wicket:id="addressData"></div>
@@ -28,10 +30,7 @@
                         <h2 style="margin-top: 5px;">
                             <wicket:message key="referenceData"/>
                         </h2>
-                        <div>
-                            <div wicket:id="localePicker" style="margin-bottom: 5px;"></div>
-                            <div wicket:id="referenceData"></div>
-                        </div>
+                        <div wicket:id="referenceData"></div>
 
                         <div style="margin-top: 15px;">
                             <input type="submit" class="btnBig" wicket:id="process" wicket:message="value:process"/>

@@ -139,6 +139,10 @@ public class ReferenceDataImportService {
                         "Имя файла: {0}, количество записей: {1}, Идентификатор локали: {2}",
                         importFile.getFileName(), recordCount, localeId);
             }
+
+            @Override
+            public void warn(IImportFile importFile, String message) {
+            }
         };
 
         if (importFile instanceof AddressImportFile) { //address

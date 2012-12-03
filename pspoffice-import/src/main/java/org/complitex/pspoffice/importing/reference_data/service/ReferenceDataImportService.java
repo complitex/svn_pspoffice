@@ -4,19 +4,6 @@
  */
 package org.complitex.pspoffice.importing.reference_data.service;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Resource;
-import javax.ejb.Asynchronous;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.UserTransaction;
 import org.complitex.address.entity.AddressImportFile;
 import org.complitex.address.service.AddressImportService;
 import org.complitex.dictionary.entity.DictionaryConfig;
@@ -26,12 +13,8 @@ import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.service.ConfigBean;
 import org.complitex.dictionary.service.IImportListener;
 import org.complitex.dictionary.service.LogBean;
-import org.complitex.dictionary.service.exception.AbstractException;
-import org.complitex.dictionary.service.exception.ImportCriticalException;
-import org.complitex.dictionary.service.exception.ImportDuplicateException;
-import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
-import org.complitex.dictionary.service.exception.ImportFileReadException;
-import org.complitex.dictionary.service.exception.ImportObjectLinkException;
+import org.complitex.dictionary.service.exception.*;
+import org.complitex.dictionary.util.DateUtil;
 import org.complitex.pspoffice.departure_reason.entity.DepartureReasonImportFile;
 import org.complitex.pspoffice.departure_reason.service.DepartureReasonImportService;
 import org.complitex.pspoffice.document_type.entity.DocumentTypeImportFile;
@@ -49,6 +32,14 @@ import org.complitex.pspoffice.registration_type.entity.RegistrationTypeImportFi
 import org.complitex.pspoffice.registration_type.service.RegistrationTypeImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Resource;
+import javax.ejb.*;
+import javax.transaction.UserTransaction;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -146,7 +137,7 @@ public class ReferenceDataImportService {
         };
 
         if (importFile instanceof AddressImportFile) { //address
-            addressImportService.process(importFile, referenceDataListener, localeId);
+            addressImportService.process(importFile, referenceDataListener, localeId, DateUtil.getCurrentDate());
         } else if (importFile instanceof OwnerRelationshipImportFile) { // owner relationship
             ownerRelationshipImportService.process(referenceDataListener, localeId);
         } else if (importFile instanceof OwnershipFormImportFile) { //ownership form

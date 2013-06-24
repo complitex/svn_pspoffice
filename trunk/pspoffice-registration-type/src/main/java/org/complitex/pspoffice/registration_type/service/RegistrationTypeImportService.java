@@ -1,14 +1,16 @@
 package org.complitex.pspoffice.registration_type.service;
 
-import org.complitex.dictionary.entity.StringCulture;
-import org.complitex.dictionary.util.CloneUtil;
 import au.com.bytecode.opencsv.CSVReader;
-import org.complitex.dictionary.service.AbstractImportService;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.service.AbstractImportService;
 import org.complitex.dictionary.service.IImportListener;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
+import org.complitex.dictionary.util.CloneUtil;
+import org.complitex.dictionary.util.DateUtil;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,9 +18,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
 import java.util.Collection;
-import org.complitex.dictionary.util.DateUtil;
 
-import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import static org.complitex.pspoffice.registration_type.entity.RegistrationTypeImportFile.REGISTRATION_TYPE;
 
 @Stateless
@@ -58,7 +58,7 @@ public class RegistrationTypeImportService extends AbstractImportService {
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
-                final long externalId = Long.parseLong(line[0].trim());
+                final String externalId = line[0].trim();
                 final String name = line[1].trim();
 
                 // Сначала ищем среди предопределенных системой объектов.
@@ -75,7 +75,7 @@ public class RegistrationTypeImportService extends AbstractImportService {
                     // это зарезервированный системой объект, пропускаем его.
                 } else {
                     // Ищем по externalId в базе.
-                    final Long objectId = strategy.getObjectId(externalId);
+                    final Long objectId = strategy.getObjectId(Long.valueOf(externalId));
                     if (objectId != null) {
                         DomainObject oldObject = strategy.findById(objectId, true);
                         if (oldObject != null) {

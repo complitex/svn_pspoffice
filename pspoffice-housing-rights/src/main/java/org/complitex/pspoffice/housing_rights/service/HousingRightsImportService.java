@@ -1,24 +1,24 @@
 package org.complitex.pspoffice.housing_rights.service;
 
-import org.complitex.dictionary.entity.StringCulture;
-import org.complitex.dictionary.service.LocaleBean;
-import org.complitex.dictionary.util.CloneUtil;
 import au.com.bytecode.opencsv.CSVReader;
-import org.complitex.dictionary.service.AbstractImportService;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.entity.StringCulture;
+import org.complitex.dictionary.service.AbstractImportService;
 import org.complitex.dictionary.service.IImportListener;
+import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.exception.ImportFileNotFoundException;
 import org.complitex.dictionary.service.exception.ImportFileReadException;
+import org.complitex.dictionary.util.CloneUtil;
+import org.complitex.dictionary.util.DateUtil;
+import org.complitex.pspoffice.housing_rights.strategy.HousingRightsStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
-import org.complitex.dictionary.util.DateUtil;
 
-import org.complitex.pspoffice.housing_rights.strategy.HousingRightsStrategy;
 import static org.complitex.pspoffice.housing_rights.entity.HousingRightsImportFile.HOUSING_RIGHTS;
 
 @Stateless
@@ -58,12 +58,12 @@ public class HousingRightsImportService extends AbstractImportService {
             while ((line = reader.readNext()) != null) {
                 recordIndex++;
 
-                final long externalId = Long.parseLong(line[0].trim());
+                final String externalId = line[0].trim();
                 final String code = line[1].trim();
                 final String name = line[2].trim();
 
                 // Ищем по externalId в базе.
-                final Long objectId = strategy.getObjectId(externalId);
+                final Long objectId = strategy.getObjectId(Long.valueOf(externalId));
                 if (objectId != null) {
                     DomainObject oldObject = strategy.findById(objectId, true);
                     if (oldObject != null) {

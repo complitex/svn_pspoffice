@@ -5,11 +5,6 @@
 package org.complitex.pspoffice.person.strategy.service;
 
 import com.google.common.collect.Lists;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.AbstractBean;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
@@ -20,19 +15,27 @@ import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentCardsGridFilter;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 /**
  *
  * @author Artem
  */
 @Stateless
 public class ApartmentCardsGridBean extends AbstractBean {
-
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
-    @EJB(name = "OrganizationStrategy")
+
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     @EJB
     private PersonStrategy personStrategy;
+
     @EJB
     private OwnershipFormStrategy ownershipFormStrategy;
 

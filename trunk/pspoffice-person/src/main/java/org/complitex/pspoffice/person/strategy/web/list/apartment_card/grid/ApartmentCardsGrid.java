@@ -5,8 +5,6 @@
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
@@ -37,6 +35,9 @@ import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
 
+import javax.ejb.EJB;
+import java.util.List;
+
 /**
  *
  * @author Artem
@@ -45,12 +46,16 @@ import org.complitex.template.web.template.MenuManager;
 public final class ApartmentCardsGrid extends ListPage {
 
     private static final String PAGE_SESSION_KEY = "apartment_cards_grid_page";
+
     @EJB
     private ApartmentCardsGridBean apartmentCardsGridBean;
-    @EJB(name = "OrganizationStrategy")
+
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     @EJB
     private AddressRendererBean addressRendererBean;
+
     private final long apartmentId;
     private final String backInfoSessionKey;
 
@@ -71,7 +76,7 @@ public final class ApartmentCardsGrid extends ListPage {
         }
     }
 
-    public ApartmentCardsGrid(long apartmentId) {
+    public ApartmentCardsGrid(long apartmentId){
         this(apartmentId, null);
     }
 

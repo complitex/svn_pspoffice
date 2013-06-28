@@ -1,41 +1,28 @@
 package org.complitex.pspoffice.importing.legacy.web;
 
-import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import java.io.File;
+import com.google.common.collect.*;
+import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.util.time.Duration;
-import org.complitex.template.web.security.SecurityRole;
-import org.complitex.template.web.template.TemplatePage;
-
-import javax.ejb.EJB;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.util.time.Duration;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.service.ConfigBean;
 import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
@@ -47,14 +34,24 @@ import org.complitex.dictionary.web.component.list.AjaxRemovableListView;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.dictionary.web.component.search.WiQuerySearchComponent;
 import org.complitex.pspoffice.importing.legacy.entity.ImportMessage;
-import org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportFile;
-import org.complitex.pspoffice.importing.legacy.service.LegacyDataImportService;
 import org.complitex.pspoffice.importing.legacy.entity.ImportStatus;
+import org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportFile;
 import org.complitex.pspoffice.importing.legacy.entity.ProcessItem;
+import org.complitex.pspoffice.importing.legacy.service.LegacyDataImportService;
+import org.complitex.template.web.security.SecurityRole;
+import org.complitex.template.web.template.TemplatePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportConfig.*;
+import javax.ejb.EJB;
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportConfig.DEFAULT_LEGACY_IMPORT_FILE_DIR;
+import static org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportConfig.DEFAULT_LEGACY_IMPORT_FILE_ERRORS_DIR;
 
 /**
  * @author Artem
@@ -63,10 +60,13 @@ import static org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportCo
 public class LegacyDataImportPage extends TemplatePage {
 
     private static final Logger log = LoggerFactory.getLogger(LegacyDataImportPage.class);
+
     @EJB
     private LegacyDataImportService importService;
-    @EJB(name = "OrganizationStrategy")
+
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     @EJB
     private ConfigBean configBean;
     private int stopTimer = 0;

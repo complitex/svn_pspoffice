@@ -7,13 +7,6 @@ package org.complitex.pspoffice.person.strategy.service;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import org.complitex.address.strategy.apartment.ApartmentStrategy;
 import org.complitex.address.strategy.room.RoomStrategy;
 import org.complitex.dictionary.entity.DomainObject;
@@ -27,6 +20,10 @@ import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridFilter;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.util.*;
+
 /**
  *
  * @author Artem
@@ -35,16 +32,22 @@ import org.complitex.pspoffice.person.strategy.entity.grid.ApartmentsGridFilter;
 public class ApartmentsGridBean extends AbstractBean {
 
     private static final String MAPPING = ApartmentsGridBean.class.getName();
+
     @EJB
     private ApartmentStrategy apartmentStrategy;
+
     @EJB
     private RoomStrategy roomStrategy;
+
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
+
     @EJB
     private SessionBean sessionBean;
-    @EJB(name = "OrganizationStrategy")
+
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     @EJB
     private LocaleBean localeBean;
 

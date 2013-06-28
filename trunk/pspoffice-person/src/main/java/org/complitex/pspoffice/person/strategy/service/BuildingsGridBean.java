@@ -6,13 +6,6 @@ package org.complitex.pspoffice.person.strategy.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import org.complitex.address.strategy.building.BuildingStrategy;
 import org.complitex.address.strategy.building.entity.Building;
 import org.complitex.address.strategy.building_address.BuildingAddressStrategy;
@@ -27,24 +20,33 @@ import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridEntity;
 import org.complitex.pspoffice.person.strategy.entity.grid.BuildingsGridFilter;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.util.*;
+
 /**
  *
  * @author Artem
  */
 @Stateless
 public class BuildingsGridBean extends AbstractBean {
-
     private static final String MAPPING = BuildingsGridBean.class.getName();
+
     @EJB
     private BuildingStrategy buildingStrategy;
+
     @EJB
     private StreetStrategy streetStrategy;
+
     @EJB
     private DistrictStrategy districtStrategy;
+
     @EJB
     private SessionBean sessionBean;
-    @EJB(name = "OrganizationStrategy")
+
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     @EJB
     private LocaleBean localeBean;
 

@@ -5,9 +5,6 @@
 package org.complitex.pspoffice.person.strategy.web.component;
 
 import com.google.common.collect.Lists;
-import java.util.List;
-import java.util.Set;
-import javax.ejb.EJB;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -18,14 +15,18 @@ import org.complitex.dictionary.strategy.organization.IOrganizationStrategy;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 
+import javax.ejb.EJB;
+import java.util.List;
+import java.util.Set;
+
 /**
  *
  * @author Artem
  */
 public final class PermissionPanel extends Panel {
-
-    @EJB(name = "OrganizationStrategy")
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     private static final DomainObject VISIBLE_BY_ALL = new DomainObject();
 
     static {

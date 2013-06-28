@@ -6,8 +6,6 @@ package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.List;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -58,6 +56,9 @@ import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
 
+import javax.ejb.EJB;
+import java.util.List;
+
 /**
  *
  * @author Artem
@@ -66,18 +67,25 @@ import org.complitex.template.web.template.MenuManager;
 public final class BuildingsGrid extends ListPage {
     
     private static final String PAGE_SESSION_KEY = "buildings_grid_page";
+
     @EJB
     private DistrictStrategy districtStrategy;
+
     @EJB
     private StreetStrategy streetStrategy;
+
     @EJB
     private BuildingStrategy buildingStrategy;
+
     @EJB
     private BuildingsGridBean buildingsGridBean;
-    @EJB(name = "OrganizationStrategy")
+
+    @EJB(name = IOrganizationStrategy.BEAN_NAME)
     private IOrganizationStrategy organizationStrategy;
+
     @EJB
     private AddressRendererBean addressRendererBean;
+
     private final long cityId;
     private final Long streetId;
     

@@ -30,7 +30,7 @@ public class ApartmentCardsGridBean extends AbstractBean {
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
 
-    @EJB(name = IOrganizationStrategy.BEAN_NAME)
+    @EJB(lookup = IOrganizationStrategy.BEAN_LOOKUP)
     private IOrganizationStrategy organizationStrategy;
 
     @EJB

@@ -44,7 +44,7 @@ public class BuildingsGridBean extends AbstractBean {
     @EJB
     private SessionBean sessionBean;
 
-    @EJB(name = IOrganizationStrategy.BEAN_NAME)
+    @EJB(lookup = IOrganizationStrategy.BEAN_LOOKUP)
     private IOrganizationStrategy organizationStrategy;
 
     @EJB

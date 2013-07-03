@@ -7,9 +7,10 @@
         <groupId>org.complitex.pspoffice</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <groupId>org.complitex.pspoffice</groupId>
+
     <artifactId>pspoffice-registration-type</artifactId>
     <name>Pspoffice - Registration Type</name>
+
     <dependencies>
         <dependency>
             <groupId>org.complitex</groupId>

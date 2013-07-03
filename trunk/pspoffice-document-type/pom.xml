@@ -7,9 +7,10 @@
         <groupId>org.complitex.pspoffice</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <groupId>org.complitex.pspoffice</groupId>
+
     <artifactId>pspoffice-document-type</artifactId>
     <name>Pspoffice - Document Type</name>
+
     <dependencies>
         <dependency>
             <groupId>org.complitex</groupId>

@@ -8,7 +8,6 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.complitex.pspoffice</groupId>
     <artifactId>pspoffice-report</artifactId>
     <name>Pspoffice - Report</name>
 

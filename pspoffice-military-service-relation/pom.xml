@@ -7,9 +7,10 @@
         <groupId>org.complitex.pspoffice</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <groupId>org.complitex.pspoffice</groupId>
+
     <artifactId>pspoffice-military-service-relation</artifactId>
     <name>Pspoffice - Military Service Relation</name>
+
     <dependencies>
         <dependency>
             <groupId>org.complitex</groupId>

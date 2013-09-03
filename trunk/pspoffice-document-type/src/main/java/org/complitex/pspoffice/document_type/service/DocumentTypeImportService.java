@@ -75,7 +75,7 @@ public class DocumentTypeImportService extends AbstractImportService {
                     // это зарезервированный системой объект, пропускаем его.
                 } else {
                     // Ищем по externalId в базе.
-                    final Long objectId = strategy.getObjectId(Long.valueOf(externalId));
+                    final Long objectId = strategy.getObjectId(externalId);
                     if (objectId != null) {
                         DomainObject oldObject = strategy.findById(objectId, true);
                         if (oldObject != null) {
@@ -95,9 +95,7 @@ public class DocumentTypeImportService extends AbstractImportService {
                 }
             }
             listener.completeImport(DOCUMENT_TYPE, recordIndex);
-        } catch (IOException e) {
-            throw new ImportFileReadException(e, DOCUMENT_TYPE.getFileName(), recordIndex);
-        } catch (NumberFormatException e) {
+        } catch (IOException | NumberFormatException e) {
             throw new ImportFileReadException(e, DOCUMENT_TYPE.getFileName(), recordIndex);
         } finally {
             try {

@@ -63,7 +63,7 @@ public class MilitaryServiceRelationImportService extends AbstractImportService 
                 final String name = line[2].trim();
 
                 // Ищем по externalId в базе.
-                final Long objectId = strategy.getObjectId(Long.valueOf(externalId));
+                final Long objectId = strategy.getObjectId(externalId);
                 if (objectId != null) {
                     DomainObject oldObject = strategy.findById(objectId, true);
                     if (oldObject != null) {

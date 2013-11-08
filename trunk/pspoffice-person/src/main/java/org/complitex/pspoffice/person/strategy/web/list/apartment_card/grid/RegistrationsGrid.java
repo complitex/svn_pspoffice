@@ -4,8 +4,6 @@
  */
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
-import java.util.List;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.basic.Label;
@@ -29,16 +27,19 @@ import org.complitex.pspoffice.person.strategy.entity.grid.RegistrationsGridEnti
 import org.complitex.pspoffice.person.strategy.entity.grid.RegistrationsGridFilter;
 import org.complitex.pspoffice.person.strategy.service.RegistrationsGridBean;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
-import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
+import org.complitex.template.web.template.TemplatePage;
+
+import javax.ejb.EJB;
+import java.util.List;
 
 /**
  *
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public final class RegistrationsGrid extends ListPage {
+public final class RegistrationsGrid extends TemplatePage {
 
     private static final String PAGE_SESSION_KEY = "registrations_grid_page";
     @EJB

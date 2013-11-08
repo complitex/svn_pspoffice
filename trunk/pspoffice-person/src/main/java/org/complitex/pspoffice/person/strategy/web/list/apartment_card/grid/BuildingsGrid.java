@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.list.apartment_card.grid;
 
 import com.google.common.collect.ImmutableList;
@@ -52,9 +48,9 @@ import org.complitex.pspoffice.person.strategy.service.BuildingsGridBean;
 import org.complitex.pspoffice.person.strategy.web.component.grid.FilterSearchComponent;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
-import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
+import org.complitex.template.web.template.TemplatePage;
 
 import javax.ejb.EJB;
 import java.util.List;
@@ -64,7 +60,7 @@ import java.util.List;
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public final class BuildingsGrid extends ListPage {
+public final class BuildingsGrid extends TemplatePage {
     
     private static final String PAGE_SESSION_KEY = "buildings_grid_page";
 

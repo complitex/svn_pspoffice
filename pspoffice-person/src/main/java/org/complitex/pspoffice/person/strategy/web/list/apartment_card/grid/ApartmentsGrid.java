@@ -52,9 +52,9 @@ import org.complitex.pspoffice.person.strategy.web.component.RoomCreateDialog;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.ApartmentCardEdit;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.template.web.component.toolbar.ToolbarButton;
-import org.complitex.template.web.pages.ListPage;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.MenuManager;
+import org.complitex.template.web.template.TemplatePage;
 
 import javax.ejb.EJB;
 import java.util.List;
@@ -65,7 +65,7 @@ import java.util.Locale;
  * @author Artem
  */
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
-public final class ApartmentsGrid extends ListPage {
+public final class ApartmentsGrid extends TemplatePage {
 
     private static final String PAGE_SESSION_KEY = "apartments_grid_page";
 

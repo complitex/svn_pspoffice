@@ -5,9 +5,6 @@
 package org.complitex.pspoffice.person.strategy.web.list.person;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
-import java.util.Locale;
-import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -45,6 +42,10 @@ import org.complitex.template.web.component.toolbar.ToolbarButton;
 import org.complitex.template.web.component.toolbar.search.CollapsibleSearchToolbarButton;
 import org.complitex.template.web.pages.ScrollListPage;
 import org.complitex.template.web.security.SecurityRole;
+
+import javax.ejb.EJB;
+import java.util.List;
+import java.util.Locale;
 
 /**
  *
@@ -210,7 +211,7 @@ public final class PersonList extends ScrollListPage {
 
                     @Override
                     public String getObject() {
-                        if (DomainObjectAccessUtil.canAddNew(null, "person")) {
+                        if (DomainObjectAccessUtil.canAddNew(personStrategy, "person")) {
                             return getString("edit");
                         } else {
                             return getString("view");
@@ -272,7 +273,7 @@ public final class PersonList extends ScrollListPage {
 
             @Override
             protected void onBeforeRender() {
-                if (!DomainObjectAccessUtil.canAddNew(null, "person")) {
+                if (!DomainObjectAccessUtil.canAddNew(personStrategy, "person")) {
                     setVisible(false);
                 }
                 super.onBeforeRender();

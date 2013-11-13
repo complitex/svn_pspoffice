@@ -7,7 +7,7 @@ CREATE TABLE `report`(
   PRIMARY KEY(id),
   KEY `key_name` (`name`),
   KEY `key_updated` (`updated`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Report SQL
 CREATE TABLE `report_sql`(
@@ -17,6 +17,6 @@ CREATE TABLE `report_sql`(
   PRIMARY KEY(id),
   KEY `key_report_id` (`report_id`),
   CONSTRAINT `fk_report_sql__report` FOREIGN KEY (`report_id`) REFERENCES `report` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `update` (`version`) VALUE ('20120704_420_0.0.2');

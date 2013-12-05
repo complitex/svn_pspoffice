@@ -4,8 +4,6 @@
  */
 package org.complitex.pspoffice.report.web;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.Response;
 import org.apache.wicket.request.cycle.RequestCycle;
@@ -18,13 +16,16 @@ import org.complitex.pspoffice.report.util.ReportGenerationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 /**
  *
  * @author Artem
  */
 public final class DownloadPage extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(DownloadPage.class);
+    private final Logger log = LoggerFactory.getLogger(DownloadPage.class);
 
     public DownloadPage(PageParameters parameters) {
         String sessionKey = parameters.get("key").toString();
@@ -70,7 +71,7 @@ public final class DownloadPage extends WebPage {
                 try {
                     ReportGenerationUtil.write(type, reportDownload, output.getOutputStream(), locale);
                 } catch (CreateReportException e) {
-                    log.error("Couldn't create report.", e);
+                    LoggerFactory.getLogger(DownloadPage.class).error("Couldn't create report.", e);
                 }
             }
         };

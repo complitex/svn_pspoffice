@@ -93,7 +93,7 @@ import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class RegistrationEdit extends FormTemplatePage {
 
-    private static final Logger log = LoggerFactory.getLogger(RegistrationEdit.class);
+    private final Logger log = LoggerFactory.getLogger(RegistrationEdit.class);
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB

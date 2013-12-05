@@ -50,7 +50,7 @@ import java.util.Map;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class ReferenceDataImportService {
 
-    private static final Logger log = LoggerFactory.getLogger(ReferenceDataImportService.class);
+    private final Logger log = LoggerFactory.getLogger(ReferenceDataImportService.class);
     @Resource
     private UserTransaction userTransaction;
     @EJB

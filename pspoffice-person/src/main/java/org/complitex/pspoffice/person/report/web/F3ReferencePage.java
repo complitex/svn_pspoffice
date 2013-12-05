@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class F3ReferencePage extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(F3ReferencePage.class);
+    private final Logger log = LoggerFactory.getLogger(F3ReferencePage.class);
     @EJB
     private F3ReferenceBean f3ReferenceBean;
     @EJB

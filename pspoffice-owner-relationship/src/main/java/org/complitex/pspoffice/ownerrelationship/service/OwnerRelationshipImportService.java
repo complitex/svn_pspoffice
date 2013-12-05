@@ -24,7 +24,7 @@ import static org.complitex.pspoffice.ownerrelationship.entity.OwnerRelationship
 @Stateless
 public class OwnerRelationshipImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(OwnerRelationshipImportService.class);
+    private final Logger log = LoggerFactory.getLogger(OwnerRelationshipImportService.class);
     @EJB
     private OwnerRelationshipStrategy strategy;
 

@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class RegistrationCardPage extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(RegistrationCardPage.class);
+    private final Logger log = LoggerFactory.getLogger(RegistrationCardPage.class);
     @EJB
     private RegistrationCardBean registrationCardBean;
     @EJB

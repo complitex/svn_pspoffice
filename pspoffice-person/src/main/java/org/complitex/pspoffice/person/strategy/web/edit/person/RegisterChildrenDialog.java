@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 abstract class RegisterChildrenDialog extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(RegisterChildrenDialog.class);
+    private final Logger log = LoggerFactory.getLogger(RegisterChildrenDialog.class);
     @EJB
     private RegistrationTypeStrategy registrationTypeStrategy;
     @EJB

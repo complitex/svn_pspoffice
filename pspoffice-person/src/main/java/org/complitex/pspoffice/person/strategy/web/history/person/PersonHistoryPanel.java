@@ -64,7 +64,7 @@ import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
  */
 final class PersonHistoryPanel extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonHistoryPanel.class);
+    private final Logger log = LoggerFactory.getLogger(PersonHistoryPanel.class);
     @EJB
     private PersonStrategy personStrategy;
     @EJB

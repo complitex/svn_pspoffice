@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 @ServletSecurity(@HttpConstraint(rolesAllowed = {SecurityRole.AUTHORIZED}))
 public class PrintReportServlet extends HttpServlet {
 
-    private static final Logger log = LoggerFactory.getLogger(PrintReportServlet.class);
+    private final Logger log = LoggerFactory.getLogger(PrintReportServlet.class);
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

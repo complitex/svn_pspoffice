@@ -91,7 +91,7 @@ import static org.complitex.pspoffice.importing.legacy.entity.ImportMessage.Impo
 @TransactionManagement(TransactionManagementType.BEAN)
 public class LegacyDataImportService {
 
-    private static final Logger log = LoggerFactory.getLogger(LegacyDataImportService.class);
+    private final Logger log = LoggerFactory.getLogger(LegacyDataImportService.class);
     private static final String RESOURCE_BUNDLE = LegacyDataImportService.class.getName();
     private static final char SEPARATOR = '\t';
     private static final String CHARSET = "UTF-8";
@@ -661,7 +661,7 @@ public class LegacyDataImportService {
                 try {
                     fileStream.close();
                 } catch (IOException e) {
-                    log.error("Couldn't to close file stream.", e);
+                    LoggerFactory.getLogger(LegacyDataImportService.class).error("Couldn't to close file stream.", e);
                 }
             }
         }

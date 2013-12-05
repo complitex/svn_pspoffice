@@ -24,7 +24,7 @@ import static org.complitex.pspoffice.registration_type.entity.RegistrationTypeI
 @Stateless
 public class RegistrationTypeImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(RegistrationTypeImportService.class);
+    private final Logger log = LoggerFactory.getLogger(RegistrationTypeImportService.class);
     @EJB
     private RegistrationTypeStrategy strategy;
 

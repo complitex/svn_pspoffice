@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 final class ChangeRegistrationTypeDialog extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(ChangeRegistrationTypeDialog.class);
+    private final Logger log = LoggerFactory.getLogger(ChangeRegistrationTypeDialog.class);
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB

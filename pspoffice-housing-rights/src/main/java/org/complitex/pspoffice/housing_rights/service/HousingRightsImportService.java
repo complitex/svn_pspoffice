@@ -24,7 +24,7 @@ import static org.complitex.pspoffice.housing_rights.entity.HousingRightsImportF
 @Stateless
 public class HousingRightsImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(HousingRightsImportService.class);
+    private final Logger log = LoggerFactory.getLogger(HousingRightsImportService.class);
     @EJB
     private HousingRightsStrategy strategy;
     @EJB

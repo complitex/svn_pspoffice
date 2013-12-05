@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 final class RemoveRegistrationDialog extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(RemoveRegistrationDialog.class);
+    private final Logger log = LoggerFactory.getLogger(RemoveRegistrationDialog.class);
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     private IModel<RemoveRegistrationCard> model;

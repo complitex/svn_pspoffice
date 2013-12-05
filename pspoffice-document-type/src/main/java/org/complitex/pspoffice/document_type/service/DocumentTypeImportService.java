@@ -24,7 +24,7 @@ import static org.complitex.pspoffice.document_type.entity.DocumentTypeImportFil
 @Stateless
 public class DocumentTypeImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(DocumentTypeImportService.class);
+    private final Logger log = LoggerFactory.getLogger(DocumentTypeImportService.class);
     @EJB
     private DocumentTypeStrategy strategy;
 

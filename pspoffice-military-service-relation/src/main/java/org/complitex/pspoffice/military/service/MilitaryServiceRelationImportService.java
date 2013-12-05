@@ -24,7 +24,7 @@ import static org.complitex.pspoffice.military.entity.MilitaryServiceRelationImp
 @Stateless
 public class MilitaryServiceRelationImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(MilitaryServiceRelationImportService.class);
+    private final Logger log = LoggerFactory.getLogger(MilitaryServiceRelationImportService.class);
     @EJB
     private MilitaryServiceRelationStrategy strategy;
     @EJB

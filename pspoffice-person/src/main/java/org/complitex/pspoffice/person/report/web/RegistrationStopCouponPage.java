@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public class RegistrationStopCouponPage extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(RegistrationStopCouponPage.class);
+    private final Logger log = LoggerFactory.getLogger(RegistrationStopCouponPage.class);
     @EJB
     private RegistrationStopCouponBean registrationStopCouponBean;
     @EJB

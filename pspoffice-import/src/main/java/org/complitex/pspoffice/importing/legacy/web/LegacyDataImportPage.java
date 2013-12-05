@@ -59,7 +59,7 @@ import static org.complitex.pspoffice.importing.legacy.entity.LegacyDataImportCo
 @AuthorizeInstantiation(SecurityRole.ADMIN_MODULE_EDIT)
 public class LegacyDataImportPage extends TemplatePage {
 
-    private static final Logger log = LoggerFactory.getLogger(LegacyDataImportPage.class);
+    private final Logger log = LoggerFactory.getLogger(LegacyDataImportPage.class);
 
     @EJB
     private LegacyDataImportService importService;

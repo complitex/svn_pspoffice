@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class RtfTemplate {
     public enum VARIABLE_TYPE{SIMPLE, FORM}
 
-    private final static Logger log = LoggerFactory.getLogger(RtfTemplate.class);
+    private final Logger log = LoggerFactory.getLogger(RtfTemplate.class);
 
     public final static Charset CHARSET1251 = Charset.forName("Windows-1251");
 

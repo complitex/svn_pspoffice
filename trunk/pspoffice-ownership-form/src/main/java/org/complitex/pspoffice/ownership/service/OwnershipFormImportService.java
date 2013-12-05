@@ -23,7 +23,7 @@ import static org.complitex.pspoffice.ownership.entity.OwnershipFormImportFile.O
 @Stateless
 public class OwnershipFormImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(OwnershipFormImportService.class);
+    private final Logger log = LoggerFactory.getLogger(OwnershipFormImportService.class);
     @EJB
     private OwnershipFormStrategy strategy;
 

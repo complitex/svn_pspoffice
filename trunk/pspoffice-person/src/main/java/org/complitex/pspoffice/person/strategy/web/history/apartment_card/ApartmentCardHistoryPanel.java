@@ -66,7 +66,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
  */
 final class ApartmentCardHistoryPanel extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(ApartmentCardHistoryPanel.class);
+    private final Logger log = LoggerFactory.getLogger(ApartmentCardHistoryPanel.class);
     private static final String EMPTY_OWNER_RELATIONSHIP = "               ";
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;

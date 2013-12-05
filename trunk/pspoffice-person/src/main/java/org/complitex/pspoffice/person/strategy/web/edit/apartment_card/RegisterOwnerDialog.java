@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  */
 final class RegisterOwnerDialog extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(RegisterOwnerDialog.class);
+    private final Logger log = LoggerFactory.getLogger(RegisterOwnerDialog.class);
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;
     @EJB

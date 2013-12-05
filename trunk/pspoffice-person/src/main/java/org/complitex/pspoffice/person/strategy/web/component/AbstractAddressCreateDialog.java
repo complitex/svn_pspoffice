@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractAddressCreateDialog extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractAddressCreateDialog.class);
+    private final Logger log = LoggerFactory.getLogger(AbstractAddressCreateDialog.class);
     @EJB
     private AddressRendererBean addressRendererBean;
     private Dialog dialog;

@@ -41,7 +41,7 @@ import java.util.List;
  */
 @AuthorizeInstantiation(SecurityRole.ADMIN_MODULE_EDIT)
 public class ReportList extends TemplatePage {
-    private final static Logger log = LoggerFactory.getLogger(ReportList.class);
+    private final Logger log = LoggerFactory.getLogger(ReportList.class);
 
     @EJB
     private ReportBean reportBean;

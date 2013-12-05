@@ -45,7 +45,7 @@ import static wicket.contrib.tinymce.settings.TinyMCESettings.Toolbar.*;
  */
 @AuthorizeInstantiation(SecurityRole.ADMIN_MODULE_EDIT)
 public class ReportEdit extends FormTemplatePage {
-    private final static Logger log = LoggerFactory.getLogger(ReportEdit.class);
+    private final Logger log = LoggerFactory.getLogger(ReportEdit.class);
 
     private Pattern pattern = Pattern.compile("delete\\W|drop\\W|alter\\W|update\\W|create\\W|insert\\W",
             Pattern.CASE_INSENSITIVE);

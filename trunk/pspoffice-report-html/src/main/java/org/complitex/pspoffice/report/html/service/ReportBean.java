@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @Stateless
 public class ReportBean extends AbstractBean {
-    private final static Logger log = LoggerFactory.getLogger(ReportBean.class);
+    private final Logger log = LoggerFactory.getLogger(ReportBean.class);
 
     private static final String NS = ReportBean.class.getName();
 

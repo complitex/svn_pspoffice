@@ -23,7 +23,7 @@ import java.net.URL;
  *         Date: 14.06.12 17:54
  */
 public class ReportPdfLink extends NoCacheLink {
-    private final static Logger log = LoggerFactory.getLogger(ReportPdfLink.class);
+    private final Logger log = LoggerFactory.getLogger(ReportPdfLink.class);
 
     private final static String FONT = "org/complitex/flexbuh/report/font/LiberationSans-Regular.ttf";
 

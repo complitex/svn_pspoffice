@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class FamilyAndCommunalApartmentInfoPage extends WebPage {
 
-    private static final Logger log = LoggerFactory.getLogger(FamilyAndCommunalApartmentInfoPage.class);
+    private final Logger log = LoggerFactory.getLogger(FamilyAndCommunalApartmentInfoPage.class);
     @EJB
     private FamilyAndCommunalApartmentInfoBean familyAndCommunalApartmentInfoBean;
     @EJB

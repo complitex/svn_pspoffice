@@ -111,7 +111,7 @@ import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 @AuthorizeInstantiation(SecurityRole.AUTHORIZED)
 public final class ApartmentCardEdit extends FormTemplatePage {
 
-    private static final Logger log = LoggerFactory.getLogger(ApartmentCardEdit.class);
+    private final Logger log = LoggerFactory.getLogger(ApartmentCardEdit.class);
     public static final String PAGE_SESSION_KEY = "apartment_card_edit_page";
     @EJB
     private ApartmentCardStrategy apartmentCardStrategy;

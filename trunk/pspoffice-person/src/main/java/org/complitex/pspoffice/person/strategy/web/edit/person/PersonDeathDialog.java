@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 final class PersonDeathDialog extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonDeathDialog.class);
+    private final Logger log = LoggerFactory.getLogger(PersonDeathDialog.class);
     @EJB
     private PersonStrategy personStrategy;
     @EJB

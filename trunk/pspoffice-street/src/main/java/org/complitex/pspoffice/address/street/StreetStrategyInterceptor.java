@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StreetStrategyInterceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(StreetStrategyInterceptor.class);
+    private final Logger log = LoggerFactory.getLogger(StreetStrategyInterceptor.class);
     private final static Set<String> DELEGATE_METHODS = ImmutableSet.of("find", "count");
     @EJB
     private StreetStrategyDelegate streetStrategyDelegate;

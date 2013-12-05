@@ -52,7 +52,7 @@ import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
  */
 public abstract class PersonEditPanel extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(PersonEditPanel.class);
+    private final Logger log = LoggerFactory.getLogger(PersonEditPanel.class);
     @EJB
     private StringCultureBean stringBean;
     @EJB

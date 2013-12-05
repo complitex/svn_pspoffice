@@ -24,7 +24,7 @@ import static org.complitex.pspoffice.departure_reason.entity.DepartureReasonImp
 @Stateless
 public class DepartureReasonImportService extends AbstractImportService {
 
-    private final static Logger log = LoggerFactory.getLogger(DepartureReasonImportService.class);
+    private final Logger log = LoggerFactory.getLogger(DepartureReasonImportService.class);
     @EJB
     private DepartureReasonStrategy strategy;
     @EJB

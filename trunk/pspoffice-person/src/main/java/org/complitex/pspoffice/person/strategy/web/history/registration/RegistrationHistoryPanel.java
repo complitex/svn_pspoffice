@@ -56,7 +56,7 @@ import static com.google.common.collect.Lists.*;
  */
 final class RegistrationHistoryPanel extends Panel {
 
-    private static final Logger log = LoggerFactory.getLogger(RegistrationHistoryPanel.class);
+    private final Logger log = LoggerFactory.getLogger(RegistrationHistoryPanel.class);
     @EJB
     private RegistrationStrategy registrationStrategy;
     @EJB

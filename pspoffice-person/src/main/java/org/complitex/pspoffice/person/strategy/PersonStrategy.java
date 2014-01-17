@@ -2,38 +2,24 @@ package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
-import static com.google.common.collect.ImmutableMap.*;
 import com.google.common.collect.ImmutableSet;
-import static com.google.common.collect.Iterables.*;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Comparator;
-import static com.google.common.collect.Lists.*;
-import java.util.Date;
-import java.util.List;
 import org.apache.wicket.markup.html.WebPage;
-import org.complitex.dictionary.entity.DomainObject;
-import org.complitex.dictionary.entity.example.DomainObjectExample;
-import org.complitex.dictionary.service.StringCultureBean;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.converter.BooleanConverter;
 import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.entity.Attribute;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.StatusType;
 import org.complitex.dictionary.entity.StringCulture;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.dictionary.entity.description.EntityAttributeValueType;
+import org.complitex.dictionary.entity.example.DomainObjectExample;
 import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.SessionBean;
+import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.util.Numbers;
@@ -42,19 +28,24 @@ import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.document_type.strategy.DocumentTypeStrategy;
 import org.complitex.pspoffice.military.strategy.MilitaryServiceRelationStrategy;
-import org.complitex.pspoffice.person.strategy.entity.DocumentModification;
-import org.complitex.pspoffice.person.strategy.entity.ModificationType;
-import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
-import org.complitex.pspoffice.person.strategy.entity.PersonModification;
+import org.complitex.pspoffice.person.strategy.entity.*;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
-import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.edit.person.PersonEdit;
 import org.complitex.pspoffice.person.strategy.web.list.person.PersonList;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.io.Serializable;
+import java.util.*;
+
+import static com.google.common.collect.ImmutableMap.builder;
+import static com.google.common.collect.ImmutableMap.of;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  *
@@ -235,7 +226,7 @@ public class PersonStrategy extends TemplateStrategy {
 
     @Transactional
     @Override
-    public Person findById(long id, boolean runAsAdmin) {
+    public Person findById(Long id, boolean runAsAdmin) {
         return findById(id, runAsAdmin, true, true, true, true);
     }
 

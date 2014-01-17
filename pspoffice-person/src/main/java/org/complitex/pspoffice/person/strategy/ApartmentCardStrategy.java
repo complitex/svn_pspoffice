@@ -184,7 +184,7 @@ public class ApartmentCardStrategy extends TemplateStrategy {
 
     @Transactional
     @Override
-    public ApartmentCard findById(long id, boolean runAsAdmin) {
+    public ApartmentCard findById(Long id, boolean runAsAdmin) {
         return findById(id, runAsAdmin, true, true, true);
     }
 

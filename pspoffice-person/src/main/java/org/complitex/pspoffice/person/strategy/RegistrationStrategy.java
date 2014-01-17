@@ -5,15 +5,6 @@
 package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.collect.ImmutableMap;
-import static com.google.common.collect.ImmutableSet.*;
-import static com.google.common.collect.Lists.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -33,6 +24,13 @@ import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.complitex.template.web.security.SecurityRole;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.util.*;
+
+import static com.google.common.collect.ImmutableSet.of;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  *
@@ -90,7 +88,7 @@ public class RegistrationStrategy extends Strategy {
 
     @Transactional
     @Override
-    public Registration findById(long id, boolean runAsAdmin) {
+    public Registration findById(Long id, boolean runAsAdmin) {
         return findById(id, runAsAdmin, true, true, true);
     }
 

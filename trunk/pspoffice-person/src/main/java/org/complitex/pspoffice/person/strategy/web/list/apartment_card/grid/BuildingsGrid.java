@@ -306,7 +306,7 @@ public final class BuildingsGrid extends TemplatePage {
                         };
                         item.add(organizationLink);
                         organizationLink.add(new Label("organizationCode",
-                                organizationStrategy.getUniqueCode(organization)));
+                                organizationStrategy.getCode(organization)));
                     }
                 });
             }

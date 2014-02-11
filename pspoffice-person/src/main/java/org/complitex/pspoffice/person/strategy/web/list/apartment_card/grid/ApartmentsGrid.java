@@ -267,7 +267,7 @@ public final class ApartmentsGrid extends TemplatePage {
                         };
                         item.add(organizationLink);
                         organizationLink.add(new Label("organizationCode",
-                                organizationStrategy.getUniqueCode(organization)));
+                                organizationStrategy.getCode(organization)));
                     }
                 });
             }

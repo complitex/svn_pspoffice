@@ -159,7 +159,7 @@ public final class ApartmentCardsGrid extends TemplatePage {
 
                             @Override
                             public String getObject() {
-                                return organizationStrategy.getUniqueCode(organization);
+                                return organizationStrategy.getCode(organization);
                             }
                         }));
                     }

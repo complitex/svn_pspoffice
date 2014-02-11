@@ -304,7 +304,7 @@ public class LegacyDataImportPage extends TemplatePage {
         Map<String, Long> organizationMap = Maps.newHashMap();
         for (DomainObject o : selectedOrganizations) {
             if (o != null && o.getId() != null && o.getId() > 0) {
-                organizationMap.put(organizationStrategy.getUniqueCode(o), o.getId());
+                organizationMap.put(organizationStrategy.getCode(o), o.getId());
             }
         }
         return organizationMap;

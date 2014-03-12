@@ -1,33 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.edit.apartment_card;
 
-import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.WebPage;
-import org.complitex.dictionary.web.component.back.BackInfo;
-import org.complitex.dictionary.web.component.back.BackInfoManager;
-import org.apache.wicket.model.LoadableDetachableModel;
-import java.text.MessageFormat;
-import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistoryPage;
-import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import static com.google.common.collect.Sets.*;
-import static com.google.common.collect.Maps.*;
-import static com.google.common.collect.ImmutableList.*;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -36,9 +10,14 @@ import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.AjaxIndicatorAppender;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
@@ -46,11 +25,8 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
-import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.*;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
@@ -62,11 +38,12 @@ import org.complitex.dictionary.service.LogBean;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.CloneUtil;
-import static org.complitex.dictionary.util.DateUtil.getCurrentDate;
 import org.complitex.dictionary.util.StringUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.ShowMode;
+import org.complitex.dictionary.web.component.back.BackInfo;
+import org.complitex.dictionary.web.component.back.BackInfoManager;
 import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
 import org.complitex.dictionary.web.component.fieldset.CollapsibleFieldset;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
@@ -91,6 +68,8 @@ import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.complitex.pspoffice.person.strategy.web.component.PermissionPanel;
 import org.complitex.pspoffice.person.strategy.web.component.PersonPicker;
 import org.complitex.pspoffice.person.strategy.web.edit.apartment_card.toolbar.DisableApartmentCardButton;
+import org.complitex.pspoffice.person.strategy.web.edit.registration.RegistrationEdit;
+import org.complitex.pspoffice.person.strategy.web.history.apartment_card.ApartmentCardHistoryPage;
 import org.complitex.pspoffice.person.strategy.web.list.apartment_card.ApartmentCardSearch;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
@@ -100,8 +79,20 @@ import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.FormTemplatePage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
+
+import javax.ejb.EJB;
+import java.text.MessageFormat;
+import java.util.*;
+
+import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.canEdit;
+import static org.complitex.dictionary.util.DateUtil.getCurrentDate;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 
 /**
@@ -255,11 +246,11 @@ public final class ApartmentCardEdit extends FormTemplatePage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-        response.renderJavaScriptReference(WebCommonResourceInitializer.SCROLL_JS);
-        response.renderJavaScriptReference(new PackageResourceReference(
-                ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js"));
-        response.renderCSSReference(new PackageResourceReference(
-                ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".css"));
+        response.render(JavaScriptHeaderItem.forReference(WebCommonResourceInitializer.SCROLL_JS));
+        response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(
+                ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".js")));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(
+                ApartmentCardEdit.class, ApartmentCardEdit.class.getSimpleName() + ".css")));
     }
 
     private void init(final ApartmentCard apartmentCard) {

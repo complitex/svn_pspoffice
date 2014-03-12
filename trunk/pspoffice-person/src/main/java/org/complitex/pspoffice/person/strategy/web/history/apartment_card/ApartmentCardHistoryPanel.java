@@ -1,18 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.history.apartment_card;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.TextArea;
@@ -41,23 +34,25 @@ import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
 import org.complitex.pspoffice.person.strategy.ApartmentCardStrategy;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
-import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
-import org.complitex.pspoffice.person.strategy.entity.ApartmentCardModification;
-import org.complitex.pspoffice.person.strategy.entity.ModificationType;
-import org.complitex.pspoffice.person.strategy.entity.Registration;
-import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
+import org.complitex.pspoffice.person.strategy.entity.*;
 import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
 import org.complitex.pspoffice.person.util.PersonDateFormatter;
 import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static com.google.common.collect.ImmutableList.*;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.Sets.*;
 
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
+import javax.ejb.EJB;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 
 /**
@@ -84,8 +79,8 @@ final class ApartmentCardHistoryPanel extends Panel {
 
     @Override
     public void renderHead(IHeaderResponse response) {
-        response.renderCSSReference(new PackageResourceReference(ApartmentCardHistoryPanel.class,
-                ApartmentCardHistoryPanel.class.getSimpleName() + ".css"));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(ApartmentCardHistoryPanel.class,
+                ApartmentCardHistoryPanel.class.getSimpleName() + ".css")));
     }
 
     ApartmentCardHistoryPanel(String id, long apartmentCardId, final Date endDate) {

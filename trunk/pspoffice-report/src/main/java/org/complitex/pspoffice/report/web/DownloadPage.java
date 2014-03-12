@@ -5,7 +5,6 @@
 package org.complitex.pspoffice.report.web;
 
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.request.Response;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.handler.resource.ResourceStreamRequestHandler;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -18,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  *
@@ -67,9 +68,9 @@ public final class DownloadPage extends WebPage {
             }
 
             @Override
-            public void write(Response output) {
+            public void write(OutputStream output) throws IOException {
                 try {
-                    ReportGenerationUtil.write(type, reportDownload, output.getOutputStream(), locale);
+                    ReportGenerationUtil.write(type, reportDownload, output, locale);
                 } catch (CreateReportException e) {
                     LoggerFactory.getLogger(DownloadPage.class).error("Couldn't create report.", e);
                 }

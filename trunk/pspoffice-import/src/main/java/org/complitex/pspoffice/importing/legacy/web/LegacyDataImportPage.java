@@ -9,7 +9,8 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -79,8 +80,8 @@ public class LegacyDataImportPage extends TemplatePage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-        response.renderCSSReference(new PackageResourceReference(
-                LegacyDataImportPage.class, LegacyDataImportPage.class.getSimpleName() + ".css"));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(
+                LegacyDataImportPage.class, LegacyDataImportPage.class.getSimpleName() + ".css")));
     }
 
     public LegacyDataImportPage() {
@@ -414,7 +415,7 @@ public class LegacyDataImportPage extends TemplatePage {
                     stopTimer++;
                 }
                 if (stopTimer > 2) {
-                    stop();
+                    stop(target);
                 }
             }
         };

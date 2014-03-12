@@ -1,31 +1,31 @@
 package org.complitex.pspoffice.report.web;
 
-import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
-import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.odlabs.wiquery.ui.dialog.Dialog;
-
-import java.util.Arrays;
-import java.util.Locale;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.attributes.AjaxCallListener;
+import org.apache.wicket.ajax.attributes.AjaxRequestAttributes;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.complitex.pspoffice.report.util.ReportGenerationUtil;
+import org.odlabs.wiquery.ui.dialog.Dialog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class ReportDownloadPanel extends Panel {
 
@@ -109,16 +109,16 @@ public class ReportDownloadPanel extends Panel {
 
         //Загрузить
         AjaxButton download = new AjaxButton("download", form) {
-
             @Override
-            protected IAjaxCallDecorator getAjaxCallDecorator() {
-                return new AjaxCallDecorator() {
+            protected void updateAjaxAttributes(AjaxRequestAttributes attributes) {
+                super.updateAjaxAttributes(attributes);
 
+                attributes.getAjaxCallListeners().add(new AjaxCallListener(){
                     @Override
-                    public CharSequence decorateScript(Component c, CharSequence script) {
-                        return dialog.close().render().toString() + script;
+                    public AjaxCallListener onSuccess(CharSequence success) {
+                        return super.onSuccess(dialog.close().render().toString() + success);
                     }
-                };
+                });
             }
 
             @Override

@@ -143,7 +143,7 @@ public final class ApartmentsGrid extends TemplatePage {
         final DataProvider<ApartmentsGridEntity> dataProvider = new DataProvider<ApartmentsGridEntity>() {
 
             @Override
-            protected Iterable<ApartmentsGridEntity> getData(int first, int count) {
+            protected Iterable<ApartmentsGridEntity> getData(long first, long count) {
                 filter.setStart(first);
                 filter.setSize(count);
                 return apartmentGridBean.find(filter);

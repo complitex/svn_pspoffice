@@ -174,7 +174,7 @@ public final class BuildingsGrid extends TemplatePage {
         final DataProvider<BuildingsGridEntity> dataProvider = new DataProvider<BuildingsGridEntity>() {
             
             @Override
-            protected Iterable<BuildingsGridEntity> getData(int first, int count) {
+            protected Iterable<BuildingsGridEntity> getData(long first, long count) {
                 filter.setStart(first);
                 filter.setSize(count);
                 return buildingsGridBean.find(filter);

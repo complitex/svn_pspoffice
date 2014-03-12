@@ -1,38 +1,26 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.history.person;
 
-import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.form.TextArea;
-import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionary.service.IUserProfileBean;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
-
-import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.*;
 import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
+import org.complitex.dictionary.service.IUserProfileBean;
 import org.complitex.dictionary.service.LocaleBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
@@ -49,13 +37,18 @@ import org.complitex.pspoffice.person.strategy.entity.PersonName;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
 import org.complitex.pspoffice.person.strategy.service.PersonNameBean;
 import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
 
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
+import javax.ejb.EJB;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 
 /**
@@ -85,8 +78,8 @@ final class PersonHistoryPanel extends Panel {
 
     @Override
     public void renderHead(IHeaderResponse response) {
-        response.renderCSSReference(new PackageResourceReference(PersonHistoryPanel.class,
-                PersonHistoryPanel.class.getSimpleName() + ".css"));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(PersonHistoryPanel.class,
+                PersonHistoryPanel.class.getSimpleName() + ".css")));
     }
 
     PersonHistoryPanel(String id, long personId, final Date endDate) {

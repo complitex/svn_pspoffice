@@ -122,7 +122,7 @@ public final class PersonList extends ScrollListPage {
         final DataProvider<Person> dataProvider = new DataProvider<Person>() {
 
             @Override
-            protected Iterable<Person> getData(int first, int count) {
+            protected Iterable<Person> getData(long first, long count) {
                 //store preference, but before clear data order related properties.
                 {
                     example.setAsc(false);

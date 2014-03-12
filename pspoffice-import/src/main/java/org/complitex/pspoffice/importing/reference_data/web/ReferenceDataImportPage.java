@@ -6,10 +6,6 @@ package org.complitex.pspoffice.importing.reference_data.web;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -41,6 +37,11 @@ import org.complitex.pspoffice.registration_type.entity.RegistrationTypeImportFi
 import org.complitex.template.web.component.LocalePicker;
 import org.complitex.template.web.security.SecurityRole;
 import org.complitex.template.web.template.TemplatePage;
+
+import javax.ejb.EJB;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 /**
  *
@@ -161,7 +162,7 @@ public final class ReferenceDataImportPage extends TemplatePage {
                     if (importService.isSuccess()) {
                         info(getString("success"));
                     }
-                    stop();
+                    stop(target);
                 }
             }
         };

@@ -1,15 +1,11 @@
 package org.complitex.pspoffice.person.report.web;
 
-import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import static com.google.common.collect.Lists.*;
-import java.util.Collection;
-import java.util.Locale;
-import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.WebPage;
-import static org.apache.wicket.feedback.FeedbackMessage.*;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -29,12 +25,19 @@ import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.report.web.ReportDownloadPanel;
 import org.complitex.resources.WebCommonResourceInitializer;
+import org.complitex.template.web.component.toolbar.PrintButton;
 import org.complitex.template.web.component.toolbar.SaveButton;
 import org.complitex.template.web.security.SecurityRole;
-import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
-import org.complitex.template.web.component.toolbar.PrintButton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ejb.EJB;
+import java.util.Collection;
+import java.util.Locale;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.wicket.feedback.FeedbackMessage.ERROR;
+import static org.complitex.pspoffice.report.util.ReportDateFormatter.format;
 
 /**
  *
@@ -121,9 +124,9 @@ public class RegistrationStopCouponPage extends WebPage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-        response.renderCSSReference(WebCommonResourceInitializer.STYLE_CSS);
-        response.renderCSSReference(new PackageResourceReference(RegistrationStopCouponPage.class,
-                RegistrationStopCouponPage.class.getSimpleName() + ".css"));
+        response.render(CssHeaderItem.forReference(WebCommonResourceInitializer.STYLE_CSS));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(RegistrationStopCouponPage.class,
+                RegistrationStopCouponPage.class.getSimpleName() + ".css")));
     }
 
     @Override

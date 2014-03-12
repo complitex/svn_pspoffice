@@ -1,17 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.component;
 
-import java.util.List;
-import javax.ejb.EJB;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -45,6 +41,9 @@ import org.complitex.template.web.template.MenuManager;
 import org.complitex.template.web.template.TemplatePage;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
+
+import javax.ejb.EJB;
+import java.util.List;
 
 /**
  *
@@ -95,10 +94,10 @@ public final class PersonPicker extends FormComponentPanel<Person> {
 
     @Override
     public void renderHead(IHeaderResponse response) {
-        response.renderCSSReference(new PackageResourceReference(
-                PersonPicker.class, PersonPicker.class.getSimpleName() + ".css"));
-        response.renderJavaScriptReference(new PackageResourceReference(
-                PersonPicker.class, PersonPicker.class.getSimpleName() + ".js"));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(
+                PersonPicker.class, PersonPicker.class.getSimpleName() + ".css")));
+        response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(
+                PersonPicker.class, PersonPicker.class.getSimpleName() + ".js")));
     }
 
     private void init() {

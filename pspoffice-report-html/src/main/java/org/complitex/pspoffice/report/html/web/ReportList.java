@@ -72,7 +72,7 @@ public class ReportList extends TemplatePage {
 
         DataProvider<Report> dataProvider = new DataProvider<Report>() {
             @Override
-            protected Iterable<? extends Report> getData(int first, int count) {
+            protected Iterable<? extends Report> getData(long first, long count) {
                 filterWrapper.setFirst(first);
                 filterWrapper.setCount(count);
                 filterWrapper.setSortProperty(getSort().getProperty());

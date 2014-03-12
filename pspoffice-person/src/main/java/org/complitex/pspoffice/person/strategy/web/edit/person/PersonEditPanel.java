@@ -1,36 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.edit.person;
 
-import org.apache.wicket.markup.html.IHeaderResponse;
-import org.complitex.dictionary.service.SessionBean;
-import org.apache.wicket.util.string.Strings;
-import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
-import org.apache.wicket.markup.html.link.Link;
 import com.google.common.base.Function;
-import java.text.MessageFormat;
-import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.Maps.*;
-import static com.google.common.collect.Sets.*;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import javax.ejb.EJB;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Log;
 import org.complitex.dictionary.service.LogBean;
+import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.scroll.ScrollToElementUtil;
@@ -38,13 +23,23 @@ import org.complitex.pspoffice.person.Module;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonAgeType;
+import org.complitex.pspoffice.person.strategy.web.component.ExplanationDialog;
 import org.complitex.pspoffice.person.strategy.web.history.person.PersonHistoryPage;
 import org.complitex.resources.WebCommonResourceInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.*;
+
+import javax.ejb.EJB;
+import java.text.MessageFormat;
+import java.util.*;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.transform;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.canEdit;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 
 /**
  *
@@ -82,7 +77,7 @@ public abstract class PersonEditPanel extends Panel {
 
     @Override
     public void renderHead(IHeaderResponse response) {
-        response.renderJavaScriptReference(WebCommonResourceInitializer.SCROLL_JS);
+        response.render(JavaScriptHeaderItem.forReference(WebCommonResourceInitializer.SCROLL_JS));
     }
 
     private void init(PersonAgeType personAgeType, Locale defaultNameLocale,

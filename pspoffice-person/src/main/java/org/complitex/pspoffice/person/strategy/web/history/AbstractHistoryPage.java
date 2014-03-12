@@ -1,17 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.history;
 
-import java.util.Date;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
+import org.apache.wicket.ajax.attributes.AjaxCallListener;
+import org.apache.wicket.ajax.attributes.AjaxRequestAttributes;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -20,6 +16,8 @@ import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.template.web.template.TemplatePage;
 import org.odlabs.wiquery.core.javascript.JsQuery;
+
+import java.util.Date;
 
 /**
  *
@@ -44,14 +42,15 @@ public abstract class AbstractHistoryPage extends TemplatePage {
         }
 
         @Override
-        protected IAjaxCallDecorator getAjaxCallDecorator() {
-            return new AjaxCallDecorator() {
+        protected void updateAjaxAttributes(AjaxRequestAttributes attributes) {
+            super.updateAjaxAttributes(attributes);
 
+            attributes.getAjaxCallListeners().add(new AjaxCallListener(){
                 @Override
-                public CharSequence decorateScript(Component c, CharSequence script) {
-                    return "(function(){$(this).attr('disabled', true); $('#load_indicator').show();})();" + script;
+                public AjaxCallListener onBefore(CharSequence before) {
+                    return super.onBefore("(function(){$(this).attr('disabled', true); $('#load_indicator').show();})();" + before);
                 }
-            };
+            });
         }
 
         @Override
@@ -99,8 +98,8 @@ public abstract class AbstractHistoryPage extends TemplatePage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-        response.renderCSSReference(new PackageResourceReference(
-                AbstractHistoryPage.class, AbstractHistoryPage.class.getSimpleName() + ".css"));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(
+                AbstractHistoryPage.class, AbstractHistoryPage.class.getSimpleName() + ".css")));
     }
 
     @Override

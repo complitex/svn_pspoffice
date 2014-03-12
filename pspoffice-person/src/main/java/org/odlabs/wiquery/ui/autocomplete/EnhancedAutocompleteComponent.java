@@ -1,20 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.odlabs.wiquery.ui.autocomplete;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.WicketAjaxReference;
 import org.apache.wicket.behavior.AbstractAjaxBehavior;
-import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.WicketEventReference;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.HiddenField;
@@ -23,6 +14,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.handler.TextRequestHandler;
+import org.apache.wicket.request.resource.JavaScriptResourceReference;
 import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.string.Strings;
@@ -32,8 +24,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.complitex.dictionary.entity.DomainObject;
 import org.odlabs.wiquery.core.javascript.JsStatement;
 import org.odlabs.wiquery.core.javascript.JsUtils;
-import org.odlabs.wiquery.core.resources.WiQueryJavaScriptResourceReference;
 import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * $Id: AbstractAutocompleteComponent.java 718 2011-02-27 13:45:41Z roche.jul@gmail.com $
@@ -41,7 +37,6 @@ import org.odlabs.wiquery.ui.core.JsScopeUiEvent;
  * Base for the autocomplete component
  * </p>
  * @author Julien Roche
- * @param <T> The model object type
  * @since 1.1
  */
 public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<DomainObject> {
@@ -115,12 +110,13 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
 
         @Override
         public void renderHead(IHeaderResponse response) {
-            response.renderJavaScriptReference(WicketEventReference.INSTANCE);
-            response.renderJavaScriptReference(WicketAjaxReference.INSTANCE);
-            response.renderJavaScriptReference(WiQueryAutocompleteJavaScriptResourceReference.get());
+            super.renderHead(response);
+            response.render(JavaScriptHeaderItem
+                    .forReference(WiQueryAutocompleteJavaScriptResourceReference.get()));
+
             /* Modified by Artem */
-            response.renderJavaScriptReference(new PackageResourceReference(EnhancedAutocompleteComponent.class,
-                    EnhancedAutocompleteComponent.class.getSimpleName() + ".js"));
+            response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(EnhancedAutocompleteComponent.class,
+                    EnhancedAutocompleteComponent.class.getSimpleName() + ".js")));
             /* end modification */
         }
 
@@ -171,9 +167,8 @@ public abstract class EnhancedAutocompleteComponent extends FormComponentPanel<D
     // Wicket components
     private final InnerAutocompleteAjaxBehavior innerAutcompleteAjaxBehavior;
     /** Constant of wiQuery Autocomplete resource */
-    public static final WiQueryJavaScriptResourceReference WIQUERY_AUTOCOMPLETE_JS =
-            new WiQueryJavaScriptResourceReference(AutocompleteAjaxComponent.class,
-            "wiquery-autocomplete.js");
+    public static final JavaScriptResourceReference WIQUERY_AUTOCOMPLETE_JS =
+            new JavaScriptResourceReference(AutocompleteAjaxComponent.class, "wiquery-autocomplete.js");
     // Wicket components
     private final Autocomplete<String> autocompleteField;
     private final HiddenField<String> autocompleteHidden;

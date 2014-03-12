@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.entity.grid;
 
 import java.io.Serializable;
@@ -20,8 +16,8 @@ public class BuildingsGridFilter implements Serializable {
     private final String buildingPermissionString;
     private final String apartmentPermissionString;
     private final String roomPermissionString;
-    private int start;
-    private int size;
+    private long start;
+    private long size;
     private final Locale locale;
 
     public BuildingsGridFilter(long cityId, Long streetId, String buildingPermissionString, String apartmentPermissionString,
@@ -74,19 +70,19 @@ public class BuildingsGridFilter implements Serializable {
         this.districtId = districtId;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
-    public int getStart() {
+    public long getStart() {
         return start;
     }
 
-    public void setStart(int start) {
+    public void setStart(long start) {
         this.start = start;
     }
 

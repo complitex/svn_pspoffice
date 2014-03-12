@@ -1,54 +1,55 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.history.registration;
 
-import org.apache.wicket.markup.html.IHeaderResponse;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import org.apache.wicket.Component;
+import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.TextArea;
-import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.util.string.Strings;
-import org.complitex.dictionary.service.IUserProfileBean;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
-import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
-import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
-import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.util.string.Strings;
+import org.complitex.address.service.AddressRendererBean;
 import org.complitex.dictionary.entity.Attribute;
-import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
-import org.apache.wicket.Component;
-import org.complitex.pspoffice.person.strategy.PersonStrategy;
-import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.complitex.dictionary.entity.DomainObject;
 import org.complitex.dictionary.entity.description.Entity;
 import org.complitex.dictionary.entity.description.EntityAttributeType;
-import java.util.Date;
-import java.util.List;
-import javax.ejb.EJB;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.StringResourceModel;
-import org.complitex.address.service.AddressRendererBean;
-import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.dictionary.service.IUserProfileBean;
 import org.complitex.dictionary.service.StringCultureBean;
+import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
+import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
+import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
+import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.RegistrationStrategy;
+import org.complitex.pspoffice.person.strategy.entity.ModificationType;
 import org.complitex.pspoffice.person.strategy.entity.Registration;
 import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
 import org.complitex.pspoffice.person.strategy.web.history.HistoryDateFormatter;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.request.resource.PackageResourceReference;
-import org.complitex.pspoffice.person.strategy.entity.ModificationType;
+import org.complitex.pspoffice.registration_type.strategy.RegistrationTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ejb.EJB;
+import java.util.Date;
+import java.util.List;
+
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.*;
 
 /**
  *
@@ -75,8 +76,8 @@ final class RegistrationHistoryPanel extends Panel {
 
     @Override
     public void renderHead(IHeaderResponse response) {
-        response.renderCSSReference(new PackageResourceReference(RegistrationHistoryPanel.class,
-                RegistrationHistoryPanel.class.getSimpleName() + ".css"));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(RegistrationHistoryPanel.class,
+                RegistrationHistoryPanel.class.getSimpleName() + ".css")));
     }
 
     RegistrationHistoryPanel(String id, long registrationId, final String addressEntity, final long addressId,

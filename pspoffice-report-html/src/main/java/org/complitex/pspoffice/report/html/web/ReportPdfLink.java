@@ -1,7 +1,6 @@
 package org.complitex.pspoffice.report.html.web;
 
 import com.lowagie.text.pdf.BaseFont;
-import org.apache.wicket.request.Response;
 import org.apache.wicket.request.handler.resource.ResourceStreamRequestHandler;
 import org.apache.wicket.util.lang.Bytes;
 import org.apache.wicket.util.resource.AbstractResourceStreamWriter;
@@ -16,6 +15,8 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import javax.ejb.EJB;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 
 /**
@@ -86,11 +87,6 @@ public class ReportPdfLink extends NoCacheLink {
                     new AbstractResourceStreamWriter(){
 
                         @Override
-                        public void write(Response output) {
-                            output.write(outputStream.toByteArray());
-                        }
-
-                        @Override
                         public Bytes length() {
                             return Bytes.bytes(outputStream.size());
                         }
@@ -103,6 +99,11 @@ public class ReportPdfLink extends NoCacheLink {
                         @Override
                         public Time lastModifiedTime() {
                             return Time.now();
+                        }
+
+                        @Override
+                        public void write(OutputStream output) throws IOException {
+                            output.write(outputStream.toByteArray());
                         }
                     }, report.getName() + ".pdf"));
         } catch (Exception e) {

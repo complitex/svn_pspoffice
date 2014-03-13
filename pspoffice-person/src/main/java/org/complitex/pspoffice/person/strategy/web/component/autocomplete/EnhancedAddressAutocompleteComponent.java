@@ -1,11 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.complitex.pspoffice.person.strategy.web.component.autocomplete;
 
-import org.complitex.pspoffice.person.strategy.web.component.AbstractAddressCreateDialog;
-import java.util.List;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.ComponentTag;
@@ -15,7 +9,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.DomainObject;
+import org.complitex.pspoffice.person.strategy.web.component.AbstractAddressCreateDialog;
 import org.odlabs.wiquery.ui.autocomplete.EnhancedAutocompleteComponent;
+
+import java.util.List;
 
 /**
  *

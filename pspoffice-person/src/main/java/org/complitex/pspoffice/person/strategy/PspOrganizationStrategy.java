@@ -11,8 +11,5 @@ import javax.ejb.Stateless;
  */
 @Stateless(name = IOrganizationStrategy.BEAN_NAME)
 public class PspOrganizationStrategy extends AbstractOrganizationStrategy{
-    @Override
-    public Long getModuleId() {
-        return 1L;
-    }
+
 }

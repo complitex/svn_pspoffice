@@ -109,7 +109,7 @@ public class ReferenceDataImportService {
     }
 
     private <T extends IImportFile> void processReferenceData(T importFile, final long localeId)
-            throws ImportFileNotFoundException, ImportObjectLinkException, ImportFileReadException, ImportDuplicateException {
+            throws ImportFileNotFoundException, ImportObjectLinkException, ImportFileReadException, ImportDuplicateException, ImportDistrictLinkException {
 
         final IImportListener referenceDataListener = new IImportListener() {
 

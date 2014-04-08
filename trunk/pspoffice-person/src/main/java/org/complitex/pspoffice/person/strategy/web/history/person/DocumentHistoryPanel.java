@@ -6,6 +6,8 @@ package org.complitex.pspoffice.person.strategy.web.history.person;
 
 import static com.google.common.collect.Lists.*;
 import java.util.List;
+
+import org.complitex.dictionary.web.component.DomainObjectComponentUtil;
 import org.complitex.dictionary.web.component.css.CssAttributeBehavior;
 import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -19,8 +21,6 @@ import org.complitex.dictionary.entity.description.EntityAttributeType;
 import org.complitex.pspoffice.document.strategy.DocumentStrategy;
 import org.complitex.pspoffice.document.strategy.entity.Document;
 import org.complitex.pspoffice.person.strategy.entity.DocumentModification;
-
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.*;
 
 /**
  *
@@ -48,12 +48,12 @@ final class DocumentHistoryPanel extends Panel {
             protected void populateItem(ListItem<Attribute> item) {
                 Attribute attr = item.getModelObject();
                 final EntityAttributeType attributeType = documentStrategy.getEntity().getAttributeType(attr.getAttributeTypeId());
-                item.add(new Label("label", labelModel(attributeType.getAttributeNames(), getLocale())));
+                item.add(new Label("label", DomainObjectComponentUtil.labelModel(attributeType.getAttributeNames(), getLocale())));
                 WebMarkupContainer required = new WebMarkupContainer("required");
                 item.add(required);
                 required.setVisible(attributeType.isMandatory());
 
-                Component input = newInputComponent(documentStrategy.getEntityTable(), null, document, attr, getLocale(), true);
+                Component input = DomainObjectComponentUtil.newInputComponent(documentStrategy.getEntityTable(), null, document, attr, getLocale(), true);
                 input.add(new CssAttributeBehavior(modification.getAttributeModificationType(attr.getAttributeTypeId()).getCssClass()));
                 item.add(input);
             }

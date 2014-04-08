@@ -47,8 +47,8 @@ import java.util.List;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
+import static org.complitex.dictionary.web.component.DomainObjectComponentUtil.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectComponentUtil.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.RegistrationStrategy.*;
 
 /**

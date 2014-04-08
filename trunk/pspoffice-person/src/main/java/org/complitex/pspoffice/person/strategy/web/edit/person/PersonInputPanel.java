@@ -34,6 +34,7 @@ import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.web.DomainObjectAccessUtil;
 import org.complitex.dictionary.util.DateUtil;
 import org.complitex.dictionary.web.component.DisableAwareDropDownChoice;
+import org.complitex.dictionary.web.component.DomainObjectComponentUtil;
 import org.complitex.dictionary.web.component.DomainObjectDisableAwareRenderer;
 import org.complitex.dictionary.web.component.DomainObjectInputPanel;
 import org.complitex.dictionary.web.component.dateinput.MaskedDateInput;
@@ -64,8 +65,8 @@ import java.util.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
+import static org.complitex.dictionary.web.component.DomainObjectComponentUtil.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectComponentUtil.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.PersonStrategy.*;
 
 /**
@@ -140,7 +141,7 @@ public class PersonInputPanel extends Panel {
         initSystemAttributeInput(this, "identityCode", IDENTITY_CODE, false);
         initSystemAttributeInput(this, "birthDate", BIRTH_DATE, true);
         final MaskedDateInput birthDateComponent = (MaskedDateInput) get("birthDateContainer:"
-                + DomainObjectInputPanel.INPUT_COMPONENT_ID + ":" + MaskedDateInputPanel.DATE_INPUT_ID);
+                + DomainObjectComponentUtil.INPUT_COMPONENT_ID + ":" + MaskedDateInputPanel.DATE_INPUT_ID);
 
         switch (personAgeType) {
             case KID:

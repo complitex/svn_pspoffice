@@ -16,7 +16,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.entity.Attribute;
 import org.complitex.dictionary.service.LocaleBean;
-import org.complitex.dictionary.web.component.DomainObjectInputPanel;
+import org.complitex.dictionary.web.component.DomainObjectComponentUtil;
 import org.complitex.pspoffice.person.strategy.PersonStrategy;
 import org.complitex.pspoffice.person.strategy.entity.Person;
 import org.complitex.pspoffice.person.strategy.entity.PersonName.PersonNameType;
@@ -81,7 +81,7 @@ class PersonFullNamePanel extends Panel {
     }
 
     private IModel<String> newLabelModel(long nameAttributeTypeId) {
-        return DomainObjectInputPanel.labelModel(personStrategy.getEntity().getAttributeType(nameAttributeTypeId).getAttributeNames(),
+        return DomainObjectComponentUtil.labelModel(personStrategy.getEntity().getAttributeType(nameAttributeTypeId).getAttributeNames(),
                 getLocale());
     }
 

@@ -91,8 +91,8 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.complitex.dictionary.strategy.web.DomainObjectAccessUtil.canEdit;
 import static org.complitex.dictionary.util.DateUtil.getCurrentDate;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.labelModel;
-import static org.complitex.dictionary.web.component.DomainObjectInputPanel.newInputComponent;
+import static org.complitex.dictionary.web.component.DomainObjectComponentUtil.labelModel;
+import static org.complitex.dictionary.web.component.DomainObjectComponentUtil.newInputComponent;
 import static org.complitex.pspoffice.person.strategy.ApartmentCardStrategy.*;
 
 /**

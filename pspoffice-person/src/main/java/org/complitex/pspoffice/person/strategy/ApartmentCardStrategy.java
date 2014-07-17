@@ -6,17 +6,6 @@ package org.complitex.pspoffice.person.strategy;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.Collections;
-import java.util.Comparator;
-import static com.google.common.collect.Maps.*;
-import java.util.Date;
-import static com.google.common.collect.Lists.*;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import org.apache.wicket.util.string.Strings;
 import org.complitex.dictionary.converter.DateConverter;
 import org.complitex.dictionary.converter.StringConverter;
@@ -31,6 +20,7 @@ import org.complitex.dictionary.mybatis.Transactional;
 import org.complitex.dictionary.service.SessionBean;
 import org.complitex.dictionary.service.StringCultureBean;
 import org.complitex.dictionary.strategy.IStrategy;
+import org.complitex.dictionary.strategy.SimpleObjectInfo;
 import org.complitex.dictionary.strategy.StrategyFactory;
 import org.complitex.dictionary.util.CloneUtil;
 import org.complitex.dictionary.util.DateUtil;
@@ -39,18 +29,16 @@ import org.complitex.dictionary.web.component.ShowMode;
 import org.complitex.dictionary.web.component.search.SearchComponentState;
 import org.complitex.pspoffice.ownerrelationship.strategy.OwnerRelationshipStrategy;
 import org.complitex.pspoffice.ownership.strategy.OwnershipFormStrategy;
-import org.complitex.pspoffice.person.strategy.entity.ApartmentCard;
-import org.complitex.pspoffice.person.strategy.entity.ApartmentCardModification;
-import org.complitex.pspoffice.person.strategy.entity.ChangeRegistrationTypeCard;
-import org.complitex.pspoffice.person.strategy.entity.ModificationType;
-import org.complitex.pspoffice.person.strategy.entity.Person;
-import org.complitex.pspoffice.person.strategy.entity.RegisterChildrenCard;
-import org.complitex.pspoffice.person.strategy.entity.RegisterOwnerCard;
-import org.complitex.pspoffice.person.strategy.entity.Registration;
-import org.complitex.pspoffice.person.strategy.entity.RegistrationModification;
-import org.complitex.pspoffice.person.strategy.entity.RemoveRegistrationCard;
+import org.complitex.pspoffice.person.strategy.entity.*;
 import org.complitex.template.strategy.TemplateStrategy;
 import org.complitex.template.web.security.SecurityRole;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import java.util.*;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 
 /**
  *

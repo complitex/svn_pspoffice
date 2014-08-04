@@ -18,23 +18,17 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Locale;
 
 import static org.complitex.pspoffice.registration_type.entity.RegistrationTypeImportFile.REGISTRATION_TYPE;
 
 @Stateless
 public class RegistrationTypeImportService extends AbstractImportService {
-
     private final Logger log = LoggerFactory.getLogger(RegistrationTypeImportService.class);
+
     @EJB
     private RegistrationTypeStrategy strategy;
 
-    private void setValue(Attribute attribute, String value, long localeId) {
-        for (StringCulture string : attribute.getLocalizedValues()) {
-            if (string.getLocaleId().equals(localeId)) {
-                string.setValue(value);
-            }
-        }
-    }
 
     /**
      * REGISTRATION_TYPE_ID	Код	Название
@@ -42,7 +36,7 @@ public class RegistrationTypeImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener, long localeId)
+    public void process(IImportListener listener, Locale locale)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(REGISTRATION_TYPE, getRecordCount(REGISTRATION_TYPE));
 
@@ -81,14 +75,16 @@ public class RegistrationTypeImportService extends AbstractImportService {
                         if (oldObject != null) {
                             // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
                             DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                            setValue(newObject.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
+                            newObject.setStringValue(RegistrationTypeStrategy.NAME, name, locale);
+
                             strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
                         }
                     } else {
                         // не нашли, создаём объект заполняем его атрибуты и сохраняем.
                         DomainObject object = strategy.newInstance();
                         object.setExternalId(externalId);
-                        setValue(object.getAttribute(RegistrationTypeStrategy.NAME), name, localeId);
+                        object.setStringValue(RegistrationTypeStrategy.NAME, name, locale);
+
                         strategy.insert(object, DateUtil.getCurrentDate());
                     }
                 }

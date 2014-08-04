@@ -18,25 +18,17 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
+import java.util.Locale;
 
 import static org.complitex.pspoffice.departure_reason.entity.DepartureReasonImportFile.DEPARTURE_REASON;
 
 @Stateless
 public class DepartureReasonImportService extends AbstractImportService {
-
     private final Logger log = LoggerFactory.getLogger(DepartureReasonImportService.class);
+
     @EJB
     private DepartureReasonStrategy strategy;
-    @EJB
-    private LocaleBean localeBean;
 
-    private void setValue(Attribute attribute, String value, long localeId) {
-        for (StringCulture string : attribute.getLocalizedValues()) {
-            if (string.getLocaleId().equals(localeId)) {
-                string.setValue(value);
-            }
-        }
-    }
 
     /**
      * DEPARTURE_REASON_ID	Код	Название
@@ -44,7 +36,7 @@ public class DepartureReasonImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener, long localeId)
+    public void process(IImportListener listener, Locale locale)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(DEPARTURE_REASON, getRecordCount(DEPARTURE_REASON));
 
@@ -69,24 +61,23 @@ public class DepartureReasonImportService extends AbstractImportService {
                     if (oldObject != null) {
                         // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
                         DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                        setValue(newObject.getAttribute(DepartureReasonStrategy.NAME), name, localeId);
+                        newObject.setStringValue(DepartureReasonStrategy.NAME, name, locale);
+
                         strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
                     }
                 } else {
                     // не нашли, создаём объект заполняем его атрибуты и сохраняем.
                     DomainObject object = strategy.newInstance();
                     object.setExternalId(externalId);
-                    setValue(object.getAttribute(DepartureReasonStrategy.CODE), code,
-                            localeBean.getSystemLocaleObject().getId());
-                    setValue(object.getAttribute(DepartureReasonStrategy.NAME), name, localeId);
+                    object.setStringValue(DepartureReasonStrategy.CODE, code);
+                    object.setStringValue(DepartureReasonStrategy.NAME, name, locale);
+
                     strategy.insert(object, DateUtil.getCurrentDate());
                 }
                 listener.recordProcessed(DEPARTURE_REASON, recordIndex);
             }
             listener.completeImport(DEPARTURE_REASON, recordIndex);
-        } catch (IOException e) {
-            throw new ImportFileReadException(e, DEPARTURE_REASON.getFileName(), recordIndex);
-        } catch (NumberFormatException e) {
+        } catch (IOException | NumberFormatException e) {
             throw new ImportFileReadException(e, DEPARTURE_REASON.getFileName(), recordIndex);
         } finally {
             try {

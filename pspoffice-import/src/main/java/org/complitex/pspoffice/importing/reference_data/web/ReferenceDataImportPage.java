@@ -115,7 +115,7 @@ public final class ReferenceDataImportPage extends TemplatePage {
                 if (!importService.isProcessing()) {
                     final List<IImportFile> allReferenceData = ImmutableList.<IImportFile>builder().
                             addAll(addressDataModel.getObject()).addAll(referenceDataModel.getObject()).build();
-                    importService.process(allReferenceData, localeBean.convert(localeModel.getObject()).getId());
+                    importService.process(allReferenceData, localeModel.getObject());
                     container.add(newTimer());
                 }
             }

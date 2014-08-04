@@ -18,6 +18,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Locale;
 
 import static org.complitex.pspoffice.ownerrelationship.entity.OwnerRelationshipImportFile.OWNER_RELATIONSHIP;
 
@@ -25,16 +26,10 @@ import static org.complitex.pspoffice.ownerrelationship.entity.OwnerRelationship
 public class OwnerRelationshipImportService extends AbstractImportService {
 
     private final Logger log = LoggerFactory.getLogger(OwnerRelationshipImportService.class);
+
     @EJB
     private OwnerRelationshipStrategy strategy;
 
-    private void setValue(Attribute attribute, String value, long localeId) {
-        for (StringCulture string : attribute.getLocalizedValues()) {
-            if (string.getLocaleId().equals(localeId)) {
-                string.setValue(value);
-            }
-        }
-    }
 
     /**
      * OWNER_RELATIONSHIP_ID	Название
@@ -42,7 +37,7 @@ public class OwnerRelationshipImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener, long localeId)
+    public void process(IImportListener listener, Locale locale)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(OWNER_RELATIONSHIP, getRecordCount(OWNER_RELATIONSHIP));
 
@@ -71,9 +66,7 @@ public class OwnerRelationshipImportService extends AbstractImportService {
                         break;
                     }
                 }
-                if (isReserved) {
-                    // это зарезервированный системой объект, пропускаем его.
-                } else {
+                if (!isReserved) {
                     // Ищем по externalId в базе.
                     final Long objectId = strategy.getObjectId(externalId);
                     if (objectId != null) {
@@ -81,24 +74,24 @@ public class OwnerRelationshipImportService extends AbstractImportService {
                         if (oldObject != null) {
                             // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
                             DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                            setValue(newObject.getAttribute(OwnerRelationshipStrategy.NAME), name, localeId);
+                            newObject.setStringValue(OwnerRelationshipStrategy.NAME, name, locale);
+
                             strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
                         }
                     } else {
                         // не нашли, создаём объект заполняем его атрибуты и сохраняем.
                         DomainObject object = strategy.newInstance();
                         object.setExternalId(externalId);
-                        setValue(object.getAttribute(OwnerRelationshipStrategy.NAME), name, localeId);
+                        object.setStringValue(OwnerRelationshipStrategy.NAME, name, locale);
                         strategy.insert(object, DateUtil.getCurrentDate());
                     }
                 }
+
                 listener.recordProcessed(OWNER_RELATIONSHIP, recordIndex);
             }
 
             listener.completeImport(OWNER_RELATIONSHIP, recordIndex);
-        } catch (IOException e) {
-            throw new ImportFileReadException(e, OWNER_RELATIONSHIP.getFileName(), recordIndex);
-        } catch (NumberFormatException e) {
+        } catch (IOException | NumberFormatException e) {
             throw new ImportFileReadException(e, OWNER_RELATIONSHIP.getFileName(), recordIndex);
         } finally {
             try {

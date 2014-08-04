@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
+import java.util.Locale;
 
 import static org.complitex.pspoffice.ownership.entity.OwnershipFormImportFile.OWNERSHIP_FORM;
 
@@ -27,21 +28,13 @@ public class OwnershipFormImportService extends AbstractImportService {
     @EJB
     private OwnershipFormStrategy strategy;
 
-    private void setValue(Attribute attribute, String value, long localeId) {
-        for (StringCulture string : attribute.getLocalizedValues()) {
-            if (string.getLocaleId().equals(localeId)) {
-                string.setValue(value);
-            }
-        }
-    }
-
     /**
      * OWNERSHIP_FORM_ID	Название
      * @param listener
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener, long localeId)
+    public void process(IImportListener listener, Locale locale)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(OWNERSHIP_FORM, getRecordCount(OWNERSHIP_FORM));
 
@@ -65,23 +58,23 @@ public class OwnershipFormImportService extends AbstractImportService {
                     if (oldObject != null) {
                         // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
                         DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                        setValue(newObject.getAttribute(OwnershipFormStrategy.NAME), name, localeId);
+                        newObject.setStringValue(OwnershipFormStrategy.NAME, name, locale);
+
                         strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
                     }
                 } else {
                     // не нашли, создаём объект заполняем его атрибуты и сохраняем.
                     DomainObject object = strategy.newInstance();
                     object.setExternalId(externalId);
-                    setValue(object.getAttribute(OwnershipFormStrategy.NAME), name, localeId);
+                    object.setStringValue(OwnershipFormStrategy.NAME, name, locale);
+
                     strategy.insert(object, DateUtil.getCurrentDate());
                 }
                 listener.recordProcessed(OWNERSHIP_FORM, recordIndex);
             }
 
             listener.completeImport(OWNERSHIP_FORM, recordIndex);
-        } catch (IOException e) {
-            throw new ImportFileReadException(e, OWNERSHIP_FORM.getFileName(), recordIndex);
-        } catch (NumberFormatException e) {
+        } catch (IOException | NumberFormatException e) {
             throw new ImportFileReadException(e, OWNERSHIP_FORM.getFileName(), recordIndex);
         } finally {
             try {

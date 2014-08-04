@@ -18,23 +18,16 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Locale;
 
 import static org.complitex.pspoffice.document_type.entity.DocumentTypeImportFile.DOCUMENT_TYPE;
 
 @Stateless
 public class DocumentTypeImportService extends AbstractImportService {
-
     private final Logger log = LoggerFactory.getLogger(DocumentTypeImportService.class);
+
     @EJB
     private DocumentTypeStrategy strategy;
-
-    private void setValue(Attribute attribute, String value, long localeId) {
-        for (StringCulture string : attribute.getLocalizedValues()) {
-            if (string.getLocaleId().equals(localeId)) {
-                string.setValue(value);
-            }
-        }
-    }
 
     /**
      * DOCUMENT_TYPE_ID     Название
@@ -42,7 +35,7 @@ public class DocumentTypeImportService extends AbstractImportService {
      * @throws ImportFileNotFoundException
      * @throws ImportFileReadException
      */
-    public void process(IImportListener listener, long localeId)
+    public void process(IImportListener listener, Locale locale)
             throws ImportFileNotFoundException, ImportFileReadException {
         listener.beginImport(DOCUMENT_TYPE, getRecordCount(DOCUMENT_TYPE));
 
@@ -71,9 +64,7 @@ public class DocumentTypeImportService extends AbstractImportService {
                         break;
                     }
                 }
-                if (isReserved) {
-                    // это зарезервированный системой объект, пропускаем его.
-                } else {
+                if (!isReserved) {
                     // Ищем по externalId в базе.
                     final Long objectId = strategy.getObjectId(externalId);
                     if (objectId != null) {
@@ -81,14 +72,15 @@ public class DocumentTypeImportService extends AbstractImportService {
                         if (oldObject != null) {
                             // нашли, обновляем (или дополняем) значения атрибутов и сохраняем.
                             DomainObject newObject = CloneUtil.cloneObject(oldObject);
-                            setValue(newObject.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
+                            newObject.setStringValue(DocumentTypeStrategy.NAME, name, locale);
+
                             strategy.update(oldObject, newObject, DateUtil.getCurrentDate());
                         }
                     } else {
                         // не нашли, создаём объект заполняем его атрибуты и сохраняем.
                         DomainObject object = strategy.newInstance();
                         object.setExternalId(externalId);
-                        setValue(object.getAttribute(DocumentTypeStrategy.NAME), name, localeId);
+                        object.setStringValue(DocumentTypeStrategy.NAME, name, locale);
                         strategy.insert(object, DateUtil.getCurrentDate());
                     }
                     listener.recordProcessed(DOCUMENT_TYPE, recordIndex);

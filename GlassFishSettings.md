@@ -1,0 +1,26 @@
+## Register the JDBC connection pool ##
+
+```
+C:\glassfishv3\glassfish\bin>asadmin.bat create-jdbc-connection-pool 
+--driverclassname com.mysql.jdbc.Driver 
+--restype java.sql.Driver 
+--property url=jdbc\:mysql\://localhost\:3306/pspoffice:user=pspoffice:password=pspoffice
+pspoffice-pool 
+```
+
+## Create a JDBC resource with the specified JNDI name ##
+
+```
+C:\glassfishv3\glassfish\bin>asadmin.bat create-jdbc-resource
+--connectionpoolid pspoffice-pool
+jdbc/pspofficePool 
+```
+
+## Add the named authentication realm ##
+
+```
+C:\glassfishv3\glassfish\bin>asadmin.bat create-auth-realm
+--classname com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm
+--property jaas-context=jdbcRealm:datasource-jndi=jdbc/pspofficePool:user-table=user:user-name-column=login:password-column=password:group-table=usergroup:group-name-column=group_name:charset=UTF-8
+pspofficeRealm
+```
